@@ -1,0 +1,1183 @@
+{
+  "hyper": {
+    "hyper": "F18",
+    "app": ["option", "command"],
+    "daemon": ["shift", "option"],
+    "controlCenter": ["shift", "control"],
+    "moveTo": ["option", "command"],
+    "moveTowards": ["shift", "option", "command"],
+    "moveToSpace": ["control", "command"],
+    "moveToScreen": ["shift", "control", "command"],
+    "focusScreen": ["shift", "control"]
+  },
+
+  "parameters": {
+    "windowMoveStep": 100,
+    "windowResizeStep": 100,
+    "windowZoomToCenterSize": { "w": 830, "h": 750 }
+  },
+
+  "hotkeys": {
+    "global": {
+      "reloadHammerspoon": {
+        "mods": "${hyper.daemon}",
+        "key": "R"
+      },
+      "toggleHotkeys": {
+        "mods": ["shift", "control", "option"],
+        "key": "R"
+      },
+      "toggleConsole": {
+        "mods": "${hyper.daemon}",
+        "key": "H"
+      },
+      "searchHotkeys": {
+        "mods": "${hyper.hyper}",
+        "key": "space"
+      },
+      "showCurrentWindowInfo": {
+        "mods": "${hyper.daemon}",
+        "key": "G"
+      },
+      "copyToPC": {
+        "mods": ["shift", "option", "command"],
+        "key": "C"
+      },
+      "pasteFromPC": {
+        "mods": ["shift", "option", "command"],
+        "key": "V"
+      },
+      "switchWindow": {
+        "mods": "option",
+        "key": "tab"
+      },
+      "switchWindowBack": {
+        "mods": ["shift", "option"],
+        "key": "tab"
+      },
+      "switchWindowBackTriggered": {
+        "mods": "option",
+        "key": "`"
+      },
+      "searchWindow": {
+        "mods": "option",
+        "key": "space"
+      },
+      "switchBrowserWindow": {
+        "mods": ["control", "option"],
+        "key": "tab"
+      },
+      "switchBrowserWindowBack": {
+        "mods": ["shift", "control", "option"],
+        "key": "tab"
+      },
+      "switchBrowserWindowBackTriggered": {
+        "mods": ["control", "option"],
+        "key": "`"
+      },
+      "searchTab": {
+        "mods": ["control", "option"],
+        "key": "space"
+      },
+      "showClock": {
+        "mods": ["shift", "control", "option"],
+        "key": "C"
+      },
+      "showControlCenter": {
+        "mods": "${hyper.controlCenter}",
+        "key": "C"
+      },
+      "showProxyMenu": {
+        "mods": "${hyper.daemon}",
+        "key": "X"
+      },
+      "moveToTopLeft": {
+        "mods": "${hyper.moveTo}",
+        "key": "1"
+      },
+      "moveToTop": {
+        "mods": "${hyper.moveTo}",
+        "key": "2"
+      },
+      "moveToTopRight": {
+        "mods": "${hyper.moveTo}",
+        "key": "3"
+      },
+      "moveToLeft": {
+        "mods": "${hyper.moveTo}",
+        "key": "4"
+      },
+      "moveToCenter": {
+        "mods": "${hyper.moveTo}",
+        "key": "5"
+      },
+      "moveToRight": {
+        "mods": "${hyper.moveTo}",
+        "key": "6"
+      },
+      "moveToBottomLeft": {
+        "mods": "${hyper.moveTo}",
+        "key": "7"
+      },
+      "moveToBottom": {
+        "mods": "${hyper.moveTo}",
+        "key": "8"
+      },
+      "moveToBottomRight": {
+        "mods": "${hyper.moveTo}",
+        "key": "9"
+      },
+      "moveTowardsTopLeft": {
+        "mods": "${hyper.moveTowards}",
+        "key": "1"
+      },
+      "moveTowardsTop": {
+        "mods": "${hyper.moveTowards}",
+        "key": "2"
+      },
+      "moveTowardsTopRight": {
+        "mods": "${hyper.moveTowards}",
+        "key": "3"
+      },
+      "moveTowardsLeft": {
+        "mods": "${hyper.moveTowards}",
+        "key": "4"
+      },
+      "moveTowardsRight": {
+        "mods": "${hyper.moveTowards}",
+        "key": "6"
+      },
+      "moveTowardsBottomLeft": {
+        "mods": "${hyper.moveTowards}",
+        "key": "7"
+      },
+      "moveTowardsBottom": {
+        "mods": "${hyper.moveTowards}",
+        "key": "8"
+      },
+      "moveTowardsBottomRight": {
+        "mods": "${hyper.moveTowards}",
+        "key": "9"
+      },
+      "leftExpand": {
+        "mods": ["control", "option"],
+        "key": "A"
+      },
+      "rightExpand": {
+        "mods": ["control", "option"],
+        "key": "D"
+      },
+      "topExpand": {
+        "mods": ["control", "option"],
+        "key": "W"
+      },
+      "bottomExpand": {
+        "mods": ["control", "option"],
+        "key": "S"
+      },
+      "leftShrink": {
+        "mods": ["shift", "control", "option"],
+        "key": "A"
+      },
+      "rightShrink": {
+        "mods": ["shift", "control", "option"],
+        "key": "D"
+      },
+      "topShrink": {
+        "mods": ["shift", "control", "option"],
+        "key": "W"
+      },
+      "bottomShrink": {
+        "mods": ["shift", "control", "option"],
+        "key": "S"
+      },
+      "toggleMaximize": {
+        "mods": ["option", "command"],
+        "key": "0"
+      },
+      "toggleZoomToCenter": {
+        "mods": ["shift", "option", "command"],
+        "key": "5"
+      },
+      "zoomToLeft": {
+        "mods": ["shift", "command"],
+        "key": ";"
+      },
+      "zoomToRight": {
+        "mods": ["shift", "command"],
+        "key": "'"
+      },
+      "zoomToLeftThird": {
+        "mods": ["control",  "command"],
+        "key": ";"
+      },
+      "zoomToRightThird": {
+        "mods": ["control", "command"],
+        "key": "'"
+      },
+      "zoomToLeftTwoThirds": {
+        "mods": ["shift", "control", "command"],
+        "key": ";"
+      },
+      "zoomToRightTwoThirds": {
+        "mods": ["shift", "control", "command"],
+        "key": "'"
+      },
+      "zoomToTopLeft": {
+        "mods": ["option", "command"],
+        "key": ";"
+      },
+      "zoomToTopRight": {
+        "mods": ["option", "command"],
+        "key": "'"
+      },
+      "zoomToBottomLeft": {
+        "mods": ["shift", "option", "command"],
+        "key": ";"
+      },
+      "zoomToBottomRight": {
+        "mods": ["shift", "option", "command"],
+        "key": "'"
+      },
+      "hideAllWindows": {
+        "mods": ["shift", "control", "command"],
+        "key": "D"
+      },
+      "hideAllWindowsCurrentSpace": {
+        "mods": ["control", "command"],
+        "key": "D"
+      },
+      "toggleFullScreen": {
+        "mods": ["control", "command"],
+        "key": "F"
+      },
+      "moveToSpace1": {
+        "mods": "${hyper.moveToSpace}",
+        "key": "1"
+      },
+      "moveToSpace2": {
+        "mods": "${hyper.moveToSpace}",
+        "key": "2"
+      },
+      "moveToSpace3": {
+        "mods": "${hyper.moveToSpace}",
+        "key": "3"
+      },
+      "moveToSpace4": {
+        "mods": "${hyper.moveToSpace}",
+        "key": "4"
+      },
+      "moveToSpace5": {
+        "mods": "${hyper.moveToSpace}",
+        "key": "5"
+      },
+      "moveToSpace6": {
+        "mods": "${hyper.moveToSpace}",
+        "key": "6"
+      },
+      "moveToSpace7": {
+        "mods": "${hyper.moveToSpace}",
+        "key": "7"
+      },
+      "moveToSpace8": {
+        "mods": "${hyper.moveToSpace}",
+        "key": "8"
+      },
+      "moveToSpace9": {
+        "mods": "${hyper.moveToSpace}",
+        "key": "9"
+      },
+      "moveToNextSpace": {
+        "mods": "${hyper.moveToSpace}",
+        "key": "right"
+      },
+      "moveToPrevSpace": {
+        "mods": "${hyper.moveToSpace}",
+        "key": "left"
+      },
+      "moveToScreen1": {
+        "mods": "${hyper.moveToScreen}",
+        "key": "1"
+      },
+      "moveToScreen2": {
+        "mods": "${hyper.moveToScreen}",
+        "key": "2"
+      },
+      "moveToScreen3": {
+        "mods": "${hyper.moveToScreen}",
+        "key": "3"
+      },
+      "moveToScreen4": {
+        "mods": "${hyper.moveToScreen}",
+        "key": "4"
+      },
+      "moveToScreen5": {
+        "mods": "${hyper.moveToScreen}",
+        "key": "5"
+      },
+      "moveToScreen6": {
+        "mods": "${hyper.moveToScreen}",
+        "key": "6"
+      },
+      "moveToScreen7": {
+        "mods": "${hyper.moveToScreen}",
+        "key": "7"
+      },
+      "moveToScreen8": {
+        "mods": "${hyper.moveToScreen}",
+        "key": "8"
+      },
+      "moveToScreen9": {
+        "mods": "${hyper.moveToScreen}",
+        "key": "9"
+      },
+      "moveToPrevScreen": {
+        "mods": "${hyper.moveToScreen}",
+        "key": "left"
+      },
+      "moveToNextScreen": {
+        "mods": "${hyper.moveToScreen}",
+        "key": "right"
+      },
+      "focusScreen1": {
+        "mods": "${hyper.focusScreen}",
+        "key": "1"
+      },
+      "focusScreen2": {
+        "mods": "${hyper.focusScreen}",
+        "key": "2"
+      },
+      "focusScreen3": {
+        "mods": "${hyper.focusScreen}",
+        "key": "3"
+      },
+      "focusScreen4": {
+        "mods": "${hyper.focusScreen}",
+        "key": "4"
+      },
+      "focusScreen5": {
+        "mods": "${hyper.focusScreen}",
+        "key": "5"
+      },
+      "focusScreen6": {
+        "mods": "${hyper.focusScreen}",
+        "key": "6"
+      },
+      "focusScreen7": {
+        "mods": "${hyper.focusScreen}",
+        "key": "7"
+      },
+      "focusScreen8": {
+        "mods": "${hyper.focusScreen}",
+        "key": "8"
+      },
+      "focusScreen9": {
+        "mods": "${hyper.focusScreen}",
+        "key": "9"
+      },
+      "focusPrevScreen": {
+        "mods": "${hyper.focusScreen}",
+        "key": "left"
+      },
+      "focusNextScreen": {
+        "mods": "${hyper.focusScreen}",
+        "key": "right"
+      }
+    },
+
+    "appkeys": {
+      "LaunchPad": {
+        "mods": "${hyper.app}",
+        "key": "Tab",
+        "bundleID": "com.apple.launchpad.launcher"
+      },
+      "QQ": {
+        "mods": "${hyper.app}",
+        "key": "Q",
+        "bundleID": "com.tencent.qq"
+      },
+      "WeChat": {
+        "mods": "${hyper.app}",
+        "key": "W",
+        "bundleID": "com.tencent.xinWeChat"
+      },
+      "EuDic": {
+        "mods": "${hyper.app}",
+        "key": "E",
+        "bundleID": "com.eusoft.freeeudic"
+      },
+      "RDM": {
+        "mods": "${hyper.app}",
+        "key": "R",
+        "bundleID": [
+          "com.devolutions.remotedesktopmanager",
+          "com.devolutions.remotedesktopmanager.free"
+        ]
+      },
+      "Terminal": {
+        "mods": "${hyper.app}",
+        "key": "T",
+        "bundleID": "com.apple.Terminal"
+      },
+      "Dash": {
+        "mods": "${hyper.app}",
+        "key": "A",
+        "bundleID": "com.kapeli.dashdoc"
+      },
+      "Sublime Text": {
+        "mods": "${hyper.app}",
+        "key": "S",
+        "bundleID": "com.sublimetext.4"
+      },
+      "Finder": {
+        "mods": "${hyper.app}",
+        "key": "F",
+        "bundleID": "com.apple.finder"
+      },
+      "Google Chrome": {
+        "mods": "${hyper.app}",
+        "key": "Z",
+        "bundleID": "com.google.Chrome"
+      },
+      "Safari": {
+        "mods": ["shift", "option", "command"],
+        "key": "Z",
+        "bundleID": "com.apple.Safari"
+      },
+      "Visual Studio Code": {
+        "mods": "${hyper.app}",
+        "key": "X",
+        "bundleID": "com.microsoft.VSCode"
+      },
+      "App Cleaner 8": {
+        "mods": "${hyper.app}",
+        "key": "U",
+        "bundleID": [
+          "com.nektony.App-Cleaner-SIII",
+          "com.nektony.App-Cleaner-SIIICn"
+        ]
+      },
+      "Keynote": {
+        "mods": "${hyper.app}",
+        "key": "P",
+        "bundleID": "com.apple.iWork.Keynote"
+      },
+      "Script Editor": {
+        "mods": "${hyper.app}",
+        "key": "J",
+        "bundleID": "com.apple.ScriptEditor2"
+      },
+      "Typora": {
+        "mods": "${hyper.app}",
+        "key": "K",
+        "bundleID": "abnerworks.Typora"
+      },
+      "PDF Expert": {
+        "mods": "${hyper.app}",
+        "key": "L",
+        "bundleID": "com.readdle.PDFExpert-Mac"
+      },
+      "TencentMeeting": {
+        "mods": "${hyper.app}",
+        "key": "M",
+        "bundleID": "com.tencent.meeting"
+      },
+      "QQMusic": {
+        "mods": "${hyper.hyper}",
+        "key": "Q",
+        "bundleID": "com.tencent.QQMusicMac"
+      },
+      "Windows": {
+        "mods": "${hyper.hyper}",
+        "key": "W",
+        "vm": "com.parallels.desktop.console"
+      },
+      "Microsoft Remote Desktop": {
+        "mods": "${hyper.hyper}",
+        "key": "R",
+        "bundleID": "com.microsoft.rdc.macos"
+      },
+      "Termius": {
+        "mods": "${hyper.hyper}",
+        "key": "T",
+        "bundleID": [
+          "com.termius.mac",
+          "com.termius-dmg.mac"
+        ]
+      },
+      "Ubuntu": {
+        "mods": "${hyper.hyper}",
+        "key": "U",
+        "vm": "com.parallels.desktop.console"
+      },
+      "Accessibility Inspector": {
+        "mods": "${hyper.hyper}",
+        "key": "I",
+        "bundleID": "com.apple.AccessibilityInspector"
+      },
+      "WPS Office": {
+        "mods": "${hyper.hyper}",
+        "key": "O",
+        "bundleID": "com.kingsoft.wpsoffice.mac"
+      },
+      "PyCharm": {
+        "mods": "${hyper.hyper}",
+        "key": "P",
+        "bundleID": "com.jetbrains.pycharm"
+      },
+      "SourceTree": {
+        "mods": "${hyper.hyper}",
+        "key": "S",
+        "bundleID": "com.torusknot.SourceTreeNotMAS"
+      },
+      "ChatGPT": {
+        "mods": "${hyper.hyper}",
+        "key": "G",
+        "bundleID": "com.lencx.chatgpt"
+      },
+      "Activity Monitor": {
+        "mods": "${hyper.hyper}",
+        "key": "H",
+        "bundleID": "com.apple.ActivityMonitor"
+      },
+      "IntelliJ IDEA": {
+        "mods": "${hyper.hyper}",
+        "key": "J",
+        "bundleID": "com.jetbrains.intellij"
+      },
+      "klatexformula": {
+        "mods": "${hyper.hyper}",
+        "key": "K",
+        "bundleID": "org.klatexformula.klatexformula"
+      },
+      "DeepL": {
+        "mods": "${hyper.hyper}",
+        "key": "L",
+        "bundleID": "com.linguee.DeepLCopyTranslator"
+      },
+      "System Preferences": {
+        "mods": "${hyper.hyper}",
+        "key": "Z",
+        "bundleID": "com.apple.systempreferences"
+      },
+      "Xcode": {
+        "mods": "${hyper.hyper}",
+        "key": "X",
+        "bundleID": "com.apple.dt.Xcode"
+      },
+      "CLion": {
+        "mods": "${hyper.hyper}",
+        "key": "C",
+        "bundleID": "com.jetbrains.CLion"
+      },
+      "VNC Viewer": {
+        "mods": "${hyper.hyper}",
+        "key": "V",
+        "bundleID": "com.realvnc.vncviewer"
+      },
+      "Notes": {
+        "mods": "${hyper.hyper}",
+        "key": "N",
+        "bundleID": "com.apple.Notes"
+      },
+      "MATLAB": {
+        "mods": "${hyper.hyper}",
+        "key": "M",
+        "bundleID": "com.mathworks.matlab"
+      }
+    },
+
+    "ControlCenterAppKeys": {
+      "WiFi": {
+        "mods": "${hyper.controlCenter}",
+        "key": "W"
+      },
+      "Bluetooth": {
+        "mods": "${hyper.controlCenter}",
+        "key": "B"
+      },
+      "AirDrop": {
+        "mods": "${hyper.controlCenter}",
+        "key": "A"
+      },
+      "Focus Modes": {
+        "mods": "${hyper.controlCenter}",
+        "key": "F"
+      },
+      "Keyboard Brightness": {
+        "mods": "${hyper.controlCenter}",
+        "key": "K"
+      },
+      "Screen Mirroring": {
+        "mods": "${hyper.controlCenter}",
+        "key": "M"
+      },
+      "Display": {
+        "mods": "${hyper.controlCenter}",
+        "key": "D"
+      },
+      "Sound": {
+        "mods": "${hyper.controlCenter}",
+        "key": "S"
+      },
+      "Now Playing": {
+        "mods": "${hyper.controlCenter}",
+        "key": "P"
+      }
+    },
+
+    "menuItems": {
+      "enableIndex": false,
+      "enableLetter": true
+    },
+
+    "com.apple.finder": {
+      "goToDownloads": {
+        "mods": ["shift", "command"],
+        "key": "L"
+      },
+      "showPrevTab": {
+        "mods": ["shift", "command"],
+        "key": "["
+      },
+      "showNextTab": {
+        "mods": ["shift", "command"],
+        "key": "]"
+      }
+    },
+    "com.apple.Terminal": {
+      "tmuxPreviousPane": {
+        "mods": ["shift", "command"],
+        "key": "[",
+        "windowFilter": {
+          "allowTitles": "tmux"
+        }
+      },
+      "tmuxNextPane": {
+        "mods": ["shift", "command"],
+        "key": "]",
+        "windowFilter": {
+          "allowTitles": "tmux"
+        }
+      },
+      "tmuxAbovePane": {
+        "mods": ["shift", "command"],
+        "key": "up",
+        "windowFilter": {
+          "allowTitles": "tmux"
+        }
+      },
+      "tmuxBelowPane": {
+        "mods": ["shift", "command"],
+        "key": "down",
+        "windowFilter": {
+          "allowTitles": "tmux"
+        }
+      },
+      "tmuxLeftPane": {
+        "mods": ["shift", "command"],
+        "key": "left",
+        "windowFilter": {
+          "allowTitles": "tmux"
+        }
+      },
+      "tmuxRightPane": {
+        "mods": ["shift", "command"],
+        "key": "right",
+        "windowFilter": {
+          "allowTitles": "tmux"
+        }
+      },
+      "tmuxNewHorizontalPane": {
+        "mods": "command",
+        "key": "T",
+        "windowFilter": {
+          "allowTitles": "tmux"
+        }
+      },
+      "tmuxNewVerticalPane": {
+        "mods": ["shift", "command"],
+        "key": "T",
+        "windowFilter": {
+          "allowTitles": "tmux"
+        }
+      },
+      "tmuxClosePane": {
+        "mods": "command",
+        "key": "W",
+        "windowFilter": {
+          "allowTitles": "tmux"
+        }
+      },
+      "tmuxPreviousWindow": {
+        "mods": ["shift", "option", "command"],
+        "key": "`",
+        "windowFilter": {
+          "allowTitles": "tmux"
+        }
+      },
+      "tmuxNextWindow": {
+        "mods": ["option", "command"],
+        "key": "`",
+        "windowFilter": {
+          "allowTitles": "tmux"
+        }
+      },
+      "tmuxWindow0": {
+        "mods": "command",
+        "key": "0",
+        "windowFilter": {
+          "allowTitles": "tmux"
+        }
+      },
+      "tmuxWindow1": {
+        "mods": "command",
+        "key": "1",
+        "windowFilter": {
+          "allowTitles": "tmux"
+        }
+      },
+      "tmuxWindow2": {
+        "mods": "command",
+        "key": "2",
+        "windowFilter": {
+          "allowTitles": "tmux"
+        }
+      },
+      "tmuxWindow3": {
+        "mods": "command",
+        "key": "3",
+        "windowFilter": {
+          "allowTitles": "tmux"
+        }
+      },
+      "tmuxWindow4": {
+        "mods": "command",
+        "key": "4",
+        "windowFilter": {
+          "allowTitles": "tmux"
+        }
+      },
+      "tmuxWindow5": {
+        "mods": "command",
+        "key": "5",
+        "windowFilter": {
+          "allowTitles": "tmux"
+        }
+      },
+      "tmuxWindow6": {
+        "mods": "command",
+        "key": "6",
+        "windowFilter": {
+          "allowTitles": "tmux"
+        }
+      },
+      "tmuxWindow7": {
+        "mods": "command",
+        "key": "7",
+        "windowFilter": {
+          "allowTitles": "tmux"
+        }
+      },
+      "tmuxWindow8": {
+        "mods": "command",
+        "key": "8",
+        "windowFilter": {
+          "allowTitles": "tmux"
+        }
+      },
+      "tmuxWindow9": {
+        "mods": "command",
+        "key": "9",
+        "windowFilter": {
+          "allowTitles": "tmux"
+        }
+      },
+      "tmuxNewWindow": {
+        "mods": ["shift", "command"],
+        "key": "N",
+        "windowFilter": {
+          "allowTitles": "tmux"
+        }
+      },
+      "tmuxCloseWindow": {
+        "mods": ["shift", "command"],
+        "key": "W",
+        "windowFilter": {
+          "allowTitles": "tmux"
+        }
+      },
+      "tmuxDetachSession": {
+        "mods": "command",
+        "key": "D",
+        "windowFilter": {
+          "allowTitles": "tmux"
+        }
+      },
+      "tmuxEnterCopyMode": {
+        "mods": "command",
+        "key": "B",
+        "windowFilter": {
+          "allowTitles": "tmux"
+        }
+      },
+      "tmuxSearch": {
+        "mods": "command",
+        "key": "F",
+        "windowFilter": {
+          "allowTitles": "tmux"
+        }
+      }
+    },
+    "com.apple.MobileSMS": {
+      "deleteSelectedMessage": {
+        "mods": "command",
+        "key": "delete"
+      },
+      "deleteAllMessages": {
+        "mods": ["option", "command"],
+        "key": "delete"
+      },
+      "goToPreviousConversation": {
+        "mods": "",
+        "key": "up"
+      },
+      "goToNextConversation": {
+        "mods": "",
+        "key": "down"
+      }
+    },
+    "com.apple.ScriptEditor2": {
+      "confirmDelete": {
+        "mods": "option",
+        "key": "D"
+      }
+    },
+    "com.apple.AppStore": {
+      "back": {
+        "mods": "command",
+        "key": "["
+      }
+    },
+    "com.apple.Safari": {
+      "revealInFinder": {
+        "mods": ["shift", "option", "command"],
+        "key": "F"
+      }
+    },
+    "com.apple.Preview": {
+      "revealInFinder": {
+        "mods": ["shift", "option", "command"],
+        "key": "F"
+      }
+    },
+    "com.google.Chrome": {
+      "revealInFinder": {
+        "mods": ["shift", "option", "command"],
+        "key": "F"
+      }
+    },
+    "com.sublimetext.4": {
+      "openRecent": {
+        "mods": "control",
+        "key": "R"
+      }
+    },
+    "com.microsoft.VSCode": {
+      "view:toggleOutline": {
+        "mods": "command",
+        "key": "7"
+      }
+    },
+    "com.readdle.PDFExpert-Mac": {
+      "showInFinder": {
+        "mods": ["shift", "option", "command"],
+        "key": "F"
+      }
+    },
+    "abnerworks.Typora": {
+      "openFileLocation": {
+        "mods": ["shift", "option", "command"],
+        "key": "F"
+      },
+      "previousTab": {
+        "mods": ["shift", "command"],
+        "key": "["
+      },
+      "nextTab": {
+        "mods": ["shift", "command"],
+        "key": "]"
+      },
+      "pasteAsPlainText": {
+        "mods": ["shift", "option", "command"],
+        "key": "V"
+      }
+    },
+    "com.superace.updf.mac": {
+      "showInFinder": {
+        "mods": ["shift", "option", "command"],
+        "key": "F"
+      }
+    },
+    "com.kingsoft.wpsoffice.mac": {
+      "newWorkspace": {
+        "mods": ["shift", "command"],
+        "key": "N"
+      },
+      "closeWorkspace": {
+        "mods": ["shift", "command"],
+        "key": "W"
+      },
+      "previousTab": {
+        "mods": ["shift", "command"],
+        "key": "["
+      },
+      "nextTab": {
+        "mods": ["shift", "command"],
+        "key": "]"
+      },
+      "goToFileTop": {
+        "mods": "",
+        "key": "home"
+      },
+      "goToFileBottom": {
+        "mods": "",
+        "key": "end"
+      },
+      "selectToFileTop": {
+        "mods": "shift",
+        "key": "home"
+      },
+      "selectToFileBottom": {
+        "mods": "shift",
+        "key": "end"
+      },
+      "openFileLocation": {
+        "mods": ["shift", "option", "command"],
+        "key": "F"
+      }
+    },
+    "com.apple.iWork.Keynote": {
+      "pasteAndMatchStyle": {
+        "mods": "command",
+        "key": "V"
+      },
+      "paste": {
+        "mods": ["shift", "option", "command"],
+        "key": "V"
+      },
+      "play": {
+        "mods": ["shift", "option", "command"],
+        "key": "P"
+      },
+      "insertEquation": {
+        "mods": ["option", "command"],
+        "key": "E"
+      },
+      "revealInFinder": {
+        "mods": ["shift", "option", "command"],
+        "key": "F"
+      },
+      "confirmDelete": {
+        "mods": "option",
+        "key": "D"
+      }
+    },
+    "net.xmind.vana.app": {
+      "export": {
+        "mods": "command",
+        "key": "E"
+      },
+      "insertEquation": {
+        "mods": ["shift", "command"],
+        "key": "E"
+      }
+    },
+    "com.tencent.xinWeChat": {
+      "back": {
+        "mods": "command",
+        "key": "["
+      },
+      "forward": {
+        "mods": "command",
+        "key": "]"
+      }
+    },
+    "com.tencent.QQMusicMac": {
+      "back": {
+        "mods": "",
+        "key": "escape"
+      }
+    },
+    "com.surteesstudios.Bartender": {
+      "toggleMenuBar": {
+        "mods": "${hyper.daemon}",
+        "key": "E",
+        "background": true
+      },
+      "searchMenuBar": {
+        "mods": "${hyper.daemon}",
+        "key": "space",
+        "background": true
+      }
+    },
+    "com.gaosun.eul": {
+      "showSystemStatus": {
+        "mods": "${hyper.daemon}",
+        "key": "Z",
+        "background": true
+      }
+    },
+    "cn.better365.iShotPro": {
+      "OCR": {
+        "mods": "${hyper.daemon}",
+        "key": "O",
+        "background": true,
+        "persist": true
+      }
+    },
+    "whbalzac.Dongtaizhuomian": {
+      "invokeInAppScreenSaver": {
+        "mods": "${hyper.daemon}",
+        "key": "L",
+        "background": true
+      }
+    },
+    "org.klatexformula.klatexformula": {
+      "render": {
+        "mods": "command",
+        "key": "return"
+      },
+      "renderClipboardInKlatexformula": {
+        "mods": "${hyper.daemon}",
+        "key": "K",
+        "background": true
+      }
+    },
+    "barrier": {
+      "toggleBarrierConnect": {
+        "mods": "${hyper.daemon}",
+        "key": "B",
+        "background": true,
+        "persist": true
+      }
+    },
+    "pl.maketheweb.TopNotch": {
+      "toggleTopNotch": {
+        "mods": "${hyper.daemon}",
+        "key": "N",
+        "background": true,
+        "persist": true
+      }
+    },
+    "com.mathpix.snipping-tool-noappstore": {
+      "OCRForLatex": {
+        "mods": "${hyper.daemon}",
+        "key": "M",
+        "background": true,
+        "persist": true
+      }
+    },
+    "com.parallels.desktop.console": {
+      "closeWindow": {
+        "mods": "command",
+        "key": "W",
+        "windowFilter": {
+          "allowTitles": [
+            "^Control Center$",
+            "^控制中心$"
+          ]
+        }
+      }
+    },
+    "com.jetbrains.CLion": {
+      "newProject": {
+        "mods": "command",
+        "key": "N",
+        "windowFilter": {
+          "allowTitles": "Welcome to CLion"
+        }
+      },
+      "open...": {
+        "mods": "command",
+        "key": "O",
+        "windowFilter": {
+          "allowTitles": "Welcome to CLion"
+        }
+      }
+    },
+    "com.jetbrains.intellij": {
+      "newProject": {
+        "mods": "command",
+        "key": "N",
+        "windowFilter": {
+          "allowTitles": "Welcome to IntelliJ IDEA"
+        }
+      },
+      "open...": {
+        "mods": "command",
+        "key": "O",
+        "windowFilter": {
+          "allowTitles": "Welcome to IntelliJ IDEA"
+        }
+      }
+    },
+    "com.jetbrains.pycharm": {
+      "newProject": {
+        "mods": "command",
+        "key": "N",
+        "windowFilter": {
+          "allowTitles": "Welcome to PyCharm"
+        }
+      },
+      "open...": {
+        "mods": "command",
+        "key": "O",
+        "windowFilter": {
+          "allowTitles": "Welcome to PyCharm"
+        }
+      }
+    }
+  },
+
+  "remap": {
+    "com.realvnc.vncviewer": [
+      {
+        "map": {
+          "command": "control",
+          "control": "command"
+        },
+        "condition": {
+          "noWindow": true,
+          "noTitle": true,
+          "windowFilter": {
+            "allowTitles": [
+              "^VNC Viewer$",
+              "^RealVNC Viewer$",
+              "^Application Preferences$",
+              "Properties$"
+            ]
+          }
+        }
+      }
+    ],
+    "com.microsoft.rdc.macos": [
+      {
+        "map":  {
+          "command":  "control",
+          "control":  "command"
+        },
+        "condition": {
+          "noWindow": true,
+          "noTitle": true,
+          "windowFilter": {
+            "allowTitles":  [
+              "^Microsoft Remote Desktop$",
+              "^Preferences$"
+            ]
+          }
+        }
+      }
+    ]
+  }
+}

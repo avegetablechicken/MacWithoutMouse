@@ -1,0 +1,35 @@
+{
+  "variable": {
+    "CONFIG_DIR": "~/Documents/scripts/config-your-computer",
+    "COMMON_CONFIG_DIR": "${CONFIG_DIR}/common",
+    "MACOS_CONFIG_DIR": "${CONFIG_DIR}/macos",
+    "HOMEBREW_PREFIX": "$(source ~/.zprofile; brew --prefix | tr -d '\\n')"
+  },
+
+  "file": {
+    "${HOMEBREW_PREFIX}/etc/frp/frpc.ini": [
+      "${MACOS_CONFIG_DIR}/frp",
+      {
+        "desensitize_command": "sed 's/token = \\(.*\\)/token = ******/'"
+      }
+    ],
+    "~/.bab": "${MACOS_CONFIG_DIR}/.bab",
+    "~/.bash_profile": "${MACOS_CONFIG_DIR}/shell",
+    "~/.config/barrier/barrier.conf": "${MACOS_CONFIG_DIR}/.config/barrier",
+    "~/.config/powershell/Microsoft.PowerShell_profile.ps1": "${COMMON_CONFIG_DIR}/Powershell",
+    "~/.config/karabiner/karabiner.json": "${MACOS_CONFIG_DIR}/.config/karabiner",
+    "~/.config/karabiner/scripts/": "${MACOS_CONFIG_DIR}/.config/karabiner/scripts",
+    "~/.hammerspoon/": "${MACOS_CONFIG_DIR}/.hammerspoon",
+    "~/.ssh/config": "${MACOS_CONFIG_DIR}/.ssh",
+    "~/.ssh/checkinlab.sh": "${MACOS_CONFIG_DIR}/.ssh",
+    "~/.tmux.conf": "${COMMON_CONFIG_DIR}/tmux",
+    "~/.tmux.conf.local": "${COMMON_CONFIG_DIR}/tmux",
+    "~/.vimrc": "${COMMON_CONFIG_DIR}/vim",
+    "~/.zprofile": "${MACOS_CONFIG_DIR}/shell",
+    "~/.zshrc": "${MACOS_CONFIG_DIR}/shell",
+    "~/Library/Application Support/Code/User/snippets/": "${COMMON_CONFIG_DIR}/vscode/snippets",
+    "~/Library/Application Support/Code/User/keybindings.json": "${MACOS_CONFIG_DIR}/vscode",
+    "~/Library/Application Support/Sublime Text/Packages/User/Default (OSX).sublime-keymap": "${MACOS_CONFIG_DIR}/sublime_text",
+    "/Library/WebServer/Documents/proxy.pac": "${COMMON_CONFIG_DIR}"
+  }
+}

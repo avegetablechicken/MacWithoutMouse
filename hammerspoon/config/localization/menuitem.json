@@ -1,0 +1,82 @@
+{
+  "common": {
+    "文件": "File",
+    "编辑": "Edit",
+    "显示": "View",
+    "视图": "View",
+    "插入": "Insert",
+    "格式": "Format",
+    "排列": "Arrange",
+    "工具": "Tools",
+    "前往": "Go",
+    "窗口": "Window",
+    "帮助": "Help"
+  },
+
+  "com.apple.AppStore": { "商店": "Store" },
+  "com.apple.MobileSMS": { "对话": "Conversations" },
+  "com.apple.mail":
+  {
+    "邮箱": "Mailbox",
+    "邮件": "Message"
+  },
+  "com.apple.ScriptEditor2":
+  {
+    "脚本": "Script",
+    "字体": "Font"
+  },
+  "com.apple.Safari":
+  {
+    "历史记录": "History",
+    "书签": "Bookmarks",
+    "开发": "Develop"
+  },
+  "com.google.Chrome":
+  {
+    "历史记录": "History",
+    "书签": "Bookmarks",
+    "个人资料": "Profiles",
+    "标签页": "Tab"
+  },
+  "com.microsoft.edgemac":
+  {
+    "查看": "View",
+    "历史记录": "History",
+    "收藏夹": "Favorites",
+    "个人资料": "Profiles"
+  },
+  "com.microsoft.Powerpoint": { "幻灯片放映": "Slide Show" },
+  "com.kingsoft.wpsoffice.mac":
+  {
+    "账户": "Account",
+    "服务": "Service",
+    "表格": "Table",
+    "工作区": "Workspace"
+  },
+  "com.apple.iWork.Keynote":
+  {
+    "幻灯片": "Slide" ,
+    "播放": "Play"
+  },
+  "com.apple.Numbers":
+  {
+    "表格": "Table",
+    "整理": "Organise"
+  },
+  "com.readdle.PDFExpert-Mac":
+  {
+    "批注": "Annotate",
+    "编辑 PDF": "Edit PDF",
+    "扫描": "Scan & OCR"
+  },
+  "abnerworks.Typora": {
+    "段落": "Paragraph",
+    "主题": "Themes"
+  },
+  "net.xmind.vana.app": { "查看": "View" },
+  "com.pixelmatorteam.pixelmator.x":
+  {
+    "图像": "Image",
+    "查看": "View"
+  }
+}

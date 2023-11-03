@@ -1,0 +1,45 @@
+{
+  "menubar": {
+    "Control Center": "controlcenter",
+    "WiFi": "wifi",
+    "Bluetooth": "bluetooth",
+    "Focus Modes": "focusmode",
+    "AirDrop": "airdrop",
+    "Keyboard Brightness": "keyboard-brightness",
+    "Stage Manager": "stagemanager",
+    "Screen Mirroring": "screen-mirroring",
+    "Display": "display",
+    "Sound": "sound",
+    "Now Playing": "now-playing",
+    "Accessibility Shortcuts": "accessibility-shortcuts",
+    "Hearing": "hearing"
+  },
+  "subpanel" : {
+    "WiFi": "wifi",
+    "Bluetooth": "bluetooth",
+    "Focus Modes": "focus-modes",
+    "AirDrop": "airdrop",
+    "Keyboard Brightness": "keyboard-brightness",
+    "Stage Manager": "stagemanager",
+    "Screen Mirroring": "screen-mirroring",
+    "Display": "display",
+    "Sound": "volume",
+    "Accessibility Shortcuts": "accessibility-identifier",
+    "Hearing": "hearing-identifier"
+  },
+  "accessibility": {
+    "Focus Modes": {
+      "Do Not Disturb": "focus-mode-activity-com.apple.donotdisturb.mode.default",
+      "Sleep": "focus-mode-activity-com.apple.sleep.sleep-mode"
+    },
+    "AirDrop": {
+      "Contacts Only": "airdrop-mode-contactsOnly",
+      "Everyone": "airdrop-mode-everyone"
+    },
+    "Display": {
+      "Dark Mode": "display-setting-dark-mode",
+      "Night Shift": "display-setting-night-shift",
+      "True Tone": "display-setting-true-tone"
+    }
+  }
+}

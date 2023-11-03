@@ -1,0 +1,254 @@
+[
+    {
+        "mods": "shift",
+        "key": "F18",
+        "message": "CapsLock"
+    },
+    {
+        "mods": "",
+        "key": "shift",
+        "message": "Toggle Input Source"
+    },
+    {
+        "mods": ["fn", "shift"],
+        "key": "S",
+        "message": "Toggle Zoom to Center",
+        "kind": "WIN_OP",
+        "subkind": 0
+    },
+    {
+        "mods": "fn",
+        "key": "Q",
+        "message": "Move to Top-Left",
+        "kind": "WIN_OP",
+        "subkind": "MOVE"
+    },
+    {
+        "mods": "fn",
+        "key": "W",
+        "message": "Move to Top",
+        "kind": "WIN_OP",
+        "subkind": "MOVE"
+    },
+    {
+        "mods": "fn",
+        "key": "E",
+        "message": "Move to Top-Right",
+        "kind": "WIN_OP",
+        "subkind": "MOVE"
+    },
+    {
+        "mods": "fn",
+        "key": "A",
+        "message": "Move to Left",
+        "kind": "WIN_OP",
+        "subkind": "MOVE"
+    },
+    {
+        "mods": "fn",
+        "key": "S",
+        "message": "Move to Center",
+        "kind": "WIN_OP",
+        "subkind": "MOVE"
+    },
+    {
+        "mods": "fn",
+        "key": "D",
+        "message": "Move to Right",
+        "kind": "WIN_OP",
+        "subkind": "MOVE"
+    },
+    {
+        "mods": "fn",
+        "key": "Z",
+        "message": "Move to Bottom-Left",
+        "kind": "WIN_OP",
+        "subkind": "MOVE"
+    },
+    {
+        "mods": "fn",
+        "key": "X",
+        "message": "Move to Bottom",
+        "kind": "WIN_OP",
+        "subkind": "MOVE"
+    },
+    {
+        "mods": "fn",
+        "key": "C",
+        "message": "Move to Bottom-Right",
+        "kind": "WIN_OP",
+        "subkind": "MOVE"
+    },
+    {
+        "mods": ["fn", "shift"],
+        "key": "Q",
+        "message": "Move towards Top-Left",
+        "kind": "WIN_OP",
+        "subkind": "MOVE"
+    },
+    {
+        "mods": ["fn", "shift"],
+        "key": "W",
+        "message": "Move towards Top",
+        "kind": "WIN_OP",
+        "subkind": "MOVE"
+    },
+    {
+        "mods": ["fn", "shift"],
+        "key": "E",
+        "message": "Move towards Top-Right",
+        "kind": "WIN_OP",
+        "subkind": "MOVE"
+    },
+    {
+        "mods": ["fn", "shift"],
+        "key": "A",
+        "message": "Move towards Left",
+        "kind": "WIN_OP",
+        "subkind": "MOVE"
+    },
+    {
+        "mods": ["fn", "shift"],
+        "key": "D",
+        "message": "Move towards Right",
+        "kind": "WIN_OP",
+        "subkind": "MOVE"
+    },
+    {
+        "mods": ["fn", "shift"],
+        "key": "Z",
+        "message": "Move towards Bottom-Left",
+        "kind": "WIN_OP",
+        "subkind": "MOVE"
+    },
+    {
+        "mods": ["fn", "shift"],
+        "key": "X",
+        "message": "Move towards Bottom",
+        "kind": "WIN_OP",
+        "subkind": "MOVE"
+    },
+    {
+        "mods": ["fn", "shift"],
+        "key": "C",
+        "message": "Move towards Bottom-Right",
+        "kind": "WIN_OP",
+        "subkind": "MOVE"
+    },
+    {
+        "mods": "fn",
+        "key": "F",
+        "message": "Toggle Full Screen",
+        "kind": "WIN_OP"
+    },
+    {
+        "mods": "fn",
+        "key": "Tab",
+        "message": "Forward"
+    },
+    {
+        "mods": "fn",
+        "key": "`",
+        "message": "Back"
+    },
+    {
+        "mods": "fn",
+        "key": "1",
+        "message": "Return"
+    },
+    {
+        "mods": "option",
+        "key": "F10",
+        "message": "Mute"
+    },
+    {
+        "mods": "option",
+        "key": "F11",
+        "message": "Volume Down"
+    },
+    {
+        "mods": "option",
+        "key": "F12",
+        "message": "Volume Up"
+    },
+    {
+        "mods": "touchbar:top-left",
+        "key": "W",
+        "message": "Up"
+    },
+    {
+        "mods": "touchbar:top-left",
+        "key": "S",
+        "message": "Down"
+    },
+    {
+        "mods": "touchbar:top-left",
+        "key": "A",
+        "message": "Left"
+    },
+    {
+        "mods": "touchbar:top-left",
+        "key": "D",
+        "message": "Right"
+    },
+    {
+        "mods": "touchbar:top-left",
+        "key": "Q",
+        "message": "Home"
+    },
+    {
+        "mods": "touchbar:top-left",
+        "key": "E",
+        "message": "End"
+    },
+    {
+        "mods": "touchbar:top-left",
+        "key": "Z",
+        "message": "PageUp"
+    },
+    {
+        "mods": "touchbar:top-left",
+        "key": "X",
+        "message": "PageDown"
+    },
+    {
+        "mods": ["shift", "touchbar:top-left"],
+        "key": "W",
+        "message": "Up and Select"
+    },
+    {
+        "mods": ["shift", "touchbar:top-left"],
+        "key": "S",
+        "message": "Down and Select"
+    },
+    {
+        "mods": ["shift", "touchbar:top-left"],
+        "key": "A",
+        "message": "Left and Select"
+    },
+    {
+        "mods": ["shift", "touchbar:top-left"],
+        "key": "D",
+        "message": "Right and Select"
+    },
+    {
+        "mods": ["shift", "touchbar:top-left"],
+        "key": "Q",
+        "message": "Home and Select"
+    },
+    {
+        "mods": ["shift", "touchbar:top-left"],
+        "key": "E",
+        "message": "End and Select"
+    },
+    {
+        "mods": ["shift", "touchbar:top-left"],
+        "key": "Z",
+        "message": "PageUp and Select"
+    },
+    {
+        "mods": ["shift", "touchbar:top-left"],
+        "key": "X",
+        "message": "PageDown and Select"
+    }
+]
