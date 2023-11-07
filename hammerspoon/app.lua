@@ -616,6 +616,16 @@ appHotKeyConfigs = {
     }
   },
 
+  ["com.vallettaventures.Texpad"] =
+  {
+    ["confirmDelete"] = {
+      message = "Confirm Delete",
+      condition = hs.fnutils.partial(confirmDeleteConditionForAppleApps,
+                                     "com.vallettaventures.Texpad"),
+      fn = confirmDeleteForAppleApps
+    }
+  },
+
   ["com.superace.updf.mac"] =
   {
     ["showInFinder"] = {

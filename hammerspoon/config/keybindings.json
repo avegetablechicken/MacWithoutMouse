@@ -913,6 +913,12 @@
         "key": "V"
       }
     },
+    "com.vallettaventures.Texpad": {
+      "confirmDelete": {
+        "mods": "option",
+        "key": "D"
+      }
+    },
     "com.superace.updf.mac": {
       "showInFinder": {
         "mods": ["shift", "option", "command"],
