@@ -1076,6 +1076,14 @@
         "persist": true
       }
     },
+    "com.jetbrains.toolbox": {
+      "toggleJetbrainsToolbox": {
+        "mods": "${hyper.daemon}",
+        "key": "J",
+        "background": true,
+        "persist": true
+      }
+    },
     "com.mathpix.snipping-tool-noappstore": {
       "OCRForLatex": {
         "mods": "${hyper.daemon}",

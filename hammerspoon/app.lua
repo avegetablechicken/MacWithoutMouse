@@ -1090,6 +1090,14 @@ appHotKeyConfigs = {
     }
   },
 
+  ["com.jetbrains.toolbox"] =
+  {
+    ["toggleJetbrainsToolbox"] = {
+      message = "Toggle Jetbrains Toolbox",
+      fn = hs.fnutils.partial(focusOrHide, "com.jetbrains.toolbox"),
+    }
+  },
+
   ["com.mathpix.snipping-tool-noappstore"] =
   {
     ["OCRForLatex"] = {
