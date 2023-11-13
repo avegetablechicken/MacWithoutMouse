@@ -1388,8 +1388,38 @@ appHotKeyConfigs = {
         local ok, pos = hs.osascript.applescript([[
           tell application "System Events"
             tell first application process whose bundle identifier is "com.jetbrains.CLion"
-              set bt to button 1 of button 2 of window 1
-              return position of bt
+              if exists button 1 of button 2 of window 1 then
+                return position of button 1 of button 2 of window 1
+              else
+                return position of button 1 of button 1 of group 2 of window 1
+              end if
+            end tell
+          end tell
+        ]])
+        leftClickAndRestore(pos)
+      end
+    },
+    ["open..."] = {
+      message = "Open...",
+      fn = function(winObj)
+        winObj:application():selectMenuItem({"File", "Open..."})
+      end
+    }
+  },
+
+  ["com.jetbrains.CLion-EAP"] =
+  {
+    ["newProject"] = {
+      message = "New Project",
+      fn = function()
+        local ok, pos = hs.osascript.applescript([[
+          tell application "System Events"
+            tell first application process whose bundle identifier is "com.jetbrains.CLion-EAP"
+              if exists button 1 of button 2 of window 1 then
+                return position of button 1 of button 2 of window 1
+              else
+                return position of button 1 of button 1 of group 2 of window 1
+              end if
             end tell
           end tell
         ]])

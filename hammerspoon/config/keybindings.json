@@ -568,7 +568,10 @@
       "CLion": {
         "mods": "${hyper.hyper}",
         "key": "C",
-        "bundleID": "com.jetbrains.CLion"
+        "bundleID": [
+          "com.jetbrains.CLion",
+          "com.jetbrains.CLion-EAP"
+        ]
       },
       "VNC Viewer": {
         "mods": "${hyper.hyper}",
@@ -1105,6 +1108,22 @@
       }
     },
     "com.jetbrains.CLion": {
+      "newProject": {
+        "mods": "command",
+        "key": "N",
+        "windowFilter": {
+          "allowTitles": "Welcome to CLion"
+        }
+      },
+      "open...": {
+        "mods": "command",
+        "key": "O",
+        "windowFilter": {
+          "allowTitles": "Welcome to CLion"
+        }
+      }
+    },
+    "com.jetbrains.CLion-EAP": {
       "newProject": {
         "mods": "command",
         "key": "N",
