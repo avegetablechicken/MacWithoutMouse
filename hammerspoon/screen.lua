@@ -232,6 +232,7 @@ local function registerMoveToSpaceHotkeys()
     local hotkey = bindWindow(ssHK["moveToSpace" .. i], "Move to Space " .. i,
       function()
         local win = hs.window.focusedWindow()
+        local user_spaces = getUserSpaces()
         hs.spaces.moveWindowToSpace(win, user_spaces[i])
         hs.spaces.gotoSpace(user_spaces[i])
         local screenUUID = hs.spaces.spaceDisplay(user_spaces[i])
