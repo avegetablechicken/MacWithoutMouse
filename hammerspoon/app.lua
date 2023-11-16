@@ -299,52 +299,75 @@ function confirmDeleteForAppleApps(button, appObject)
 end
 
 local function VSCodeToggleSideBarSection(sidebar, section)
-  hs.osascript.applescript(string.format([[
+  local commonPath = [[group 2 of group 1 of group 2 of group 2 of ¬
+    group 1 of group 1 of group 1 of group 1 of UI element 1 of ¬
+    group 1 of group 1 of group 1 of UI element 1 of window 1]]
+  local commonPathOld = [[group 2 of group 1 of group 2 of group 2 of ¬
+    group 1 of group 1 of group 1 of group 1 of UI element 1 of window 1]]
+  local sidebarAction = [[
+    set tabs to radio buttons of tab group 1 of group 1 of group 1 of ¬
+        %s
+    repeat with tab in tabs
+      if title of tab starts with "EXPLORER" then
+        perform action 1 of tab
+        exit repeat
+      end if
+    end repeat
+    delay 0.1
+  ]]
+  local sectionExpand = [[
+    set sections to every group of group 2 of group 1 of group 2 of group 2 of ¬
+          %s
+      repeat with sec in sections
+        if title of UI element 2 of button 1 of group 1 of sec is "]] .. section .. [[" then
+          if (count value of attribute "AXChildren" of group 1 of sec) is 1 then
+            perform action 1 of button 1 of group 1 of sec
+          end if
+          exit repeat
+        end if
+      end repeat
+  ]]
+  local sectionFold = [[
+    set sections to every group of group 2 of group 1 of group 2 of group 2 of ¬
+          %s
+      repeat with sec in sections
+        if title of UI element 2 of button 1 of group 1 of sec is "]] .. section .. [[" then
+          perform action 1 of button 1 of group 1 of sec
+          exit repeat
+        end if
+      end repeat
+  ]]
+  hs.osascript.applescript([[
     tell application "System Events"
       tell first application process whose bundle identifier is "com.microsoft.VSCode"
-        if (not (exists UI element 1 of group 1 of ¬
-              group 1 of group 2 of group 2 of group 1 of group 2 of group 2 of ¬
-              group 1 of group 1 of group 1 of group 1 of UI element 1 of window 1)) ¬
-            or (title of UI element 1 of group 1 of ¬
-              group 1 of group 2 of group 2 of group 1 of group 2 of group 2 of ¬
-              group 1 of group 1 of group 1 of group 1 of UI element 1 of window 1 ¬
-              does not start with "%s") then
-          set tabs to radio buttons of tab group 1 of ¬
-              group 1 of group 1 of group 2 of group 1 of group 2 of group 2 of ¬
-              group 1 of group 1 of group 1 of group 1 of UI element 1 of window 1
-          repeat with tab in tabs
-            if title of tab starts with "%s" then
-              perform action 1 of tab
-              exit repeat
-            end if
-          end repeat
-          delay 0.1
-
-          set sections to every group of group 2 of group 1 of ¬
-              group 2 of group 2 of group 2 of group 1 of group 2 of group 2 of ¬
-              group 1 of group 1 of group 1 of group 1 of UI element 1 of window 1
-          repeat with sec in sections
-            if title of UI element 2 of button 1 of group 1 of sec is "%s" then
-              if (count value of attribute "AXChildren" of group 1 of sec) is 1 then
-                perform action 1 of button 1 of group 1 of sec
-              end if
-              exit repeat
-            end if
-          end repeat
-        else
-          set sections to every group of group 2 of group 1 of ¬
-              group 2 of group 2 of group 2 of group 1 of group 2 of group 2 of ¬
-              group 1 of group 1 of group 1 of group 1 of UI element 1 of window 1
-          repeat with sec in sections
-            if title of UI element 2 of button 1 of group 1 of sec is "%s" then
-              perform action 1 of button 1 of group 1 of sec
-              exit repeat
-            end if
-          end repeat
+        if (exists UI element 1 of group 1 of group 1 of group 2 of ¬
+              ]] .. commonPath .. [[) ¬
+            and (title of UI element 1 of group 1 of group 1 of group 2 of ¬
+              ]] .. commonPath .. [[ ¬
+              starts with "]] .. sidebar .. [[") then
+          ]] .. string.format(sectionFold, commonPath) .. [[
+        else if (exists UI element 1 of group 1 of group 1 of group 2 of ¬
+              ]] .. commonPathOld .. [[) ¬
+            and (title of UI element 1 of group 1 of group 1 of group 2 of ¬
+              ]] .. commonPathOld .. [[ ¬
+              starts with "]] .. sidebar .. [[") then
+          ]] .. string.format(sectionFold, commonPathOld) .. [[
+        else if (not exists ]] .. commonPath .. [[) ¬
+            or (title of UI element 1 of group 1 of group 1 of group 2 of ¬
+              ]] .. commonPath .. [[ ¬
+              does not start with "]] .. sidebar .. [[") then
+          ]] .. string.format(sidebarAction, commonPath) .. [[
+          ]] .. string.format(sectionExpand, commonPath) .. [[
+        else if (not exists ]] .. commonPathOld .. [[) ¬
+            or (title of UI element 1 of group 1 of group 1 of group 2 of ¬
+              ]] .. commonPathOld .. [[ ¬
+              does not start with "]] .. sidebar .. [[") then
+          ]] .. string.format(sidebarAction, commonPathOld) .. [[
+          ]] .. string.format(sectionExpand, commonPathOld) .. [[
         end if
       end tell
     end tell
-  ]], sidebar, sidebar, section, section))
+  ]])
 end
 
 local function iCopySelectHotkeyRemapRequired()
