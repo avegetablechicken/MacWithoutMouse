@@ -168,7 +168,7 @@ registerMonitorHotkeys()
 local function getUserSpaces()
   local user_spaces = {}
   for _, screen in ipairs(hs.screen.allScreens()) do
-    local spaces = hs.spaces.spacesForScreen(screen)
+    local spaces = hs.spaces.spacesForScreen(screen) or {}
     for _, space in ipairs(spaces) do
       if hs.spaces.spaceType(space) == "user" then
         table.insert(user_spaces, space)
