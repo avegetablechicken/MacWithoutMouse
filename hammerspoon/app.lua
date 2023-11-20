@@ -308,7 +308,8 @@ local function VSCodeToggleSideBarSection(sidebar, section)
     set tabs to radio buttons of tab group 1 of group 1 of group 1 of ¬
         %s
     repeat with tab in tabs
-      if title of tab starts with "EXPLORER" then
+      if title of tab starts with "]] .. sidebar .. [["  ¬
+          or value of attribute "AXDescription" of tab starts with "]] .. sidebar .. [[" then
         perform action 1 of tab
         exit repeat
       end if
