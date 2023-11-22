@@ -715,7 +715,11 @@ appHotKeyConfigs = {
         local ok, position = hs.osascript.applescript([[
           tell application "System Events"
             tell first application process whose bundle identifier is "com.kingsoft.wpsoffice.mac"
-              return position of (first button of window 1 whose description is "")
+              repeat with i from 1 to count (UI elements of window 1)
+                if value of attribute "AXRole" of UI element i of window 1 is "AXGroup" then
+                  return position of UI element (i-1) of window 1
+                end if
+              end repeat
             end tell
           end tell
         ]])
