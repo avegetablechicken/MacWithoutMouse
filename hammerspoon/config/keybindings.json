@@ -967,6 +967,10 @@
       }
     },
     "com.apple.iWork.Keynote": {
+      "export": {
+        "mods": "command",
+        "key": "E"
+      },
       "pasteAndMatchStyle": {
         "mods": "command",
         "key": "V"

@@ -750,6 +750,13 @@ appHotKeyConfigs = {
 
   ["com.apple.iWork.Keynote"] =
   {
+    ["export"] = {
+      message = "Export",
+      fn = function(appObject)
+        selectMenuItem(appObject, { en = {"File", "Export"}, zh = {"文件", "导出为"} })
+        selectMenuItem(appObject, { en = {"File", "Export To", "PDF…"}, zh = {"文件", "导出为", "PDF…"} })
+      end
+    },
     ["pasteAndMatchStyle"] = {
       message = "Paste and Match Style",
       fn = function(appObject)
