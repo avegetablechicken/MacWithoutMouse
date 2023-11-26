@@ -48,7 +48,8 @@ local function toggleBarrierConnect()
       local aWin = activatedWindowIndex()
       local ok, ret = hs.osascript.applescript([[
         tell application "System Events"
-          tell window ]] .. aWin .. [[ of process "Barrier"
+          tell window ]] .. aWin .. [[ of ¬
+              (first application process whose bundle identifier is "barrier")
             click button "Start"
             delay 0.5
             click button 4
@@ -216,8 +217,9 @@ registerAppHotkeys()
 local function klatexformulaRender()
   local aWin = activatedWindowIndex()
   hs.osascript.applescript([[
-    tell application "System Events"
-      tell window ]] .. aWin .. [[ of process "klatexformula"
+    tell application "System Events
+      tell window ]] .. aWin .. [[ of ¬
+          (first application process whose bundle identifier is "org.klatexformula.klatexformula")
         click button 2 of splitter group 1
       end tell
     end tell
