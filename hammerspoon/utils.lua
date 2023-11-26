@@ -39,20 +39,31 @@ function selectMenuItem(appObject, menuItemTitle)
   end
 end
 
-function menuBarVisible()
+function inFullscreenWindow()
   local focusedWindow = hs.application.frontmostApplication():focusedWindow()
-  if focusedWindow ~= nil then
-    if focusedWindow:id() == 0 then return true end
-    if hs.spaces.spaceType(hs.spaces.windowSpaces(focusedWindow)[1]) ~= "user" then
-      local thisAppAutohide = hs.execute("defaults read "
-          .. focusedWindow:application():bundleID() .. " AppleMenuBarVisibleInFullscreen | tr -d '\\n'")
-      if thisAppAutohide == "0" then
+  return focusedWindow ~= nil
+      and focusedWindow:id() ~= 0
+      and hs.spaces.spaceType(hs.spaces.windowSpaces(focusedWindow)[1]) ~= "user"
+end
+
+function activatedWindowIndex()
+  if inFullscreenWindow() then
+    return #hs.application.frontmostApplication():visibleWindows()
+  else
+    return 1
+  end
+end
+
+function menuBarVisible()
+  if inFullscreenWindow() then
+    local thisAppAutohide = hs.execute("defaults read "
+        .. hs.application.frontmostApplication():bundleID() .. " AppleMenuBarVisibleInFullscreen | tr -d '\\n'")
+    if thisAppAutohide == "0" then
+      return false
+    elseif thisAppAutohide == "" then
+      local autohide = hs.execute("defaults read -globalDomain AppleMenuBarVisibleInFullscreen | tr -d '\\n'")
+      if autohide == "0" then
         return false
-      elseif thisAppAutohide == "" then
-        local autohide = hs.execute("defaults read -globalDomain AppleMenuBarVisibleInFullscreen | tr -d '\\n'")
-        if autohide == "0" then
-          return false
-        end
       end
     end
   end

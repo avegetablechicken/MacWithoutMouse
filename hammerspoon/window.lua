@@ -1183,9 +1183,10 @@ local function PDFChooser()
       end
       if allWindows[choice.winID]:title() ~= winTabTitles[choice.winID][choice.id] then
         if not fullScreen then
+          local aWin = activatedWindowIndex()
           local ok, result = hs.osascript.applescript([[
             tell application "System Events"
-              set aWindow to window 1 of ¬
+              set aWindow to window ]] .. aWin .. [[ of ¬
                   (first application process whose bundle identifier is "com.readdle.PDFExpert-Mac")
               set tabList to the value of attribute "AXChildren" of ¬
                   scroll area 1 of tab group 1 of group 1 of toolbar 1 of aWindow
@@ -1274,8 +1275,9 @@ function()
   end
 
   if hs.application.frontmostApplication():bundleID() == "com.apple.Preview" then
+    local aWin = activatedWindowIndex()
     local ok, results = hs.osascript.applescript([[
-      tell application id "com.apple.Preview" to get name of window 1 ends with ".pdf"
+      tell application id "com.apple.Preview" to get name of window ]] .. aWin .. [[ ends with ".pdf"
     ]])
     if ok and results == true then
       PDFChooser()

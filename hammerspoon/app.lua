@@ -45,12 +45,13 @@ local function toggleBarrierConnect()
   if status ~= true then
     hs.application.launchOrFocusByBundleID("barrier")
     hs.timer.doAfter(2, function()
+      local aWin = activatedWindowIndex()
       local ok, ret = hs.osascript.applescript([[
         tell application "System Events"
-          tell process "Barrier"
-            click button "Start" of window 1
+          tell window ]] .. aWin .. [[ of process "Barrier"
+            click button "Start"
             delay 0.5
-            click button 4 of window 1
+            click button 4
           end tell
         end tell
       ]])
@@ -213,10 +214,11 @@ registerAppHotkeys()
 
 -- pipeline of copying latex to `klatexformula` and rendering
 local function klatexformulaRender()
+  local aWin = activatedWindowIndex()
   hs.osascript.applescript([[
     tell application "System Events"
-      tell process "klatexformula"
-        click button 2 of splitter group 1 of window 1
+      tell window ]] .. aWin .. [[ of process "klatexformula"
+        click button 2 of splitter group 1
       end tell
     end tell
   ]])
@@ -264,13 +266,14 @@ function deleteAllMessages(appObject)
 end
 
 function confirmDeleteConditionForAppleApps(bundleID)
+  local aWin = activatedWindowIndex()
   local ok, button = hs.osascript.applescript([[
     tell application "System Events"
-      tell first process whose bundle identifier is "]] .. bundleID ..[["
-        if exists sheet 1 of window 1 then
-          if exists button "Delete" of sheet 1 of window 1 then
+      tell window ]] .. aWin .. [[ of (first process whose bundle identifier is "]] .. bundleID ..[[")
+        if exists sheet 1 then
+          if exists button "Delete" of sheet 1 then
             return "Delete"
-          else if exists button "删除" of sheet 1 of window 1 then
+          else if exists button "删除" of sheet 1 then
             return "删除"
           else
             return false
@@ -289,21 +292,25 @@ function confirmDeleteConditionForAppleApps(bundleID)
 end
 
 function confirmDeleteForAppleApps(button, appObject)
+  local aWin = activatedWindowIndex()
   hs.osascript.applescript([[
     tell application "System Events"
-      tell first process whose bundle identifier is "]] .. appObject:bundleID() ..[["
-        click button "]] .. button .. [[" of sheet 1 of window 1
+      tell window ]] .. aWin .. [[ of (first process whose bundle identifier is "]] .. appObject:bundleID() ..[[")
+        click button "]] .. button .. [[" of sheet 1
       end tell
     end tell
   ]])
 end
 
 local function VSCodeToggleSideBarSection(sidebar, section)
+  local focusedWindow = hs.application.frontmostApplication():focusedWindow()
+  if focusedWindow == nil then return end
+  local aWin = activatedWindowIndex()
   local commonPath = [[group 2 of group 1 of group 2 of group 2 of ¬
     group 1 of group 1 of group 1 of group 1 of UI element 1 of ¬
-    group 1 of group 1 of group 1 of UI element 1 of window 1]]
+    group 1 of group 1 of group 1 of UI element 1 of window ]] .. aWin
   local commonPathOld = [[group 2 of group 1 of group 2 of group 2 of ¬
-    group 1 of group 1 of group 1 of group 1 of UI element 1 of window 1]]
+    group 1 of group 1 of group 1 of group 1 of UI element 1 of window ]] .. aWin
   local sidebarAction = [[
     set tabs to radio buttons of tab group 1 of group 1 of group 1 of ¬
         %s
@@ -497,10 +504,11 @@ appHotKeyConfigs = {
         if backMenuItem ~= nil and backMenuItem.enabled then
           return true, {"商店", "返回"}
         else
+          local aWin = activatedWindowIndex()
           local ok, valid = hs.osascript.applescript([[
             tell application "System Events"
-              tell first application process whose bundle identifier is "com.apple.AppStore"
-                return exists button 1 of last group of splitter group 1 of window 1
+              tell window ]] .. aWin .. [[ of (first application process whose bundle identifier is "com.apple.AppStore")
+                return exists button 1 of last group of splitter group 1
               end tell
             end tell
           ]])
@@ -511,10 +519,11 @@ appHotKeyConfigs = {
         if result ~= nil then
           appObject:selectMenuItem(result)
         else
+          local aWin = activatedWindowIndex()
           hs.osascript.applescript([[
             tell application "System Events"
-              tell first application process whose bundle identifier is "com.apple.AppStore"
-                perform action "AXPress" of button 1 of last group of splitter group 1 of window 1
+              tell window ]] .. aWin .. [[ of (first application process whose bundle identifier is "com.apple.AppStore")
+                perform action "AXPress" of button 1 of last group of splitter group 1
               end tell
             end tell
           ]])
@@ -528,9 +537,10 @@ appHotKeyConfigs = {
     ["revealInFinder"] = {
       message = "Reveal in Finder",
       condition = function()
+        local aWin = activatedWindowIndex()
         local ok, url = hs.osascript.applescript([[
           tell application id "com.apple.Safari"
-            return URL of current tab of window 1
+            return URL of current tab of window ]] .. aWin .. [[
           end tell
         ]])
         if ok and string.sub(url, 1, 7) == "file://" then
@@ -563,9 +573,10 @@ appHotKeyConfigs = {
     ["revealInFinder"] = {
       message = "Reveal in Finder",
       condition = function()
+        local aWin = activatedWindowIndex()
         local ok, url = hs.osascript.applescript([[
           tell application id "com.google.Chrome"
-            return URL of active tab of window 1
+            return URL of active tab of window ]] .. aWin .. [[
           end tell
         ]])
         if ok and string.sub(url, 1, 7) == "file://" then
@@ -707,17 +718,18 @@ appHotKeyConfigs = {
     ["openFileLocation"] = {
       message = "Open File Location",
       fn = function(appObject)
+        local aWin = activatedWindowIndex()
         local appUIObj = hs.axuielement.applicationElement(appObject)
-        local buttons = appUIObj:childrenWithRole("AXWindow")[1]
+        local buttons = appUIObj:childrenWithRole("AXWindow")[aWin]
             :childrenWithRole("AXButton")
         if #buttons == 0 then return end
         local mousePosition = hs.mouse.absolutePosition()
         local ok, position = hs.osascript.applescript([[
           tell application "System Events"
-            tell first application process whose bundle identifier is "com.kingsoft.wpsoffice.mac"
-              repeat with i from 1 to count (UI elements of window 1)
-                if value of attribute "AXRole" of UI element i of window 1 is "AXGroup" then
-                  return position of UI element (i-1) of window 1
+            tell window ]] .. aWin .. [[ of (first application process whose bundle identifier is "com.kingsoft.wpsoffice.mac")
+              repeat with i from 1 to count (UI elements)
+                if value of attribute "AXRole" of UI element i is "AXGroup" then
+                  return position of UI element (i-1)
                 end if
               end repeat
             end tell
@@ -863,24 +875,25 @@ appHotKeyConfigs = {
     ["back"] = {
       message = "Back",
       condition = function()
+        local aWin = activatedWindowIndex()
         local ok, result = hs.osascript.applescript([[
           tell application "System Events"
-            tell first application process whose bundle identifier is "com.tencent.xinWeChat"
+            tell window ]] .. aWin .. [[ of (first application process whose bundle identifier is "com.tencent.xinWeChat")
               -- 公众号
-              if exists button "返回" of splitter group 1 of splitter group 1 of window 1 then
+              if exists button "返回" of splitter group 1 of splitter group 1 then
                 return 1
               end if
 
               -- 折叠的群聊
-              if exists splitter group 1 of window 1 then
-                set bt to every button of splitter group 1 of window 1 whose description is "返回"
+              if exists splitter group 1 then
+                set bt to every button of splitter group 1 whose description is "返回"
                 if (count bt) > 0 then
                   return 2
                 end if
               end if
 
               -- 推送
-              set bts to every button of window 1
+              set bts to every button
               repeat with bt in bts
                 if value of attribute "AXHelp" of bt is "上一页" ¬
                     and value of attribute "AXEnabled" of bt is True then
@@ -889,17 +902,16 @@ appHotKeyConfigs = {
               end repeat
 
               -- 朋友圈
-              set win to window 1
-              if (exists image 1 of win) and ((ui element 1 of win) is (image 1 of win)) ¬
-                  and (exists scroll area 1 of win) and ((ui element 2 of win) is (scroll area 1 of win)) ¬
-                  and (exists image 2 of win) and ((ui element 3 of win) is (image 2 of win)) ¬
-                  and (exists image 2 of win) and ((ui element 4 of win) is (button 1 of win)) then
-                return position of button 1 of win
+              if (exists image 1) and ((ui element 1) is (image 1)) ¬
+                  and (exists scroll area 1) and ((ui element 2) is (scroll area 1)) ¬
+                  and (exists image 2) and ((ui element 3) is (image 2)) ¬
+                  and (exists image 2) and ((ui element 4) is (button 1)) then
+                return position of button 1
               end if
 
               -- 朋友圈详情
-              if name of window 1 of application "WeChat" is "朋友圈-详情" then
-                return position of button 1 of window 1
+              if name is "朋友圈-详情" then
+                return position of button 1
               end if
 
               return false
@@ -916,16 +928,17 @@ appHotKeyConfigs = {
         if type(result) == "table" then
           leftClickAndRestore(result)
         else
+          local aWin = activatedWindowIndex()
           local script = [[
             tell application "System Events"
-              tell first application process whose bundle identifier is "com.tencent.xinWeChat"
+              tell window ]] .. aWin .. [[ of (first application process whose bundle identifier is "com.tencent.xinWeChat")
                 %s
               end tell
             end tell
           ]]
           if result == 1 then
             script = string.format(script, [[
-              click button "返回" of splitter group 1 of splitter group 1 of window 1
+              click button "返回" of splitter group 1 of splitter group 1
             ]])
           elseif result == 2 then
             script = string.format(script, [[
@@ -933,7 +946,7 @@ appHotKeyConfigs = {
             ]])
           else
             script = string.format(script, [[
-              set bts to every button of window 1
+              set bts to every button
               repeat with bt in bts
                 if value of attribute "AXHelp" of bt is "上一页" ¬
                     and value of attribute "AXEnabled" of bt is True then
@@ -950,10 +963,11 @@ appHotKeyConfigs = {
     ["forward"] = {
       message = "Forward",
       condition = function()
+        local aWin = activatedWindowIndex()
         local ok, valid = hs.osascript.applescript([[
           tell application "System Events"
             -- 推送
-            set bts to every button of window 1 of ¬
+            set bts to every button of window ]] .. aWin .. [[ of ¬
                 (first application process whose bundle identifier is "com.tencent.xinWeChat")
             repeat with bt in bts
               if value of attribute "AXHelp" of bt is "下一页" ¬
@@ -967,10 +981,11 @@ appHotKeyConfigs = {
         return ok and valid
       end,
       fn = function()
+        local aWin = activatedWindowIndex()
         hs.osascript.applescript([[
           tell application "System Events"
             -- 推送
-            set bts to every button of window 1 of ¬
+            set bts to every button of window ]] .. aWin .. [[ of ¬
                 (first application process whose bundle identifier is "com.tencent.xinWeChat")
             repeat with bt in bts
               if value of attribute "AXHelp" of bt is "下一页" ¬
@@ -990,22 +1005,24 @@ appHotKeyConfigs = {
     ["back"] = {
       message = "Back",
       condition = function()
+        local aWin = activatedWindowIndex()
         local ok, valid = hs.osascript.applescript([[
           tell application "System Events"
-            tell first application process whose bundle identifier is "com.tencent.QQMusicMac"
-              set btCnt to count (every button of window 1)
-              return (exists button "歌曲详情" of window 1) and btCnt > 4
+            tell window ]] .. aWin .. [[ of (first application process whose bundle identifier is "com.tencent.QQMusicMac")
+              set btCnt to count (every button)
+              return (exists button "歌曲详情") and btCnt > 4
             end tell
           end tell
         ]])
         return ok and valid
       end,
       fn = function()
-        hs.osascript.applescript([[
+        local aWin = activatedWindowIndex()
+        local ok, valid = hs.osascript.applescript([[
           tell application "System Events"
-            tell first application process whose bundle identifier is "com.tencent.QQMusicMac"
-              set btCnt to count (every button of window 1)
-              click button (btCnt - 2) of window 1
+            tell window ]] .. aWin .. [[ of (first application process whose bundle identifier is "com.tencent.QQMusicMac")
+              set btCnt to count (every button)
+              click button (btCnt - 2)
             end tell
           end tell
         ]])
@@ -1420,13 +1437,14 @@ appHotKeyConfigs = {
     ["newProject"] = {
       message = "New Project",
       fn = function()
+        local aWin = activatedWindowIndex()
         local ok, pos = hs.osascript.applescript([[
           tell application "System Events"
-            tell first application process whose bundle identifier is "com.jetbrains.CLion"
-              if exists button 1 of button 2 of window 1 then
-                return position of button 1 of button 2 of window 1
+            tell window ]] .. aWin .. [[ of (first application process whose bundle identifier is "com.jetbrains.CLion")
+              if exists button 1 of button 2 then
+                return position of button 1 of button 2
               else
-                return position of button 1 of button 1 of group 2 of window 1
+                return position of button 1 of button 1 of group 2
               end if
             end tell
           end tell
@@ -1447,13 +1465,14 @@ appHotKeyConfigs = {
     ["newProject"] = {
       message = "New Project",
       fn = function()
+        local aWin = activatedWindowIndex()
         local ok, pos = hs.osascript.applescript([[
           tell application "System Events"
-            tell first application process whose bundle identifier is "com.jetbrains.CLion-EAP"
-              if exists button 1 of button 2 of window 1 then
-                return position of button 1 of button 2 of window 1
+            tell window ]] .. aWin .. [[ of (first application process whose bundle identifier is "com.jetbrains.CLion-EAP")
+              if exists button 1 of button 2 then
+                return position of button 1 of button 2
               else
-                return position of button 1 of button 1 of group 2 of window 1
+                return position of button 1 of button 1 of group 2
               end if
             end tell
           end tell
@@ -1474,10 +1493,11 @@ appHotKeyConfigs = {
       ["newProject"] = {
         message = "New Project",
         fn = function()
+          local aWin = activatedWindowIndex()
           local ok, pos = hs.osascript.applescript([[
             tell application "System Events"
-              tell first application process whose bundle identifier is "com.jetbrains.intellij"
-                set bt to button 1 of button 2 of window 1
+              tell window ]] .. aWin .. [[ of (first application process whose bundle identifier is "com.jetbrains.intellij")
+                set bt to button 1 of button 2
                 return position of bt
               end tell
             end tell
@@ -1498,10 +1518,11 @@ appHotKeyConfigs = {
     ["newProject"] = {
       message = "New Project",
       fn = function()
+        local aWin = activatedWindowIndex()
         local ok, pos = hs.osascript.applescript([[
           tell application "System Events"
-            tell first application process whose bundle identifier is "com.jetbrains.pycharm"
-              set bt to button 1 of button 2 of window 1
+            tell window ]] .. aWin .. [[ of (first application process whose bundle identifier is "com.jetbrains.pycharm")
+              set bt to button 1 of button 2
               return position of bt
             end tell
           end tell
