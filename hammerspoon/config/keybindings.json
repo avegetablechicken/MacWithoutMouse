@@ -449,7 +449,7 @@
         "key": "X",
         "bundleID": "com.microsoft.VSCode"
       },
-      "App Cleaner 8": {
+      "App Cleaner & Uninstaller": {
         "mods": "${hyper.app}",
         "key": "U",
         "bundleID": [
