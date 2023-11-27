@@ -407,7 +407,7 @@ local function iCopySelectHotkeyRemap(winObj, idx)
   hs.eventtap.keyStroke(iCopyMod, tostring(idx), nil, winObj:application())
 end
 
-appHotKeyConfigs = {
+appHotKeyCallbacks = {
   ["com.apple.finder"] =
   {
     ["goToDownloads"] = {
@@ -1633,7 +1633,7 @@ inWinHotKeys = {}
 
 local runningAppWatchers = {}
 local function registerRunningAppHotKeys(bid, appObject)
-  if appHotKeyConfigs[bid] == nil then return end
+  if appHotKeyCallbacks[bid] == nil then return end
   local keyBindings = keybindingConfigs.hotkeys[bid]
   if keyBindings == nil then
     keyBindings = {}
@@ -1651,7 +1651,7 @@ local function registerRunningAppHotKeys(bid, appObject)
   runningAppHotKeys[bid] = {}
 
   local allPersist = true
-  for hkID, cfg in pairs(appHotKeyConfigs[bid]) do
+  for hkID, cfg in pairs(appHotKeyCallbacks[bid]) do
     local keyBinding = keyBindings[hkID]
     if keyBinding == nil then
       keyBinding = {
@@ -1703,7 +1703,7 @@ local function registerRunningAppHotKeys(bid, appObject)
 end
 
 local function unregisterRunningAppHotKeys(bid, force)
-  if appHotKeyConfigs[bid] == nil then return end
+  if appHotKeyCallbacks[bid] == nil then return end
 
   if runningAppHotKeys[bid] then
     local allDeleted = true
@@ -1762,7 +1762,7 @@ end
 
 local function registerInAppHotKeys(appName, eventType, appObject)
   local bid = appObject:bundleID()
-  if appHotKeyConfigs[bid] == nil then return end
+  if appHotKeyCallbacks[bid] == nil then return end
   local keyBindings = keybindingConfigs.hotkeys[bid]
   if keyBindings == nil then
     keyBindings = {}
@@ -1770,7 +1770,7 @@ local function registerInAppHotKeys(appName, eventType, appObject)
 
   if not inAppHotKeys[bid] then
     inAppHotKeys[bid] = {}
-    for hkID, cfg in pairs(appHotKeyConfigs[bid]) do
+    for hkID, cfg in pairs(appHotKeyCallbacks[bid]) do
       local keyBinding = keyBindings[hkID]
       if keyBinding == nil then
         keyBinding = {
@@ -1806,7 +1806,7 @@ local function registerInAppHotKeys(appName, eventType, appObject)
 end
 
 local function unregisterInAppHotKeys(bid, eventType, delete)
-  if appHotKeyConfigs[bid] == nil then return end
+  if appHotKeyCallbacks[bid] == nil then return end
 
   for _, hotkey in ipairs(inAppHotKeys[bid]) do
     hotkey:disable()
@@ -1869,7 +1869,7 @@ end
 
 local function registerInWinHotKeys(appObject)
   local bid = appObject:bundleID()
-  if appHotKeyConfigs[bid] == nil then return end
+  if appHotKeyCallbacks[bid] == nil then return end
   local keyBindings = keybindingConfigs.hotkeys[bid]
   if keyBindings == nil then
     keyBindings = {}
@@ -1877,7 +1877,7 @@ local function registerInWinHotKeys(appObject)
 
   if not inWinHotKeys[bid] then
     inWinHotKeys[bid] = {}
-    for hkID, spec in pairs(appHotKeyConfigs[bid]) do
+    for hkID, spec in pairs(appHotKeyCallbacks[bid]) do
       local keyBinding = keyBindings[hkID]
       if keyBinding == nil then
         keyBinding = {
@@ -1910,7 +1910,7 @@ local function registerInWinHotKeys(appObject)
     for _, hotkey in ipairs(inWinHotKeys[bid]) do
       hotkey:enable()
     end
-    for hkID, spec in pairs(appHotKeyConfigs[bid]) do
+    for hkID, spec in pairs(appHotKeyCallbacks[bid]) do
       local keyBinding = keyBindings[hkID]
       if keyBinding == nil then
         keyBinding = {
@@ -1948,7 +1948,7 @@ local function registerInWinHotKeys(appObject)
 end
 
 local function unregisterInWinHotKeys(bid, delete)
-  if appHotKeyConfigs[bid] == nil or inWinHotKeys[bid] == nil then return end
+  if appHotKeyCallbacks[bid] == nil or inWinHotKeys[bid] == nil then return end
 
   for _, hotkey in ipairs(inWinHotKeys[bid]) do
     hotkey:disable()
@@ -1983,7 +1983,7 @@ local function inWinOfUnactivatedAppWatcherEnableCallback(bid, filter, winObj, a
   if inWinOfUnactivatedAppHotKeys[bid] == nil then
     inWinOfUnactivatedAppHotKeys[bid] = {}
   end
-  for hkID, spec in pairs(appHotKeyConfigs[bid]) do
+  for hkID, spec in pairs(appHotKeyCallbacks[bid]) do
     if type(hkID) ~= 'number' then
       if (spec.bindCondition == nil or spec.bindCondition()) and sameFilter(keybindingConfigs.hotkeys[bid][hkID].windowFilter, filter) then
         local hotkey = bindSpecSuspend(keybindingConfigs.hotkeys[bid][hkID], spec.message, spec.fn)
@@ -2031,7 +2031,7 @@ local function registerInWinOfUnactivatedAppWatchers(bid, appName, filter)
   inWinOfUnactivatedAppWatchers[bid][filter] = { filterEnable, filterDisable }
 end
 
-for bid, _ in pairs(appHotKeyConfigs) do
+for bid, _ in pairs(appHotKeyCallbacks) do
   registerRunningAppHotKeys(bid)
 end
 
@@ -2055,7 +2055,7 @@ if frontWin ~= nil then
   end
 end
 
-for bid, appConfig in pairs(appHotKeyConfigs) do
+for bid, appConfig in pairs(appHotKeyCallbacks) do
   local appName = hs.application.nameForBundleID(bid)
   if appName ~= nil then
     for hkID, spec in pairs(appConfig) do
