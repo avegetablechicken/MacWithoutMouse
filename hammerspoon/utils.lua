@@ -54,6 +54,12 @@ function activatedWindowIndex()
   end
 end
 
+function aWinFor(bundleID)
+  return string.format(
+      'window %d of (first application process whose bundle identifier is "%s")\n',
+      activatedWindowIndex(), bundleID)
+end
+
 function menuBarVisible()
   if inFullscreenWindow() then
     local thisAppAutohide = hs.execute("defaults read "

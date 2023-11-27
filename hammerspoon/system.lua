@@ -778,7 +778,7 @@ local function registerProxyMenuImpl()
       local osVersion = getOSVersion()
       if osVersion < OS.Ventura then
         local ok, position = hs.osascript.applescript([[
-          tell application "System Preferences"
+          tell application id "com.apple.systempreferences"
             activate
             set current pane to pane "com.apple.preference.network"
             repeat until anchor "Proxies" of current pane exists
@@ -789,8 +789,8 @@ local function registerProxyMenuImpl()
 
           delay 1
           tell application "System Events"
-            tell first application process whose bundle identifier is "com.apple.systempreferences"
-              set tb to table 1 of scroll area 1 of group 1 of tab group 1 of sheet 1 of window 1
+            tell ]] .. aWinFor("com.apple.systempreferences") .. [[
+              set tb to table 1 of scroll area 1 of group 1 of tab group 1 of sheet 1
               repeat with r in every row of tb
                 if value of checkbox 1 of r is 1 then
                   return position of text field 1 of r
@@ -805,7 +805,7 @@ local function registerProxyMenuImpl()
         end
       else
         hs.osascript.applescript([[
-          tell application "System Settings"
+          tell application id "com.apple.systempreferences"
             activate
             reveal pane id "com.apple.wifi-settings-extension"
             repeat until anchor "General_Details" of current pane exists
@@ -814,7 +814,7 @@ local function registerProxyMenuImpl()
             reveal anchor "General_Details" of current pane
             tell application "System Events"
               set ntry to 0 -- resolve weird bug that the anchor cannot be activated
-              repeat until sheet 1 of window 1 of process "System Settings" exists
+              repeat until sheet 1 of ]] .. aWinFor("com.apple.systempreferences") .. [[ exists
                 if ntry = 50 then
                   return
                 end if
@@ -1732,12 +1732,12 @@ function registerControlCenterHotKeys(panel)
               local getOptionParentCmd = nil
               if bundleID == "com.google.Chrome" then
                 getOptionParentCmd = [[
-                  set win to window 1 of first process whose bundle identifier is "]] .. bundleID .. [["
+                  set win to ]] .. aWinFor(bundleID) .. [[
                   set g to group 1 of group 4 of group 1 of group 2 of UI element "Experiments" of group 1 of group 1 of group 1 of group 1 of win
                 ]]
               else
                 getOptionParentCmd = [[
-                  set win to window 1 of first process whose bundle identifier is "]] .. bundleID .. [["
+                  set win to ]] .. aWinFor(bundleID) .. [[
                   if exists UI element "Experiments" of group 1 of group 1 of group 1 of group 1 of win then
                     set g to group 1 of group 3 of group 1 of group 2 of group 1 of UI element "Experiments" of group 1 of group 1 of group 1 of group 1 of win
                   else
@@ -1745,25 +1745,30 @@ function registerControlCenterHotKeys(panel)
                   end if
                 ]]
               end
+              local aWin = activatedWindowIndex()
               hs.osascript.applescript([[
                 tell application id "]] .. bundleID .. [["
-                  set tabCount to count of tabs of window 1
+                  set tabCount to count of tabs of window ]] .. aWin .. [[
+
                   set tabFound to false
                   repeat with i from 1 to tabCount
-                    set tabURL to URL of tab i of window 1
+                    set tabURL to URL of tab i of window ]] .. aWin .. [[
+
                     if tabURL contains "]] .. scheme .. [[://flags/#enable-force-dark" then
                       set tabFound to true
                       exit repeat
                     end if
                   end repeat
                   if tabFound is false then
-                    tell window 1
+                    tell window ]] .. aWin .. [[
+
                       set newTab to make new tab at the end of tabs ¬
                           with properties {URL:"]] .. scheme .. [[://flags/#enable-force-dark"}
                       delay 0.5
                     end tell
                   else
-                    tell window 1
+                    tell window ]] .. aWin .. [[
+
                       set active tab index to i
                     end tell
                   end if
