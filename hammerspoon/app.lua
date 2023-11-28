@@ -551,13 +551,18 @@ appHotKeyCallbacks = {
   {
     ["revealInFinder"] = {
       message = "Reveal in Finder",
-      fn = function()
+      condition = function()
         local ok, filePath = hs.osascript.applescript([[
           tell application id "com.apple.Preview" to get path of front document
         ]])
         if ok then
-          hs.execute("open -R '" .. filePath .. "'")
+          return true, filePath
+        else
+          return false
         end
+      end,
+      fn = function(filePath, appObject)
+        hs.execute("open -R '" .. filePath .. "'")
       end
     }
   },
