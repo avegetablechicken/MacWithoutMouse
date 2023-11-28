@@ -334,28 +334,38 @@ function clickControlCenterMenuBarItem(menuItem)
   return false
 end
 
-local controlCenterSubMenuBarItems = {}
-local _controlCenterSubMenuBarItems = hs.json.read("config/localization/controlcenter.json")
-if _controlCenterSubMenuBarItems ~= nil then
-  for k, v in pairs(_controlCenterSubMenuBarItems) do
-    controlCenterSubMenuBarItems[k] = v
-    controlCenterSubMenuBarItems[v] = k
+local controlCenterSubMenuBarItems = nil
+local controlCenterLocales, ok = hs.execute(
+  "(defaults read com.apple.controlcenter AppleLanguages || defaults read -globalDomain AppleLanguages) | tr -d '()\" \\n'")
+controlCenterLocales = hs.fnutils.split(controlCenterLocales, ',')
+if controlCenterLocales[1] == "zh-Hans-CN" then
+  controlCenterSubMenuBarItems = {}
+  local controlCenterLocaleDir =
+      findApplication("com.apple.controlcenter"):path() .. "/Contents/Resources/zh_CN.lproj"
+  for file in hs.fs.dir(controlCenterLocaleDir) do
+    if file:sub(-8) == ".strings" then
+      local fileStem = file:sub(1, -9)
+      local fullPath = controlCenterLocaleDir .. '/' .. file
+      local jsonStr = hs.execute("plutil -convert json -o - " .. fullPath)
+      controlCenterSubMenuBarItems[fileStem] = hs.json.decode(jsonStr)
+    end
   end
 end
 
-function controlCenterLocalized(panel)
-  if controlCenterSubMenuBarItems[panel] ~= nil then
-    return controlCenterSubMenuBarItems[panel]
-  elseif controlCenterSubMenuBarItems.accessibility[panel] ~= nil then
-    return controlCenterSubMenuBarItems.accessibility[panel]
-  else
-    return panel
+function controlCenterLocalized(panel, key)
+  if key == nil then key = panel end
+  if controlCenterSubMenuBarItems == nil then return key end
+  if panel == "Control Center" then
+    return controlCenterSubMenuBarItems.InfoPlist.CFBundleName
   end
+  panel = panel:gsub("%s+", "")
+  return controlCenterSubMenuBarItems[panel][key]
 end
 
 
 function clickRightMenuBarItem(menuBarName, menuItem, subMenuItem)
-  if controlCenterSubMenuBarItems[menuBarName] ~= nil then
+  if menuBarName == "Control Center"
+      or controlCenterSubMenuBarItems[menuBarName:gsub("%s+", "")] ~= nil then
     return clickControlCenterMenuBarItem(menuBarName)
   else
     return clickAppRightMenuBarItem(menuBarName, menuItem, subMenuItem)

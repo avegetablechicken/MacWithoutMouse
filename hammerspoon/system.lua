@@ -962,11 +962,11 @@ local function bindControlCenter(...)
 end
 
 -- toggle show `Widgets` panel
-local clockHotkey = bindControlCenter(menubarHK["showClock"], "Show Clock",
+local clockHotkey = bindControlCenter(menubarHK["showClock"], "Show " .. controlCenterLocalized("Clock"),
     function() hs.eventtap.keyStroke("fn", "N") end)
 
 -- toggle show `Control Center`
-local controlCenterHotkey = bindControlCenter(menubarHK["showControlCenter"], "Show Control Center",
+local controlCenterHotkey = bindControlCenter(menubarHK["showControlCenter"], "Show " .. controlCenterLocalized("Control Center"),
     function() clickRightMenuBarItem("Control Center") end)
 
 local controlCenterIdentifiers = hs.json.read("config/controlcenter-identifies.json")
@@ -1003,7 +1003,7 @@ local function popupControlCenterSubPanel(panel, allowReentry)
 
   local function mayLocalize(value)
     if isLocalized then
-      return controlCenterLocalized(value)
+      return controlCenterLocalized("Now Playing", value)
     else
       return value
     end
@@ -1030,7 +1030,7 @@ local function popupControlCenterSubPanel(panel, allowReentry)
       end if
     end repeat
   ]]
-  if hs.fnutils.contains({"WiFi", "Focus Modes", "Bluetooth", "AirDrop"}, panel) then
+  if hs.fnutils.contains({"WiFi", "Focus", "Bluetooth", "AirDrop"}, panel) then
     enter = string.format(enterTemplate, "checkbox", ident, 2)
   elseif panel == "Screen Mirroring" then
     if osVersion < OS.Ventura then
@@ -1111,7 +1111,7 @@ local function popupControlCenterSubPanel(panel, allowReentry)
         end if
       end repeat
     ]]
-    if hs.fnutils.contains({"WiFi", "Focus Modes", "Bluetooth", "AirDrop", "Keyboard Brightness", "Screen Mirroring"}, panel) then
+    if hs.fnutils.contains({"WiFi", "Focus", "Bluetooth", "AirDrop", "Keyboard Brightness", "Screen Mirroring"}, panel) then
       already = string.format(alreadyTemplate, "static text", ident)
     elseif panel == "Display" then
       already = [[
@@ -1124,7 +1124,7 @@ local function popupControlCenterSubPanel(panel, allowReentry)
     elseif panel == "Now Playing" then
       if osVersion < OS.Ventura then
         already = [[
-          if (exists button "]] .. mayLocalize("back") .. [[" of pane) or  ¬
+          if (exists button "]] .. mayLocalize("rewind") .. [[" of pane) or  ¬
               (exists button "]] .. mayLocalize("previous") .. [[" of pane) or ¬
               (number of (buttons of pane whose title is "]] .. mayLocalize("play") .. [[" or ¬
                   title is "]] .. mayLocalize("pause") .. [[") > 1)
@@ -1201,7 +1201,7 @@ function registerControlCenterHotKeys(panel)
 
   local function mayLocalize(value)
     if isLocalized then
-      return controlCenterLocalized(value)
+      return controlCenterLocalized(panel, value)
     else
       return value
     end
@@ -1264,18 +1264,18 @@ function registerControlCenterHotKeys(panel)
   if not checkAndRegisterControlCenterHotKeys(hotkeyMainBack) then return end
 
   -- jump to related panel in `System Preferences`
-  if hs.fnutils.contains({"WiFi", "Bluetooth", "Focus Modes", "Keyboard Brightness", "Screen Mirroring", "Display", "Sound"}, panel) then
+  if hs.fnutils.contains({"WiFi", "Bluetooth", "Focus", "Keyboard Brightness", "Screen Mirroring", "Display", "Sound"}, panel) then
     if osVersion < OS.Ventura then
       local ok, result = hs.osascript.applescript([[
         tell application "System Events"
           repeat until button 1 of ]] .. pane .. [[ of application process ¬
-            "ControlCenter" whose title contains "]] .. mayLocalize("Preference") .. [[" exists
+            "ControlCenter" whose title contains "…" exists
             delay 0.1
           end repeat
           set bt to every button of ]] .. pane .. [[ of application process ¬
-            "ControlCenter" whose title contains "]] .. mayLocalize("Preference") .. [["
-          if (count bt) is equal to 1 then
-            return title of item 1 of bt
+            "ControlCenter" whose title contains "…"
+          if (count bt) is not 0 then
+            return title of last item of bt
           else
             return false
           end if
@@ -1286,8 +1286,8 @@ function registerControlCenterHotKeys(panel)
           function()
             hs.osascript.applescript([[
               tell application "System Events"
-                set bt to first button of ]] .. pane .. [[ of application process "ControlCenter" ¬
-                  whose title contains "]] .. mayLocalize("Preference") .. [["
+                set bt to last button of ]] .. pane .. [[ of application process ¬
+                  "ControlCenter" whose title contains "…"
                 perform action 1 of bt
               end tell
             ]])
@@ -1603,7 +1603,7 @@ function registerControlCenterHotKeys(panel)
         if not checkAndRegisterControlCenterHotKeys(hotkey) then return end
       end
     end
-  elseif panel == "Focus Modes" then
+  elseif panel == "Focus" then
     local ok, toggleNames
     if osVersion < OS.Ventura then
       ok, toggleNames = hs.osascript.applescript([[
@@ -1629,8 +1629,8 @@ function registerControlCenterHotKeys(panel)
       if ok then
         toggleNames = {}
         hs.fnutils.each(toggleIdents, function(ele)
-          for k, v in pairs(controlCenterAccessibiliyIdentifiers["Focus Modes"]) do
-            if v == ele then table.insert(toggleNames, mayLocalize(k)) end
+          for k, v in pairs(controlCenterAccessibiliyIdentifiers["Focus"]) do
+            if v == ele then table.insert(toggleNames, controlCenterLocalized("accessibility", k)) end
           end
         end)
       end
@@ -1650,7 +1650,7 @@ function registerControlCenterHotKeys(panel)
       end
     end
     for i=1,2 do
-      local hotkey = newControlCenter("⌘", tostring(i), mayLocalize("Do Not Disturb") .. " " .. i,
+      local hotkey = newControlCenter("⌘", tostring(i), toggleNames[1] .. " " .. i,
         function()
           hs.osascript.applescript([[
             tell application "System Events"
@@ -1918,7 +1918,7 @@ local function getActiveControlCenterPanel()
 
   local function mayLocalize(value)
     if isLocalized then
-      return controlCenterLocalized(value)
+      return controlCenterLocalized("Now Playing", value)
     else
       return value
     end
@@ -1938,7 +1938,7 @@ local function getActiveControlCenterPanel()
   ]]
   for panel, ident in pairs(controlCenterSubPanelIdentifiers) do
     local already = nil
-    if hs.fnutils.contains({"WiFi", "Focus Modes", "Bluetooth", "AirDrop", "Keyboard Brightness", "Screen Mirroring"}, panel) then
+    if hs.fnutils.contains({"WiFi", "Focus", "Bluetooth", "AirDrop", "Keyboard Brightness", "Screen Mirroring"}, panel) then
       already = string.format(alreadyTemplate, "static text", ident, panel)
     elseif panel == "Display" then
       already = [[
@@ -1957,7 +1957,7 @@ local function getActiveControlCenterPanel()
   end
   if osVersion < OS.Ventura then
     already = [[
-      if (exists button "]] .. mayLocalize("back") .. [[" of pane) or  ¬
+      if (exists button "]] .. mayLocalize("rewind") .. [[" of pane) or  ¬
           (exists button "]] .. mayLocalize("previous") .. [[" of pane) or ¬
           (number of (buttons of pane whose title is "]] .. mayLocalize("play") .. [[" or ¬
               title is "]] .. mayLocalize("pause") .. [[") > 1) then

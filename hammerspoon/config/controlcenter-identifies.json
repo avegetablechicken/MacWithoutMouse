@@ -3,7 +3,7 @@
     "Control Center": "controlcenter",
     "WiFi": "wifi",
     "Bluetooth": "bluetooth",
-    "Focus Modes": "focusmode",
+    "Focus": "focusmode",
     "AirDrop": "airdrop",
     "Keyboard Brightness": "keyboard-brightness",
     "Stage Manager": "stagemanager",
@@ -17,7 +17,7 @@
   "subpanel" : {
     "WiFi": "wifi",
     "Bluetooth": "bluetooth",
-    "Focus Modes": "focus-modes",
+    "Focus": "focus-modes",
     "AirDrop": "airdrop",
     "Keyboard Brightness": "keyboard-brightness",
     "Stage Manager": "stagemanager",
@@ -28,7 +28,7 @@
     "Hearing": "hearing-identifier"
   },
   "accessibility": {
-    "Focus Modes": {
+    "Focus": {
       "Do Not Disturb": "focus-mode-activity-com.apple.donotdisturb.mode.default",
       "Sleep": "focus-mode-activity-com.apple.sleep.sleep-mode"
     },
