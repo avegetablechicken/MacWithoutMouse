@@ -252,7 +252,7 @@ local function loadAppHotkeys(t)
   end
   local insertIdx = 1
   for i, hotkey in ipairs(t) do
-    if hotkey.kind and hotkey.kind > HK.IN_APP then insertIdx = i break end
+    if hotkey.kind and hotkey.kind > HK.IN_APPWIN then insertIdx = i break end
   end
   for i=#appHotkeys,1,-1 do
     table.insert(t, insertIdx, appHotkeys[i])
