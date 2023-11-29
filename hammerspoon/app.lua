@@ -28,12 +28,28 @@ local function focusOrHide(hint)
         if appObject ~= nil then break end
       end
     else
-      hs.application.open(hint)
+      appObject = hs.application.open(hint)
+    end
+    if appObject ~= nil and appObject:bundleID() == "com.apple.finder"
+        and hs.fnutils.find(appObject:visibleWindows(), function(win)
+          return win:isStandard()
+        end) == nil then
+      selectMenuItem(appObject,
+          { en = {"File", "New Finder Window"}, zh = {"文件", "新建“访达”窗口"} })
     end
   else
-    if hint == "com.apple.finder" and #appObject:allWindows() == 1 then
-      selectMenuItem(appObject,
-        { en = {"File", "New Tab"}, zh = {"文件", "新建标签页"} })
+    if appObject ~= nil and appObject:bundleID() == "com.apple.finder" then
+      if hs.fnutils.find(appObject:visibleWindows(), function(win)
+          return win:isStandard()
+        end) == nil then
+        selectMenuItem(appObject,
+            { en = {"File", "New Finder Window"}, zh = {"文件", "新建“访达”窗口"} })
+      elseif not hs.window.focusedWindow():isStandard() then
+        hs.application.open(hint)
+        hs.window.focusedWindow():focus()
+      else
+        appObject:hide()
+      end
     else
       appObject:hide()
     end
@@ -2546,7 +2562,7 @@ function app_applicationCallback(appName, eventType, appObject)
   if eventType == hs.application.watcher.launched then
     if appObject:bundleID() == "com.apple.finder" then
       selectMenuItem(appObject,
-        { en = {"File", "New Tab"}, zh = {"文件", "新建标签页"} })
+        { en = {"File", "New Finder Window"}, zh = {"文件", "新建“访达”窗口"} })
     end
     altMenuItemHelper(appObject, eventType)
   elseif eventType == hs.application.watcher.activated then
