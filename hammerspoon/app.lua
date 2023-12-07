@@ -2365,8 +2365,7 @@ function(winObj)
   end
 end)
 
-local function processAppWithNoWindows(winObj, quit)
-  local appObject = winObj:application()
+local function processAppWithNoWindows(appObject, quit)
   if #appObject:visibleWindows() == 0 then
     if quit == true then
       local wFilter = hs.window.filter.new(appObject:name())
@@ -2389,10 +2388,10 @@ function(winObj)
   if winObj == nil or winObj:application() == nil then return end
   local bundleID = winObj:application():bundleID()
   if hs.fnutils.contains(appsAutoHideWithNoWindows, bundleID) then
-    processAppWithNoWindows(winObj, false)
+    processAppWithNoWindows(winObj:application(), false)
   end
   if hs.fnutils.contains(appsAutoQuitWithNoWindows, bundleID) then
-    processAppWithNoWindows(winObj, true)
+    processAppWithNoWindows(winObj:application(), true)
   end
 end)
 
