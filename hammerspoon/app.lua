@@ -2399,6 +2399,26 @@ barrierWindowFilter = hs.window.filter.new(false):allowApp("Barrier"):subscribe(
   hs.window.filter.windowCreated, function(winObj) winObj:focus() end
 )
 
+function parseVerificationCodeFromFirstMessage()
+  local ok, content = hs.osascript.applescript([[
+    tell application "System Events"
+      tell window 1 of (first application process ¬
+          whose bundle identifier is "com.apple.notificationcenterui")
+        return value of static text 2 of group 1 of UI element 1 of scroll area 1
+      end tell
+    end tell
+  ]])
+  if ok then
+    if string.find(content, '验证码') or string.find(string.lower(content), 'verification') then
+      hs.pasteboard.writeObjects(string.match(content, '%d%d%d%d+'))
+    end
+  end
+end
+
+newMessageWindowFilter = hs.window.filter.new(false):
+    allowApp(findApplication("com.apple.notificationcenterui"):name()):
+    subscribe(hs.window.filter.windowCreated, parseVerificationCodeFromFirstMessage)
+
 remoteDesktopsMappingModifiers = keybindingConfigs.remap
 local modifiersShort = {
   control = "ctrl",
