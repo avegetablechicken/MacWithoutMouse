@@ -903,6 +903,10 @@
         "mods": ["shift", "option", "command"],
         "key": "F"
       },
+      "openRecent": {
+        "mods": ["control"],
+        "key": "R"
+      },
       "previousTab": {
         "mods": ["shift", "command"],
         "key": "["

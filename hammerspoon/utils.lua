@@ -31,10 +31,16 @@ function remapKey(modifiers, key, keyCode, message)
   return bindSuspend(modifiers, key, message, keyCode, nil, keyCode)
 end
 
-function selectMenuItem(appObject, menuItemTitle)
+function selectMenuItem(appObject, menuItemTitle, show)
   if appObject:findMenuItem(menuItemTitle.en) ~= nil then
+    if show then
+      appObject:selectMenuItem({menuItemTitle.en[1]})
+    end
     appObject:selectMenuItem(menuItemTitle.en)
   else
+    if show then
+      appObject:selectMenuItem({menuItemTitle.zh[1]})
+    end
     appObject:selectMenuItem(menuItemTitle.zh)
   end
 end

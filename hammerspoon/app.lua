@@ -646,6 +646,16 @@ appHotKeyCallbacks = {
           { en = {"File", "Open File Location"}, zh = {"文件", "打开文件位置"} })
       end
     },
+    ["openRecent"] = {
+      message = "Open Recent",
+      fn = function(appObject)
+        showMenuItemWrapper(function()
+          selectMenuItem(appObject,
+            { en = {"File", "Open Recent"}, zh = {"文件", "打开最近文件"} },
+            true)
+        end)()
+      end
+    },
     ["previousTab"] = {
       message = "Previous Tab",
       fn = function(appObject)
