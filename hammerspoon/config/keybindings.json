@@ -603,7 +603,7 @@
         "mods": "${hyper.controlCenter}",
         "key": "A"
       },
-      "Focus Modes": {
+      "Focus": {
         "mods": "${hyper.controlCenter}",
         "key": "F"
       },
