@@ -2366,7 +2366,9 @@ end
 
 
 local appsMayChangeMenu = applicationConfigs.menuItemsMayChange.window
-local windowFilterAppsMayChangeMenu = hs.window.filter.new():subscribe({hs.window.filter.windowCreated, hs.window.filter.windowDestroyed},
+local windowFilterAppsMayChangeMenu = hs.window.filter.new():subscribe(
+  {hs.window.filter.windowCreated, hs.window.filter.windowDestroyed,
+   hs.window.filter.windowFocused, hs.window.filter.windowUnfocused},  -- may fail
 function(winObj)
   if winObj == nil or winObj:application() == nil then return end
   local bundleID = winObj:application():bundleID()
@@ -2420,14 +2422,21 @@ function parseVerificationCodeFromFirstMessage()
   ]])
   if ok then
     if string.find(content, '验证码') or string.find(string.lower(content), 'verification') then
-      hs.pasteboard.writeObjects(string.match(content, '%d%d%d%d+'))
+      return string.match(content, '%d%d%d%d+')
     end
   end
 end
 
 newMessageWindowFilter = hs.window.filter.new(false):
     allowApp(findApplication("com.apple.notificationcenterui"):name()):
-    subscribe(hs.window.filter.windowCreated, parseVerificationCodeFromFirstMessage)
+    subscribe(hs.window.filter.windowCreated,
+        function()
+          local code = parseVerificationCodeFromFirstMessage()
+          if code then
+            hs.alert(string.format('Copy verification code "%s" to pasteboard', code))
+            hs.pasteboard.writeObjects(code)
+          end
+        end)
 
 remoteDesktopsMappingModifiers = keybindingConfigs.remap
 local modifiersShort = {
