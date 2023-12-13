@@ -4,6 +4,7 @@
     "编辑": "Edit",
     "显示": "View",
     "视图": "View",
+    "查看": "View",
     "插入": "Insert",
     "格式": "Format",
     "排列": "Arrange",
@@ -40,7 +41,6 @@
   },
   "com.microsoft.edgemac":
   {
-    "查看": "View",
     "历史记录": "History",
     "收藏夹": "Favorites",
     "个人资料": "Profiles"
@@ -73,10 +73,8 @@
     "段落": "Paragraph",
     "主题": "Themes"
   },
-  "net.xmind.vana.app": { "查看": "View" },
   "com.pixelmatorteam.pixelmator.x":
   {
-    "图像": "Image",
-    "查看": "View"
+    "图像": "Image"
   }
 }
