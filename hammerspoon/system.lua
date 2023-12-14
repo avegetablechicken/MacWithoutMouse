@@ -995,18 +995,12 @@ end
 
 local function popupControlCenterSubPanel(panel, allowReentry)
   local ident = controlCenterSubPanelIdentifiers[panel]
-  local appName = findApplication("com.apple.controlcenter"):name()
-  local isLocalized = appName ~= "Control Center"
   local winObj = findApplication("com.apple.controlcenter"):mainWindow()
   local osVersion = getOSVersion()
   local pane = osVersion < OS.Ventura and "window 1" or "group 1 of window 1"
 
   local function mayLocalize(value)
-    if isLocalized then
-      return controlCenterLocalized("Now Playing", value)
-    else
-      return value
-    end
+    return controlCenterLocalized("Now Playing", value)
   end
 
   local enter = nil
@@ -1194,17 +1188,11 @@ local function popupControlCenterSubPanel(panel, allowReentry)
 end
 
 function registerControlCenterHotKeys(panel)
-  local appName = findApplication("com.apple.controlcenter"):name()
-  local isLocalized = appName ~= "Control Center"
   local osVersion = getOSVersion()
   local pane = osVersion < OS.Ventura and "window 1" or "group 1 of window 1"
 
   local function mayLocalize(value)
-    if isLocalized then
-      return controlCenterLocalized(panel, value)
-    else
-      return value
-    end
+    return controlCenterLocalized(panel, value)
   end
 
   if controlCenterHotKeys ~= nil then
@@ -1214,7 +1202,7 @@ function registerControlCenterHotKeys(panel)
   end
   controlCenterHotKeys = {}
 
-  controlCenterSubPanelWatcher = hs.window.filter.new(appName)
+  controlCenterSubPanelWatcher = hs.window.filter.new(findApplication("com.apple.controlcenter"):name())
     :subscribe(hs.window.filter.windowDestroyed, function()
       if selectNetworkWatcher ~= nil then
         selectNetworkWatcher:stop()
@@ -1903,25 +1891,18 @@ function registerControlCenterHotKeys(panel)
 end
 
 local controlCenterPanelConfigs = keybindingConfigs.hotkeys.ControlCenterAppKeys
-local isLocalized = findApplication("com.apple.controlcenter"):name() ~= "Control Center"
 for panel, spec in pairs(controlCenterPanelConfigs) do
-  local localizedPanel = isLocalized and controlCenterLocalized(panel) or panel
+  local localizedPanel = controlCenterLocalized(panel)
   bindControlCenter(spec, "Show " .. localizedPanel .. " Panel",
       hs.fnutils.partial(popupControlCenterSubPanel, panel))
 end
 
 local function getActiveControlCenterPanel()
   local osVersion = getOSVersion()
-  local appName = findApplication("com.apple.controlcenter"):name()
-  local isLocalized = appName ~= "Control Center"
   local pane = osVersion < OS.Ventura and "window 1" or "group 1 of window 1"
 
   local function mayLocalize(value)
-    if isLocalized then
-      return controlCenterLocalized("Now Playing", value)
-    else
-      return value
-    end
+    return controlCenterLocalized("Now Playing", value)
   end
 
   local alreadyTemplate = [[
@@ -1984,12 +1965,11 @@ local function getActiveControlCenterPanel()
 end
 
 controlCenterPanelHotKeys = {}
-controlCenterWatcher = hs.window.filter.new{"Control Center", controlCenterLocalized("Control Center")}
+controlCenterWatcher = hs.window.filter.new(findApplication("com.apple.controlcenter"):name())
 controlCenterWatcher:subscribe(hs.window.filter.windowCreated,
 function()
-  local isLocalized = findApplication("com.apple.controlcenter"):name() ~= "Control Center"
   for panel, spec in pairs(controlCenterPanelConfigs) do
-    local localizedPanel = isLocalized and controlCenterLocalized(panel) or panel
+    local localizedPanel = controlCenterLocalized(panel)
     local hotkey = bindControlCenter({ mods = "", key = spec.key },
         "Show " .. localizedPanel .. " Panel",
         hs.fnutils.partial(popupControlCenterSubPanel, panel))
