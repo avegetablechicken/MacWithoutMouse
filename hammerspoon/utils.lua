@@ -359,7 +359,9 @@ if controlCenterLocales[1] == "zh-Hans-CN" then
 end
 
 function controlCenterLocalized(panel, key)
-  if key == nil then key = panel end
+  if key == nil then
+    key = panel == "WiFi" and "Wi‑Fi" or panel
+  end
   if controlCenterSubMenuBarItems == nil then return key end
   if panel == "Control Center" then
     return controlCenterSubMenuBarItems.InfoPlist.CFBundleName
