@@ -2421,7 +2421,9 @@ function parseVerificationCodeFromFirstMessage()
     end tell
   ]])
   if ok then
-    if string.find(content, '验证码') or string.find(string.lower(content), 'verification') then
+    if string.find(content, '验证码')
+        or string.find(string.lower(content), 'verification')
+        or (string.find(content, 'Microsoft') and string.find(content, '安全代码')) then
       return string.match(content, '%d%d%d%d+')
     end
   end
