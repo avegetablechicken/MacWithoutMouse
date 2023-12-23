@@ -673,7 +673,8 @@ local function registerProxyMenuImpl()
   local proxyMenuIdx = 1
   for _, candidate in ipairs(proxyMenuItemCandidates) do
     local bundleID = proxyAppBundleIDs[candidate.appname]
-    if hs.application.pathForBundleID(bundleID) ~= nil then
+    if hs.application.pathForBundleID(bundleID) ~= nil
+        and hs.application.pathForBundleID(bundleID) ~= "" then
       local appname = candidate.appname == "MonoCloud" and "MonoProxyMac" or candidate.appname
       table.insert(proxyMenu, { title = "-" })
       table.insert(proxyMenu, {
@@ -2028,7 +2029,7 @@ function system_applicationInstalledCallback(files, flagTables)
     if string.match(files[i], "V2RayX")
       or string.match(files[i], "V2rayU")
       or string.match(files[i], "MonoProxyMac") then
-      if flagTables[i].itemCreated then
+      if flagTables[i].itemCreated or flagTables[i].itemRemoved then
         registerProxyMenu(true)
       end
     end
