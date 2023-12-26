@@ -42,6 +42,9 @@ local function focusOrHide(hint)
       if hs.fnutils.find(appObject:visibleWindows(), function(win)
           return win:isStandard()
         end) == nil then
+        if hs.screen.primaryScreen():id() ~= hs.screen.mainScreen():id() then
+          hs.eventtap.keyStroke('fn⌃', 'F2')
+        end
         selectMenuItem(appObject,
             { en = {"File", "New Finder Window"}, zh = {"文件", "新建“访达”窗口"} })
       elseif not hs.window.focusedWindow():isStandard() then
