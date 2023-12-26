@@ -41,13 +41,6 @@ local function focusOrHide(hint)
               localizedString("300794.title", "com.apple.finder", "MenuBar") })
       end
     end
-    if appObject ~= nil and appObject:bundleID() == "com.apple.finder"
-        and hs.fnutils.find(appObject:visibleWindows(), function(win)
-          return win:isStandard()
-        end) == nil then
-      selectMenuItem(appObject,
-          { en = {"File", "New Finder Window"}, zh = {"文件", "新建“访达”窗口"} })
-    end
   else
     if appObject ~= nil and appObject:bundleID() == "com.apple.finder" then
       if hs.fnutils.find(appObject:visibleWindows(), function(win)
