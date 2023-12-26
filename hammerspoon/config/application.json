@@ -6,6 +6,7 @@
     ],
     "window": [
       "com.jetbrains.CLion",
+      "com.jetbrains.CLion-EAP",
       "com.jetbrains.intellij",
       "com.jetbrains.pycharm",
       "net.xmind.vana.app",
@@ -40,6 +41,7 @@
     "com.apple.keylayout.ABC": [
       "com.apple.dt.Xcode",
       "com.jetbrains.CLion",
+      "com.jetbrains.CLion-EAP",
       "com.jetbrains.intellij",
       "com.jetbrains.pycharm",
       "com.microsoft.VSCode",
