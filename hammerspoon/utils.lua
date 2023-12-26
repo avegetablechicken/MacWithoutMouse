@@ -113,6 +113,67 @@ function quitApplication(app)
   return false
 end
 
+function applicationLocales(bundleID)
+  local locales, ok = hs.execute(
+      string.format("(defaults read %s AppleLanguages || defaults read -globalDomain AppleLanguages) | tr -d '()\" \\n'", bundleID))
+  return hs.fnutils.split(locales, ',')
+end
+
+local appMenuItemLocales = {}
+function localizedString(string, bundleID, locale, localeFile)
+  if localeFile == nil then
+    localeFile = locale
+    locale = nil
+  end
+  if appMenuItemLocales[bundleID] == nil then
+    appMenuItemLocales[bundleID] = {}
+  end
+  local locales = applicationLocales(bundleID)
+  local appLocale = locales[1]
+  if appMenuItemLocales[bundleID][appLocale] == nil then
+    appMenuItemLocales[bundleID][appLocale] = {}
+  end
+  local localesDict = appMenuItemLocales[bundleID][appLocale]
+
+  local resourceDir = hs.application.pathForBundleID(bundleID) .. "/Contents/Resources"
+  local localeDir
+  if locale ~= nil then
+    localeDir = resourceDir .. "/" .. locale .. ".lproj"
+  else
+    local localeFirst = appLocale:sub(1, 2)
+    local localeLast = appLocale:sub(string.len(appLocale) - 1, string.len(appLocale))
+    for file in hs.fs.dir(resourceDir) do
+      if file:sub(-6) == ".lproj"
+          and string.find(file, localeFirst .. '_') ~= nil
+          and string.find(file, '_' .. localeLast) then
+        localeDir = resourceDir .. "/" .. file
+      end
+    end
+  end
+  if localeFile ~= nil then
+    if localesDict[localeFile] == nil then
+      local fullPath = localeDir .. '/' .. localeFile .. '.strings'
+      local jsonStr = hs.execute('plutil -convert json -o - "' .. fullPath .. '"')
+      localesDict[localeFile] = hs.json.decode(jsonStr)
+    end
+    return localesDict[localeFile][string]
+  else
+    for file in hs.fs.dir(localeDir) do
+      if file:sub(-8) == ".strings" then
+        local fileStem = file:sub(1, -9)
+        if localesDict[fileStem] == nil then
+          local fullPath = localeDir .. '/' .. file
+          local jsonStr = hs.execute('plutil -convert json -o - "' .. fullPath .. '"')
+          localesDict[fileStem] = hs.json.decode(jsonStr)
+        end
+        if localesDict[fileStem][string] ~= nil then
+          return localesDict[fileStem][string]
+        end
+      end
+    end
+  end
+end
+
 
 -- helpers for click menubar to the right
 
@@ -340,24 +401,6 @@ function clickControlCenterMenuBarItem(menuItem)
   return false
 end
 
-local controlCenterSubMenuBarItems = nil
-local controlCenterLocales, ok = hs.execute(
-  "(defaults read com.apple.controlcenter AppleLanguages || defaults read -globalDomain AppleLanguages) | tr -d '()\" \\n'")
-controlCenterLocales = hs.fnutils.split(controlCenterLocales, ',')
-if controlCenterLocales[1] == "zh-Hans-CN" then
-  controlCenterSubMenuBarItems = {}
-  local controlCenterLocaleDir =
-      findApplication("com.apple.controlcenter"):path() .. "/Contents/Resources/zh_CN.lproj"
-  for file in hs.fs.dir(controlCenterLocaleDir) do
-    if file:sub(-8) == ".strings" then
-      local fileStem = file:sub(1, -9)
-      local fullPath = controlCenterLocaleDir .. '/' .. file
-      local jsonStr = hs.execute("plutil -convert json -o - " .. fullPath)
-      controlCenterSubMenuBarItems[fileStem] = hs.json.decode(jsonStr)
-    end
-  end
-end
-
 function controlCenterLocalized(panel, key)
   if key == nil then
     key = panel == "WiFi" and "Wi‑Fi" or panel
@@ -367,7 +410,7 @@ function controlCenterLocalized(panel, key)
     return controlCenterSubMenuBarItems.InfoPlist.CFBundleName
   end
   panel = panel:gsub("%s+", "")
-  return controlCenterSubMenuBarItems[panel][key]
+  return localizedString(key, "com.apple.controlcenter", panel)
 end
 
 
