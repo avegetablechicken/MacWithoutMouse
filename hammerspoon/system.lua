@@ -20,21 +20,6 @@ if caffeine then
   setCaffeineDisplay(hs.caffeinate.get("displayIdle"))
 end
 
-local curNetworkService
-local function getCurrentNetworkService()
-  local interfacev4, interfacev6 = hs.network.primaryInterfaces()
-  if interfacev4 then
-    local networkservice, status = hs.execute([[
-        networksetup -listallhardwareports \
-        | awk "/]] .. interfacev4 .. [[/ {print prev} {prev=\$0;}" \
-        | awk -F: '{print $2}' | awk '{$1=$1};1']])
-    curNetworkService = '"' .. networkservice:gsub("\n", "") .. '"'
-  else
-    curNetworkService = nil
-  end
-  return curNetworkService
-end
-
 -- system proxy helpers
 local function proxy_info(networkservice)
   networkservice = networkservice or curNetworkService
@@ -354,40 +339,43 @@ proxyMenu = {}
 -- load proxy configs
 ProxyConfigs = {}
 
-local proxyConfigs = hs.json.read("config/proxy.json")
-if proxyConfigs ~= nil then
-  for _, proxyName in ipairs({ "V2RayX", "V2rayU", "MonoCloud" }) do
-    local config = proxyConfigs[string.lower(proxyName)]
-    if config ~= nil then
-      local httpIp, httpPort = string.match(config.global.http, "(.+):(%d+)")
-      local httpsIp, httpsPort = string.match(config.global.https, "(.+):(%d+)")
-      local socksIp, socksPort = string.match(config.global.socks5, "(.+):(%d+)")
-      ProxyConfigs[proxyName] = {
-        PAC = config.pac,
-        global = { httpIp, httpPort, httpsIp, httpsPort, socksIp, socksPort }
-      }
+function parseProxyConfigurations(configs)
+  for name, config in pairs(configs) do
+    ProxyConfigs[name] = {}
+    if config.condition ~= nil then
+      ProxyConfigs[name].condition = config.condition
+      ProxyConfigs[name].locations = config.locations
+      for i, loc in ipairs(config.locations) do
+        local spec = config[loc]
+        local httpIp, httpPort = string.match(spec.global.http, "(.+):(%d+)")
+        local httpsIp, httpsPort = string.match(spec.global.https, "(.+):(%d+)")
+        local socksIp, socksPort = string.match(spec.global.socks5, "(.+):(%d+)")
+        ProxyConfigs[name][loc] = {
+          PAC = spec.pac,
+          global = { httpIp, httpPort, httpsIp, httpsPort, socksIp, socksPort }
+        }
+      end
+    else
+      local spec = config
+        local httpIp, httpPort = string.match(spec.global.http, "(.+):(%d+)")
+        local httpsIp, httpsPort = string.match(spec.global.https, "(.+):(%d+)")
+        local socksIp, socksPort = string.match(spec.global.socks5, "(.+):(%d+)")
+        ProxyConfigs[name] = {
+          PAC = spec.pac,
+          global = { httpIp, httpPort, httpsIp, httpsPort, socksIp, socksPort }
+        }
     end
   end
 end
 
-local labproxyConfig = hs.json.read("config/labproxy.json")
-if labproxyConfig ~= nil then
-  local inlabHttpIp, inlabHttpPort = string.match(labproxyConfig.inlab.global.http, "(.+):(%d+)")
-  local inlabHttpsIp, inlabHttpsPort = string.match(labproxyConfig.inlab.global.https, "(.+):(%d+)")
-  local inlabSocksIp, inlabSocksPort = string.match(labproxyConfig.inlab.global.socks5, "(.+):(%d+)")
-  local outoflabHttpIp, outoflabHttpPort = string.match(labproxyConfig.outoflab.global.http, "(.+):(%d+)")
-  local outoflabHttpsIp, outoflabHttpsPort = string.match(labproxyConfig.outoflab.global.https, "(.+):(%d+)")
-  local outoflabSocksIp, outoflabSocksPort = string.match(labproxyConfig.outoflab.global.socks5, "(.+):(%d+)")
-  ProxyConfigs["Lab Proxy"] = {
-    InLab = {
-      PAC = labproxyConfig.inlab.pac,
-      global = { inlabHttpIp, inlabHttpPort, inlabHttpsIp, inlabHttpsPort, inlabSocksIp, inlabSocksPort },
-    },
-    OutOfLab = {
-      PAC = labproxyConfig.outoflab.pac,
-      global = { outoflabHttpIp, outoflabHttpPort, outoflabHttpsIp, outoflabHttpsPort, outoflabSocksIp, outoflabSocksPort },
-    }
-  }
+local proxyConfigs = hs.json.read("config/proxy.json")
+if proxyConfigs ~= nil then
+  parseProxyConfigurations(proxyConfigs)
+end
+
+local privateProxyConfigs = hs.json.read("config/private-proxy.json")
+if privateProxyConfigs ~= nil then
+  parseProxyConfigurations(privateProxyConfigs)
 end
 
 proxyMenuItemCandidates =
@@ -724,33 +712,40 @@ local function registerProxyMenuImpl()
     end
   end
 
-  if ProxyConfigs["Lab Proxy"] ~= nil then
-    local _, inLab = hs.execute("zsh scripts/checkinlab.sh")
-    local canConnect = inLab
-    if not canConnect then
-      local addr = ProxyConfigs["Lab Proxy"]["OutOfLab"].global
-      local _, ok = hs.execute(string.format("echo -e '\\x1dclose\\x0d' | telnet %s %d > /dev/null 2>&1", addr[1], addr[2]))
-      -- canConnect = ok
-      canConnect = true
+  local otherProxies = {}
+  for name, _ in pairs(ProxyConfigs) do
+    if hs.fnutils.find(proxyMenuItemCandidates, function(item) return item.appname == name end) == nil then
+      table.insert(otherProxies, name)
     end
-    if canConnect then
+  end
+  for _, name in ipairs(otherProxies) do
+    local config, loc
+    if ProxyConfigs[name].condition == nil then
+      config = ProxyConfigs[name]
+    else
+      local locations = ProxyConfigs[name].locations
+      local _, status_ok = hs.execute(ProxyConfigs[name].condition.shell_command)
+      loc = status_ok and locations[1] or locations[2]
+      config = ProxyConfigs[name][loc]
+    end
+    if config ~= nil then
       table.insert(proxyMenu, { title = "-" })
-      table.insert(proxyMenu, { title = "Lab Proxy", disabled = true })
-      if enabledProxy == "Lab Proxy" and mode ~= nil then
+      table.insert(proxyMenu, { title = name, disabled = true })
+      if enabledProxy == name and mode ~= nil then
         if mode == "PAC" then
           local PACFile
-          if inLab then
-            PACFile = ProxyConfigs["Lab Proxy"]["InLab"].PAC
+          if status_ok then
+            PACFile = config.PAC
           else
-            PACFile = ProxyConfigs["Lab Proxy"]["OutOfLab"].PAC
+            PACFile = config.PAC
           end
           table.insert(proxyMenu, { title = "PAC File: " .. PACFile, disabled = true })
         else
           local addr
-          if inLab then
-            addr = ProxyConfigs["Lab Proxy"]["InLab"].global
+          if status_ok then
+            addr = config.global
           else
-            addr = ProxyConfigs["Lab Proxy"]["OutOfLab"].global
+            addr = config.global
           end
           table.insert(proxyMenu, { title = "HTTP Proxy: " .. addr[1] .. ":" .. addr[2], disabled = true })
           table.insert(proxyMenu, { title = "SOCKS5 Proxy: " .. addr[5] .. ":" .. addr[6], disabled = true })
@@ -758,17 +753,17 @@ local function registerProxyMenuImpl()
       end
       table.insert(proxyMenu, updateProxyWrapper({
         title = "    Global Mode",
-        fn = function() enable_proxy_global("Lab Proxy", nil, inLab and "InLab" or "OutOfLab") end,
+        fn = function() enable_proxy_global(name, nil, loc) end,
         shortcut = tostring(proxyMenuIdx),
-        checked = enabledProxy == "Lab Proxy" and mode ~= nil and mode == "Global"
-      }, "Lab Proxy"))
+        checked = enabledProxy == name and mode ~= nil and mode == "Global"
+      }, name))
       proxyMenuIdx = proxyMenuIdx + 1
       table.insert(proxyMenu, updateProxyWrapper({
         title = "    PAC Mode",
-        fn = function() enable_proxy_PAC("Lab Proxy", nil, inLab and "InLab" or "OutOfLab") end,
+        fn = function() enable_proxy_PAC(name, nil, loc) end,
         shortcut = tostring(proxyMenuIdx),
-        checked = enabledProxy == "Lab Proxy" and mode ~= nil and mode == "PAC"
-      }, "Lab Proxy"))
+        checked = enabledProxy == name and mode ~= nil and mode == "PAC"
+      }, name))
     end
   end
 
@@ -2039,10 +2034,12 @@ end
 -- wifi callbacks
 
 -- use lab proxy in lab
-local labWifis = labproxyConfig and labproxyConfig.ssid or {}
+local labProxyConfig = ProxyConfigs["Lab Proxy"]
 local lastWifi = hs.wifi.currentNetwork()
 
 function system_wifiChangedCallback()
+  if labProxyConfig == nil or labProxyConfig.condition == nil then return end
+
   local curWifi = hs.wifi.currentNetwork()
   if curWifi == nil then
     lastWifi = nil
@@ -2053,49 +2050,36 @@ function system_wifiChangedCallback()
     return
   end
 
-  if hs.fnutils.contains(labWifis, curWifi) and lastWifi == nil then
-    if curNetworkService ~= nil then
-      disable_proxy()
-    end
-    if ProxyConfigs["Lab Proxy"] ~= nil then
-      hs.timer.waitUntil(
+  if lastWifi == nil then
+    hs.timer.waitUntil(
         function()
           getCurrentNetworkService()
           return curNetworkService ~= nil
         end,
         function()
-          enable_proxy_global("Lab Proxy")
+          disable_proxy()
+          local locations = labProxyConfig.locations
+          local _, status_ok = hs.execute(labProxyConfig.condition.shell_command)
+          local loc = status_ok and locations[1] or locations[2]
+          if status_ok then
+            enable_proxy_global("Lab Proxy", nil, loc)
+          else
+            if findApplication(proxyAppBundleIDs.MonoCloud) then
+              hs.application.launchOrFocusByBundleID(proxyAppBundleIDs.MonoCloud)
+              clickRightMenuBarItem(proxyAppBundleIDs.MonoCloud, "Outbound Mode", 3)
+              enable_proxy_global("MonoCloud")
+            elseif findApplication(proxyAppBundleIDs.V2rayU) then
+              toggleV2RayU(true)
+              clickRightMenuBarItem(proxyAppBundleIDs.V2rayU, { en = "Pac Mode", zh = "Pac模式" })
+              enable_proxy_PAC("V2rayU")
+            elseif findApplication(proxyAppBundleIDs.V2RayX) then
+              toggleV2RayX(true)
+              clickRightMenuBarItem(proxyAppBundleIDs.V2RayX, "PAC Mode")
+              enable_proxy_PAC("V2RayX")
+            end
+          end
           registerProxyMenu()
-        end
-      )
-    end
-  elseif not hs.fnutils.contains(labWifis, curWifi) and lastWifi == nil then
-    if curNetworkService ~= nil then
-      disable_proxy()
-    end
-    hs.timer.waitUntil(
-      function()
-        getCurrentNetworkService()
-        return curNetworkService ~= nil
-      end,
-      function()
-        if findApplication(proxyAppBundleIDs.MonoCloud) then
-          hs.application.launchOrFocusByBundleID(proxyAppBundleIDs.MonoCloud)
-          clickRightMenuBarItem(proxyAppBundleIDs.MonoCloud, "Outbound Mode", 3)
-          enable_proxy_global("MonoCloud")
-        elseif findApplication(proxyAppBundleIDs.V2rayU) then
-          toggleV2RayU(true)
-          clickRightMenuBarItem(proxyAppBundleIDs.V2rayU, { en = "Pac Mode", zh = "Pac模式" })
-          enable_proxy_PAC("V2rayU")
-        elseif findApplication(proxyAppBundleIDs.V2RayX) then
-          toggleV2RayX(true)
-          clickRightMenuBarItem(proxyAppBundleIDs.V2RayX, "PAC Mode")
-          enable_proxy_PAC("V2RayX")
-        end
-
-        registerProxyMenu()
-      end
-    )
+        end)
   end
 
   lastWifi = curWifi

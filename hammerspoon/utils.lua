@@ -379,3 +379,19 @@ function clickRightMenuBarItem(menuBarName, menuItem, subMenuItem)
     return clickAppRightMenuBarItem(menuBarName, menuItem, subMenuItem)
   end
 end
+
+
+curNetworkService = nil
+function getCurrentNetworkService()
+  local interfacev4, interfacev6 = hs.network.primaryInterfaces()
+  if interfacev4 then
+    local networkservice, status = hs.execute([[
+        networksetup -listallhardwareports \
+        | awk "/]] .. interfacev4 .. [[/ {print prev} {prev=\$0;}" \
+        | awk -F: '{print $2}' | awk '{$1=$1};1']])
+    curNetworkService = '"' .. networkservice:gsub("\n", "") .. '"'
+  else
+    curNetworkService = nil
+  end
+  return curNetworkService
+end

@@ -2687,18 +2687,35 @@ end
 -- wifi callbacks
 
 -- launch `Mountain Duck` automatically when connected to laboratory wifi
-local labproxyConfig = hs.json.read("config/labproxy.json")
-local labWifis = labproxyConfig and labproxyConfig.ssid or {}
+local labproxyConfig = hs.json.read("config/private-proxy.json")
+if labproxyConfig ~= nil then
+  labProxyConfig = labproxyConfig["Lab Proxy"]
+end
 local lastWifi = hs.wifi.currentNetwork()
 
 function app_wifiChangedCallback()
-  local curWifi = hs.wifi.currentNetwork()
-  if curWifi == nil then return end
+  if labProxyConfig == nil or labProxyConfig.condition == nil then return end
 
-  if hs.fnutils.contains(labWifis, curWifi) and not hs.fnutils.contains(labWifis, lastWifi) then
-    -- hs.application.launchOrFocusByBundleID("io.mountainduck")
-  elseif not hs.fnutils.contains(labWifis, curWifi) then
-    -- quitApplication("io.mountainduck")
+  local curWifi = hs.wifi.currentNetwork()
+  if curWifi == nil then
+    lastWifi = nil
+    return
+  end
+
+  if lastWifi == nil then
+    hs.timer.waitUntil(
+        function()
+          getCurrentNetworkService()
+          return curNetworkService ~= nil
+        end,
+        function()
+          local _, status_ok = hs.execute(labProxyConfig.condition.shell_command)
+          if status_ok then
+            -- hs.application.launchOrFocusByBundleID("io.mountainduck")
+          else
+            -- quitApplication("io.mountainduck")
+          end
+        end)
   end
 
   lastWifi = curWifi
