@@ -243,7 +243,7 @@ function rightClickAndRestore(position)
   hs.mouse.absolutePosition(mousePosition)
 end
 
-function clickAppRightMenuBarItem(menuBarName, menuItem, subMenuItem)
+function clickAppRightMenuBarItem(bundleID, menuItem, subMenuItem)
   -- only menu bar item
   if menuItem == nil then
     local status_code = hs.osascript.applescript(string.format([[
@@ -252,7 +252,7 @@ function clickAppRightMenuBarItem(menuBarName, menuItem, subMenuItem)
         set c to count of menu bar of ap
         click menu bar item 1 of menu bar c of ap
       end tell
-    ]], menuBarName))
+    ]], bundleID))
     return status_code
   end
 
@@ -272,7 +272,7 @@ function clickAppRightMenuBarItem(menuBarName, menuItem, subMenuItem)
     delay 1
     do shell script "killall System\\ Events"
 
-  ]], menuBarName)
+  ]], bundleID)
 
   if type(menuItem) == "number" then
     menuItem = tostring(menuItem)
@@ -281,7 +281,7 @@ function clickAppRightMenuBarItem(menuBarName, menuItem, subMenuItem)
   else
     for lang, item in pairs(menuItem) do
       if lang == 'localized' then
-        item = localizedString(item, menuBarName)
+        item = localizedString(item, bundleID)
       end
       menuItem[lang] = '"'..item..'"'
     end
@@ -295,7 +295,7 @@ function clickAppRightMenuBarItem(menuBarName, menuItem, subMenuItem)
     else
       for lang, item in pairs(subMenuItem) do
         if lang == 'localized' then
-          item = localizedString(item, menuBarName)
+          item = localizedString(item, bundleID)
         end
         subMenuItem[lang] = '"'..item..'"'
       end
