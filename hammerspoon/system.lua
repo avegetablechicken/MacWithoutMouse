@@ -974,11 +974,6 @@ controlCenterHotKeys = nil
 controlCenterSubPanelWatcher = nil
 
 local function checkAndRegisterControlCenterHotKeys(hotkey)
-  if selectNetworkWatcher ~= nil then
-    selectNetworkWatcher:stop()
-    selectNetworkWatcher = nil
-  end
-
   if controlCenterHotKeys == nil then
     hotkey:delete()
     return false
@@ -1234,10 +1229,6 @@ function registerControlCenterHotKeys(panel)
       end
 
       clickRightMenuBarItem("Control Center")
-      if selectNetworkWatcher ~= nil then
-        selectNetworkWatcher:stop()
-        selectNetworkWatcher = nil
-      end
       hotkeyMainForward = newControlCenter("⌘", "]", "Forward",
         function()
           hotkeyMainForward:disable()
