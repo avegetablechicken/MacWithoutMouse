@@ -905,6 +905,15 @@ end
 
 -- show a dialog to specify a window title from all visible windows, use it to switch to a window
 -- fixme: full screen space will be ignored if not once focused
+local menuBarTitleLocalizationMap = hs.json.read("config/localization/menuitem.json")
+local windowMenuItem
+for key, item in pairs(menuBarTitleLocalizationMap.common) do
+  if item == "Window" then
+    windowMenuItem = key
+    break
+  end
+end
+
 bindWindowMisc(misc["searchWindow"], 'Switch to Window',
 function()
   local wFilter = hs.window.filter.new()
@@ -1029,11 +1038,9 @@ local function browserChooser()
     -- fixme: when a full screen space is focused, then switching fails
     -- has to try twice to make it work
     appObject:activate()
-    selectMenuItem(appObject,
-        { en = {"Window", result}, zh = {"窗口", result} })
+    appObject:selectMenuItem({windowMenuItem, result})
     hs.timer.usleep(0.5 * 1000000)
-    selectMenuItem(appObject,
-        { en = {"Window", result}, zh = {"窗口", result} })
+    appObject:selectMenuItem({windowMenuItem, result})
 
   end)
   chooser:searchSubText(true)
@@ -1252,11 +1259,9 @@ local function PDFChooser()
       -- fixme: when a full screen space is focused, then switching fails
       -- has to try twice to make it work
       appObject:activate()
-      selectMenuItem(appObject,
-          { en = {"Window", result}, zh = {"窗口", result} })
+      appObject:selectMenuItem({windowMenuItem, result})
       hs.timer.usleep(0.5 * 1000000)
-      selectMenuItem(appObject,
-          { en = {"Window", result}, zh = {"窗口", result} })
+      appObject:selectMenuItem({windowMenuItem, result})
     end
   end)
   chooser:choices(choices)
