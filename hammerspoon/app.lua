@@ -29,6 +29,16 @@ local function focusOrHide(hint)
       end
     else
       appObject = hs.application.open(hint)
+      if appObject:bundleID() == "com.apple.finder"
+          and hs.fnutils.find(appObject:visibleWindows(), function(win)
+                return win:isStandard()
+              end) == nil then
+        if hs.screen.primaryScreen():id() ~= hs.screen.mainScreen():id() then
+          hs.eventtap.keyStroke('fn⌃', 'F2')
+        end
+        selectMenuItem(appObject,
+            { en = {"File", "New Finder Window"}, zh = {"文件", "新建“访达”窗口"} })
+      end
     end
     if appObject ~= nil and appObject:bundleID() == "com.apple.finder"
         and hs.fnutils.find(appObject:visibleWindows(), function(win)
