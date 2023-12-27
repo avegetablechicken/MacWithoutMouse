@@ -36,8 +36,9 @@ local function focusOrHide(hint)
         if hs.screen.primaryScreen():id() ~= hs.screen.mainScreen():id() then
           hs.eventtap.keyStroke('fn⌃', 'F2')
         end
-        selectMenuItem(appObject,
-            { en = {"File", "New Finder Window"}, zh = {"文件", "新建“访达”窗口"} })
+        appObject:selectMenuItem(
+            { localizedString("300764.title", "com.apple.finder", "MenuBar"),
+              localizedString("300794.title", "com.apple.finder", "MenuBar") })
       end
     end
     if appObject ~= nil and appObject:bundleID() == "com.apple.finder"
@@ -55,8 +56,9 @@ local function focusOrHide(hint)
         if hs.screen.primaryScreen():id() ~= hs.screen.mainScreen():id() then
           hs.eventtap.keyStroke('fn⌃', 'F2')
         end
-        selectMenuItem(appObject,
-            { en = {"File", "New Finder Window"}, zh = {"文件", "新建“访达”窗口"} })
+        appObject:selectMenuItem(
+            { localizedString("300764.title", "com.apple.finder", "MenuBar"),
+              localizedString("300794.title", "com.apple.finder", "MenuBar") })
       elseif not hs.window.focusedWindow():isStandard() then
         hs.application.open(hint)
         hs.window.focusedWindow():focus()
@@ -2611,8 +2613,9 @@ end
 function app_applicationCallback(appName, eventType, appObject)
   if eventType == hs.application.watcher.launched then
     if appObject:bundleID() == "com.apple.finder" then
-      selectMenuItem(appObject,
-        { en = {"File", "New Finder Window"}, zh = {"文件", "新建“访达”窗口"} })
+      appObject:selectMenuItem(
+          { localizedString("300764.title", "com.apple.finder", "MenuBar"),
+            localizedString("300794.title", "com.apple.finder", "MenuBar") })
     end
     altMenuItemHelper(appObject, eventType)
   elseif eventType == hs.application.watcher.activated then
