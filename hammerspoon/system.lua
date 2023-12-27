@@ -1951,6 +1951,11 @@ local function getActiveControlCenterPanel()
   return panel
 end
 
+if hs.window.focusedWindow():application():bundleID() == "com.apple.controlcenter"
+    and hs.window.focusedWindow():subrole() == "AXSystemDialog" then
+  registerControlCenterHotKeys(getActiveControlCenterPanel())
+end
+
 controlCenterPanelHotKeys = {}
 controlCenterWatcher = hs.window.filter.new(findApplication("com.apple.controlcenter"):name())
 controlCenterWatcher:subscribe(hs.window.filter.windowCreated,
