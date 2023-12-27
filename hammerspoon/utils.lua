@@ -120,6 +120,7 @@ function applicationLocales(bundleID)
 end
 
 local appMenuItemLocales = {}
+local appLocaleDir = {}
 function localizedString(string, bundleID, locale, localeFile)
   if localeFile == nil then
     localeFile = locale
@@ -127,6 +128,7 @@ function localizedString(string, bundleID, locale, localeFile)
   end
   if appMenuItemLocales[bundleID] == nil then
     appMenuItemLocales[bundleID] = {}
+    appLocaleDir[bundleID] = {}
   end
   local locales = applicationLocales(bundleID)
   local appLocale = locales[1]
@@ -137,16 +139,39 @@ function localizedString(string, bundleID, locale, localeFile)
 
   local resourceDir = hs.application.pathForBundleID(bundleID) .. "/Contents/Resources"
   local localeDir
+  if locale == nil then locale = appLocaleDir[bundleID][appLocale] end
   if locale ~= nil then
     localeDir = resourceDir .. "/" .. locale .. ".lproj"
   else
-    local localeFirst = appLocale:sub(1, 2)
-    local localeLast = appLocale:sub(string.len(appLocale) - 1, string.len(appLocale))
+    local localDetails = hs.host.locale.details(appLocale)
+    local language = localDetails.languageCode
+    local script = localDetails.scriptCode
+    local country = localDetails.countryCode
+    if script == nil then
+      local localeItems = hs.fnutils.split(appLocale, '-')
+      if #localeItems == 3 or (#localeItems == 2 and localeItems[2] ~= country) then
+        script = localeItems[2]
+      end
+    end
     for file in hs.fs.dir(resourceDir) do
-      if file:sub(-6) == ".lproj"
-          and string.find(file, localeFirst .. '_') ~= nil
-          and string.find(file, '_' .. localeLast) then
-        localeDir = resourceDir .. "/" .. file
+      if file:sub(-6) == ".lproj" then
+        local fileLocale = hs.host.locale.details(file:sub(1, -7))
+        local fileLanguage = fileLocale.languageCode
+        local fileScript = fileLocale.scriptCode
+        local fileCountry = fileLocale.countryCode
+        if fileScript == nil then
+          local localeItems = hs.fnutils.split(file:sub(1, -7), '-')
+          if #localeItems == 3 or (#localeItems == 2 and localeItems[2] ~= fileCountry) then
+            fileScript = localeItems[2]
+          end
+        end
+        if fileLanguage == language
+            and (script == nil or fileScript == nil or fileScript == script)
+            and (country == nil or fileCountry == nil or fileCountry == country) then
+          localeDir = resourceDir .. "/" .. file
+          appLocaleDir[bundleID][appLocale] = file:sub(1, -7)
+          break
+        end
       end
     end
   end
