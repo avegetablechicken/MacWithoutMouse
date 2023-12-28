@@ -281,7 +281,7 @@ function clickAppRightMenuBarItem(bundleID, menuItem, subMenuItem)
   else
     for lang, item in pairs(menuItem) do
       if lang == 'localized' then
-        item = localizedString(item, bundleID)
+        item = localizedString(item, bundleID, menuItem.strings)
       end
       menuItem[lang] = '"'..item..'"'
     end
@@ -295,7 +295,7 @@ function clickAppRightMenuBarItem(bundleID, menuItem, subMenuItem)
     else
       for lang, item in pairs(subMenuItem) do
         if lang == 'localized' then
-          item = localizedString(item, bundleID)
+          item = localizedString(item, bundleID, menuItem.strings)
         end
         subMenuItem[lang] = '"'..item..'"'
       end
