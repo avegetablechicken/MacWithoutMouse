@@ -642,8 +642,9 @@ appHotKeyCallbacks = {
     ["showInFinder"] = {
       message = "Show in Finder",
       fn = function(appObject)
-        selectMenuItem(appObject,
-          { en = {"File", "Show in Finder"}, zh = {"文件", "在 Finder 中显示"} })
+        appObject:selectMenuItem(
+          { localizedString("dMs-cI-mzQ.title", "com.readdle.PDFExpert-Mac", "MainMenu"),
+            localizedString("MYR-wI-AVe.title", "com.readdle.PDFExpert-Mac", "MainMenu") })
       end
     }
   },
@@ -653,17 +654,20 @@ appHotKeyCallbacks = {
     ["openFileLocation"] = {
       message = "Open File Location",
       fn = function(appObject)
-        selectMenuItem(appObject,
-          { en = {"File", "Open File Location"}, zh = {"文件", "打开文件位置"} })
+        appObject:selectMenuItem(
+          { localizedString("File", "abnerworks.Typora", "Menu"),
+            localizedString("Open File Location", "abnerworks.Typora", "Menu") })
       end
     },
     ["openRecent"] = {
       message = "Open Recent",
       fn = function(appObject)
         showMenuItemWrapper(function()
-          selectMenuItem(appObject,
-            { en = {"File", "Open Recent"}, zh = {"文件", "打开最近文件"} },
-            true)
+          appObject:selectMenuItem(
+            { localizedString("File", "abnerworks.Typora", "Menu") })
+          appObject:selectMenuItem(
+            { localizedString("File", "abnerworks.Typora", "Menu"),
+              localizedString("Open Recent", "abnerworks.Typora", "Menu") })
         end)()
       end
     },
@@ -682,8 +686,9 @@ appHotKeyCallbacks = {
     ["pasteAsPlainText"] = {
       message = "Paste as Plain Text",
       fn = function(appObject)
-        selectMenuItem(appObject,
-          { en = {"Edit", "Paste as Plain Text"}, zh = {"编辑", "粘贴为纯文本"} })
+        appObject:selectMenuItem(
+          { localizedString("Edit", "abnerworks.Typora", "Menu"),
+            localizedString("Paste as Plain Text", "abnerworks.Typora", "Menu") })
       end
     }
   },
@@ -703,8 +708,9 @@ appHotKeyCallbacks = {
     ["showInFinder"] = {
       message = "Show in Finder",
       fn = function(appObject)
-        selectMenuItem(appObject,
-          { en = {"File", "Show in Finder"}, zh = {"文件", "在访达中显示"} })
+        appObject:selectMenuItem(
+          { localizedString("File", "com.superace.updf.mac", "Localizable"),
+            localizedString("Show in Finder", "com.superace.updf.mac", "Localizable") })
       end
     }
   },
@@ -802,33 +808,45 @@ appHotKeyCallbacks = {
     ["export"] = {
       message = "Export",
       fn = function(appObject)
-        selectMenuItem(appObject, { en = {"File", "Export"}, zh = {"文件", "导出为"} })
-        selectMenuItem(appObject, { en = {"File", "Export To", "PDF…"}, zh = {"文件", "导出为", "PDF…"} })
+        appObject:selectMenuItem(
+          { localizedString("81.title", "com.apple.iWork.Keynote", "MainMenu"),
+            localizedString("1780.title", "com.apple.iWork.Keynote", "MainMenu") })
+        appObject:selectMenuItem(
+          { localizedString("81.title", "com.apple.iWork.Keynote", "MainMenu"),
+            localizedString("1780.title", "com.apple.iWork.Keynote", "MainMenu"),
+            localizedString("1781.title", "com.apple.iWork.Keynote", "MainMenu") })
       end
     },
     ["pasteAndMatchStyle"] = {
       message = "Paste and Match Style",
       fn = function(appObject)
-        selectMenuItem(appObject,
-          { en = {"Edit", "Paste and Match Style"}, zh = {"编辑", "粘贴并匹配样式"} })
+        appObject:selectMenuItem(
+          { localizedString("681.title", "com.apple.iWork.Keynote", "MainMenu"),
+            localizedString("689.title", "com.apple.iWork.Keynote", "MainMenu") })
       end
     },
     ["paste"] = {
       message = "Paste",
       fn = function(appObject)
-        selectMenuItem(appObject,
-          { en = {"Edit", "Paste"}, zh = {"编辑", "粘贴"} })
+        appObject:selectMenuItem(
+          { localizedString("681.title", "com.apple.iWork.Keynote", "MainMenu"),
+            localizedString("688.title", "com.apple.iWork.Keynote", "MainMenu") })
       end
     },
     ["play"] = {
       message = "Play",
-      fn = function(appObject) hs.eventtap.keyStroke("⌥⌘", "P", nil, appObject) end
+      fn = function(appObject)
+        appObject:selectMenuItem(
+          { localizedString("1526.title", "com.apple.iWork.Keynote", "MainMenu"),
+            localizedString("1527.title", "com.apple.iWork.Keynote", "MainMenu") })
+      end
     },
     ["insertEquation"] = {
       message = "Insert Equation",
       fn = function(appObject)
-        selectMenuItem(appObject,
-          { en = {"Insert", "Equation..."}, zh = {"插入", "方程..."} })
+        appObject:selectMenuItem(
+          { localizedString("849.title", "com.apple.iWork.Keynote", "MainMenu"),
+            localizedString("1677.title", "com.apple.iWork.Keynote", "MainMenu") })
       end
     },
     ["revealInFinder"] = {
@@ -1158,7 +1176,8 @@ appHotKeyCallbacks = {
         if hiddenByBartender(bundleID) and hasTopNotch(hs.screen.mainScreen()) then
           hs.osascript.applescript([[tell application id "com.surteesstudios.Bartender" to activate "]] .. bundleID .. [[-Item-0"]])
         end
-        clickRightMenuBarItem(bundleID, "软件内动态屏保")
+        clickRightMenuBarItem(bundleID, { localized = "j8f-jJ-zXq.title",
+                                          strings = "HotkeyWindowController" })
       end
     }
   },
