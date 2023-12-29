@@ -173,6 +173,20 @@ local function getParallelsVMPath(osname)
   end
 end
 
+local function selectMenuItem(appObject, menuItemTitle, show)
+  if appObject:findMenuItem(menuItemTitle.en) ~= nil then
+    if show then
+      appObject:selectMenuItem({menuItemTitle.en[1]})
+    end
+    appObject:selectMenuItem(menuItemTitle.en)
+  else
+    if show then
+      appObject:selectMenuItem({menuItemTitle.zh[1]})
+    end
+    appObject:selectMenuItem(menuItemTitle.zh)
+  end
+end
+
 local appConfigs = keybindingConfigs.hotkeys.appkeys
 appHotkeys = {}
 

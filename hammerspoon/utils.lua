@@ -21,20 +21,6 @@ function getOSVersion()
   end
 end
 
-function selectMenuItem(appObject, menuItemTitle, show)
-  if appObject:findMenuItem(menuItemTitle.en) ~= nil then
-    if show then
-      appObject:selectMenuItem({menuItemTitle.en[1]})
-    end
-    appObject:selectMenuItem(menuItemTitle.en)
-  else
-    if show then
-      appObject:selectMenuItem({menuItemTitle.zh[1]})
-    end
-    appObject:selectMenuItem(menuItemTitle.zh)
-  end
-end
-
 function inFullscreenWindow()
   local focusedWindow = hs.application.frontmostApplication():focusedWindow()
   return focusedWindow ~= nil
