@@ -1073,11 +1073,15 @@ appHotKeyCallbacks = {
     ["back"] = {
       message = "Back",
       condition = function()
+        -- local song = localizedString("COMMON_SONG", "com.tencent.QQMusicMac")
+        -- local detail = localizedString("COMMON_DETAIL", "com.tencent.QQMusicMac")
+        local song = "歌曲"
+        local detail = "详情"
         local ok, valid = hs.osascript.applescript([[
           tell application "System Events"
             tell ]] .. aWinFor("com.tencent.QQMusicMac") .. [[
               set btCnt to count (every button)
-              return (exists button "歌曲详情") and btCnt > 4
+              return (exists button "]] .. song .. detail .. [[") and btCnt > 4
             end tell
           end tell
         ]])
