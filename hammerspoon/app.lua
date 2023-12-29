@@ -643,8 +643,8 @@ appHotKeyCallbacks = {
       message = "Show in Finder",
       fn = function(appObject)
         appObject:selectMenuItem(
-          { localizedString("dMs-cI-mzQ.title", "com.readdle.PDFExpert-Mac", "MainMenu"),
-            localizedString("MYR-wI-AVe.title", "com.readdle.PDFExpert-Mac", "MainMenu") })
+          { localizedString("File", "com.readdle.PDFExpert-Mac", "MainMenu"),
+            localizedString("Show in Finder", "com.readdle.PDFExpert-Mac", "MainMenu") })
       end
     }
   },
