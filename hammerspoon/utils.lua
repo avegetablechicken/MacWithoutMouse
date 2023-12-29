@@ -591,7 +591,7 @@ function clickAppRightMenuBarItem(bundleID, menuItem, subMenuItem)
   end
 end
 
-local controlCenterIdentifiers = hs.json.read("config/controlcenter-identifies.json")
+local controlCenterIdentifiers = hs.json.read("static/controlcenter-identifies.json")
 local controlCenterMenuBarItemIdentifiers = controlCenterIdentifiers.menubar
 function clickControlCenterMenuBarItemSinceBigSur(menuItem)
   local osVersion = getOSVersion()

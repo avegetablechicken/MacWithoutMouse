@@ -2197,7 +2197,7 @@ remapPreviousTab()
 
 -- bind `alt+?` hotkeys to menu bar 1 functions
 -- to be registered in application callback
-local menuBarTitleLocalizationMap = hs.json.read("config/localization/menuitem.json")
+local menuBarTitleLocalizationMap = hs.json.read("static/menuitem-localization.json")
 altMenuItemHotkeys = {}
 
 local function bindAltMenu(appObject, mods, key, message, fn)

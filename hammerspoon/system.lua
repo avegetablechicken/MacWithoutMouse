@@ -965,7 +965,7 @@ local clockHotkey = bindControlCenter(menubarHK["showClock"], "Show " .. control
 local controlCenterHotkey = bindControlCenter(menubarHK["showControlCenter"], "Show " .. controlCenterLocalized("Control Center"),
     function() clickRightMenuBarItem("Control Center") end)
 
-local controlCenterIdentifiers = hs.json.read("config/controlcenter-identifies.json")
+local controlCenterIdentifiers = hs.json.read("static/controlcenter-identifies.json")
 local controlCenterSubPanelIdentifiers = controlCenterIdentifiers.subpanel
 local controlCenterMenuBarItemIdentifiers = controlCenterIdentifiers.menubar
 local controlCenterAccessibiliyIdentifiers = controlCenterIdentifiers.accessibility

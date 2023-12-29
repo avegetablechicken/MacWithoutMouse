@@ -905,7 +905,7 @@ end
 
 -- show a dialog to specify a window title from all visible windows, use it to switch to a window
 -- fixme: full screen space will be ignored if not once focused
-local menuBarTitleLocalizationMap = hs.json.read("config/localization/menuitem.json")
+local menuBarTitleLocalizationMap = hs.json.read("static/menuitem-localization.json")
 local windowMenuItem
 for key, item in pairs(menuBarTitleLocalizationMap.common) do
   if item == "Window" then
