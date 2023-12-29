@@ -2286,28 +2286,36 @@ function altMenuItem(appObject)
     end
 
     -- process localized titles
+    local defaultTitleMap, titleMap
     if menuBarTitleLocalizationMap ~= nil then
-      local defaultTitleMap = menuBarTitleLocalizationMap.common
-      local titleMap = menuBarTitleLocalizationMap[appObject:bundleID()]
-      for i=#itemTitles,1,-1 do
-        -- remove titles starting with non-ascii characters
-        if string.byte(itemTitles[i], 1) > 127 then
-          local substituted = false
-          if titleMap ~= nil then
-            if titleMap[itemTitles[i]] ~= nil then
-              itemTitles[i] = {itemTitles[i], titleMap[itemTitles[i]]}
-              substituted = true
-            end
+      defaultTitleMap = menuBarTitleLocalizationMap.common
+      titleMap = menuBarTitleLocalizationMap[appObject:bundleID()]
+    end
+    for i=#itemTitles,1,-1 do
+      -- remove titles starting with non-ascii characters
+      if string.byte(itemTitles[i], 1) > 127 then
+        local substituted = false
+        if titleMap ~= nil then
+          if titleMap[itemTitles[i]] ~= nil then
+            itemTitles[i] = {itemTitles[i], titleMap[itemTitles[i]]}
+            substituted = true
           end
-          if not substituted and defaultTitleMap ~= nil then
-            if defaultTitleMap[itemTitles[i]] ~= nil then
-              itemTitles[i] = {itemTitles[i], defaultTitleMap[itemTitles[i]]}
-              substituted = true
-            end
+        end
+        if not substituted and defaultTitleMap ~= nil then
+          if defaultTitleMap[itemTitles[i]] ~= nil then
+            itemTitles[i] = {itemTitles[i], defaultTitleMap[itemTitles[i]]}
+            substituted = true
           end
-          if not substituted then
-            table.remove(itemTitles, i)
+        end
+        if not substituted then
+          local title = delocalizedMenuItem(itemTitles[i], appObject:bundleID())
+          if title ~= nil then
+            itemTitles[i] = {itemTitles[i], title}
+            substituted = true
           end
+        end
+        if not substituted then
+          table.remove(itemTitles, i)
         end
       end
     end

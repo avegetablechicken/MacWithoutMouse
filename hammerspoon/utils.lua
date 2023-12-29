@@ -250,6 +250,137 @@ function localizedString(string, bundleID, locale, localeFile)
   end
 end
 
+local menuItemLocaleMap = {}
+local menuItemAppLocaleMap = {}
+function delocalizedMenuItem(string, bundleID, locale, localeFile)
+  if localeFile == nil then
+    localeFile = locale
+    locale = nil
+  end
+  local locales = applicationLocales(bundleID)
+  local appLocale = locales[1]
+  if menuItemAppLocaleMap[bundleID] ~= appLocale then
+    menuItemLocaleMap[bundleID] = {}
+  end
+  menuItemAppLocaleMap[bundleID] = appLocale
+  if menuItemLocaleMap[bundleID][string] == 'nil' then
+    return nil
+  end
+
+  local resourceDir = hs.application.pathForBundleID(bundleID) .. "/Contents/Resources"
+  local localeDir
+  if locale ~= nil then
+    localeDir = resourceDir .. "/" .. locale .. ".lproj"
+  else
+    local localDetails = hs.host.locale.details(appLocale)
+    local language = localDetails.languageCode
+    local script = localDetails.scriptCode
+    local country = localDetails.countryCode
+    if script == nil then
+      local localeItems = hs.fnutils.split(appLocale, '-')
+      if #localeItems == 3 or (#localeItems == 2 and localeItems[2] ~= country) then
+        script = localeItems[2]
+      end
+    end
+    for file in hs.fs.dir(resourceDir) do
+      if file:sub(-6) == ".lproj" then
+        local fileLocale = hs.host.locale.details(file:sub(1, -7))
+        local fileLanguage = fileLocale.languageCode
+        local fileScript = fileLocale.scriptCode
+        local fileCountry = fileLocale.countryCode
+        if fileScript == nil then
+          local localeItems = hs.fnutils.split(file:sub(1, -7), '-')
+          if #localeItems == 3 or (#localeItems == 2 and localeItems[2] ~= fileCountry) then
+            fileScript = localeItems[2]
+          end
+        end
+        if fileLanguage == language
+            and (script == nil or fileScript == nil or fileScript == script)
+            and (country == nil or fileCountry == nil or fileCountry == country) then
+          localeDir = resourceDir .. "/" .. file
+          break
+        end
+      end
+    end
+  end
+
+  local searchFunc = function(string)
+    for _, localeDir in ipairs({resourceDir .. "/en.lproj", resourceDir .. "/Base.lproj"}) do
+      if hs.fs.attributes(localeDir) ~= nil then
+        if localeFile ~= nil then
+          local fullPath = localeDir .. '/' .. localeFile .. '.strings'
+          local jsonStr = hs.execute('plutil -convert json -o - "' .. fullPath .. '"')
+          local jsonDict = hs.json.decode(jsonStr)
+          return jsonDict[string]
+        else
+          local stringsFiles = {}
+          for file in hs.fs.dir(localeDir) do
+            if file:sub(-8) == ".strings" then
+              table.insert(stringsFiles, file)
+            end
+          end
+          if #stringsFiles > 10 then
+            stringsFiles = { "MainMenu.strings", "Menu.strings", "Localizable.strings", "MenuItems.strings" }
+          end
+          for _, file in ipairs(stringsFiles) do
+            local fullPath = localeDir .. '/' .. file
+            if hs.fs.attributes(fullPath) ~= nil then
+              local jsonStr = hs.execute('plutil -convert json -o - "' .. fullPath .. '"')
+              local jsonDict = hs.json.decode(jsonStr)
+              if jsonDict[string] ~= nil then
+                return jsonDict[string]
+              end
+            end
+          end
+        end
+      end
+    end
+  end
+
+  local localesDict = menuItemLocaleMap[bundleID]
+  if localeFile ~= nil then
+    if localesDict[string] == nil then
+      local fullPath = localeDir .. '/' .. localeFile .. '.strings'
+      local jsonStr = hs.execute('plutil -convert json -o - "' .. fullPath .. '"')
+      local jsonDict = hs.json.decode(jsonStr)
+      for k, v in pairs(jsonDict) do
+        localesDict[v] = k
+      end
+    end
+    if localesDict[string] ~= nil then
+      return searchFunc(localesDict[string])
+    end
+  else
+    local stringsFiles = {}
+    for file in hs.fs.dir(localeDir) do
+      if file:sub(-8) == ".strings" then
+        table.insert(stringsFiles, file)
+      end
+    end
+    if #stringsFiles > 10 then
+      stringsFiles = { "MainMenu.strings", "Menu.strings", "Localizable.strings", "MenuItems.strings" }
+    end
+    for _, file in ipairs(stringsFiles) do
+      local fullPath = localeDir .. '/' .. file
+      if hs.fs.attributes(fullPath) ~= nil then
+        if localesDict[string] == nil then
+          local jsonStr = hs.execute('plutil -convert json -o - "' .. fullPath .. '"')
+          local jsonDict = hs.json.decode(jsonStr)
+          for k, v in pairs(jsonDict) do
+            localesDict[v] = k
+          end
+        end
+        if localesDict[string] ~= nil then
+          local result = searchFunc(localesDict[string])
+          if result ~= nil then return result end
+        end
+      end
+    end
+  end
+
+  localesDict[string] = 'nil'
+end
+
 
 -- helpers for click menubar to the right
 
