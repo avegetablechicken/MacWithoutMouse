@@ -936,32 +936,36 @@ appHotKeyCallbacks = {
     ["back"] = {
       message = "Back",
       condition = function()
+        local back = localizedString("Common.Navigation.Back", "com.tencent.xinWeChat", "Localizable")
+        local lastPage = localizedString("WebView.Previous.Item", "com.tencent.xinWeChat", "Localizable")
+        local moments = localizedString("SNS_Feed_Window_Title", "com.tencent.xinWeChat", "Localizable")
+        local detail = localizedString("SNS_Feed_Detail_Title", "com.tencent.xinWeChat", "Localizable")
         local ok, result = hs.osascript.applescript([[
           tell application "System Events"
             tell ]] .. aWinFor("com.tencent.xinWeChat") .. [[
-              -- 公众号
-              if exists button "返回" of splitter group 1 of splitter group 1 then
+              -- Official Accounts
+              if exists button "]] .. back .. [[" of splitter group 1 of splitter group 1 then
                 return 1
               end if
 
-              -- 折叠的群聊
+              -- Minimized Groups
               if exists splitter group 1 then
-                set bt to every button of splitter group 1 whose description is "返回"
+                set bt to every button of splitter group 1 whose description is "]] .. back .. [["
                 if (count bt) > 0 then
                   return 2
                 end if
               end if
 
-              -- 推送
+              -- Push Notifications
               set bts to every button
               repeat with bt in bts
-                if value of attribute "AXHelp" of bt is "上一页" ¬
+                if value of attribute "AXHelp" of bt is "]] .. lastPage .. [[" ¬
                     and value of attribute "AXEnabled" of bt is True then
                   return 3
                 end if
               end repeat
 
-              -- 朋友圈
+              -- Moments
               if (exists image 1) and ((ui element 1) is (image 1)) ¬
                   and (exists scroll area 1) and ((ui element 2) is (scroll area 1)) ¬
                   and (exists image 2) and ((ui element 3) is (image 2)) ¬
@@ -969,8 +973,8 @@ appHotKeyCallbacks = {
                 return position of button 1
               end if
 
-              -- 朋友圈详情
-              if name is "朋友圈-详情" then
+              -- Moments Details
+              if name is "]] .. moments .. '-' .. detail .. [[" then
                 return position of button 1
               end if
 
@@ -979,14 +983,22 @@ appHotKeyCallbacks = {
           end tell
         ]])
         if ok and result ~= false then
-          return true, result
+          if result == 1 then
+            return true, { 1, back}
+          elseif result == 2 then
+            return true, { 2 }
+          elseif result == 3 then
+            return true, { 3, lastPage }
+          else
+            return true, { 4, result }
+          end
         else
           return false
         end
       end,
       fn = function(result)
-        if type(result) == "table" then
-          leftClickAndRestore(result)
+        if type(result[2]) == "table" then
+          leftClickAndRestore(result[2])
         else
           local script = [[
             tell application "System Events"
@@ -995,11 +1007,11 @@ appHotKeyCallbacks = {
               end tell
             end tell
           ]]
-          if result == 1 then
+          if result[1] == 1 then
             script = string.format(script, [[
-              click button "返回" of splitter group 1 of splitter group 1
+              click button "]] .. result[2] .. [[" of splitter group 1 of splitter group 1
             ]])
-          elseif result == 2 then
+          elseif result[1] == 2 then
             script = string.format(script, [[
               key code 123
             ]])
@@ -1007,7 +1019,7 @@ appHotKeyCallbacks = {
             script = string.format(script, [[
               set bts to every button
               repeat with bt in bts
-                if value of attribute "AXHelp" of bt is "上一页" ¬
+                if value of attribute "AXHelp" of bt is "]] .. result[2] .. [[" ¬
                     and value of attribute "AXEnabled" of bt is True then
                   click bt
                   exit repeat
@@ -1022,12 +1034,13 @@ appHotKeyCallbacks = {
     ["forward"] = {
       message = "Forward",
       condition = function()
+        local nextPage = localizedString("WebView.Next.Item", "com.tencent.xinWeChat", "Localizable")
         local ok, valid = hs.osascript.applescript([[
           tell application "System Events"
-            -- 推送
+            -- Push Notifications
             set bts to every button of ]] .. aWinFor("com.tencent.xinWeChat") .. [[
             repeat with bt in bts
-              if value of attribute "AXHelp" of bt is "下一页" ¬
+              if value of attribute "AXHelp" of bt is "]] .. nextPage .. [[" ¬
                   and value of attribute "AXEnabled" of bt is True then
                 return true
               end if
@@ -1035,15 +1048,15 @@ appHotKeyCallbacks = {
             return false
           end tell
         ]])
-        return ok and valid
+        return ok and valid, nextPage
       end,
-      fn = function()
+      fn = function(nextPage)
         hs.osascript.applescript([[
           tell application "System Events"
-            -- 推送
+            -- Push Notifications
             set bts to every button of ]] .. aWinFor("com.tencent.xinWeChat") .. [[
             repeat with bt in bts
-              if value of attribute "AXHelp" of bt is "下一页" ¬
+              if value of attribute "AXHelp" of bt is "]] .. nextPage .. [[" ¬
                   and value of attribute "AXEnabled" of bt is True then
                 click bt
                 return
