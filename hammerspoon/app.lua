@@ -639,6 +639,18 @@ appHotKeyCallbacks = {
           { localizedString("File", "com.readdle.PDFExpert-Mac", "MainMenu"),
             localizedString("Show in Finder", "com.readdle.PDFExpert-Mac", "MainMenu") })
       end
+    },
+    ["openRecent"] = {
+      message = "Open Recent",
+      fn = function(appObject)
+        showMenuItemWrapper(function()
+          appObject:selectMenuItem(
+            { localizedString("File", "com.readdle.PDFExpert-Mac", "MainMenu") })
+          appObject:selectMenuItem(
+            { localizedString("File", "com.readdle.PDFExpert-Mac", "MainMenu"),
+              localizedString("Open Recent", "com.readdle.PDFExpert-Mac", "MainMenu") })
+        end)()
+      end
     }
   },
 
