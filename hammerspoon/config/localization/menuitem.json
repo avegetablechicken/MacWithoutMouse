@@ -14,7 +14,6 @@
     "帮助": "Help"
   },
 
-  "com.apple.AppStore": { "商店": "Store" },
   "com.apple.MobileSMS": { "对话": "Conversations" },
   "com.apple.mail":
   {
@@ -62,16 +61,6 @@
   {
     "表格": "Table",
     "整理": "Organise"
-  },
-  "com.readdle.PDFExpert-Mac":
-  {
-    "批注": "Annotate",
-    "编辑 PDF": "Edit PDF",
-    "扫描": "Scan & OCR"
-  },
-  "abnerworks.Typora": {
-    "段落": "Paragraph",
-    "主题": "Themes"
   },
   "com.pixelmatorteam.pixelmator.x":
   {
