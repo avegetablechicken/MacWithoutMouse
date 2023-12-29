@@ -119,23 +119,23 @@ function applicationLocales(bundleID)
   return hs.fnutils.split(locales, ',')
 end
 
-local appMenuItemLocales = {}
+local appLocaleMap = {}
 local appLocaleDir = {}
 function localizedString(string, bundleID, locale, localeFile)
   if localeFile == nil then
     localeFile = locale
     locale = nil
   end
-  if appMenuItemLocales[bundleID] == nil then
-    appMenuItemLocales[bundleID] = {}
+  if appLocaleMap[bundleID] == nil then
+    appLocaleMap[bundleID] = {}
     appLocaleDir[bundleID] = {}
   end
   local locales = applicationLocales(bundleID)
   local appLocale = locales[1]
-  if appMenuItemLocales[bundleID][appLocale] == nil then
-    appMenuItemLocales[bundleID][appLocale] = {}
+  if appLocaleMap[bundleID][appLocale] == nil then
+    appLocaleMap[bundleID][appLocale] = {}
   end
-  local localesDict = appMenuItemLocales[bundleID][appLocale]
+  local localesDict = appLocaleMap[bundleID][appLocale]
 
   local resourceDir = hs.application.pathForBundleID(bundleID) .. "/Contents/Resources"
   local localeDir
