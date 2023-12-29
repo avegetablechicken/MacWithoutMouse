@@ -21,16 +21,6 @@ function getOSVersion()
   end
 end
 
-function keyCode(modifiers, key)
-  return function()
-    hs.eventtap.keyStroke(modifiers, key)
-  end
-end
-
-function remapKey(modifiers, key, keyCode, message)
-  return bindSuspend(modifiers, key, message, keyCode, nil, keyCode)
-end
-
 function selectMenuItem(appObject, menuItemTitle, show)
   if appObject:findMenuItem(menuItemTitle.en) ~= nil then
     if show then
