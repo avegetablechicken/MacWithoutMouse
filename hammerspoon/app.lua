@@ -510,7 +510,7 @@ appHotKeyCallbacks = {
   {
     ["back"] = {
       mods = "⌘", key = "[",
-      message = "Back",
+      message = localizedString("STORE_MENU_BACK", "com.apple.AppStore", "Localizable"),
       condition = function()
         local appObject = findApplication("com.apple.AppStore")
         local storeMenuTitle = localizedString("STORE_MENU_TITLE", "com.apple.AppStore", "Localizable")
@@ -633,7 +633,7 @@ appHotKeyCallbacks = {
   ["com.readdle.PDFExpert-Mac"] =
   {
     ["showInFinder"] = {
-      message = "Show in Finder",
+      message = localizedString("Show in Finder", "com.readdle.PDFExpert-Mac", "MainMenu"),
       fn = function(appObject)
         appObject:selectMenuItem(
           { localizedString("File", "com.readdle.PDFExpert-Mac", "MainMenu"),
@@ -641,7 +641,7 @@ appHotKeyCallbacks = {
       end
     },
     ["openRecent"] = {
-      message = "Open Recent",
+      message = localizedString("Open Recent", "com.readdle.PDFExpert-Mac", "MainMenu"),
       fn = function(appObject)
         showMenuItemWrapper(function()
           appObject:selectMenuItem(
@@ -657,7 +657,7 @@ appHotKeyCallbacks = {
   ["abnerworks.Typora"] =
   {
     ["openFileLocation"] = {
-      message = "Open File Location",
+      message = localizedString("Open File Location", "abnerworks.Typora", "Menu"),
       fn = function(appObject)
         appObject:selectMenuItem(
           { localizedString("File", "abnerworks.Typora", "Menu"),
@@ -665,7 +665,7 @@ appHotKeyCallbacks = {
       end
     },
     ["openRecent"] = {
-      message = "Open Recent",
+      message = localizedString("Open Recent", "abnerworks.Typora", "Menu"),
       fn = function(appObject)
         showMenuItemWrapper(function()
           appObject:selectMenuItem(
@@ -689,7 +689,7 @@ appHotKeyCallbacks = {
       end
     },
     ["pasteAsPlainText"] = {
-      message = "Paste as Plain Text",
+      message = localizedString("Paste as Plain Text", "abnerworks.Typora", "Menu"),
       fn = function(appObject)
         appObject:selectMenuItem(
           { localizedString("Edit", "abnerworks.Typora", "Menu"),
@@ -711,7 +711,7 @@ appHotKeyCallbacks = {
   ["com.superace.updf.mac"] =
   {
     ["showInFinder"] = {
-      message = "Show in Finder",
+      message = localizedString("Show in Finder", "com.superace.updf.mac", "Localizable"),
       fn = function(appObject)
         appObject:selectMenuItem(
           { localizedString("File", "com.superace.updf.mac", "Localizable"),
@@ -811,7 +811,7 @@ appHotKeyCallbacks = {
   ["com.apple.iWork.Keynote"] =
   {
     ["export"] = {
-      message = "Export",
+      message = localizedString("1780.title", "com.apple.iWork.Keynote", "MainMenu"),
       fn = function(appObject)
         appObject:selectMenuItem(
           { localizedString("81.title", "com.apple.iWork.Keynote", "MainMenu"),
@@ -823,7 +823,7 @@ appHotKeyCallbacks = {
       end
     },
     ["pasteAndMatchStyle"] = {
-      message = "Paste and Match Style",
+      message = localizedString("689.title", "com.apple.iWork.Keynote", "MainMenu"),
       fn = function(appObject)
         appObject:selectMenuItem(
           { localizedString("681.title", "com.apple.iWork.Keynote", "MainMenu"),
@@ -831,7 +831,7 @@ appHotKeyCallbacks = {
       end
     },
     ["paste"] = {
-      message = "Paste",
+      message = localizedString("688.title", "com.apple.iWork.Keynote", "MainMenu"),
       fn = function(appObject)
         appObject:selectMenuItem(
           { localizedString("681.title", "com.apple.iWork.Keynote", "MainMenu"),
@@ -839,7 +839,7 @@ appHotKeyCallbacks = {
       end
     },
     ["play"] = {
-      message = "Play",
+      message = localizedString("1527.title", "com.apple.iWork.Keynote", "MainMenu"),
       fn = function(appObject)
         appObject:selectMenuItem(
           { localizedString("1526.title", "com.apple.iWork.Keynote", "MainMenu"),
@@ -847,7 +847,8 @@ appHotKeyCallbacks = {
       end
     },
     ["insertEquation"] = {
-      message = "Insert Equation",
+      message = localizedString("849.title", "com.apple.iWork.Keynote", "MainMenu")
+                .. ' > ' .. localizedString("1677.title", "com.apple.iWork.Keynote", "MainMenu"),
       fn = function(appObject)
         appObject:selectMenuItem(
           { localizedString("849.title", "com.apple.iWork.Keynote", "MainMenu"),
