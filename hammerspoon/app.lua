@@ -454,39 +454,11 @@ appHotKeyCallbacks = {
     },
     ["showPrevTab"] = {
       message = "Show Previous Tab",
-      condition = function()
-        local appObject = hs.application("com.apple.finder")
-        local menuPath = {"Window", "Show Previous Tab"}
-        local menuItem = appObject:findMenuItem(menuPath)
-        if menuItem == nil then
-          menuPath = {"窗口", "显示上一个标签页"}
-          menuItem = appObject:findMenuItem(menuPath)
-        end
-        if menuItem ~= nil and menuItem.enabled then
-          return true, menuPath
-        else
-          return false
-        end
-      end,
-      fn = function(menuPath, appObject) appObject:selectMenuItem(menuPath) end
+      fn = function(appObject) hs.eventtap.keyStroke("⇧⌃", "Tab", nil, appObject) end
     },
     ["showNextTab"] = {
       message = "Show Next Tab",
-      condition = function()
-        local appObject = hs.application("com.apple.finder")
-        local menuPath = {"Window", "Show Next Tab"}
-        local menuItem = appObject:findMenuItem(menuPath)
-        if menuItem == nil then
-          menuPath = {"窗口", "显示下一个标签页"}
-          menuItem = appObject:findMenuItem(menuPath)
-        end
-        if menuItem ~= nil and menuItem.enabled then
-          return true, menuPath
-        else
-          return false
-        end
-      end,
-      fn = function(menuPath, appObject) appObject:selectMenuItem(menuPath) end
+      fn = function(appObject) hs.eventtap.keyStroke("⌃", "Tab", nil, appObject) end
     }
   },
 
