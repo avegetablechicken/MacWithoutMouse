@@ -121,6 +121,7 @@ end
 
 local appLocaleMap = {}
 local appLocaleDir = {}
+local appLocaleInversedMap = {}
 function localizedString(string, bundleID, locale, localeFile)
   if localeFile == nil then
     localeFile = locale
@@ -175,24 +176,74 @@ function localizedString(string, bundleID, locale, localeFile)
       end
     end
   end
-  if localeFile ~= nil then
-    if localesDict[localeFile] == nil then
-      local fullPath = localeDir .. '/' .. localeFile .. '.strings'
-      local jsonStr = hs.execute('plutil -convert json -o - "' .. fullPath .. '"')
-      localesDict[localeFile] = hs.json.decode(jsonStr)
-    end
-    return localesDict[localeFile][string]
-  else
-    for file in hs.fs.dir(localeDir) do
-      if file:sub(-8) == ".strings" then
-        local fileStem = file:sub(1, -9)
-        if localesDict[fileStem] == nil then
-          local fullPath = localeDir .. '/' .. file
-          local jsonStr = hs.execute('plutil -convert json -o - "' .. fullPath .. '"')
-          localesDict[fileStem] = hs.json.decode(jsonStr)
+
+  local searchFunc = function(string)
+    if localeFile ~= nil then
+      if localesDict[localeFile] == nil then
+        local fullPath = localeDir .. '/' .. localeFile .. '.strings'
+        local jsonStr = hs.execute('plutil -convert json -o - "' .. fullPath .. '"')
+        localesDict[localeFile] = hs.json.decode(jsonStr)
+      end
+      if localesDict[localeFile][string] ~= nil then
+        return localesDict[localeFile][string]
+      end
+    else
+      for file in hs.fs.dir(localeDir) do
+        if file:sub(-8) == ".strings" then
+          local fileStem = file:sub(1, -9)
+          if localesDict[fileStem] == nil then
+            local fullPath = localeDir .. '/' .. file
+            local jsonStr = hs.execute('plutil -convert json -o - "' .. fullPath .. '"')
+            localesDict[fileStem] = hs.json.decode(jsonStr)
+          end
+          if localesDict[fileStem][string] ~= nil then
+            return localesDict[fileStem][string]
+          end
         end
-        if localesDict[fileStem][string] ~= nil then
-          return localesDict[fileStem][string]
+      end
+    end
+  end
+  local result = searchFunc(string)
+  if result ~= nil then return result end
+
+  if appLocaleInversedMap[bundleID] == nil then
+    appLocaleInversedMap[bundleID] = {}
+  end
+  localesInvDict = appLocaleInversedMap[bundleID]
+  for _, localeDir in ipairs({resourceDir .. "/en.lproj", resourceDir .. "/Base.lproj"}) do
+    if hs.fs.attributes(localeDir) ~= nil then
+      if localeFile ~= nil then
+        if localesInvDict[localeFile] == nil then
+          localesInvDict[localeFile] = {}
+          local fullPath = localeDir .. '/' .. localeFile .. '.strings'
+          local jsonStr = hs.execute('plutil -convert json -o - "' .. fullPath .. '"')
+          local jsonDict = hs.json.decode(jsonStr)
+          for k, v in pairs(jsonDict) do
+            localesInvDict[localeFile][v] = k
+          end
+        end
+        if localesInvDict[localeFile][string] ~= nil then
+          local result = searchFunc(localesInvDict[localeFile][string])
+          if result ~= nil then return result end
+        end
+      else
+        for file in hs.fs.dir(localeDir) do
+          if file:sub(-8) == ".strings" then
+            local fileStem = file:sub(1, -9)
+            if localesInvDict[fileStem] == nil then
+              localesInvDict[fileStem] = {}
+              local fullPath = localeDir .. '/' .. file
+              local jsonStr = hs.execute('plutil -convert json -o - "' .. fullPath .. '"')
+              local jsonDict = hs.json.decode(jsonStr)
+              for k, v in pairs(jsonDict) do
+                localesInvDict[fileStem][v] = k
+              end
+            end
+            if localesInvDict[fileStem][string] ~= nil then
+              local result = searchFunc(localesInvDict[fileStem][string])
+              if result ~= nil then return result end
+            end
+          end
         end
       end
     end
