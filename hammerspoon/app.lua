@@ -508,15 +508,11 @@ appHotKeyCallbacks = {
       message = "Back",
       condition = function()
         local appObject = findApplication("com.apple.AppStore")
-        local backMenuItem = appObject:findMenuItem({"Store", "Back"})
-        if backMenuItem ~= nil and backMenuItem.enabled then
-          return true, {"Store", "Back"}
-        end
-        if backMenuItem == nil then
-          backMenuItem = appObject:findMenuItem({"商店", "返回"})
-        end
-        if backMenuItem ~= nil and backMenuItem.enabled then
-          return true, {"商店", "返回"}
+        local storeMenuTitle = localizedString("STORE_MENU_TITLE", "com.apple.AppStore", "Localizable")
+        local storeMenuBack = localizedString("STORE_MENU_BACK", "com.apple.AppStore", "Localizable")
+        local backMenuItem = {storeMenuTitle, storeMenuBack}
+        if appObject:findMenuItem(backMenuItem).enabled then
+          return true, backMenuItem
         else
           local ok, valid = hs.osascript.applescript([[
             tell application "System Events"
