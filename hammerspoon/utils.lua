@@ -628,8 +628,8 @@ end
 
 
 function clickRightMenuBarItem(menuBarName, menuItem, subMenuItem)
-  if menuBarName == "Control Center"
-      or controlCenterSubMenuBarItems[menuBarName:gsub("%s+", "")] ~= nil then
+  if menuBarName == "Control Center" or (controlCenterSubMenuBarItems ~= nil
+      and controlCenterSubMenuBarItems[menuBarName:gsub("%s+", "")] ~= nil) then
     return clickControlCenterMenuBarItem(menuBarName)
   else
     return clickAppRightMenuBarItem(menuBarName, menuItem, subMenuItem)
