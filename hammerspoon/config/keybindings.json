@@ -924,6 +924,10 @@
       "pasteAsPlainText": {
         "mods": ["shift", "option", "command"],
         "key": "V"
+      },
+      "confirmDelete": {
+        "mods": "option",
+        "key": "D"
       }
     },
     "com.vallettaventures.Texpad": {

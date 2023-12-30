@@ -681,6 +681,12 @@ appHotKeyCallbacks = {
           { localizedString("Edit", "abnerworks.Typora", "Menu"),
             localizedString("Paste as Plain Text", "abnerworks.Typora", "Menu") })
       end
+    },
+    ["confirmDelete"] = {
+      message = "Confirm Delete",
+      condition = hs.fnutils.partial(confirmDeleteConditionForAppleApps,
+                                     "abnerworks.Typora"),
+      fn = confirmDeleteForAppleApps
     }
   },
 
