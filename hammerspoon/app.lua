@@ -659,18 +659,6 @@ appHotKeyCallbacks = {
                        { localeFile = "Menu" }, true)
       end
     },
-    ["previousTab"] = {
-      message = "Previous Tab",
-      fn = function(appObject)
-        hs.eventtap.keyStroke("⇧⌃", "Tab", nil, appObject)
-      end
-    },
-    ["nextTab"] = {
-      message = "Next Tab",
-      fn = function(appObject)
-        hs.eventtap.keyStroke("⌃", "Tab", nil, appObject)
-      end
-    },
     ["pasteAsPlainText"] = {
       message = localizedString("Paste as Plain Text", "abnerworks.Typora", "Menu"),
       fn = function(appObject)

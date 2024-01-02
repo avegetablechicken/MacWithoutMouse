@@ -913,14 +913,6 @@
         "mods": ["control"],
         "key": "R"
       },
-      "previousTab": {
-        "mods": ["shift", "command"],
-        "key": "["
-      },
-      "nextTab": {
-        "mods": ["shift", "command"],
-        "key": "]"
-      },
       "pasteAsPlainText": {
         "mods": ["shift", "option", "command"],
         "key": "V"
