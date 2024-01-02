@@ -5,20 +5,28 @@
     "显示": "View",
     "视图": "View",
     "查看": "View",
-    "插入": "Insert",
     "格式": "Format",
-    "排列": "Arrange",
-    "工具": "Tools",
-    "前往": "Go",
     "窗口": "Window",
     "帮助": "Help"
   },
 
   "com.apple.Safari":
   {
-    "历史记录": "History",
-    "书签": "Bookmarks",
     "开发": "Develop"
+  },
+  "com.pixelmatorteam.pixelmator.x": {
+    "图像": "Image"
+  },
+  "com.eusoft.freeeudic": {
+    "功能": "Function",
+    "学习": "Learn"
+  },
+  "com.kingsoft.wpsoffice.mac": {
+    "账户": "Account",
+    "服务": "Service",
+    "插入": "Insert",
+    "表格": "Table",
+    "工作区": "Workspace"
   },
   "com.google.Chrome":
   {
@@ -33,20 +41,9 @@
     "收藏夹": "Favorites",
     "个人资料": "Profiles"
   },
-  "com.kingsoft.wpsoffice.mac":
+  "net.xmind.vana.app":
   {
-    "账户": "Account",
-    "服务": "Service",
-    "表格": "Table",
-    "工作区": "Workspace"
-  },
-  "com.pixelmatorteam.pixelmator.x":
-  {
-    "图像": "Image"
-  },
-  "com.eusoft.freeeudic":
-  {
-    "功能": "Function",
-    "学习": "Learn"
+    "插入": "Insert",
+    "工具": "Tools"
   }
 }
