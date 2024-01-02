@@ -803,7 +803,8 @@ appHotKeyCallbacks = {
   ["com.apple.iWork.Keynote"] =
   {
     ["export"] = {
-      message = localizedString("1780.title", "com.apple.iWork.Keynote", "MainMenu"),
+      message = localizedString("1780.title", "com.apple.iWork.Keynote", "MainMenu")
+                .. localizedString("1781.title", "com.apple.iWork.Keynote", "MainMenu"),
       fn = function(appObject)
         appObject:selectMenuItem(
           { localizedString("81.title", "com.apple.iWork.Keynote", "MainMenu"),
@@ -840,7 +841,7 @@ appHotKeyCallbacks = {
     },
     ["insertEquation"] = {
       message = localizedString("849.title", "com.apple.iWork.Keynote", "MainMenu")
-                .. ' > ' .. localizedString("1677.title", "com.apple.iWork.Keynote", "MainMenu"),
+                .. localizedString("1677.title", "com.apple.iWork.Keynote", "MainMenu"),
       fn = function(appObject)
         appObject:selectMenuItem(
           { localizedString("849.title", "com.apple.iWork.Keynote", "MainMenu"),
