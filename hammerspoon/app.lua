@@ -2677,6 +2677,11 @@ function app_applicationCallback(appName, eventType, appObject)
       unregisterInWinHotKeys("cn.better365.iShotPro")
       return
     end
+    selectInputSourceInApp(appObject:bundleID())
+    remapPreviousTab()
+    registerRunningAppHotKeys(appObject:bundleID(), appObject)
+    registerInAppHotKeys(appName, eventType, appObject)
+    registerInWinHotKeys(appObject)
     altMenuItem(appObject)
     local frontAppBid = hs.fnutils.find(appsWatchMenuItems, function(bid)
       return bid == appObject:bundleID()
@@ -2684,11 +2689,6 @@ function app_applicationCallback(appName, eventType, appObject)
     if frontAppBid ~= nil then
       watchMenuItems(appObject)
     end
-    remapPreviousTab()
-    registerRunningAppHotKeys(appObject:bundleID(), appObject)
-    registerInAppHotKeys(appName, eventType, appObject)
-    registerInWinHotKeys(appObject)
-    selectInputSourceInApp(appObject:bundleID())
     if remoteDesktopsMappingModifiers[appObject:bundleID()] then
       if not remoteDesktopModifierTapper:isEnabled() then
         remoteDesktopModifierTapper:start()
