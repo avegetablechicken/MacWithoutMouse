@@ -226,16 +226,19 @@ function localizedString(string, bundleID, params)
         if localesInvDict[localeFile] == nil then
           localesInvDict[localeFile] = {}
           local fullPath = localeDir .. '/' .. localeFile .. '.strings'
-          local jsonStr = hs.execute('plutil -convert json -o - "' .. fullPath .. '"')
-          local jsonDict = hs.json.decode(jsonStr)
-          for k, v in pairs(jsonDict) do
-            localesInvDict[localeFile][v] = k
+          if hs.fs.attributes(fullPath) ~= nil then
+            local jsonStr = hs.execute('plutil -convert json -o - "' .. fullPath .. '"')
+            local jsonDict = hs.json.decode(jsonStr)
+            for k, v in pairs(jsonDict) do
+              localesInvDict[localeFile][v] = k
+            end
           end
         end
         if localesInvDict[localeFile][string] ~= nil then
           local result = searchFunc(localesInvDict[localeFile][string])
           if result ~= nil then return result end
         end
+        localesInvDict[localeFile] = nil
       else
         for file in hs.fs.dir(localeDir) do
           if file:sub(-8) == ".strings" then
@@ -253,6 +256,7 @@ function localizedString(string, bundleID, params)
               local result = searchFunc(localesInvDict[fileStem][string])
               if result ~= nil then return result end
             end
+            localesInvDict[fileStem] = nil
           end
         end
       end
