@@ -2323,7 +2323,11 @@ function altMenuItem(appObject)
           end
         end
         if not substituted then
-          local title = delocalizedMenuItem(itemTitles[i], appObject:bundleID())
+          local localeFile
+          if appObject:bundleID() == "com.apple.ScriptEditor2" then
+            localeFile = "SEMainMenu"
+          end
+          local title = delocalizedMenuItem(itemTitles[i], appObject:bundleID(), localeFile)
           if title ~= nil then
             itemTitles[i] = {itemTitles[i], title}
             substituted = true

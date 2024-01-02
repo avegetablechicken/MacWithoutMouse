@@ -186,7 +186,10 @@ function localizedString(string, bundleID, locale, localeFile)
     appLocaleInversedMap[bundleID] = {}
   end
   localesInvDict = appLocaleInversedMap[bundleID]
-  for _, localeDir in ipairs({resourceDir .. "/en.lproj", resourceDir .. "/Base.lproj"}) do
+  for _, localeDir in ipairs({
+      resourceDir .. "/en.lproj",
+      resourceDir .. "/Base.lproj",
+      resourceDir .. "/en_GB.lproj"}) do
     if hs.fs.attributes(localeDir) ~= nil then
       if localeFile ~= nil then
         if localesInvDict[localeFile] == nil then
@@ -280,14 +283,20 @@ function delocalizedMenuItem(string, bundleID, locale, localeFile)
     end
   end
 
+
   local searchFunc = function(string)
-    for _, localeDir in ipairs({resourceDir .. "/en.lproj", resourceDir .. "/Base.lproj"}) do
+    for _, localeDir in ipairs({
+        resourceDir .. "/en.lproj",
+        resourceDir .. "/Base.lproj",
+        resourceDir .. "/en_GB.lproj"}) do
       if hs.fs.attributes(localeDir) ~= nil then
         if localeFile ~= nil then
           local fullPath = localeDir .. '/' .. localeFile .. '.strings'
-          local jsonStr = hs.execute('plutil -convert json -o - "' .. fullPath .. '"')
-          local jsonDict = hs.json.decode(jsonStr)
-          return jsonDict[string]
+          if hs.fs.attributes(fullPath) ~= nil then
+            local jsonStr = hs.execute('plutil -convert json -o - "' .. fullPath .. '"')
+            local jsonDict = hs.json.decode(jsonStr)
+            return jsonDict[string]
+          end
         else
           local stringsFiles = {}
           for file in hs.fs.dir(localeDir) do

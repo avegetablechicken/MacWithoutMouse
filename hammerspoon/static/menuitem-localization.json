@@ -14,17 +14,6 @@
     "帮助": "Help"
   },
 
-  "com.apple.MobileSMS": { "对话": "Conversations" },
-  "com.apple.mail":
-  {
-    "邮箱": "Mailbox",
-    "邮件": "Message"
-  },
-  "com.apple.ScriptEditor2":
-  {
-    "脚本": "Script",
-    "字体": "Font"
-  },
   "com.apple.Safari":
   {
     "历史记录": "History",
@@ -51,16 +40,6 @@
     "服务": "Service",
     "表格": "Table",
     "工作区": "Workspace"
-  },
-  "com.apple.iWork.Keynote":
-  {
-    "幻灯片": "Slide" ,
-    "播放": "Play"
-  },
-  "com.apple.Numbers":
-  {
-    "表格": "Table",
-    "整理": "Organise"
   },
   "com.pixelmatorteam.pixelmator.x":
   {
