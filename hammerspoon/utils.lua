@@ -179,6 +179,9 @@ function localizedString(string, bundleID, params)
       end
     end
   end
+  if localeDir == nil then
+    return nil
+  end
 
   local searchFunc = function(string)
     if localeFile ~= nil then
@@ -309,6 +312,10 @@ function delocalizedMenuItem(string, bundleID, locale, localeFile)
         end
       end
     end
+  end
+  if localeDir == nil then
+    menuItemLocaleMap[bundleID][string] = 'nil'
+    return nil
   end
 
   local searchFunc = function(string)
