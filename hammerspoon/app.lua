@@ -2252,7 +2252,8 @@ function altMenuItem(appObject)
   local enableLetter = keybindingConfigs.hotkeys.menuItems.enableLetter
   if enableIndex == false and enableLetter == false then return end
 
-  if appObject:bundleID() == "com.microsoft.VSCode" then
+  if appObject:bundleID() == "com.microsoft.VSCode"
+      or appObject:bundleID() == "com.google.Chrome" then
     hs.timer.usleep(0.5 * 100000)
   end
   local menuItems = appObject:getMenuItems()
