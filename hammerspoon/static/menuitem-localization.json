@@ -44,5 +44,10 @@
   "com.pixelmatorteam.pixelmator.x":
   {
     "图像": "Image"
+  },
+  "com.eusoft.freeeudic":
+  {
+    "功能": "Function",
+    "学习": "Learn"
   }
 }
