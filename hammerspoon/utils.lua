@@ -188,6 +188,7 @@ function localizedString(string, bundleID, locale, localeFile)
   localesInvDict = appLocaleInversedMap[bundleID]
   for _, localeDir in ipairs({
       resourceDir .. "/en.lproj",
+      resourceDir .. "/English.lproj",
       resourceDir .. "/Base.lproj",
       resourceDir .. "/en_GB.lproj"}) do
     if hs.fs.attributes(localeDir) ~= nil then
@@ -283,10 +284,10 @@ function delocalizedMenuItem(string, bundleID, locale, localeFile)
     end
   end
 
-
   local searchFunc = function(string)
     for _, localeDir in ipairs({
         resourceDir .. "/en.lproj",
+        resourceDir .. "/English.lproj",
         resourceDir .. "/Base.lproj",
         resourceDir .. "/en_GB.lproj"}) do
       if hs.fs.attributes(localeDir) ~= nil then
