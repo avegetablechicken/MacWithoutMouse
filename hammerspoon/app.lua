@@ -7,6 +7,31 @@ local misc = keybindingConfigs.hotkeys.global
 hs.application.enableSpotlightForNameSearches(true)
 
 -- launch or hide applications
+
+local function selectMenuItem(appObject, menuItemTitle, params, show)
+  if type(params) == "boolean" then
+    show = params params = nil
+  end
+
+  local targetMenuItem
+  if menuItemTitle.en and appObject:findMenuItem(menuItemTitle.en) ~= nil then
+    targetMenuItem = menuItemTitle.en
+  elseif menuItemTitle.zh and appObject:findMenuItem(menuItemTitle.zh) ~= nil then
+    targetMenuItem = menuItemTitle.zh
+  else
+    for i, title in ipairs(menuItemTitle) do
+      menuItemTitle[i] = localizedString(title, appObject:bundleID(), params)
+    end
+    targetMenuItem = menuItemTitle
+  end
+  if show then
+    showMenuItemWrapper(function()
+      appObject:selectMenuItem({targetMenuItem[1]})
+    end)()
+  end
+  appObject:selectMenuItem(targetMenuItem)
+end
+
 local function focusOrHide(hint)
   local appObject = nil
 
@@ -36,9 +61,8 @@ local function focusOrHide(hint)
         if hs.screen.primaryScreen():id() ~= hs.screen.mainScreen():id() then
           hs.eventtap.keyStroke('fn⌃', 'F2')
         end
-        appObject:selectMenuItem(
-            { localizedString("File", "com.apple.finder", "MenuBar"),
-              localizedString("New Finder Window", "com.apple.finder", "MenuBar") })
+        selectMenuItem(appObject, {"File", "New Finder Window"},
+                      { localeFile = "MenuBar" })
       end
     end
   else
@@ -49,9 +73,8 @@ local function focusOrHide(hint)
         if hs.screen.primaryScreen():id() ~= hs.screen.mainScreen():id() then
           hs.eventtap.keyStroke('fn⌃', 'F2')
         end
-        appObject:selectMenuItem(
-            { localizedString("File", "com.apple.finder", "MenuBar"),
-              localizedString("New Finder Window", "com.apple.finder", "MenuBar") })
+        selectMenuItem(appObject, {"File", "New Finder Window"},
+                      { localeFile = "MenuBar" })
       elseif not hs.window.focusedWindow():isStandard() then
         hs.application.open(hint)
         hs.window.focusedWindow():focus()
@@ -170,20 +193,6 @@ local function getParallelsVMPath(osname)
   for _, version in ipairs(versions) do
     local path = string.format(pathTpl, version, version)
     if hs.fs.attributes(path) ~= nil then return path end
-  end
-end
-
-local function selectMenuItem(appObject, menuItemTitle, show)
-  if appObject:findMenuItem(menuItemTitle.en) ~= nil then
-    if show then
-      appObject:selectMenuItem({menuItemTitle.en[1]})
-    end
-    appObject:selectMenuItem(menuItemTitle.en)
-  else
-    if show then
-      appObject:selectMenuItem({menuItemTitle.zh[1]})
-    end
-    appObject:selectMenuItem(menuItemTitle.zh)
   end
 end
 
@@ -621,21 +630,15 @@ appHotKeyCallbacks = {
     ["showInFinder"] = {
       message = localizedString("Show in Finder", "com.readdle.PDFExpert-Mac", "MainMenu"),
       fn = function(appObject)
-        appObject:selectMenuItem(
-          { localizedString("File", "com.readdle.PDFExpert-Mac", "MainMenu"),
-            localizedString("Show in Finder", "com.readdle.PDFExpert-Mac", "MainMenu") })
+        selectMenuItem(appObject, { "File", "Show in Finder" },
+                       { localeFile = "MainMenu" })
       end
     },
     ["openRecent"] = {
       message = localizedString("Open Recent", "com.readdle.PDFExpert-Mac", "MainMenu"),
       fn = function(appObject)
-        showMenuItemWrapper(function()
-          appObject:selectMenuItem(
-            { localizedString("File", "com.readdle.PDFExpert-Mac", "MainMenu") })
-          appObject:selectMenuItem(
-            { localizedString("File", "com.readdle.PDFExpert-Mac", "MainMenu"),
-              localizedString("Open Recent", "com.readdle.PDFExpert-Mac", "MainMenu") })
-        end)()
+        selectMenuItem(appObject, { "File", "Open Recent" },
+                       { localeFile = "MainMenu" }, true)
       end
     }
   },
@@ -645,21 +648,15 @@ appHotKeyCallbacks = {
     ["openFileLocation"] = {
       message = localizedString("Open File Location", "abnerworks.Typora", "Menu"),
       fn = function(appObject)
-        appObject:selectMenuItem(
-          { localizedString("File", "abnerworks.Typora", "Menu"),
-            localizedString("Open File Location", "abnerworks.Typora", "Menu") })
+        selectMenuItem(appObject, { "File", "Open File Location" },
+                       { localeFile = "Menu" })
       end
     },
     ["openRecent"] = {
       message = localizedString("Open Recent", "abnerworks.Typora", "Menu"),
       fn = function(appObject)
-        showMenuItemWrapper(function()
-          appObject:selectMenuItem(
-            { localizedString("File", "abnerworks.Typora", "Menu") })
-          appObject:selectMenuItem(
-            { localizedString("File", "abnerworks.Typora", "Menu"),
-              localizedString("Open Recent", "abnerworks.Typora", "Menu") })
-        end)()
+        selectMenuItem(appObject, { "File", "Open Recent" },
+                       { localeFile = "Menu" }, true)
       end
     },
     ["previousTab"] = {
@@ -677,9 +674,8 @@ appHotKeyCallbacks = {
     ["pasteAsPlainText"] = {
       message = localizedString("Paste as Plain Text", "abnerworks.Typora", "Menu"),
       fn = function(appObject)
-        appObject:selectMenuItem(
-          { localizedString("Edit", "abnerworks.Typora", "Menu"),
-            localizedString("Paste as Plain Text", "abnerworks.Typora", "Menu") })
+        selectMenuItem(appObject, { "Edit", "Paste as Plain Text" },
+                       { localeFile = "Menu" })
       end
     },
     ["confirmDelete"] = {
@@ -705,9 +701,8 @@ appHotKeyCallbacks = {
     ["showInFinder"] = {
       message = localizedString("Show in Finder", "com.superace.updf.mac", "Localizable"),
       fn = function(appObject)
-        appObject:selectMenuItem(
-          { localizedString("File", "com.superace.updf.mac", "Localizable"),
-            localizedString("Show in Finder", "com.superace.updf.mac", "Localizable") })
+        selectMenuItem(appObject, { "File", "Show in Finder" },
+                       { localeFile = "Localizable" })
       end
     }
   },
@@ -806,46 +801,39 @@ appHotKeyCallbacks = {
       message = localizedString("1780.title", "com.apple.iWork.Keynote", "MainMenu")
                 .. localizedString("1781.title", "com.apple.iWork.Keynote", "MainMenu"),
       fn = function(appObject)
-        appObject:selectMenuItem(
-          { localizedString("81.title", "com.apple.iWork.Keynote", "MainMenu"),
-            localizedString("1780.title", "com.apple.iWork.Keynote", "MainMenu") })
-        appObject:selectMenuItem(
-          { localizedString("81.title", "com.apple.iWork.Keynote", "MainMenu"),
-            localizedString("1780.title", "com.apple.iWork.Keynote", "MainMenu"),
-            localizedString("1781.title", "com.apple.iWork.Keynote", "MainMenu") })
+        selectMenuItem(appObject, { "81.title", "1780.title" },
+                       { localeFile = "MainMenu" })
+        selectMenuItem(appObject, { "81.title", "1780.title", "1781.title" },
+                       { localeFile = "MainMenu" })
       end
     },
     ["pasteAndMatchStyle"] = {
       message = localizedString("689.title", "com.apple.iWork.Keynote", "MainMenu"),
       fn = function(appObject)
-        appObject:selectMenuItem(
-          { localizedString("681.title", "com.apple.iWork.Keynote", "MainMenu"),
-            localizedString("689.title", "com.apple.iWork.Keynote", "MainMenu") })
+        selectMenuItem(appObject, { "681.title", "689.title" },
+                       { localeFile = "MainMenu" })
       end
     },
     ["paste"] = {
       message = localizedString("688.title", "com.apple.iWork.Keynote", "MainMenu"),
       fn = function(appObject)
-        appObject:selectMenuItem(
-          { localizedString("681.title", "com.apple.iWork.Keynote", "MainMenu"),
-            localizedString("688.title", "com.apple.iWork.Keynote", "MainMenu") })
+        selectMenuItem(appObject, { "681.title", "688.title" },
+                       { localeFile = "MainMenu" })
       end
     },
     ["play"] = {
       message = localizedString("1527.title", "com.apple.iWork.Keynote", "MainMenu"),
       fn = function(appObject)
-        appObject:selectMenuItem(
-          { localizedString("1526.title", "com.apple.iWork.Keynote", "MainMenu"),
-            localizedString("1527.title", "com.apple.iWork.Keynote", "MainMenu") })
+        selectMenuItem(appObject, { "1526.title", "1527.title" },
+                       { localeFile = "MainMenu" })
       end
     },
     ["insertEquation"] = {
       message = localizedString("849.title", "com.apple.iWork.Keynote", "MainMenu")
                 .. localizedString("1677.title", "com.apple.iWork.Keynote", "MainMenu"),
       fn = function(appObject)
-        appObject:selectMenuItem(
-          { localizedString("849.title", "com.apple.iWork.Keynote", "MainMenu"),
-            localizedString("1677.title", "com.apple.iWork.Keynote", "MainMenu") })
+        selectMenuItem(appObject, { "849.title", "1677.title" },
+                       { localeFile = "MainMenu" })
       end
     },
     ["revealInFinder"] = {
@@ -2666,9 +2654,8 @@ end
 function app_applicationCallback(appName, eventType, appObject)
   if eventType == hs.application.watcher.launched then
     if appObject:bundleID() == "com.apple.finder" then
-      appObject:selectMenuItem(
-          { localizedString("File", "com.apple.finder", "MenuBar"),
-            localizedString("New Finder Window", "com.apple.finder", "MenuBar") })
+      selectMenuItem(appObject, { "File", "New Finder Window" },
+                     { localeFile = "MenuBar" })
     end
     altMenuItemHelper(appObject, eventType)
   elseif eventType == hs.application.watcher.activated then
