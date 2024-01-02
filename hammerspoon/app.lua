@@ -2593,6 +2593,12 @@ local appsLaunchSlow = {
       return appObject:getMenuItems() ~= nil and #appObject:getMenuItems() > 10
     end
   },
+  {
+    bundleID = "com.jetbrains.CLion-EAP",
+    criterion = function(appObject)
+      return appObject:getMenuItems() ~= nil and #appObject:getMenuItems() > 10
+    end
+  },
 
   {
     bundleID = "com.jetbrains.intellij",
