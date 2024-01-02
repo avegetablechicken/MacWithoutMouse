@@ -37,8 +37,8 @@ local function focusOrHide(hint)
           hs.eventtap.keyStroke('fn⌃', 'F2')
         end
         appObject:selectMenuItem(
-            { localizedString("300764.title", "com.apple.finder", "MenuBar"),
-              localizedString("300794.title", "com.apple.finder", "MenuBar") })
+            { localizedString("File", "com.apple.finder", "MenuBar"),
+              localizedString("New Finder Window", "com.apple.finder", "MenuBar") })
       end
     end
   else
@@ -50,8 +50,8 @@ local function focusOrHide(hint)
           hs.eventtap.keyStroke('fn⌃', 'F2')
         end
         appObject:selectMenuItem(
-            { localizedString("300764.title", "com.apple.finder", "MenuBar"),
-              localizedString("300794.title", "com.apple.finder", "MenuBar") })
+            { localizedString("File", "com.apple.finder", "MenuBar"),
+              localizedString("New Finder Window", "com.apple.finder", "MenuBar") })
       elseif not hs.window.focusedWindow():isStandard() then
         hs.application.open(hint)
         hs.window.focusedWindow():focus()
@@ -496,11 +496,11 @@ appHotKeyCallbacks = {
   {
     ["back"] = {
       mods = "⌘", key = "[",
-      message = localizedString("STORE_MENU_BACK", "com.apple.AppStore", "Localizable"),
+      message = localizedString("Back", "com.apple.AppStore", "Localizable"),
       condition = function()
         local appObject = findApplication("com.apple.AppStore")
-        local storeMenuTitle = localizedString("STORE_MENU_TITLE", "com.apple.AppStore", "Localizable")
-        local storeMenuBack = localizedString("STORE_MENU_BACK", "com.apple.AppStore", "Localizable")
+        local storeMenuTitle = localizedString("Store", "com.apple.AppStore", "Localizable")
+        local storeMenuBack = localizedString("Back", "com.apple.AppStore", "Localizable")
         local backMenuItem = {storeMenuTitle, storeMenuBack}
         if appObject:findMenuItem(backMenuItem).enabled then
           return true, backMenuItem
@@ -2667,8 +2667,8 @@ function app_applicationCallback(appName, eventType, appObject)
   if eventType == hs.application.watcher.launched then
     if appObject:bundleID() == "com.apple.finder" then
       appObject:selectMenuItem(
-          { localizedString("300764.title", "com.apple.finder", "MenuBar"),
-            localizedString("300794.title", "com.apple.finder", "MenuBar") })
+          { localizedString("File", "com.apple.finder", "MenuBar"),
+            localizedString("New Finder Window", "com.apple.finder", "MenuBar") })
     end
     altMenuItemHelper(appObject, eventType)
   elseif eventType == hs.application.watcher.activated then
