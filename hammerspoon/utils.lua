@@ -340,8 +340,8 @@ function delocalizedMenuItem(string, bundleID, locale, localeFile)
             end
           end
           if #stringsFiles > 10 then
-            stringsFiles = { "MainMenu.strings", "Menu.strings", "MenuBar.strings",
-                             "MenuItems.strings", "Localizable.strings", "Main.strings" }
+            stringsFiles = { "MainMenu.strings", "Menu.strings", "MainMenuLocalizable.strings", "MenuBar.strings",
+                             "MenuItems.strings", "Localizable.strings", "Main.strings", "MainWindow.strings" }
           end
           for _, file in ipairs(stringsFiles) do
             local fullPath = localeDir .. '/' .. file
@@ -379,8 +379,8 @@ function delocalizedMenuItem(string, bundleID, locale, localeFile)
       end
     end
     if #stringsFiles > 10 then
-      stringsFiles = { "MainMenu.strings", "Menu.strings", "MenuBar.strings",
-                       "MenuItems.strings", "Localizable.strings", "Main.strings" }
+      stringsFiles = { "MainMenu.strings", "Menu.strings", "MainMenuLocalizable.strings", "MenuBar.strings",
+                       "MenuItems.strings", "Localizable.strings", "Main.strings", "MainWindow.strings" }
     end
     for _, file in ipairs(stringsFiles) do
       local fullPath = localeDir .. '/' .. file
