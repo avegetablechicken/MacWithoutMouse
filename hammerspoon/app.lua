@@ -2616,8 +2616,8 @@ local appsLaunchSlow = {
 }
 
 local tryTimes = {}
-local tryInterval = 3
-local maxTryTimes = 10
+local tryInterval = 1
+local maxTryTimes = 15
 
 function altMenuItemHelper(appObject, eventType)
   if eventType == hs.application.watcher.activated then
