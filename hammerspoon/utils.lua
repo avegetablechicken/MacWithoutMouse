@@ -369,7 +369,12 @@ function delocalizedMenuItem(string, bundleID, locale, localeFile)
       end
     end
     if localesDict[string] ~= nil then
-      return searchFunc(localesDict[string])
+      local result = searchFunc(localesDict[string])
+      if result ~= nil then
+        return result
+      elseif not (string.match(localesDict[string], "[^%a]")) then
+        return localesDict[string]
+      end
     end
   else
     local stringsFiles = {}
@@ -397,6 +402,9 @@ function delocalizedMenuItem(string, bundleID, locale, localeFile)
           if result ~= nil then return result end
         end
       end
+    end
+    if localesDict[string] ~= nil and not string.match(localesDict[string], "[^%a]") then
+      return localesDict[string]
     end
   end
 
