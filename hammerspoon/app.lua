@@ -851,8 +851,7 @@ appHotKeyCallbacks = {
     ["export"] = {
       message = "Export",
       fn = function(appObject)
-        selectMenuItem(appObject, { en = {"File"}, zh = {"文件"} })
-        selectMenuItem(appObject, { en = {"File", "Export"}, zh = {"文件", "导出"} })
+        selectMenuItem(appObject, { en = {"File", "Export"}, zh = {"文件", "导出"} }, true)
       end
     },
     ["insertEquation"] = {
