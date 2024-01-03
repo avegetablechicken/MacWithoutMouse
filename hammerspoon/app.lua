@@ -500,24 +500,39 @@ appHotKeyCallbacks = {
         if appObject:findMenuItem(backMenuItem).enabled then
           return true, backMenuItem
         else
-          local ok, valid = hs.osascript.applescript([[
+          local ok, result = hs.osascript.applescript([[
             tell application "System Events"
               tell ]] .. aWinFor("com.apple.AppStore") .. [[
-                return exists button 1 of last group of splitter group 1
+                if exists button 1 of last group of splitter group 1 then
+                  return 1
+                else if exists (button 1 of group 1 ¬
+                    whose value attribute "AXIdentifier" is "UIA.AppStore.NavigationBackButton") then
+                  return 2
+                else
+                  return 0
+                end if
               end tell
             end tell
           ]])
-          return ok and valid, {}
+          return ok and (result ~= 0), result
         end
       end,
       fn = function(result, appObject)
-        if #result ~= 0 then
+        if type(result) == 'table' then
           appObject:selectMenuItem(result)
-        else
+        elseif result == 1 then
           hs.osascript.applescript([[
             tell application "System Events"
               tell ]] .. aWinFor("com.apple.AppStore") .. [[
                 perform action "AXPress" of button 1 of last group of splitter group 1
+              end tell
+            end tell
+          ]])
+        else
+          hs.osascript.applescript([[
+            tell application "System Events"
+              tell ]] .. aWinFor("com.apple.AppStore") .. [[
+                perform action "AXPress" of button 1 of group 1
               end tell
             end tell
           ]])
