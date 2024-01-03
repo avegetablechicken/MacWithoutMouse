@@ -266,6 +266,8 @@ end
 
 local menuItemLocaleMap = {}
 local menuItemAppLocaleMap = {}
+local stringsFilePatterns = { "(.-)MainMenu(.-)", "Menu", "MenuBar",
+                              "MenuItems", "Localizable", "Main", "MainWindow" }
 function delocalizedMenuItem(string, bundleID, locale, localeFile)
   if localeFile == nil then
     localeFile = locale
@@ -344,17 +346,20 @@ function delocalizedMenuItem(string, bundleID, locale, localeFile)
             end
           end
           if #stringsFiles > 10 then
-            stringsFiles = { "MainMenu.strings", "Menu.strings", "MainMenuLocalizable.strings", "MenuBar.strings",
-                             "MenuItems.strings", "Localizable.strings", "Main.strings", "MainWindow.strings" }
+            stringsFiles = hs.fnutils.filter(stringsFiles, function(file)
+              for _, pattern in ipairs(stringsFilePatterns) do
+                local pattern = "^" .. pattern  .. "%.strings$"
+                if string.match(file, pattern) ~= nil then return true end
+              end
+              return false
+            end)
           end
           for _, file in ipairs(stringsFiles) do
             local fullPath = localeDir .. '/' .. file
-            if hs.fs.attributes(fullPath) ~= nil then
-              local jsonStr = hs.execute('plutil -convert json -o - "' .. fullPath .. '"')
-              local jsonDict = hs.json.decode(jsonStr)
-              if jsonDict[string] ~= nil then
-                return jsonDict[string]
-              end
+            local jsonStr = hs.execute('plutil -convert json -o - "' .. fullPath .. '"')
+            local jsonDict = hs.json.decode(jsonStr)
+            if jsonDict[string] ~= nil then
+              return jsonDict[string]
             end
           end
         end
@@ -388,23 +393,26 @@ function delocalizedMenuItem(string, bundleID, locale, localeFile)
       end
     end
     if #stringsFiles > 10 then
-      stringsFiles = { "MainMenu.strings", "Menu.strings", "MainMenuLocalizable.strings", "MenuBar.strings",
-                       "MenuItems.strings", "Localizable.strings", "Main.strings", "MainWindow.strings" }
+      stringsFiles = hs.fnutils.filter(stringsFiles, function(file)
+        for _, pattern in ipairs(stringsFilePatterns) do
+          local pattern = "^" .. pattern  .. "%.strings$"
+          if string.match(file, pattern) ~= nil then return true end
+        end
+        return false
+      end)
     end
     for _, file in ipairs(stringsFiles) do
-      local fullPath = localeDir .. '/' .. file
-      if hs.fs.attributes(fullPath) ~= nil then
-        if localesDict[string] == nil then
-          local jsonStr = hs.execute('plutil -convert json -o - "' .. fullPath .. '"')
-          local jsonDict = hs.json.decode(jsonStr)
-          for k, v in pairs(jsonDict) do
-            localesDict[v] = k
-          end
+      if localesDict[string] == nil then
+        local fullPath = localeDir .. '/' .. file
+        local jsonStr = hs.execute('plutil -convert json -o - "' .. fullPath .. '"')
+        local jsonDict = hs.json.decode(jsonStr)
+        for k, v in pairs(jsonDict) do
+          localesDict[v] = k
         end
-        if localesDict[string] ~= nil then
-          local result = searchFunc(localesDict[string])
-          if result ~= nil then return result end
-        end
+      end
+      if localesDict[string] ~= nil then
+        local result = searchFunc(localesDict[string])
+        if result ~= nil then return result end
       end
     end
     if localesDict[string] ~= nil and not string.match(localesDict[string], "[^%a]") then
