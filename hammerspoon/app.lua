@@ -437,7 +437,8 @@ appHotKeyCallbacks = {
   ["com.apple.finder"] =
   {
     ["goToDownloads"] = {
-      message = "Go to Downloads",
+      message = localizedMessage("Go", "com.apple.finder", "MenuBar")
+                .. ' > ' .. localizedMessage("Downloads", "com.apple.finder", "MenuBar"),
       fn = function(appObject)
         selectMenuItem(appObject, { "Go", "Downloads" }, { localeFile = "MenuBar" })
       end
