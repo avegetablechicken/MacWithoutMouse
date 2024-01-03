@@ -69,6 +69,30 @@ function showMenuItemWrapper(fn)
   end
 end
 
+function selectMenuItem(appObject, menuItemTitle, params, show)
+  if type(params) == "boolean" then
+    show = params params = nil
+  end
+
+  local targetMenuItem
+  if menuItemTitle.en and appObject:findMenuItem(menuItemTitle.en) ~= nil then
+    targetMenuItem = menuItemTitle.en
+  elseif menuItemTitle.zh and appObject:findMenuItem(menuItemTitle.zh) ~= nil then
+    targetMenuItem = menuItemTitle.zh
+  else
+    for i, title in ipairs(menuItemTitle) do
+      menuItemTitle[i] = localizedString(title, appObject:bundleID(), params)
+    end
+    targetMenuItem = menuItemTitle
+  end
+  if show then
+    showMenuItemWrapper(function()
+      appObject:selectMenuItem({targetMenuItem[1]})
+    end)()
+  end
+  appObject:selectMenuItem(targetMenuItem)
+end
+
 local function filterParallels(appObjects)
   return hs.fnutils.find(appObjects, function(app)
     return string.find(app:bundleID(), "com.parallels") == nil

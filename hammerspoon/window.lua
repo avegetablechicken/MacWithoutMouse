@@ -1201,11 +1201,13 @@ local function PDFChooser()
               allWindows[choice.winID]:title()) or 0
           if activeIdx < choice.id then
             for i=1,choice.id-activeIdx do
-              hs.eventtap.keyStroke("⇧⌘", "]", nil, appObject)
+              selectMenuItem(appObject, { "Window", "Go to Previous Tab" },
+                             { localeFile = "MainMenu" })
             end
           else
             for i=1,activeIdx-choice.id do
-              hs.eventtap.keyStroke("⇧⌘", "[", nil, appObject)
+              selectMenuItem(appObject, { "Window", "Go to Next Tab" },
+                             { localeFile = "MainMenu" })
             end
           end
         end
