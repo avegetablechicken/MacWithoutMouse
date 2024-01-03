@@ -551,7 +551,7 @@ appHotKeyCallbacks = {
                 if exists button 1 of last group of splitter group 1 then
                   return 1
                 else if exists (button 1 of group 1 ¬
-                    whose value attribute "AXIdentifier" is "UIA.AppStore.NavigationBackButton") then
+                    whose value of attribute "AXIdentifier" is "UIA.AppStore.NavigationBackButton") then
                   return 2
                 else
                   return 0
