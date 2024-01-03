@@ -329,7 +329,7 @@ function confirmDeleteConditionForAppleApps(bundleID)
   return ok and result
 end
 
-function confirmDeleteForAppleApps(dumb, appObject)
+function confirmDeleteForAppleApps(appObject)
   hs.osascript.applescript([[
     tell application "System Events"
       tell ]] .. aWinFor(appObject:bundleID()) .. [[
@@ -525,11 +525,11 @@ appHotKeyCallbacks = {
               end tell
             end tell
           ]])
-          return ok and valid
+          return ok and valid, {}
         end
       end,
       fn = function(result, appObject)
-        if result ~= nil then
+        if #result ~= 0 then
           appObject:selectMenuItem(result)
         else
           hs.osascript.applescript([[
@@ -716,7 +716,7 @@ appHotKeyCallbacks = {
           return false
         end
       end,
-      fn = function(dumb, appObject) appObject:selectMenuItem({"工作区", "关闭工作区"}) end
+      fn = function(appObject) appObject:selectMenuItem({"工作区", "关闭工作区"}) end
     },
     ["previousTab"] = {
       message = "Previous Tab",
@@ -1840,7 +1840,11 @@ local function registerInAppHotKeys(appName, eventType, appObject)
           fn = function(appObject, appName, eventType)
             local satisfied, result = cfg.condition()
             if satisfied then
-              cfg.fn(result, appObject, appName, eventType)
+              if result ~= nil then
+                cfg.fn(result, appObject, appName, eventType)
+              else
+                cfg.fn(appObject, appName, eventType)
+              end
             else
               hs.eventtap.keyStroke(keyBinding.mods, keyBinding.key, nil, appObject)
             end
