@@ -234,7 +234,7 @@ registerAppHotkeys()
 -- # hotkeys in specific application
 
 -- pipeline of copying latex to `klatexformula` and rendering
-local function klatexformulaRender()
+function klatexformulaRender()
   hs.osascript.applescript([[
     tell application "System Events
       tell ]] .. aWinFor("org.klatexformula.klatexformula") .. [[
@@ -955,7 +955,7 @@ appHotKeyCallbacks = {
   {
     ["render"] = {
       message = "Render",
-      fn = function() klatexformulaRender() end
+      fn = klatexformulaRender
     },
     ["renderClipboardInKlatexformula"] = {
       message = "Render Clipboard in klatexformula",
