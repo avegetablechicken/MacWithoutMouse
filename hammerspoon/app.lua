@@ -746,9 +746,20 @@ appHotKeyCallbacks = {
   ["com.kingsoft.wpsoffice.mac"] =
   {
     ["newWorkspace"] = {
-      message = "New Workspace",
+      message = function()
+        return findMenuItemByKeyBinding(findApplication("com.kingsoft.wpsoffice.mac"), { 'ctrl', 'alt' }, "N")[2]
+      end,
       repeatable = true,
-      fn = function(appObject) hs.eventtap.keyStroke("⌃⌥", "N", nil, appObject) end
+      condition = function()
+        local appObject = findApplication("com.kingsoft.wpsoffice.mac")
+        local menuItem, enabled = findMenuItemByKeyBinding(appObject, { 'ctrl', 'alt' }, "N")
+        if menuItem ~= nil and enabled then
+          return true, menuItem
+        else
+          return false
+        end
+      end,
+      fn = function(menuItem, appObject) appObject:selectMenuItem(menuItem) end
     },
     ["closeWorkspace"] = {
       message = "关闭工作区",
