@@ -943,11 +943,11 @@
         "mods": ["shift", "command"],
         "key": "W"
       },
-      "previousTab": {
+      "previousWindow": {
         "mods": ["shift", "command"],
         "key": "["
       },
-      "nextTab": {
+      "nextWindow": {
         "mods": ["shift", "command"],
         "key": "]"
       },

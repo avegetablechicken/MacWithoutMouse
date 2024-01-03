@@ -764,7 +764,7 @@ appHotKeyCallbacks = {
       end,
       fn = function(appObject) appObject:selectMenuItem({"工作区", "关闭工作区"}) end
     },
-    ["previousTab"] = {
+    ["previousWindow"] = {
       message = function()
         return findMenuItemByKeyBinding(findApplication("com.kingsoft.wpsoffice.mac"), { 'shift', 'ctrl' }, "⇥")[2]
       end,
@@ -780,7 +780,7 @@ appHotKeyCallbacks = {
       end,
       fn = function(menuItem, appObject) appObject:selectMenuItem(menuItem) end
     },
-    ["nextTab"] = {
+    ["nextWindow"] = {
       message = function()
         return findMenuItemByKeyBinding(findApplication("com.kingsoft.wpsoffice.mac"), { 'ctrl' }, "⇥")[2]
       end,
