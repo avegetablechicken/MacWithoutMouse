@@ -918,7 +918,7 @@ appHotKeyCallbacks = {
     },
     ["revealInFinder"] = {
       message = "Reveal in Finder",
-      fn = function()
+      condition = function()
         local ok, filePath = hs.osascript.applescript([[
           tell application id "com.apple.iWork.Keynote" to get file of front document
         ]])
