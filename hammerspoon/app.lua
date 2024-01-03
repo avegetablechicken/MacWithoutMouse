@@ -311,35 +311,34 @@ function deleteAllMessages(appObject)
 end
 
 function confirmDeleteConditionForAppleApps(bundleID)
-  local ok, button = hs.osascript.applescript([[
+  local ok, result = hs.osascript.applescript([[
     tell application "System Events"
       tell ]] .. aWinFor(bundleID) .. [[
         if exists sheet 1 then
-          if exists button "Delete" of sheet 1 then
-            return "Delete"
-          else if exists button "删除" of sheet 1 then
-            return "删除"
-          else
-            return false
-          end if
-        else
-          return false
+          repeat with btn in buttons of sheet 1
+            if (exists attribute "AXIdentifier" of btn) ¬
+                and (the value of attribute "AXIdentifier" of btn is "DontSaveButton") then
+              return true
+            end if
+          end repeat
         end if
+        return false
       end tell
     end tell
   ]])
-  if ok and button ~= false then
-    return true, button
-  else
-    return false
-  end
+  return ok and result
 end
 
-function confirmDeleteForAppleApps(button, appObject)
+function confirmDeleteForAppleApps(dumb, appObject)
   hs.osascript.applescript([[
     tell application "System Events"
       tell ]] .. aWinFor(appObject:bundleID()) .. [[
-        click button "]] .. button .. [[" of sheet 1
+        repeat with btn in buttons of sheet 1
+          if (exists attribute "AXIdentifier" of btn) ¬
+              and (the value of attribute "AXIdentifier" of btn is "DontSaveButton") then
+            click btn
+          end if
+        end repeat
       end tell
     end tell
   ]])
