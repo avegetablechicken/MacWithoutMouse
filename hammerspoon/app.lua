@@ -444,10 +444,12 @@ appHotKeyCallbacks = {
     },
     ["showPrevTab"] = {
       message = "Show Previous Tab",
+      repeatable = true,
       fn = function(appObject) hs.eventtap.keyStroke("⇧⌃", "Tab", nil, appObject) end
     },
     ["showNextTab"] = {
       message = "Show Next Tab",
+      repeatable = true,
       fn = function(appObject) hs.eventtap.keyStroke("⌃", "Tab", nil, appObject) end
     }
   },
@@ -464,10 +466,12 @@ appHotKeyCallbacks = {
     },
     ["goToPreviousConversation"] = {
       message = "Go to Previous Conversation",
+      repeatable = true,
       fn = function(appObject) hs.eventtap.keyStroke("⇧⌃", "Tab", nil, appObject) end
     },
     ["goToNextConversation"] = {
       message = "Go to Next Conversation",
+      repeatable = true,
       fn = function(appObject) hs.eventtap.keyStroke("⌃", "Tab", nil, appObject) end
     }
   },
@@ -487,6 +491,7 @@ appHotKeyCallbacks = {
     ["back"] = {
       mods = "⌘", key = "[",
       message = localizedMessage("Back", "com.apple.AppStore", "Localizable"),
+      repeatable = true,
       condition = function()
         local appObject = findApplication("com.apple.AppStore")
         local storeMenuTitle = localizedString("Store", "com.apple.AppStore", "Localizable")
@@ -602,6 +607,7 @@ appHotKeyCallbacks = {
   {
     ["view:toggleOutline"] = {
       message = "View: Toggle Outline",
+      repeatable = true,
       fn = function() VSCodeToggleSideBarSection("EXPLORER", "OUTLINE") end
     }
   },
@@ -642,6 +648,7 @@ appHotKeyCallbacks = {
     },
     ["pasteAsPlainText"] = {
       message = localizedMessage("Paste as Plain Text", "abnerworks.Typora", "Menu"),
+      repeatable = true,
       fn = function(appObject)
         selectMenuItem(appObject, { "Edit", "Paste as Plain Text" },
                        { localeFile = "Menu" })
@@ -680,10 +687,12 @@ appHotKeyCallbacks = {
   {
     ["newWorkspace"] = {
       message = "New Workspace",
+      repeatable = true,
       fn = function(appObject) hs.eventtap.keyStroke("⌃⌥", "N", nil, appObject) end
     },
     ["closeWorkspace"] = {
       message = "Close Workspace",
+      repeatable = true,
       condition = function()
         local appObject = findApplication("com.kingsoft.wpsoffice.mac")
         local menuItem = appObject:findMenuItem({"工作区", "关闭工作区"})
@@ -697,10 +706,12 @@ appHotKeyCallbacks = {
     },
     ["previousTab"] = {
       message = "Previous Tab",
+      repeatable = true,
       fn = function(appObject) hs.eventtap.keyStroke("⇧⌃", "Tab", nil, appObject) end
     },
     ["nextTab"] = {
       message = "Next Tab",
+      repeatable = true,
       fn = function(appObject) hs.eventtap.keyStroke("⌃", "Tab", nil, appObject) end
     },
     ["goToFileTop"] = {
@@ -778,6 +789,7 @@ appHotKeyCallbacks = {
     },
     ["pasteAndMatchStyle"] = {
       message = localizedMessage("689.title", "com.apple.iWork.Keynote", "MainMenu"),
+      repeatable = true,
       fn = function(appObject)
         selectMenuItem(appObject, { "681.title", "689.title" },
                        { localeFile = "MainMenu" })
@@ -785,6 +797,7 @@ appHotKeyCallbacks = {
     },
     ["paste"] = {
       message = localizedMessage("688.title", "com.apple.iWork.Keynote", "MainMenu"),
+      repeatable = true,
       fn = function(appObject)
         selectMenuItem(appObject, { "681.title", "688.title" },
                        { localeFile = "MainMenu" })
@@ -867,6 +880,7 @@ appHotKeyCallbacks = {
     ["minimize"] = {
       mods = "⌘", key = "M",
       message = "Minimize",
+      repeatable = true,
       condition = function()
         local appObject = findApplication("cn.edu.idea.paper")
         return appObject:focusedWindow() ~= nil, appObject:focusedWindow()
@@ -884,6 +898,7 @@ appHotKeyCallbacks = {
   {
     ["back"] = {
       message = "Back",
+      repeatable = true,
       condition = function()
         local back = localizedString("Common.Navigation.Back", "com.tencent.xinWeChat", "Localizable")
         local lastPage = localizedString("WebView.Previous.Item", "com.tencent.xinWeChat", "Localizable")
@@ -982,6 +997,7 @@ appHotKeyCallbacks = {
     },
     ["forward"] = {
       message = "Forward",
+      repeatable = true,
       condition = function()
         local nextPage = localizedString("WebView.Next.Item", "com.tencent.xinWeChat", "Localizable")
         local ok, valid = hs.osascript.applescript([[
@@ -1058,6 +1074,7 @@ appHotKeyCallbacks = {
     ["closeWindow"] = {
       mods = "⌘", key = "W",
       message = "Close Window",
+      repeatable = true,
       fn = function(appObject) appObject:focusedWindow():close() end
     }
   },
@@ -1120,6 +1137,7 @@ appHotKeyCallbacks = {
     ["closeWindow"] = {
       mods = "⌘", key = "W",
       message = "Close Window",
+      repeatable = true,
       fn = function(appObject) appObject:focusedWindow():close() end
     }
   },
@@ -1196,6 +1214,7 @@ appHotKeyCallbacks = {
     ["closeWindow"] = {
       mods = "⌘", key = "W",
       message = "Close Window",
+      repeatable = true,
       fn = function(appObject) appObject:focusedWindow():close() end
     }
   },
@@ -1205,6 +1224,7 @@ appHotKeyCallbacks = {
     ["closeWindow"] = {
       mods = "⌘", key = "W",
       message = "Close Window",
+      repeatable = true,
       fn = function(appObject) appObject:focusedWindow():close() end
     }
   },
@@ -1214,6 +1234,7 @@ appHotKeyCallbacks = {
     ["minimizeWindow"] = {
       mods = "⌘", key = "M",
       message = "Minize",
+      repeatable = true,
       fn = function(appObject) appObject:focusedWindow():minimize() end
     },
     ["hideApp"] = {
@@ -1228,6 +1249,7 @@ appHotKeyCallbacks = {
     ["closeWindow"] = {
       mods = "⌘", key = "W",
       message = "Close Window",
+      repeatable = true,
       fn = function(appObject) appObject:focusedWindow():close() end
     }
   },
@@ -1240,6 +1262,7 @@ appHotKeyCallbacks = {
       windowFilter = {
         allowTitles = "^Control Center$"
       },
+      repeatable = true,
       fn = function(winObj) winObj:close() end
     }
   },
