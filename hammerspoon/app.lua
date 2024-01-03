@@ -428,17 +428,26 @@ local function iCopySelectHotkeyRemap(winObj, idx)
   hs.eventtap.keyStroke(iCopyMod, tostring(idx), nil, winObj:application())
 end
 
-local function localizedMessage(message, bundleID, localeFile)
-  if findApplication(bundleID) == nil then return message end
-  return localizedString(message, bundleID, localeFile)
+local function localizedMessage(message, bundleID, localeFile, sep)
+  return function()
+    if type(message) == 'string' then
+      return localizedString(message, bundleID, localeFile)
+    else
+      if sep == nil then sep = ' > ' end
+      local str = localizedString(message[1], bundleID, localeFile)
+      for i=2,#message do
+        str = str .. sep .. localizedString(message[i], bundleID, localeFile)
+      end
+      return str
+    end
+  end
 end
 
 appHotKeyCallbacks = {
   ["com.apple.finder"] =
   {
     ["goToDownloads"] = {
-      message = localizedMessage("Go", "com.apple.finder", "MenuBar")
-                .. ' > ' .. localizedMessage("Downloads", "com.apple.finder", "MenuBar"),
+      message = localizedMessage({ "Go", "Downloads" }, "com.apple.finder", "MenuBar"),
       fn = function(appObject)
         selectMenuItem(appObject, { "Go", "Downloads" }, { localeFile = "MenuBar" })
       end
@@ -869,8 +878,7 @@ appHotKeyCallbacks = {
   ["com.apple.iWork.Keynote"] =
   {
     ["export"] = {
-      message = localizedMessage("1780.title", "com.apple.iWork.Keynote", "MainMenu")
-                .. localizedMessage("1781.title", "com.apple.iWork.Keynote", "MainMenu"),
+      message = localizedMessage({ "1780.title", "1781.title" }, "com.apple.iWork.Keynote", "MainMenu"),
       fn = function(appObject)
         selectMenuItem(appObject, { "81.title", "1780.title" },
                        { localeFile = "MainMenu" })
@@ -902,8 +910,7 @@ appHotKeyCallbacks = {
       end
     },
     ["insertEquation"] = {
-      message = localizedMessage("849.title", "com.apple.iWork.Keynote", "MainMenu")
-                .. localizedMessage("1677.title", "com.apple.iWork.Keynote", "MainMenu"),
+      message = localizedMessage({ "849.title", "1677.title" }, "com.apple.iWork.Keynote", "MainMenu"),
       fn = function(appObject)
         selectMenuItem(appObject, { "849.title", "1677.title" },
                        { localeFile = "MainMenu" })
