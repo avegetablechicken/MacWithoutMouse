@@ -604,7 +604,7 @@ appHotKeyCallbacks = {
           return false
         end
       end,
-      fn = function(url) hs.execute("open -R " .. url) end
+      fn = function(url) hs.execute('open -R "' .. url .. '"') end
     }
   },
 
@@ -622,9 +622,7 @@ appHotKeyCallbacks = {
           return false
         end
       end,
-      fn = function(filePath, appObject)
-        hs.execute("open -R '" .. filePath .. "'")
-      end
+      fn = function(filePath) hs.execute("open -R '" .. filePath .. "'") end
     }
   },
 
@@ -646,7 +644,7 @@ appHotKeyCallbacks = {
           return false
         end
       end,
-      fn = function(url) hs.execute("open -R " .. url) end
+      fn = function(url) hs.execute('open -R "' .. url .. '"') end
     }
   },
 
@@ -921,9 +919,12 @@ appHotKeyCallbacks = {
           local pos = string.find(filePath, ":", 1)
           filePath = string.sub(filePath, pos)
           filePath = string.gsub(filePath, ":", "/")
-          hs.execute("open -R '" .. filePath .. "'")
+          return true, filePath
+        else
+          return false
         end
-      end
+      end,
+      fn = function(filePath) hs.execute("open -R '" .. filePath .. "'") end
     },
     ["confirmDelete"] = {
       message = "Confirm Delete",
