@@ -454,6 +454,11 @@ local function iCopySelectHotkeyRemap(winObj, idx)
   hs.eventtap.keyStroke(iCopyMod, tostring(idx), nil, winObj:application())
 end
 
+local function localizedMessage(message, bundleID, localeFile)
+  if findApplication(bundleID) == nil then return message end
+  return localizedString(message, bundleID, localeFile)
+end
+
 appHotKeyCallbacks = {
   ["com.apple.finder"] =
   {
@@ -505,7 +510,7 @@ appHotKeyCallbacks = {
   {
     ["back"] = {
       mods = "⌘", key = "[",
-      message = localizedString("Back", "com.apple.AppStore", "Localizable"),
+      message = localizedMessage("Back", "com.apple.AppStore", "Localizable"),
       condition = function()
         local appObject = findApplication("com.apple.AppStore")
         local storeMenuTitle = localizedString("Store", "com.apple.AppStore", "Localizable")
@@ -628,14 +633,14 @@ appHotKeyCallbacks = {
   ["com.readdle.PDFExpert-Mac"] =
   {
     ["showInFinder"] = {
-      message = localizedString("Show in Finder", "com.readdle.PDFExpert-Mac", "MainMenu"),
+      message = localizedMessage("Show in Finder", "com.readdle.PDFExpert-Mac", "MainMenu"),
       fn = function(appObject)
         selectMenuItem(appObject, { "File", "Show in Finder" },
                        { localeFile = "MainMenu" })
       end
     },
     ["openRecent"] = {
-      message = localizedString("Open Recent", "com.readdle.PDFExpert-Mac", "MainMenu"),
+      message = localizedMessage("Open Recent", "com.readdle.PDFExpert-Mac", "MainMenu"),
       fn = function(appObject)
         selectMenuItem(appObject, { "File", "Open Recent" },
                        { localeFile = "MainMenu" }, true)
@@ -646,21 +651,21 @@ appHotKeyCallbacks = {
   ["abnerworks.Typora"] =
   {
     ["openFileLocation"] = {
-      message = localizedString("Open File Location", "abnerworks.Typora", "Menu"),
+      message = localizedMessage("Open File Location", "abnerworks.Typora", "Menu"),
       fn = function(appObject)
         selectMenuItem(appObject, { "File", "Open File Location" },
                        { localeFile = "Menu" })
       end
     },
     ["openRecent"] = {
-      message = localizedString("Open Recent", "abnerworks.Typora", "Menu"),
+      message = localizedMessage("Open Recent", "abnerworks.Typora", "Menu"),
       fn = function(appObject)
         selectMenuItem(appObject, { "File", "Open Recent" },
                        { localeFile = "Menu" }, true)
       end
     },
     ["pasteAsPlainText"] = {
-      message = localizedString("Paste as Plain Text", "abnerworks.Typora", "Menu"),
+      message = localizedMessage("Paste as Plain Text", "abnerworks.Typora", "Menu"),
       fn = function(appObject)
         selectMenuItem(appObject, { "Edit", "Paste as Plain Text" },
                        { localeFile = "Menu" })
@@ -687,7 +692,7 @@ appHotKeyCallbacks = {
   ["com.superace.updf.mac"] =
   {
     ["showInFinder"] = {
-      message = localizedString("Show in Finder", "com.superace.updf.mac", "Localizable"),
+      message = localizedMessage("Show in Finder", "com.superace.updf.mac", "Localizable"),
       fn = function(appObject)
         selectMenuItem(appObject, { "File", "Show in Finder" },
                        { localeFile = "Localizable" })
@@ -786,8 +791,8 @@ appHotKeyCallbacks = {
   ["com.apple.iWork.Keynote"] =
   {
     ["export"] = {
-      message = localizedString("1780.title", "com.apple.iWork.Keynote", "MainMenu")
-                .. localizedString("1781.title", "com.apple.iWork.Keynote", "MainMenu"),
+      message = localizedMessage("1780.title", "com.apple.iWork.Keynote", "MainMenu")
+                .. localizedMessage("1781.title", "com.apple.iWork.Keynote", "MainMenu"),
       fn = function(appObject)
         selectMenuItem(appObject, { "81.title", "1780.title" },
                        { localeFile = "MainMenu" })
@@ -796,29 +801,29 @@ appHotKeyCallbacks = {
       end
     },
     ["pasteAndMatchStyle"] = {
-      message = localizedString("689.title", "com.apple.iWork.Keynote", "MainMenu"),
+      message = localizedMessage("689.title", "com.apple.iWork.Keynote", "MainMenu"),
       fn = function(appObject)
         selectMenuItem(appObject, { "681.title", "689.title" },
                        { localeFile = "MainMenu" })
       end
     },
     ["paste"] = {
-      message = localizedString("688.title", "com.apple.iWork.Keynote", "MainMenu"),
+      message = localizedMessage("688.title", "com.apple.iWork.Keynote", "MainMenu"),
       fn = function(appObject)
         selectMenuItem(appObject, { "681.title", "688.title" },
                        { localeFile = "MainMenu" })
       end
     },
     ["play"] = {
-      message = localizedString("1527.title", "com.apple.iWork.Keynote", "MainMenu"),
+      message = localizedMessage("1527.title", "com.apple.iWork.Keynote", "MainMenu"),
       fn = function(appObject)
         selectMenuItem(appObject, { "1526.title", "1527.title" },
                        { localeFile = "MainMenu" })
       end
     },
     ["insertEquation"] = {
-      message = localizedString("849.title", "com.apple.iWork.Keynote", "MainMenu")
-                .. localizedString("1677.title", "com.apple.iWork.Keynote", "MainMenu"),
+      message = localizedMessage("849.title", "com.apple.iWork.Keynote", "MainMenu")
+                .. localizedMessage("1677.title", "com.apple.iWork.Keynote", "MainMenu"),
       fn = function(appObject)
         selectMenuItem(appObject, { "849.title", "1677.title" },
                        { localeFile = "MainMenu" })
