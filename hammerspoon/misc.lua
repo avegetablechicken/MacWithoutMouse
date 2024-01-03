@@ -190,6 +190,12 @@ local function menuItemHotkeyIdx(mods, key)
   return idx
 end
 
+local menuBarTitleLocalizationMap = {}
+for _, title in ipairs{ 'Edit', 'View' } do
+  local localizedTitle = localizedString(title, "com.apple.Notes", "MainMenu")
+  menuBarTitleLocalizationMap[localizedTitle] = title
+end
+
 local function getSubMenuHotkeys(t, menuItem, titleAsEntry, titlePrefix)
   if menuItem.AXChildren == nil then return end
   if titleAsEntry == true then
@@ -205,9 +211,17 @@ local function getSubMenuHotkeys(t, menuItem, titleAsEntry, titlePrefix)
     if subItem.AXMenuItemCmdChar ~= "" or subItem.AXMenuItemCmdGlyph ~= "" then
       local idx
       if subItem.AXMenuItemCmdChar ~= "" then
-        if subItem.AXTitle == "表情与符号" or subItem.AXTitle == "Emoji & Symbols" then
+        if subItem.AXTitle == "Emoji & Symbols"
+            or ((menuBarTitleLocalizationMap[menuItem.AXTitle] == 'Edit' or menuItem.AXTitle == "Edit")
+                and subItem.AXMenuItemCmdChar == 'E' and subItem.AXMenuItemCmdGlyph == ""
+                and #subItem.AXMenuItemCmdModifiers == 0 and subItem.AXMenuItemMarkChar == ""
+                and subItem.AXChildren == nil) then
           idx = "🌐" .. subItem.AXMenuItemCmdChar
-        elseif subItem.AXTitle == "进入全屏幕" or subItem.AXTitle == "Enter Full Screen" then
+        elseif subItem.AXTitle == "Enter Full Screen"
+            or ((menuBarTitleLocalizationMap[menuItem.AXTitle] == 'View' or menuItem.AXTitle == "View")
+                and subItem.AXMenuItemCmdChar == 'F' and subItem.AXMenuItemCmdGlyph == ""
+                and #subItem.AXMenuItemCmdModifiers == 0 and subItem.AXMenuItemMarkChar == ""
+                and subItem.AXChildren == nil) then
           idx = "🌐" .. subItem.AXMenuItemCmdChar
         else
           idx = menuItemHotkeyIdx(subItem.AXMenuItemCmdModifiers or {}, subItem.AXMenuItemCmdChar)
