@@ -751,7 +751,7 @@ appHotKeyCallbacks = {
       fn = function(appObject) hs.eventtap.keyStroke("⌃⌥", "N", nil, appObject) end
     },
     ["closeWorkspace"] = {
-      message = "Close Workspace",
+      message = "关闭工作区",
       repeatable = true,
       condition = function()
         local appObject = findApplication("com.kingsoft.wpsoffice.mac")
@@ -813,7 +813,7 @@ appHotKeyCallbacks = {
       fn = function(appObject) hs.eventtap.keyStroke("⇧⌘", "End", nil, appObject) end
     },
     ["openFileLocation"] = {
-      message = "Open File Location",
+      message = "打开文件位置",
       fn = function(appObject)
         local aWin = activatedWindowIndex()
         local appUIObj = hs.axuielement.applicationElement(appObject)
