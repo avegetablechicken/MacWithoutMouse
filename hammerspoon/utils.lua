@@ -183,6 +183,11 @@ local appLocaleMap = {}
 local appLocaleDir = {}
 local appLocaleInversedMap = {}
 function localizedString(string, bundleID, params)
+  if hs.application.pathForBundleID(bundleID) == nil
+      or hs.application.pathForBundleID(bundleID) == "" then
+    return nil
+  end
+
   local locale, localeFile, localeDir
   if type(params) == "table" then
     locale = params.locale
@@ -271,9 +276,11 @@ function localizedString(string, bundleID, params)
     if localeFile ~= nil then
       if localesDict[localeFile] == nil then
         local fullPath = localeDir .. '/' .. localeFile .. '.strings'
-        localesDict[localeFile] = parseStringsFile(fullPath)
+        if hs.fs.attributes(fullPath) ~= nil then
+          localesDict[localeFile] = parseStringsFile(fullPath)
+        end
       end
-      if localesDict[localeFile][string] ~= nil then
+      if localesDict[localeFile] ~= nil then
         return localesDict[localeFile][string]
       end
     else
@@ -442,9 +449,11 @@ function delocalizedMenuItem(string, bundleID, locale, localeFile)
   if localeFile ~= nil then
     if menuItemLocaleMap[bundleID][string] == nil then
       local fullPath = localeDir .. '/' .. localeFile .. '.strings'
-      menuItemLocaleMap[bundleID] = parseStringsFile(fullPath, false)
+      if hs.fs.attributes(fullPath) ~= nil then
+        menuItemLocaleMap[bundleID] = parseStringsFile(fullPath, false)
+      end
     end
-    if menuItemLocaleMap[bundleID][string] ~= nil then
+    if menuItemLocaleMap[bundleID] ~= nil and menuItemLocaleMap[bundleID][string] ~= nil then
       local result = searchFunc(menuItemLocaleMap[bundleID][string])
       if result ~= nil then
         return result

@@ -192,7 +192,7 @@ end
 
 local menuBarTitleLocalizationMap = {}
 for _, title in ipairs{ 'Edit', 'View' } do
-  local localizedTitle = localizedString(title, "com.apple.Notes", "MainMenu")
+  local localizedTitle = localizedString(title, "com.apple.finder", "MenuBar")
   menuBarTitleLocalizationMap[localizedTitle] = title
 end
 
