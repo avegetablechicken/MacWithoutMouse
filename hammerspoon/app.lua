@@ -443,14 +443,36 @@ appHotKeyCallbacks = {
       end
     },
     ["showPrevTab"] = {
-      message = "Show Previous Tab",
+      message = function()
+        return findMenuItemByKeyBinding(findApplication("com.apple.finder"), { 'shift', 'ctrl' }, "⇥")[2]
+      end,
       repeatable = true,
-      fn = function(appObject) hs.eventtap.keyStroke("⇧⌃", "Tab", nil, appObject) end
+      condition = function()
+        local appObject = findApplication("com.apple.finder")
+        local menuItem, enabled = findMenuItemByKeyBinding(appObject, { 'shift', 'ctrl' }, "⇥")
+        if menuItem ~= nil and enabled then
+          return true, menuItem
+        else
+          return false
+        end
+      end,
+      fn = function(menuItem, appObject) appObject:selectMenuItem(menuItem) end
     },
     ["showNextTab"] = {
-      message = "Show Next Tab",
+      message = function()
+        return findMenuItemByKeyBinding(findApplication("com.apple.finder"), { 'ctrl' }, "⇥")[2]
+      end,
       repeatable = true,
-      fn = function(appObject) hs.eventtap.keyStroke("⌃", "Tab", nil, appObject) end
+      condition = function()
+        local appObject = findApplication("com.apple.finder")
+        local menuItem, enabled = findMenuItemByKeyBinding(appObject, { 'ctrl' }, "⇥")
+        if menuItem ~= nil and enabled then
+          return true, menuItem
+        else
+          return false
+        end
+      end,
+      fn = function(menuItem, appObject) appObject:selectMenuItem(menuItem) end
     }
   },
 
@@ -465,14 +487,36 @@ appHotKeyCallbacks = {
       fn = function(appObject) deleteAllMessages(appObject) end
     },
     ["goToPreviousConversation"] = {
-      message = "Go to Previous Conversation",
+      message = function()
+        return findMenuItemByKeyBinding(findApplication("com.apple.MobileSMS"), { 'shift', 'ctrl' }, "⇥")[2]
+      end,
       repeatable = true,
-      fn = function(appObject) hs.eventtap.keyStroke("⇧⌃", "Tab", nil, appObject) end
+      condition = function()
+        local appObject = findApplication("com.apple.MobileSMS")
+        local menuItem, enabled = findMenuItemByKeyBinding(appObject, { 'shift', 'ctrl' }, "⇥")
+        if menuItem ~= nil and enabled then
+          return true, menuItem
+        else
+          return false
+        end
+      end,
+      fn = function(menuItem, appObject) appObject:selectMenuItem(menuItem) end
     },
     ["goToNextConversation"] = {
-      message = "Go to Next Conversation",
+      message = function()
+        return findMenuItemByKeyBinding(findApplication("com.apple.MobileSMS"), { 'ctrl' }, "⇥")[2]
+      end,
       repeatable = true,
-      fn = function(appObject) hs.eventtap.keyStroke("⌃", "Tab", nil, appObject) end
+      condition = function()
+        local appObject = findApplication("com.apple.MobileSMS")
+        local menuItem, enabled = findMenuItemByKeyBinding(appObject, { 'ctrl' }, "⇥")
+        if menuItem ~= nil and enabled then
+          return true, menuItem
+        else
+          return false
+        end
+      end,
+      fn = function(menuItem, appObject) appObject:selectMenuItem(menuItem) end
     }
   },
 
@@ -720,14 +764,36 @@ appHotKeyCallbacks = {
       fn = function(appObject) appObject:selectMenuItem({"工作区", "关闭工作区"}) end
     },
     ["previousTab"] = {
-      message = "Previous Tab",
+      message = function()
+        return findMenuItemByKeyBinding(findApplication("com.kingsoft.wpsoffice.mac"), { 'shift', 'ctrl' }, "⇥")[2]
+      end,
       repeatable = true,
-      fn = function(appObject) hs.eventtap.keyStroke("⇧⌃", "Tab", nil, appObject) end
+      condition = function()
+        local appObject = findApplication("com.kingsoft.wpsoffice.mac")
+        local menuItem, enabled = findMenuItemByKeyBinding(appObject, { 'shift', 'ctrl' }, "⇥")
+        if menuItem ~= nil and enabled then
+          return true, menuItem
+        else
+          return false
+        end
+      end,
+      fn = function(menuItem, appObject) appObject:selectMenuItem(menuItem) end
     },
     ["nextTab"] = {
-      message = "Next Tab",
+      message = function()
+        return findMenuItemByKeyBinding(findApplication("com.kingsoft.wpsoffice.mac"), { 'ctrl' }, "⇥")[2]
+      end,
       repeatable = true,
-      fn = function(appObject) hs.eventtap.keyStroke("⌃", "Tab", nil, appObject) end
+      condition = function()
+        local appObject = findApplication("com.kingsoft.wpsoffice.mac")
+        local menuItem, enabled = findMenuItemByKeyBinding(appObject, { 'ctrl' }, "⇥")
+        if menuItem ~= nil and enabled then
+          return true, menuItem
+        else
+          return false
+        end
+      end,
+      fn = function(menuItem, appObject) appObject:selectMenuItem(menuItem) end
     },
     ["goToFileTop"] = {
       message = "Go to File Top",
@@ -1736,7 +1802,8 @@ local function registerRunningAppHotKeys(bid, appObject)
              and hs.application.pathForBundleID(bid) ~= ""))) then
       local fn = hs.fnutils.partial(cfg.fn, appObject)
       local repeatedFn = cfg.repeatable and fn or nil
-      local hotkey = bindSpecSuspend(keyBinding, cfg.message, fn, nil, repeatedFn)
+      local msg = (appObject ~= nil and type(cfg.message) ~= 'string') and cfg.message() or cfg.message
+      local hotkey = bindSpecSuspend(keyBinding, msg, fn, nil, repeatedFn)
       if keyBinding.persist == true then
         hotkey.persist = true
       else
@@ -1870,7 +1937,8 @@ local function registerInAppHotKeys(appName, eventType, appObject)
         fn = inAppHotKeysWrapper(appObject, keyBinding,
                                  hs.fnutils.partial(fn, appObject, appName, eventType))
         local repeatedFn = cfg.repeatable and fn or nil
-        local hotkey = bindSpecSuspend(keyBinding, cfg.message, fn, nil, repeatedFn)
+        local msg = type(cfg.message) == 'string' and cfg.message or cfg.message()
+        local hotkey = bindSpecSuspend(keyBinding, msg, fn, nil, repeatedFn)
         hotkey.kind = HK.IN_APP
         hotkey.condition = cfg.condition
         table.insert(inAppHotKeys[bid], hotkey)
@@ -1967,9 +2035,10 @@ local function registerInWinHotKeys(appObject)
       if type(hkID) ~= 'number' then
         if keyBinding.windowFilter ~= nil and (spec.bindCondition == nil or spec.bindCondition())
             and not spec.notActivateApp then
-          local fn = inWinHotKeysWrapper(appObject, keyBinding.windowFilter, keyBinding, spec.message, spec.fn)
+          local msg = type(spec.message) == 'string' and spec.message or spec.message()
+          local fn = inWinHotKeysWrapper(appObject, keyBinding.windowFilter, keyBinding, msg, spec.fn)
           local repeatedFn = spec.repeatable and fn or nil
-          local hotkey = bindSpecSuspend(keyBinding, spec.message, fn, nil, repeatedFn)
+          local hotkey = bindSpecSuspend(keyBinding, msg, fn, nil, repeatedFn)
           hotkey.kind = HK.IN_APPWIN
           table.insert(inWinHotKeys[bid], hotkey)
         end
@@ -1977,9 +2046,10 @@ local function registerInWinHotKeys(appObject)
         local cfg = spec[1]
         for _, spec in ipairs(cfg) do
           if (spec.bindCondition == nil or spec.bindCondition()) and not spec.notActivateApp then
-            local fn = inWinHotKeysWrapper(appObject, cfg.filter, spec, spec.message, spec.fn)
+            local msg = type(spec.message) == 'string' and spec.message or spec.message()
+            local fn = inWinHotKeysWrapper(appObject, cfg.filter, spec, msg, spec.fn)
             local repeatedFn = spec.repeatable and fn or nil
-            local hotkey = bindSpecSuspend(spec, spec.message, fn, nil, repeatedFn)
+            local hotkey = bindSpecSuspend(spec, msg, fn, nil, repeatedFn)
             hotkey.kind = HK.IN_APPWIN
             table.insert(inWinHotKeys[bid], hotkey)
           end
@@ -2003,10 +2073,11 @@ local function registerInWinHotKeys(appObject)
         if keyBinding.windowFilter ~= nil then
           local hkIdx = hotkeyIdx(keyBinding.mods, keyBinding.key)
           local prevHotkeyInfo = inWinHotkeyInfoChain[bid][hkIdx]
+          local msg = type(spec.message) == 'string' and spec.message or spec.message()
           inWinHotkeyInfoChain[bid][hkIdx] = {
             appName = appObject:name(),
             filter = keyBinding.windowFilter,
-            message = spec.message,
+            message = msg,
             previous = prevHotkeyInfo
           }
         end
@@ -2015,10 +2086,11 @@ local function registerInWinHotKeys(appObject)
         for _, spec in ipairs(cfg) do
           local hkIdx = hotkeyIdx(spec.mods, spec.key)
           local prevHotkeyInfo = inWinHotkeyInfoChain[bid][hkIdx]
+          local msg = type(spec.message) == 'string' and spec.message or spec.message()
           inWinHotkeyInfoChain[bid][hkIdx] = {
             appName = appObject:name(),
             filter = cfg.filter,
-            message = spec.message,
+            message = msg,
             previous = prevHotkeyInfo
           }
         end
@@ -2066,7 +2138,8 @@ local function inWinOfUnactivatedAppWatcherEnableCallback(bid, filter, winObj, a
   for hkID, spec in pairs(appHotKeyCallbacks[bid]) do
     if type(hkID) ~= 'number' then
       if (spec.bindCondition == nil or spec.bindCondition()) and sameFilter(keybindingConfigs.hotkeys[bid][hkID].windowFilter, filter) then
-        local hotkey = bindSpecSuspend(keybindingConfigs.hotkeys[bid][hkID], spec.message,
+        local msg = type(spec.message) == 'string' and spec.message or spec.message()
+        local hotkey = bindSpecSuspend(keybindingConfigs.hotkeys[bid][hkID], msg,
                                        spec.fn, nil, spec.repeatable and spec.fn or nil)
         hotkey.kind = HK.IN_WIN
         hotkey.notActivateApp = spec.notActivateApp
@@ -2077,7 +2150,8 @@ local function inWinOfUnactivatedAppWatcherEnableCallback(bid, filter, winObj, a
       if sameFilter(cfg.filter, filter) then
         for _, spec in ipairs(cfg) do
           if (spec.bindCondition == nil or spec.bindCondition()) then
-            local hotkey = bindSuspend(spec.mods, spec.key, spec.message,
+            local msg = type(spec.message) == 'string' and spec.message or spec.message()
+            local hotkey = bindSuspend(spec.mods, spec.key, msg,
                                        spec.fn, nil, spec.repeatable and spec.fn or nil)
             hotkey.kind = HK.IN_WIN
             hotkey.notActivateApp = cfg.notActivateApp

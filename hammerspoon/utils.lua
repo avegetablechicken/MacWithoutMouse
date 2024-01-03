@@ -120,6 +120,17 @@ end
 
 function findMenuItemByKeyBinding(appObject, mods, key)
   local menuItems = appObject:getMenuItems()
+  if menuItems == nil then
+    hs.timer.usleep(0.1 * 1000000)
+    menuItems = appObject:getMenuItems()
+    if menuItems == nil then
+      hs.timer.usleep(0.1 * 1000000)
+      menuItems = appObject:getMenuItems()
+      if menuItems == nil then
+        return
+      end
+    end
+  end
   for i=#menuItems,1,-1 do
     local menuItem = menuItems[i]
     local menuItemPath, enabled = findMenuItemByKeyBindingImpl(mods, key, menuItem)
