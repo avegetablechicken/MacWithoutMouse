@@ -1013,7 +1013,8 @@ local function browserChooser()
 
     local script = [[
       tell application id "]] .. choice.browser .. [["
-        set aWindow to item 1 of (every window whose id is ]] .. choice.winID .. [[)
+        set aWindow to window id ]] .. choice.winID .. [[
+
         set tabList to every tab of aWindow
         repeat with j from 1 to count of tabList
           if ]] .. findTabCmd .. [[ then
@@ -1213,7 +1214,8 @@ local function PDFChooser()
       local ok, result = hs.osascript.applescript([[
         tell application id "com.apple.Preview"
           activate
-          set aWindow to item 1 of (every window whose id is ]] .. choice.id .. [[)
+          set aWindow to window id ]] .. choice.id .. [[
+
           set index of aWindow to 1
         end tell
       ]])
@@ -1235,7 +1237,8 @@ local function PDFChooser()
       end
       local script = [[
         tell application id "]] .. choice.app .. [["
-          set aWindow to item 1 of (every window whose id is ]] .. choice.winID .. [[)
+          set aWindow to window id ]] .. choice.winID .. [[
+
           set tabList to every tab of aWindow
           repeat with j from 1 to count of tabList
             if ]] .. findTabCmd .. [[ then
