@@ -2169,43 +2169,13 @@ for bid, appConfig in pairs(appHotKeyCallbacks) do
 end
 
 -- simplify switching to previous tab
-function isAppPreviousTabHotkeyImpl(menuItem)
-  if menuItem.AXChildren == nil then return end
-  for _, subItem in ipairs(menuItem.AXChildren[1]) do
-    if subItem.AXMenuItemCmdGlyph ~= ""
-        and hs.application.menuGlyphs[subItem.AXMenuItemCmdGlyph] == "⇥"
-        and #subItem.AXMenuItemCmdModifiers == 2
-        and hs.fnutils.contains(subItem.AXMenuItemCmdModifiers, 'shift')
-        and hs.fnutils.contains(subItem.AXMenuItemCmdModifiers, 'ctrl') then
-      return { subItem.AXTitle }, subItem.AXEnabled
-    end
-    local menuItemPath, enabled = isAppPreviousTabHotkeyImpl(subItem)
-    if menuItemPath ~= nil then
-      table.insert(menuItemPath, 1, subItem.AXTitle)
-      return menuItemPath, enabled
-    end
-  end
-end
-
-function isAppPreviousTabHotkey(appObject)
-  local menuItems = appObject:getMenuItems() or {}
-  for i=#menuItems,1,-1 do
-    local menuItem = menuItems[i]
-    local menuItemPath, enabled = isAppPreviousTabHotkeyImpl(menuItem)
-    if menuItemPath ~= nil then
-      table.insert(menuItemPath, 1, menuItem.AXTitle)
-      return menuItemPath, enabled
-    end
-  end
-end
-
 function remapPreviousTab()
   if remapPreviousTabHotkey then
     remapPreviousTabHotkey:delete()
     remapPreviousTabHotkey = nil
   end
   local appObject = hs.application.frontmostApplication()
-  local menuItemPath, enabled = isAppPreviousTabHotkey(appObject)
+  local menuItemPath, enabled = findMenuItemByKeyBinding(appObject, { 'shift', 'ctrl' }, '⇥')
   if menuItemPath ~= nil and enabled then
     local fn = inAppHotKeysWrapper(appObject, "⌃", "`", function()
                                      appObject:selectMenuItem(menuItemPath)

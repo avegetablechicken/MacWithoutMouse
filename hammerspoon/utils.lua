@@ -93,6 +93,43 @@ function selectMenuItem(appObject, menuItemTitle, params, show)
   appObject:selectMenuItem(targetMenuItem)
 end
 
+local function findMenuItemByKeyBindingImpl(mods, key, menuItem)
+  if menuItem.AXChildren == nil then return end
+  for _, subItem in ipairs(menuItem.AXChildren[1]) do
+    if (subItem.AXMenuItemCmdChar == key
+        or (subItem.AXMenuItemCmdGlyph ~= "" and hs.application.menuGlyphs[subItem.AXMenuItemCmdGlyph] == key))
+        and #subItem.AXMenuItemCmdModifiers == #mods then
+      local match = true
+      for _, mod in ipairs(mods) do
+        if not hs.fnutils.contains(subItem.AXMenuItemCmdModifiers, mod) then
+          match = false
+          break
+        end
+      end
+      if match then
+        return { subItem.AXTitle }, subItem.AXEnabled
+      end
+    end
+    local menuItemPath, enabled = findMenuItemByKeyBindingImpl(mods, key, subItem)
+    if menuItemPath ~= nil then
+      table.insert(menuItemPath, 1, subItem.AXTitle)
+      return menuItemPath, enabled
+    end
+  end
+end
+
+function findMenuItemByKeyBinding(appObject, mods, key)
+  local menuItems = appObject:getMenuItems()
+  for i=#menuItems,1,-1 do
+    local menuItem = menuItems[i]
+    local menuItemPath, enabled = findMenuItemByKeyBindingImpl(mods, key, menuItem)
+    if menuItemPath ~= nil then
+      table.insert(menuItemPath, 1, menuItem.AXTitle)
+      return menuItemPath, enabled
+    end
+  end
+end
+
 local function filterParallels(appObjects)
   return hs.fnutils.find(appObjects, function(app)
     return string.find(app:bundleID(), "com.parallels") == nil
