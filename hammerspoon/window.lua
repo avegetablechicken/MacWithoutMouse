@@ -905,15 +905,6 @@ end
 
 -- show a dialog to specify a window title from all visible windows, use it to switch to a window
 -- fixme: full screen space will be ignored if not once focused
-local menuBarTitleLocalizationMap = hs.json.read("static/menuitem-localization.json")
-local windowMenuItem
-for key, item in pairs(menuBarTitleLocalizationMap.common) do
-  if item == "Window" then
-    windowMenuItem = key
-    break
-  end
-end
-
 bindWindowMisc(misc["searchWindow"], 'Switch to Window',
 function()
   local wFilter = hs.window.filter.new()
@@ -1038,6 +1029,7 @@ local function browserChooser()
     -- fixme: when a full screen space is focused, then switching fails
     -- has to try twice to make it work
     appObject:activate()
+    local windowMenuItem = localizedString('Window', "com.apple.Notes", "MainMenu")
     appObject:selectMenuItem({windowMenuItem, result})
     hs.timer.usleep(0.5 * 1000000)
     appObject:selectMenuItem({windowMenuItem, result})
@@ -1259,6 +1251,7 @@ local function PDFChooser()
       -- fixme: when a full screen space is focused, then switching fails
       -- has to try twice to make it work
       appObject:activate()
+      local windowMenuItem = localizedString('Window', "com.apple.Notes", "MainMenu")
       appObject:selectMenuItem({windowMenuItem, result})
       hs.timer.usleep(0.5 * 1000000)
       appObject:selectMenuItem({windowMenuItem, result})

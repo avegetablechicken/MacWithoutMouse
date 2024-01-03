@@ -2194,6 +2194,14 @@ remapPreviousTab()
 -- bind `alt+?` hotkeys to menu bar 1 functions
 -- to be registered in application callback
 local menuBarTitleLocalizationMap = hs.json.read("static/menuitem-localization.json")
+if menuBarTitleLocalizationMap == nil then
+  menuBarTitleLocalizationMap = {}
+end
+menuBarTitleLocalizationMap.common = {}
+for _, title in ipairs{ 'File', 'Edit', 'Format', 'View', 'Window', 'Help' } do
+  local localizedTitle = localizedString(title, "com.apple.Notes", "MainMenu")
+  menuBarTitleLocalizationMap.common[localizedTitle] = title
+end
 altMenuItemHotkeys = {}
 
 local function bindAltMenu(appObject, mods, key, message, fn)

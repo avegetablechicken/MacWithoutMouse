@@ -1,13 +1,4 @@
 {
-  "common": {
-    "文件": "File",
-    "编辑": "Edit",
-    "显示": "View",
-    "格式": "Format",
-    "窗口": "Window",
-    "帮助": "Help"
-  },
-
   "com.pixelmatorteam.pixelmator.x": {
     "图像": "Image"
   },
