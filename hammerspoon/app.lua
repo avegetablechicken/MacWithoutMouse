@@ -1112,6 +1112,40 @@ appHotKeyCallbacks = {
     }
   },
 
+  ["com.objective-see.lulu.app"] =
+  {
+    ["allowConnection"] = {
+      message = "Allow Connection",
+      windowFilter = {
+        allowTitles = "^LuLu Alert$"
+      },
+      fn = function(winObj)
+        hs.osascript.applescript([[
+          tell application "System Events"
+            tell ]] .. aWinFor("com.objective-see.lulu.app") .. [[
+              click button "Allow"
+            end tell
+          end tell
+        ]])
+      end
+    },
+    ["blockConnection"] = {
+      message = "Block Connection",
+      windowFilter = {
+        allowTitles = "^LuLu Alert$"
+      },
+      fn = function(winObj)
+        hs.osascript.applescript([[
+          tell application "System Events"
+            tell ]] .. aWinFor("com.objective-see.lulu.app") .. [[
+              click button "Block"
+            end tell
+          end tell
+        ]])
+      end
+    }
+  },
+
   ["com.surteesstudios.Bartender"] =
   {
     ["toggleMenuBar"] = {

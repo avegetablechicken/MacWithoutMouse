@@ -1028,6 +1028,16 @@
         "key": "escape"
       }
     },
+    "com.objective-see.lulu.app": {
+      "allowConnection": {
+        "mods": "option",
+        "key": "A"
+      },
+      "blockConnection": {
+        "mods": "option",
+        "key": "B"
+      }
+    },
     "com.surteesstudios.Bartender": {
       "toggleMenuBar": {
         "mods": "${hyper.daemon}",
