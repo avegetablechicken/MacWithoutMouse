@@ -2249,7 +2249,7 @@ function remapPreviousTab()
     local fn = inAppHotKeysWrapper(appObject, "⌃", "`",
         function()
           if cond(appObject) then appObject:selectMenuItem(menuItemPath)
-          else hs.eventtap.keyStroke("⇧⌃", "Tab") end
+          else hs.eventtap.keyStroke("⌃", "`") end
         end)
     remapPreviousTabHotkey = bindSuspend("⌃", "`", menuItemPath[#menuItemPath],
                                          fn, nil, fn)
