@@ -1070,29 +1070,51 @@ appHotKeyCallbacks = {
   {
     ["back"] = {
       message = "Back",
-      bindCondition = function()
+      condition = function()
         local version = hs.execute(string.format('mdls -r -name kMDItemVersion "%s"',
             hs.application.pathForBundleID("com.tencent.QQMusicMac")))
         local major, minor, patch = string.match(version, "(%d+)%.(%d+)%.(%d+)")
-        return tonumber(major) < 9
-      end,
-      condition = function()
-        local song = localizedString("COMMON_SONG", "com.tencent.QQMusicMac",
-                                     { localeDir = false })
-        local detail = localizedString("COMMON_DETAIL", "com.tencent.QQMusicMac",
-                                       { localeDir = false })
-        local ok, valid = hs.osascript.applescript([[
-          tell application "System Events"
-            tell ]] .. aWinFor("com.tencent.QQMusicMac") .. [[
-              set btCnt to count (every button)
-              return (exists button "]] .. song .. detail .. [[") and btCnt > 4
+        if tonumber(major) < 9 then
+          local song = localizedString("COMMON_SONG", "com.tencent.QQMusicMac",
+                                      { localeDir = false })
+          local detail = localizedString("COMMON_DETAIL", "com.tencent.QQMusicMac",
+                                        { localeDir = false })
+          local ok, valid = hs.osascript.applescript([[
+            tell application "System Events"
+              tell ]] .. aWinFor("com.tencent.QQMusicMac") .. [[
+                set btCnt to count (every button)
+                return (exists button "]] .. song .. detail .. [[") and btCnt > 4
+              end tell
             end tell
-          end tell
-        ]])
-        return ok and valid
+          ]])
+          return ok and valid
+        else
+          local ok, valid = hs.osascript.applescript([[
+              tell application "System Events"
+                tell (first process whose bundle identifier is "com.tencent.QQMusicMac")
+                  if number of windows is greater than or equal to 2 then
+                    set aWin to window 1
+                    set mWin to (window 1 whose value of attribute "AXMain" is true)
+                    if aWin is not mWin then
+                      set aWinPos to value of attribute "AXPosition" of aWin
+                      set mWinPos to value of attribute "AXPosition" of mWin
+                      set aWinSz to value of attribute "AXSize" of aWin
+                      set mWinSz to value of attribute "AXSize" of mWin
+                      if aWinPos is equal to mWinPos ¬
+                          and aWinSz is equal to mWinSz then
+                        return true
+                      end if
+                    end if
+                  end if
+                  return false
+                end tell
+              end tell
+          ]])
+          return ok and valid
+        end
       end,
-      fn = function()
-        local ok, valid = hs.osascript.applescript([[
+      fn = function(code)
+        hs.osascript.applescript([[
           tell application "System Events"
             tell ]] .. aWinFor("com.tencent.QQMusicMac") .. [[
               set btCnt to count (every button)
