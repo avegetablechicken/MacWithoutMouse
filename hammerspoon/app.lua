@@ -2276,7 +2276,10 @@ function remapPreviousTab()
   local appObject = hs.application.frontmostApplication()
   local menuItemPath = findMenuItemByKeyBinding(appObject, { 'shift', 'ctrl' }, '⇥')
   if menuItemPath ~= nil then
-    local cond = checkMenuItemByKeybinding({ 'shift', 'ctrl' }, '⇥')
+    local cond = function(appObject)
+      local menuItemCond = appObject:findMenuItem(menuItemPath)
+      return menuItemCond ~= nil and menuItemCond.enabled
+    end
     local fn = inAppHotKeysWrapper(appObject, "⌃", "`",
         function()
           if cond(appObject) then appObject:selectMenuItem(menuItemPath)
