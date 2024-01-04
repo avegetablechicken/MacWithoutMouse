@@ -71,10 +71,14 @@ end
 
 function findMenuItem(appObject, menuItemTitle, params)
   local targetMenuItem
-  if menuItemTitle.en and appObject:findMenuItem(menuItemTitle.en) ~= nil then
-    targetMenuItem = menuItemTitle.en
-  elseif menuItemTitle.zh and appObject:findMenuItem(menuItemTitle.zh) ~= nil then
-    targetMenuItem = menuItemTitle.zh
+  if menuItemTitle.en or menuItemTitle.zh then
+    if menuItemTitle.en and appObject:findMenuItem(menuItemTitle.en) ~= nil then
+      targetMenuItem = menuItemTitle.en
+    elseif menuItemTitle.zh and appObject:findMenuItem(menuItemTitle.zh) ~= nil then
+      targetMenuItem = menuItemTitle.zh
+    else
+      return nil
+    end
   else
     targetMenuItem = {}
     for _, title in ipairs(menuItemTitle) do
