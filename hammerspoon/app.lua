@@ -128,12 +128,13 @@ local function toggleBarrierConnect()
 end
 
 local function toggleTopNotch()
-  if findApplication("pl.maketheweb.TopNotch") == nil then
-    hs.application.open("pl.maketheweb.TopNotch")
+  local bundleID = "pl.maketheweb.TopNotch"
+  if findApplication(bundleID) == nil then
+    hs.application.open(bundleID)
   end
-  local appObject = findApplication("pl.maketheweb.TopNotch")
-  clickRightMenuBarItem("pl.maketheweb.TopNotch")
-  local appUIObj = hs.axuielement.applicationElement("pl.maketheweb.TopNotch")
+  local appObject = findApplication(bundleID)
+  clickRightMenuBarItem(bundleID)
+  local appUIObj = hs.axuielement.applicationElement(bundleID)
   appUIObj:elementSearch(
     function(msg, results, count)
       local state = results[1].AXValue
@@ -280,7 +281,7 @@ end
 function confirmDeleteConditionForAppleApps(appObject)
   local ok, result = hs.osascript.applescript([[
     tell application "System Events"
-      tell ]] .. aWinFor(appObject:bundleID()) .. [[
+      tell ]] .. aWinFor(appObject) .. [[
         if exists sheet 1 then
           repeat with btn in buttons of sheet 1
             if (exists attribute "AXIdentifier" of btn) ¬
@@ -299,7 +300,7 @@ end
 function confirmDeleteForAppleApps(appObject)
   hs.osascript.applescript([[
     tell application "System Events"
-      tell ]] .. aWinFor(appObject:bundleID()) .. [[
+      tell ]] .. aWinFor(appObject) .. [[
         repeat with btn in buttons of sheet 1
           if (exists attribute "AXIdentifier" of btn) ¬
               and (the value of attribute "AXIdentifier" of btn is "DontSaveButton") then
@@ -545,7 +546,7 @@ appHotKeyCallbacks = {
         else
           local ok, result = hs.osascript.applescript([[
             tell application "System Events"
-              tell ]] .. aWinFor("com.apple.AppStore") .. [[
+              tell ]] .. aWinFor(appObject) .. [[
                 if exists button 1 of last group of splitter group 1 then
                   return 1
                 else if exists (button 1 of group 1 ¬
@@ -569,7 +570,7 @@ appHotKeyCallbacks = {
         elseif result == 1 then
           hs.osascript.applescript([[
             tell application "System Events"
-              tell ]] .. aWinFor("com.apple.AppStore") .. [[
+              tell ]] .. aWinFor(appObject) .. [[
                 perform action "AXPress" of button 1 of last group of splitter group 1
               end tell
             end tell
@@ -577,7 +578,7 @@ appHotKeyCallbacks = {
         else
           hs.osascript.applescript([[
             tell application "System Events"
-              tell ]] .. aWinFor("com.apple.AppStore") .. [[
+              tell ]] .. aWinFor(appObject) .. [[
                 perform action "AXPress" of button 1 of group 1
               end tell
             end tell
@@ -591,10 +592,10 @@ appHotKeyCallbacks = {
   {
     ["revealInFinder"] = {
       message = "Reveal in Finder",
-      condition = function()
+      condition = function(appObject)
         local aWin = activatedWindowIndex()
         local ok, url = hs.osascript.applescript([[
-          tell application id "com.apple.Safari"
+          tell application id "]] .. appObject:bundleID() .. [["
             return URL of current tab of window ]] .. aWin .. [[
 
           end tell
@@ -613,9 +614,9 @@ appHotKeyCallbacks = {
   {
     ["revealInFinder"] = {
       message = "Reveal in Finder",
-      condition = function()
+      condition = function(appObject)
         local ok, filePath = hs.osascript.applescript([[
-          tell application id "com.apple.Preview" to get path of front document
+          tell application id "]] .. appObject:bundleID() .. [[" to get path of front document
         ]])
         if ok then
           return true, filePath
@@ -631,10 +632,10 @@ appHotKeyCallbacks = {
   {
     ["revealInFinder"] = {
       message = "Reveal in Finder",
-      condition = function()
+      condition = function(appObject)
         local aWin = activatedWindowIndex()
         local ok, url = hs.osascript.applescript([[
-          tell application id "com.google.Chrome"
+          tell application id "]] .. appObject:bundleID() .. [["
             return URL of active tab of window ]] .. aWin .. [[
 
           end tell
@@ -786,7 +787,7 @@ appHotKeyCallbacks = {
         local mousePosition = hs.mouse.absolutePosition()
         local ok, position = hs.osascript.applescript([[
           tell application "System Events"
-            tell ]] .. aWinFor("com.kingsoft.wpsoffice.mac") .. [[
+            tell ]] .. aWinFor(appObject) .. [[
               repeat with i from 1 to count (UI elements)
                 if value of attribute "AXRole" of UI element i is "AXGroup" then
                   return position of UI element (i-1)
@@ -799,7 +800,7 @@ appHotKeyCallbacks = {
         hs.eventtap.rightClick(hs.geometry(position))
         hs.osascript.applescript([[
           tell application "System Events"
-            tell first application process whose bundle identifier is "com.kingsoft.wpsoffice.mac"
+            tell first application process whose bundle identifier is "]] .. appObject:bundleID() .. [["
               set totalDelay to 0.0
               repeat until totalDelay > 0.5
                 repeat with e in ui elements
@@ -854,9 +855,9 @@ appHotKeyCallbacks = {
     },
     ["revealInFinder"] = {
       message = "Reveal in Finder",
-      condition = function()
+      condition = function(appObject)
         local ok, filePath = hs.osascript.applescript([[
-          tell application id "com.apple.iWork.Keynote" to get file of front document
+          tell application id "]] .. appObject:bundleID() .. [[" to get file of front document
         ]])
         if ok and filePath ~= nil then
           local pos = string.find(filePath, ":", 1)
@@ -932,14 +933,15 @@ appHotKeyCallbacks = {
     ["back"] = {
       message = localizedString("Common.Navigation.Back", "com.tencent.xinWeChat", "Localizable"),
       repeatable = true,
-      condition = function()
-        local back = localizedString("Common.Navigation.Back", "com.tencent.xinWeChat", "Localizable")
-        local lastPage = localizedString("WebView.Previous.Item", "com.tencent.xinWeChat", "Localizable")
-        local moments = localizedString("SNS_Feed_Window_Title", "com.tencent.xinWeChat", "Localizable")
-        local detail = localizedString("SNS_Feed_Detail_Title", "com.tencent.xinWeChat", "Localizable")
+      condition = function(appObject)
+        local bundleID = appObject:bundleID()
+        local back = localizedString("Common.Navigation.Back", bundleID, "Localizable")
+        local lastPage = localizedString("WebView.Previous.Item", bundleID, "Localizable")
+        local moments = localizedString("SNS_Feed_Window_Title", bundleID, "Localizable")
+        local detail = localizedString("SNS_Feed_Detail_Title", bundleID, "Localizable")
         local ok, result = hs.osascript.applescript([[
           tell application "System Events"
-            tell ]] .. aWinFor("com.tencent.xinWeChat") .. [[
+            tell ]] .. aWinFor(appObject) .. [[
               -- Official Accounts
               if exists button "]] .. back .. [[" of splitter group 1 of splitter group 1 then
                 return 1
@@ -993,13 +995,13 @@ appHotKeyCallbacks = {
           return false
         end
       end,
-      fn = function(result)
+      fn = function(result, appObject)
         if type(result[2]) == "table" then
           leftClickAndRestore(result[2])
         else
           local script = [[
             tell application "System Events"
-              tell ]] .. aWinFor("com.tencent.xinWeChat") .. [[
+              tell ]] .. aWinFor(appObject) .. [[
                 %s
               end tell
             end tell
@@ -1031,12 +1033,13 @@ appHotKeyCallbacks = {
     ["forward"] = {
       message = localizedString("WebView.Next.Item", "com.tencent.xinWeChat", "Localizable"),
       repeatable = true,
-      condition = function()
-        local nextPage = localizedString("WebView.Next.Item", "com.tencent.xinWeChat", "Localizable")
+      condition = function(appObject)
+        local bundleID = appObject:bundleID()
+        local nextPage = localizedString("WebView.Next.Item", bundleID, "Localizable")
         local ok, valid = hs.osascript.applescript([[
           tell application "System Events"
             -- Push Notifications
-            set bts to every button of ]] .. aWinFor("com.tencent.xinWeChat") .. [[
+            set bts to every button of ]] .. aWinFor(appObject) .. [[
             repeat with bt in bts
               if value of attribute "AXHelp" of bt is "]] .. nextPage .. [[" ¬
                   and value of attribute "AXEnabled" of bt is True then
@@ -1048,11 +1051,11 @@ appHotKeyCallbacks = {
         ]])
         return ok and valid, nextPage
       end,
-      fn = function(nextPage)
+      fn = function(nextPage, appObject)
         hs.osascript.applescript([[
           tell application "System Events"
             -- Push Notifications
-            set bts to every button of ]] .. aWinFor("com.tencent.xinWeChat") .. [[
+            set bts to every button of ]] .. aWinFor(appObject) .. [[
             repeat with bt in bts
               if value of attribute "AXHelp" of bt is "]] .. nextPage .. [[" ¬
                   and value of attribute "AXEnabled" of bt is True then
@@ -1070,18 +1073,19 @@ appHotKeyCallbacks = {
   {
     ["back"] = {
       message = "Back",
-      condition = function()
+      condition = function(appObject)
+        local bundleID = appObject:bundleID()
         local version = hs.execute(string.format('mdls -r -name kMDItemVersion "%s"',
-            hs.application.pathForBundleID("com.tencent.QQMusicMac")))
+            hs.application.pathForBundleID(bundleID)))
         local major, minor, patch = string.match(version, "(%d+)%.(%d+)%.(%d+)")
         if tonumber(major) < 9 then
-          local song = localizedString("COMMON_SONG", "com.tencent.QQMusicMac",
+          local song = localizedString("COMMON_SONG", bundleID,
                                       { localeDir = false })
-          local detail = localizedString("COMMON_DETAIL", "com.tencent.QQMusicMac",
+          local detail = localizedString("COMMON_DETAIL", bundleID,
                                         { localeDir = false })
           local ok, valid = hs.osascript.applescript([[
             tell application "System Events"
-              tell ]] .. aWinFor("com.tencent.QQMusicMac") .. [[
+              tell ]] .. aWinFor(appObject) .. [[
                 set btCnt to count (every button)
                 return (exists button "]] .. song .. detail .. [[") and btCnt > 4
               end tell
@@ -1091,7 +1095,7 @@ appHotKeyCallbacks = {
         else
           local ok, valid = hs.osascript.applescript([[
               tell application "System Events"
-                tell (first process whose bundle identifier is "com.tencent.QQMusicMac")
+                tell (first process whose bundle identifier is "]] .. appObject:bundleID() .. [[")
                   if number of windows is greater than or equal to 2 then
                     set aWin to window 1
                     set mWin to (window 1 whose value of attribute "AXMain" is true)
@@ -1113,10 +1117,10 @@ appHotKeyCallbacks = {
           return ok and valid
         end
       end,
-      fn = function(code)
+      fn = function(code, appObject)
         hs.osascript.applescript([[
           tell application "System Events"
-            tell ]] .. aWinFor("com.tencent.QQMusicMac") .. [[
+            tell ]] .. aWinFor(appObject) .. [[
               set btCnt to count (every button)
               click button (btCnt - 2)
             end tell
@@ -1150,7 +1154,7 @@ appHotKeyCallbacks = {
       fn = function(winObj)
         hs.osascript.applescript([[
           tell application "System Events"
-            tell ]] .. aWinFor("com.objective-see.lulu.app") .. [[
+            tell ]] .. aWinFor(winObj:application()) .. [[
               click button "Allow"
             end tell
           end tell
@@ -1165,7 +1169,7 @@ appHotKeyCallbacks = {
       fn = function(winObj)
         hs.osascript.applescript([[
           tell application "System Events"
-            tell ]] .. aWinFor("com.objective-see.lulu.app") .. [[
+            tell ]] .. aWinFor(winObj:application()) .. [[
               click button "Block"
             end tell
           end tell
@@ -1180,7 +1184,7 @@ appHotKeyCallbacks = {
       message = "Toggle Menu Bar",
       kind = HK.MENUBAR,
       fn = function(appObject)
-        local bundleID = "com.surteesstudios.Bartender"
+        local bundleID = appObject:bundleID()
         local hasShowed = hs.fnutils.some(appObject:allWindows(), function(w) return w:title() == "Bartender Bar" end)
         local script = string.format([[
           tell application id "%s" to toggle bartender
@@ -1242,8 +1246,8 @@ appHotKeyCallbacks = {
     ["showSystemStatus"] = {
       message = "Show System Status",
       kind = HK.MENUBAR,
-      fn = function()
-        local bundleID = "com.gaosun.eul"
+      fn = function(appObject)
+        local bundleID = appObject:bundleID()
         if hiddenByBartender(bundleID) and hasTopNotch(hs.screen.mainScreen()) then
           hs.osascript.applescript([[tell application id "com.surteesstudios.Bartender" to activate "]] .. bundleID .. [[-Item-0"]])
         end
@@ -1256,8 +1260,8 @@ appHotKeyCallbacks = {
   {
     ["invokeInAppScreenSaver"] = {
       message = localizedString("j8f-jJ-zXq.title", "whbalzac.Dongtaizhuomian", "HotkeyWindowController"),
-      fn = function()
-        local bundleID = "whbalzac.Dongtaizhuomian"
+      fn = function(appObject)
+        local bundleID = appObject:bundleID()
         if hiddenByBartender(bundleID) and hasTopNotch(hs.screen.mainScreen()) then
           hs.osascript.applescript([[tell application id "com.surteesstudios.Bartender" to activate "]] .. bundleID .. [[-Item-0"]])
         end
@@ -1574,10 +1578,10 @@ appHotKeyCallbacks = {
   {
     ["newProject"] = {
       message = "New Project",
-      fn = function()
+      fn = function(appObject)
         local ok, pos = hs.osascript.applescript([[
           tell application "System Events"
-            tell ]] .. aWinFor("com.jetbrains.CLion") .. [[
+            tell ]] .. aWinFor(appObject) .. [[
               if exists button 1 of button 2 then
                 return position of button 1 of button 2
               else
@@ -1601,10 +1605,10 @@ appHotKeyCallbacks = {
   {
     ["newProject"] = {
       message = "New Project",
-      fn = function()
+      fn = function(appObject)
         local ok, pos = hs.osascript.applescript([[
           tell application "System Events"
-            tell ]] .. aWinFor("com.jetbrains.CLion-EAP") .. [[
+            tell ]] .. aWinFor(appObject) .. [[
               if exists button 1 of button 2 then
                 return position of button 1 of button 2
               else
@@ -1628,10 +1632,10 @@ appHotKeyCallbacks = {
   {
       ["newProject"] = {
         message = "New Project",
-        fn = function()
+        fn = function(appObject)
           local ok, pos = hs.osascript.applescript([[
             tell application "System Events"
-              tell ]] .. aWinFor("com.jetbrains.intellij") .. [[
+              tell ]] .. aWinFor(appObject) .. [[
                 set bt to button 1 of button 2
                 return position of bt
               end tell
@@ -1652,10 +1656,10 @@ appHotKeyCallbacks = {
   {
     ["newProject"] = {
       message = "New Project",
-      fn = function()
+      fn = function(appObject)
         local ok, pos = hs.osascript.applescript([[
           tell application "System Events"
-            tell ]] .. aWinFor("com.jetbrains.pycharm") .. [[
+            tell ]] .. aWinFor(appObject) .. [[
               set bt to button 1 of button 2
               return position of bt
             end tell

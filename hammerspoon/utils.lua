@@ -36,7 +36,10 @@ function activatedWindowIndex()
   end
 end
 
-function aWinFor(bundleID)
+function aWinFor(bundleID_or_appObject)
+  local bundleID
+  if type(bundleID_or_appObject) == 'string' then bundleID = bundleID_or_appObject
+  else bundleID = bundleID_or_appObject:bundleID() end
   return string.format(
       'window %d of (first application process whose bundle identifier is "%s")\n',
       activatedWindowIndex(), bundleID)
