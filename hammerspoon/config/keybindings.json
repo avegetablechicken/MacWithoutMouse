@@ -641,7 +641,10 @@
       },
       "openRecent": {
         "mods": "control",
-        "key": "R"
+        "key": "R",
+        "exclude": [
+          "com.microsoft.VSCode"
+        ]
       }
     },
 
