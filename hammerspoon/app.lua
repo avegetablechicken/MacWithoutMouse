@@ -2762,51 +2762,51 @@ function altMenuItemHelper(appObject, eventType)
 end
 
 function app_applicationCallback(appName, eventType, appObject)
+  local bundleID = appObject:bundleID()
   if eventType == hs.application.watcher.launched then
-    if appObject:bundleID() == "com.apple.finder" then
+    if bundleID == "com.apple.finder" then
       selectMenuItem(appObject, { "File", "New Finder Window" },
                      { localeFile = "MenuBar" })
     end
     altMenuItemHelper(appObject, eventType)
   elseif eventType == hs.application.watcher.activated then
     windowCreatedSince = {}
-    if appObject:bundleID() == "cn.better365.iShotProHelper" then
+    if bundleID == "cn.better365.iShotProHelper" then
       unregisterInWinHotKeys("cn.better365.iShotPro")
       return
     end
-    selectInputSourceInApp(appObject:bundleID())
+    selectInputSourceInApp(bundleID)
     if not hs.fnutils.contains(keybindingConfigs.hotkeys.appCommon["remapPreviousTab"].excluded or {},
-                               appObject:bundleID()) then
+                               bundleID) then
       remapPreviousTab(keybindingConfigs.hotkeys.appCommon["remapPreviousTab"])
     end
-    registerRunningAppHotKeys(appObject:bundleID(), appObject)
+    registerRunningAppHotKeys(bundleID, appObject)
     registerInAppHotKeys(appName, eventType, appObject)
     registerInWinHotKeys(appObject)
     altMenuItem(appObject)
-    if (appHotKeyCallbacks[appObject:bundleID()] == nil
-        or appHotKeyCallbacks[appObject:bundleID()]["openRecent"] == nil)
+    if (appHotKeyCallbacks[bundleID] == nil
+        or appHotKeyCallbacks[bundleID]["openRecent"] == nil)
         and not hs.fnutils.contains(keybindingConfigs.hotkeys.appCommon["openRecent"].excluded or {},
-                                    appObject:bundleID()) then
+                                    bundleID) then
       registerOpenRecent(keybindingConfigs.hotkeys.appCommon["openRecent"])
     end
     local frontAppBid = hs.fnutils.find(appsWatchMenuItems, function(bid)
-      return bid == appObject:bundleID()
+      return bid == bundleID
     end)
     if frontAppBid ~= nil then
       watchMenuItems(appObject)
     end
-    if remoteDesktopsMappingModifiers[appObject:bundleID()] then
+    if remoteDesktopsMappingModifiers[bundleID] then
       if not remoteDesktopModifierTapper:isEnabled() then
         remoteDesktopModifierTapper:start()
       end
     end
   elseif eventType == hs.application.watcher.deactivated then
     if appName ~= nil then
-      local bid = appObject:bundleID()
-      unregisterInAppHotKeys(bid, eventType)
-      unregisterInWinHotKeys(bid)
-      if appsMenuItemsWatchers[bid] ~= nil then
-        appsMenuItemsWatchers[bid][1]:stop()
+      unregisterInAppHotKeys(bundleID, eventType)
+      unregisterInWinHotKeys(bundleID)
+      if appsMenuItemsWatchers[bundleID] ~= nil then
+        appsMenuItemsWatchers[bundleID][1]:stop()
       end
     else
       for bid, _ in pairs(runningAppHotKeys) do
