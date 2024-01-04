@@ -7,6 +7,25 @@ local misc = keybindingConfigs.hotkeys.global
 hs.application.enableSpotlightForNameSearches(true)
 
 -- launch or hide applications
+local function focusOrHideFinder(appObject)
+  local windowFilter = hs.window.filter.new(false):setAppFilter(appObject:name())
+  local windows = windowFilter:getWindows()
+  local standard = hs.fnutils.find(windows, function(win) return win:isStandard() end)
+  if standard == nil then
+    appObject = hs.application.open(appObject:bundleID())
+  elseif hs.window.focusedWindow() ~= nil
+      and hs.window.focusedWindow():application() == appObject then
+    if not hs.window.focusedWindow():isStandard() then
+      hs.application.open(appObject:bundleID())
+      hs.window.focusedWindow():focus()
+    else
+      appObject:hide()
+    end
+  else
+    appObject:focusedWindow():focus()
+  end
+end
+
 local function focusOrHide(hint)
   local appObject = nil
 
@@ -19,6 +38,11 @@ local function focusOrHide(hint)
     appObject = findApplication(hint)
   end
 
+  if appObject ~= nil and appObject:bundleID() == "com.apple.finder" then
+    focusOrHideFinder(appObject)
+    return
+  end
+
   if appObject == nil
     or hs.window.focusedWindow() == nil
     or hs.window.focusedWindow():application() ~= appObject then
@@ -29,36 +53,9 @@ local function focusOrHide(hint)
       end
     else
       appObject = hs.application.open(hint)
-      if appObject:bundleID() == "com.apple.finder"
-          and hs.fnutils.find(appObject:visibleWindows(), function(win)
-                return win:isStandard()
-              end) == nil then
-        if hs.screen.primaryScreen():id() ~= hs.screen.mainScreen():id() then
-          hs.eventtap.keyStroke('fn⌃', 'F2')
-        end
-        selectMenuItem(appObject, {"File", "New Finder Window"},
-                      { localeFile = "MenuBar" })
-      end
     end
   else
-    if appObject ~= nil and appObject:bundleID() == "com.apple.finder" then
-      if hs.fnutils.find(appObject:visibleWindows(), function(win)
-          return win:isStandard()
-        end) == nil then
-        if hs.screen.primaryScreen():id() ~= hs.screen.mainScreen():id() then
-          hs.eventtap.keyStroke('fn⌃', 'F2')
-        end
-        selectMenuItem(appObject, {"File", "New Finder Window"},
-                      { localeFile = "MenuBar" })
-      elseif not hs.window.focusedWindow():isStandard() then
-        hs.application.open(hint)
-        hs.window.focusedWindow():focus()
-      else
-        appObject:hide()
-      end
-    else
-      appObject:hide()
-    end
+    appObject:hide()
   end
 end
 
