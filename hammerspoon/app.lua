@@ -2199,13 +2199,17 @@ function remapPreviousTab()
     remapPreviousTabHotkey = nil
   end
   local appObject = hs.application.frontmostApplication()
-  local menuItemPath, enabled = findMenuItemByKeyBinding(appObject, { 'shift', 'ctrl' }, '⇥')
-  if menuItemPath ~= nil and enabled then
-    local fn = inAppHotKeysWrapper(appObject, "⌃", "`", function()
-                                     appObject:selectMenuItem(menuItemPath)
-                                   end)
+  local menuItemPath = findMenuItemByKeyBinding(appObject, { 'shift', 'ctrl' }, '⇥')
+  if menuItemPath ~= nil then
+    local cond = checkMenuItemByKeybinding({ 'shift', 'ctrl' }, '⇥')
+    local fn = inAppHotKeysWrapper(appObject, "⌃", "`",
+        function()
+          if cond(appObject) then appObject:selectMenuItem(menuItemPath)
+          else hs.eventtap.keyStroke("⇧⌃", "Tab") end
+        end)
     remapPreviousTabHotkey = bindSuspend("⌃", "`", menuItemPath[#menuItemPath],
                                          fn, nil, fn)
+    remapPreviousTabHotkey.condition = cond
     remapPreviousTabHotkey.kind = HK.IN_APP
   end
 end
