@@ -293,7 +293,8 @@ function localizedString(string, bundleID, params)
 
   local searchFunc = function(string)
     if localeFile ~= nil then
-      if localesDict[localeFile] == nil then
+      if localesDict[localeFile] == nil
+          or (appLocaleDir[bundleID][appLocale] == 'en' and string.find(localeDir, 'en.lproj') == nil) then
         local fullPath = localeDir .. '/' .. localeFile .. '.strings'
         if hs.fs.attributes(fullPath) ~= nil then
           localesDict[localeFile] = parseStringsFile(fullPath)
@@ -306,7 +307,8 @@ function localizedString(string, bundleID, params)
       for file in hs.fs.dir(localeDir) do
         if file:sub(-8) == ".strings" then
           local fileStem = file:sub(1, -9)
-          if localesDict[fileStem] == nil then
+          if localesDict[fileStem] == nil
+              or (appLocaleDir[bundleID][appLocale] == 'en' and string.find(localeDir, 'en.lproj') == nil) then
             local fullPath = localeDir .. '/' .. file
             localesDict[fileStem] = parseStringsFile(fullPath)
           end
@@ -319,6 +321,16 @@ function localizedString(string, bundleID, params)
   end
   local result = searchFunc(string)
   if result ~= nil then return result end
+  if appLocaleDir[bundleID][appLocale] == 'en' then
+    for _, _localeDir in ipairs{
+        resourceDir .. "/English.lproj",
+        resourceDir .. "/Base.lproj",
+        resourceDir .. "/en_GB.lproj"} do
+      localeDir = _localeDir
+      result = searchFunc(string)
+      if result ~= nil then return result end
+    end
+  end
 
   if appLocaleInversedMap[bundleID] == nil then
     appLocaleInversedMap[bundleID] = {}
