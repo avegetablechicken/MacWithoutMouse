@@ -1070,6 +1070,12 @@ appHotKeyCallbacks = {
   {
     ["back"] = {
       message = "Back",
+      bindCondition = function()
+        local version = hs.execute(string.format('mdls -r -name kMDItemVersion "%s"',
+            hs.application.pathForBundleID("com.tencent.QQMusicMac")))
+        local major, minor, patch = string.match(version, "(%d+)%.(%d+)%.(%d+)")
+        return tonumber(major) < 9
+      end,
       condition = function()
         local song = localizedString("COMMON_SONG", "com.tencent.QQMusicMac",
                                      { localeDir = false })
