@@ -998,7 +998,7 @@ appHotKeyCallbacks = {
   ["com.tencent.xinWeChat"] =
   {
     ["back"] = {
-      message = "Back",
+      message = localizedString("Common.Navigation.Back", "com.tencent.xinWeChat", "Localizable"),
       repeatable = true,
       condition = function()
         local back = localizedString("Common.Navigation.Back", "com.tencent.xinWeChat", "Localizable")
@@ -1097,7 +1097,7 @@ appHotKeyCallbacks = {
       end
     },
     ["forward"] = {
-      message = "Forward",
+      message = localizedString("WebView.Next.Item", "com.tencent.xinWeChat", "Localizable"),
       repeatable = true,
       condition = function()
         local nextPage = localizedString("WebView.Next.Item", "com.tencent.xinWeChat", "Localizable")
@@ -1261,7 +1261,7 @@ appHotKeyCallbacks = {
   ["whbalzac.Dongtaizhuomian"] =
   {
     ["invokeInAppScreenSaver"] = {
-      message = "Invoke in-app ScreenSaver",
+      message = localizedString("j8f-jJ-zXq.title", "whbalzac.Dongtaizhuomian", "HotkeyWindowController"),
       fn = function()
         local bundleID = "whbalzac.Dongtaizhuomian"
         if hiddenByBartender(bundleID) and hasTopNotch(hs.screen.mainScreen()) then
