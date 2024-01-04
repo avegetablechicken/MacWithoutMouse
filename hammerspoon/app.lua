@@ -233,7 +233,7 @@ registerAppHotkeys()
 -- pipeline of copying latex to `klatexformula` and rendering
 function klatexformulaRender()
   hs.osascript.applescript([[
-    tell application "System Events
+    tell application "System Events"
       tell ]] .. aWinFor("org.klatexformula.klatexformula") .. [[
         click button 2 of splitter group 1
       end tell
