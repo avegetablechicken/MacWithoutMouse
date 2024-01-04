@@ -69,6 +69,21 @@ function showMenuItemWrapper(fn)
   end
 end
 
+function findMenuItem(appObject, menuItemTitle, params)
+  local targetMenuItem
+  if menuItemTitle.en and appObject:findMenuItem(menuItemTitle.en) ~= nil then
+    targetMenuItem = menuItemTitle.en
+  elseif menuItemTitle.zh and appObject:findMenuItem(menuItemTitle.zh) ~= nil then
+    targetMenuItem = menuItemTitle.zh
+  else
+    targetMenuItem = {}
+    for _, title in ipairs(menuItemTitle) do
+      table.insert(targetMenuItem, localizedString(title, appObject:bundleID(), params))
+    end
+  end
+  return appObject:findMenuItem(targetMenuItem), targetMenuItem
+end
+
 function selectMenuItem(appObject, menuItemTitle, params, show)
   if type(params) == "boolean" then
     show = params params = nil

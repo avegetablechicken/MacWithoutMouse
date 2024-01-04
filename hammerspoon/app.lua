@@ -241,13 +241,8 @@ function klatexformulaRender()
   ]])
 end
 
-function deleteSelectedMessage(appObject, force)
-  local osVersion = getOSVersion()
-  if osVersion < OS.Ventura then
-    selectMenuItem(appObject, { en = {"File", "Delete Conversation…"}, zh = {"文件", "删除对话…"} })
-  else
-    selectMenuItem(appObject, { en = {"Conversations", "Delete Conversation…"}, zh = {"对话", "删除对话…"} })
-  end
+function deleteSelectedMessage(appObject, menuItem, force)
+  appObject:selectMenuItem(menuItem)
   if force ~= nil then
     hs.timer.usleep(0.1 * 1000000)
     hs.eventtap.keyStroke("", "Tab", nil, appObject)
@@ -256,7 +251,7 @@ function deleteSelectedMessage(appObject, force)
   end
 end
 
-function deleteAllMessages(appObject)
+function deleteAllMessages(appObject, menuItem)
   appUIObj = hs.axuielement.applicationElement(appObject)
   appUIObj:elementSearch(
     function(msg, results, count)
@@ -268,13 +263,13 @@ function deleteAllMessages(appObject)
         return
       end
 
-      for _, messageItem in ipairs(messageItems) do
+      for _, messageItem in ipairs( messageItems) do
         messageItem:performAction("AXPress")
         hs.timer.usleep(0.1 * 1000000)
-        deleteSelectedMessage(appObject, true)
+        deleteSelectedMessage(appObject, menuItem, true)
         hs.timer.usleep(1 * 1000000)
       end
-      deleteAllMessages(appObject)
+      deleteAllMessages(appObject, menuItem)
     end,
     function(element)
       return element.AXIdentifier == "ConversationList"
@@ -440,6 +435,17 @@ local function localizedMessage(message, bundleID, localeFile, sep)
   end
 end
 
+function checkMenuItem(bundleID, menuItemTitle, params)
+  local appObject = findApplication(bundleID)
+  if appObject == nil then return false end
+  local menuItem, menuItemTitle = findMenuItem(appObject, menuItemTitle, params)
+  return menuItem ~= nil and menuItem.enabled, menuItemTitle
+end
+
+function receiveMenuItem(menuItemTitle, appObject)
+  appObject:selectMenuItem(menuItemTitle)
+end
+
 appHotKeyCallbacks = {
   ["com.apple.finder"] =
   {
@@ -487,11 +493,30 @@ appHotKeyCallbacks = {
   {
     ["deleteSelectedMessage"] = {
       message = "Delete Selected Message",
-      fn = function(appObject) deleteSelectedMessage(appObject) end
+      condition = function()
+        local osVersion = getOSVersion()
+        local oldMenuItemTitle
+        if osVersion < OS.Ventura then
+          oldMenuItemTitle = { en = {"File", "Delete Conversation…"}, zh = {"文件", "删除对话…"} }
+        else
+          oldMenuItemTitle = { en = {"Conversations", "Delete Conversation…"}, zh = {"对话", "删除对话…"} }
+        end
+        return checkMenuItem("com.apple.MobileSMS", oldMenuItemTitle)
+      end,
+      fn = function(menuItemTitle, appObject) deleteSelectedMessage(appObject, menuItemTitle) end
     },
     ["deleteAllMessages"] = {
       message = "Delete All Messages",
-      fn = function(appObject) deleteAllMessages(appObject) end
+      condition = function()
+        local osVersion = getOSVersion()
+        if osVersion < OS.Ventura then
+          oldMenuItemTitle = { en = {"File", "Delete Conversation…"}, zh = {"文件", "删除对话…"} }
+        else
+          oldMenuItemTitle = { en = {"Conversations", "Delete Conversation…"}, zh = {"对话", "删除对话…"} }
+        end
+        return checkMenuItem("com.apple.MobileSMS", oldMenuItemTitle)
+      end,
+      fn = function(menuItemTitle, appObject) deleteAllMessages(appObject, menuItemTitle) end
     },
     ["goToPreviousConversation"] = {
       message = function()
@@ -545,11 +570,10 @@ appHotKeyCallbacks = {
       repeatable = true,
       condition = function()
         local appObject = findApplication("com.apple.AppStore")
-        local storeMenuTitle = localizedString("Store", "com.apple.AppStore", "Localizable")
-        local storeMenuBack = localizedString("Back", "com.apple.AppStore", "Localizable")
-        local backMenuItem = {storeMenuTitle, storeMenuBack}
-        if appObject:findMenuItem(backMenuItem).enabled then
-          return true, backMenuItem
+        local menuItem, menuItemTitle = findMenuItem(appObject, { "Store", "Back" },
+                                                     { localeFile = "Localizable" })
+        if menuItem ~= nil and menuItem.enabled then
+          return true, menuItemTitle
         else
           local ok, result = hs.osascript.applescript([[
             tell application "System Events"
@@ -682,10 +706,9 @@ appHotKeyCallbacks = {
   {
     ["showInFinder"] = {
       message = localizedMessage("Show in Finder", "com.readdle.PDFExpert-Mac", "MainMenu"),
-      fn = function(appObject)
-        selectMenuItem(appObject, { "File", "Show in Finder" },
-                       { localeFile = "MainMenu" })
-      end
+      condition = hs.fnutils.partial(checkMenuItem, "com.readdle.PDFExpert-Mac",
+                                     { "File", "Show in Finder" }, { localeFile = "MainMenu" }),
+      fn = receiveMenuItem
     },
     ["openRecent"] = {
       message = localizedMessage("Open Recent", "com.readdle.PDFExpert-Mac", "MainMenu"),
@@ -700,10 +723,9 @@ appHotKeyCallbacks = {
   {
     ["openFileLocation"] = {
       message = localizedMessage("Open File Location", "abnerworks.Typora", "Menu"),
-      fn = function(appObject)
-        selectMenuItem(appObject, { "File", "Open File Location" },
-                       { localeFile = "Menu" })
-      end
+      condition = hs.fnutils.partial(checkMenuItem, "abnerworks.Typora",
+                                     { "File", "Open File Location" }, { localeFile = "Menu" }),
+      fn = receiveMenuItem
     },
     ["openRecent"] = {
       message = localizedMessage("Open Recent", "abnerworks.Typora", "Menu"),
@@ -742,10 +764,9 @@ appHotKeyCallbacks = {
   {
     ["showInFinder"] = {
       message = localizedMessage("Show in Finder", "com.superace.updf.mac", "Localizable"),
-      fn = function(appObject)
-        selectMenuItem(appObject, { "File", "Show in Finder" },
-                       { localeFile = "Localizable" })
-      end
+      condition = hs.fnutils.partial(checkMenuItem, "com.superace.updf.mac",
+                                     { "File", "Show in Finder" }, { localeFile = "Localizable" }),
+      fn = receiveMenuItem
     }
   },
 
@@ -878,42 +899,43 @@ appHotKeyCallbacks = {
   {
     ["export"] = {
       message = localizedMessage({ "1780.title", "1781.title" }, "com.apple.iWork.Keynote", "MainMenu"),
-      fn = function(appObject)
-        selectMenuItem(appObject, { "81.title", "1780.title" },
-                       { localeFile = "MainMenu" })
-        selectMenuItem(appObject, { "81.title", "1780.title", "1781.title" },
-                       { localeFile = "MainMenu" })
+      condition = hs.fnutils.partial(checkMenuItem, "com.apple.iWork.Keynote",
+                                     { "81.title", "1780.title", "1781.title" },
+                                     { localeFile = "MainMenu" }),
+      fn = function(menuItemTitle, appObject)
+        appObject:selectMenuItem({ menuItemTitle[1], menuItemTitle[2] })
+        appObject:selectMenuItem(menuItemTitle)
       end
     },
     ["pasteAndMatchStyle"] = {
       message = localizedMessage("689.title", "com.apple.iWork.Keynote", "MainMenu"),
       repeatable = true,
-      fn = function(appObject)
-        selectMenuItem(appObject, { "681.title", "689.title" },
-                       { localeFile = "MainMenu" })
-      end
+      condition = hs.fnutils.partial(checkMenuItem, "com.apple.iWork.Keynote",
+                                     { "681.title", "689.title" },
+                                     { localeFile = "MainMenu" }),
+      fn = receiveMenuItem
     },
     ["paste"] = {
       message = localizedMessage("688.title", "com.apple.iWork.Keynote", "MainMenu"),
       repeatable = true,
-      fn = function(appObject)
-        selectMenuItem(appObject, { "681.title", "688.title" },
-                       { localeFile = "MainMenu" })
-      end
+      condition = hs.fnutils.partial(checkMenuItem, "com.apple.iWork.Keynote",
+                                     { "681.title", "688.title" },
+                                     { localeFile = "MainMenu" }),
+      fn = receiveMenuItem
     },
     ["play"] = {
       message = localizedMessage("1527.title", "com.apple.iWork.Keynote", "MainMenu"),
-      fn = function(appObject)
-        selectMenuItem(appObject, { "1526.title", "1527.title" },
-                       { localeFile = "MainMenu" })
-      end
+      condition = hs.fnutils.partial(checkMenuItem, "com.apple.iWork.Keynote",
+                                     { "1526.title", "1527.title" },
+                                     { localeFile = "MainMenu" }),
+      fn = receiveMenuItem
     },
     ["insertEquation"] = {
       message = localizedMessage({ "849.title", "1677.title" }, "com.apple.iWork.Keynote", "MainMenu"),
-      fn = function(appObject)
-        selectMenuItem(appObject, { "849.title", "1677.title" },
-                       { localeFile = "MainMenu" })
-      end
+      condition = hs.fnutils.partial(checkMenuItem, "com.apple.iWork.Keynote",
+                                     { "849.title", "1677.title" },
+                                     { localeFile = "MainMenu" }),
+      fn = receiveMenuItem
     },
     ["revealInFinder"] = {
       message = "Reveal in Finder",
@@ -950,10 +972,9 @@ appHotKeyCallbacks = {
     },
     ["insertEquation"] = {
       message = "Insert Equation",
-      fn = function(appObject)
-        selectMenuItem(appObject,
-          { en = {"Insert", "Equation"}, zh = {"插入", "方程"} })
-      end
+      condition = hs.fnutils.partial(checkMenuItem, "net.xmind.vana.app",
+                                     { en = {"Insert", "Equation"}, zh = {"插入", "方程"} }),
+      fn = receiveMenuItem
     }
   },
 
