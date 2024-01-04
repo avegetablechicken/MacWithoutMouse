@@ -331,9 +331,11 @@ function localizedString(string, bundleID, params)
         resourceDir .. "/English.lproj",
         resourceDir .. "/Base.lproj",
         resourceDir .. "/en_GB.lproj"} do
-      localeDir = _localeDir
-      result = searchFunc(string)
-      if result ~= nil then return result end
+      if hs.fs.attributes(_localeDir) ~= nil then
+        localeDir = _localeDir
+        result = searchFunc(string)
+        if result ~= nil then return result end
+      end
     end
   end
 
