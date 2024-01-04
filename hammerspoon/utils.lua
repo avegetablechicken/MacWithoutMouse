@@ -80,10 +80,10 @@ function selectMenuItem(appObject, menuItemTitle, params, show)
   elseif menuItemTitle.zh and appObject:findMenuItem(menuItemTitle.zh) ~= nil then
     targetMenuItem = menuItemTitle.zh
   else
-    for i, title in ipairs(menuItemTitle) do
-      menuItemTitle[i] = localizedString(title, appObject:bundleID(), params)
+    targetMenuItem = {}
+    for _, title in ipairs(menuItemTitle) do
+      table.insert(targetMenuItem, localizedString(title, appObject:bundleID(), params))
     end
-    targetMenuItem = menuItemTitle
   end
   if show then
     showMenuItemWrapper(function()
