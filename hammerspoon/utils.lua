@@ -83,6 +83,8 @@ function findMenuItem(appObject, menuItemTitle, params)
       return nil
     end
   else
+    local menuItem = appObject:findMenuItem(menuItemTitle)
+    if menuItem ~= nil then return menuItem, menuItemTitle end
     targetMenuItem = {}
     for _, title in ipairs(menuItemTitle) do
       table.insert(targetMenuItem, localizedString(title, appObject:bundleID(), params))

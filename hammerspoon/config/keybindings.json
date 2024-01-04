@@ -634,6 +634,13 @@
       "enableLetter": true
     },
 
+    "appCommon": {
+      "openRecent": {
+        "mods": "control",
+        "key": "R"
+      }
+    },
+
     "com.apple.finder": {
       "goToDownloads": {
         "mods": ["shift", "command"],
@@ -880,12 +887,6 @@
         "key": "F"
       }
     },
-    "com.sublimetext.4": {
-      "openRecent": {
-        "mods": "control",
-        "key": "R"
-      }
-    },
     "com.microsoft.VSCode": {
       "view:toggleOutline": {
         "mods": "command",
@@ -896,22 +897,12 @@
       "showInFinder": {
         "mods": ["shift", "option", "command"],
         "key": "F"
-      },
-      "openRecent": {
-        "mods": [
-          "control"
-        ],
-        "key": "R"
       }
     },
     "abnerworks.Typora": {
       "openFileLocation": {
         "mods": ["shift", "option", "command"],
         "key": "F"
-      },
-      "openRecent": {
-        "mods": ["control"],
-        "key": "R"
       },
       "pasteAsPlainText": {
         "mods": ["shift", "option", "command"],
@@ -973,10 +964,6 @@
       }
     },
     "com.apple.iWork.Keynote": {
-      "openRecent": {
-        "mods": "control",
-        "key": "R"
-      },
       "export": {
         "mods": "command",
         "key": "E"

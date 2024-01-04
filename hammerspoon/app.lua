@@ -650,19 +650,6 @@ appHotKeyCallbacks = {
     }
   },
 
-  ["com.sublimetext.4"] =
-  {
-    ["openRecent"] = {
-      message = "Open Recent",
-      fn = function(appObject)
-        showMenuItemWrapper(function()
-          appObject:selectMenuItem({"File"})
-          appObject:selectMenuItem({"File", "Open Recent"})
-        end)()
-      end
-    }
-  },
-
   ["com.microsoft.VSCode"] =
   {
     ["view:toggleOutline"] = {
@@ -677,13 +664,6 @@ appHotKeyCallbacks = {
       message = localizedMessage("Show in Finder", "MainMenu"),
       condition = checkMenuItem({ "File", "Show in Finder" }, { localeFile = "MainMenu" }),
       fn = receiveMenuItem
-    },
-    ["openRecent"] = {
-      message = localizedMessage("Open Recent", "MainMenu"),
-      fn = function(appObject)
-        selectMenuItem(appObject, { "File", "Open Recent" },
-                       { localeFile = "MainMenu" }, true)
-      end
     }
   },
 
@@ -693,13 +673,6 @@ appHotKeyCallbacks = {
       message = localizedMessage("Open File Location","Menu"),
       condition = checkMenuItem({ "File", "Open File Location" }, { localeFile = "Menu" }),
       fn = receiveMenuItem
-    },
-    ["openRecent"] = {
-      message = localizedMessage("Open Recent", "Menu"),
-      fn = function(appObject)
-        selectMenuItem(appObject, { "File", "Open Recent" },
-                       { localeFile = "Menu" }, true)
-      end
     },
     ["pasteAsPlainText"] = {
       message = localizedMessage("Paste as Plain Text", "Menu"),
@@ -823,13 +796,6 @@ appHotKeyCallbacks = {
 
   ["com.apple.iWork.Keynote"] =
   {
-    ["openRecent"] = {  -- File > Open Recent
-      message = localizedMessage("125.title", "MainMenu"),
-      fn = function(appObject)
-        selectMenuItem(appObject, { "81.title", "125.title" },
-                       { localeFile = "MainMenu" }, true)
-      end
-    },
     ["export"] = {  -- File > Export To > PDF…
       message = localizedMessage({ "1780.title", "1781.title" }, "MainMenu"),
       condition = checkMenuItem({ "81.title", "1780.title", "1781.title" }, { localeFile = "MainMenu" }),
@@ -2293,6 +2259,39 @@ function remapPreviousTab()
 end
 remapPreviousTab()
 
+function registerOpenRecent(spec)
+  if openRecentHotkey then
+    openRecentHotkey:delete()
+    openRecentHotkey = nil
+  end
+  local appObject = hs.application.frontmostApplication()
+  local menuItem, menuItemPath = findMenuItem(appObject, { "File",  "Open Recent" })
+  if menuItem ~= nil then
+    local cond = function(appObject)
+      local menuItemCond = appObject:findMenuItem(menuItemPath)
+      return menuItemCond ~= nil and menuItemCond.enabled
+    end
+    local fn = inAppHotKeysWrapper(appObject, spec.mods, spec.key,
+        function()
+          if cond(appObject) then
+            showMenuItemWrapper(function()
+              appObject:selectMenuItem({menuItemPath[1]})
+              appObject:selectMenuItem(menuItemPath)
+            end)()
+          else hs.eventtap.keyStroke(spec.mods, spec.key) end
+        end)
+    openRecentHotkey = bindSpecSuspend(spec, menuItemPath[2], fn)
+    openRecentHotkey.condition = cond
+    openRecentHotkey.kind = HK.IN_APP
+  end
+end
+
+local frontmostApplication = hs.application.frontmostApplication()
+if appHotKeyCallbacks[frontmostApplication:bundleID()] == nil
+    or appHotKeyCallbacks[frontmostApplication:bundleID()]["openRecent"] == nil then
+  registerOpenRecent(keybindingConfigs.hotkeys.appCommon["openRecent"])
+end
+
 -- bind `alt+?` hotkeys to menu bar 1 functions
 -- to be registered in application callback
 local menuBarTitleLocalizationMap = hs.json.read("static/menuitem-localization.json")
@@ -2467,7 +2466,6 @@ function altMenuItem(appObject)
     end
   end
 end
-local frontmostApplication = hs.application.frontmostApplication()
 altMenuItem(frontmostApplication)
 
 appsWatchMenuItems = applicationConfigs.menuItemsMayChange.basic
@@ -2776,6 +2774,10 @@ function app_applicationCallback(appName, eventType, appObject)
     registerInAppHotKeys(appName, eventType, appObject)
     registerInWinHotKeys(appObject)
     altMenuItem(appObject)
+    if appHotKeyCallbacks[appObject:bundleID()] == nil
+        or appHotKeyCallbacks[appObject:bundleID()]["openRecent"] == nil then
+      registerOpenRecent(keybindingConfigs.hotkeys.appCommon["openRecent"])
+    end
     local frontAppBid = hs.fnutils.find(appsWatchMenuItems, function(bid)
       return bid == appObject:bundleID()
     end)
