@@ -674,7 +674,6 @@ appHotKeyCallbacks = {
   {
     ["view:toggleOutline"] = {
       message = "View: Toggle Outline",
-      repeatable = true,
       fn = function() VSCodeToggleSideBarSection("EXPLORER", "OUTLINE") end
     }
   },
