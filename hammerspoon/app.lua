@@ -822,7 +822,7 @@ appHotKeyCallbacks = {
 
   ["com.apple.iWork.Keynote"] =
   {
-    ["export"] = {
+    ["export"] = {  -- File > Export To > PDF…
       message = localizedMessage({ "1780.title", "1781.title" }, "MainMenu"),
       condition = checkMenuItem({ "81.title", "1780.title", "1781.title" }, { localeFile = "MainMenu" }),
       fn = function(menuItemTitle, appObject)
@@ -830,24 +830,24 @@ appHotKeyCallbacks = {
         appObject:selectMenuItem(menuItemTitle)
       end
     },
-    ["pasteAndMatchStyle"] = {
+    ["pasteAndMatchStyle"] = {  -- Edit > Paste and Match Style
       message = localizedMessage("689.title", "MainMenu"),
       repeatable = true,
       condition = checkMenuItem({ "681.title", "689.title" }, { localeFile = "MainMenu" }),
       fn = receiveMenuItem
     },
-    ["paste"] = {
+    ["paste"] = {  -- Edit > Paste
       message = localizedMessage("688.title", "MainMenu"),
       repeatable = true,
       condition = checkMenuItem({ "681.title", "688.title" }, { localeFile = "MainMenu" }),
       fn = receiveMenuItem
     },
-    ["play"] = {
+    ["play"] = {  -- Play > Play Slideshow
       message = localizedMessage("1527.title", "MainMenu"),
       condition = checkMenuItem({ "1526.title", "1527.title" }, { localeFile = "MainMenu" }),
       fn = receiveMenuItem
     },
-    ["insertEquation"] = {
+    ["insertEquation"] = {  -- Insert > Equation…
       message = localizedMessage({ "849.title", "1677.title" }, "MainMenu"),
       condition = checkMenuItem({ "849.title", "1677.title" }, { localeFile = "MainMenu" }),
       fn = receiveMenuItem
