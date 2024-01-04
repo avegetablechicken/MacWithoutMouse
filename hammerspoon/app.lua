@@ -420,8 +420,9 @@ local function iCopySelectHotkeyRemap(winObj, idx)
   hs.eventtap.keyStroke(iCopyMod, tostring(idx), nil, winObj:application())
 end
 
-local function localizedMessage(message, bundleID, localeFile, sep)
-  return function()
+local function localizedMessage(message, localeFile, sep)
+  return function(appObject)
+    local bundleID = appObject:bundleID()
     if type(message) == 'string' then
       return localizedString(message, bundleID, localeFile)
     else
@@ -431,6 +432,21 @@ local function localizedMessage(message, bundleID, localeFile, sep)
         str = str .. sep .. localizedString(message[i], bundleID, localeFile)
       end
       return str
+    end
+  end
+end
+
+local function menuItemMessage(mods, key, titleIndex, sep)
+  return function(appObject)
+    if type(titleIndex) == 'number' then
+      return findMenuItemByKeyBinding(appObject, mods, key)[titleIndex]
+    else
+      if sep == nil then sep = ' > ' end
+      local menuItem = findMenuItemByKeyBinding(appObject, mods, key)
+      local str = menuItem[titleIndex[1]]
+      for i=2,#titleIndex do
+        str = str .. sep .. menuItem[titleIndex[i]]
+      end
     end
   end
 end
@@ -457,23 +473,19 @@ appHotKeyCallbacks = {
   ["com.apple.finder"] =
   {
     ["goToDownloads"] = {
-      message = localizedMessage({ "Go", "Downloads" }, "com.apple.finder", "MenuBar"),
+      message = localizedMessage({ "Go", "Downloads" }, "MenuBar"),
       fn = function(appObject)
         selectMenuItem(appObject, { "Go", "Downloads" }, { localeFile = "MenuBar" })
       end
     },
     ["showPrevTab"] = {
-      message = function()
-        return findMenuItemByKeyBinding(findApplication("com.apple.finder"), { 'shift', 'ctrl' }, "⇥")[2]
-      end,
+      message = menuItemMessage({ 'shift', 'ctrl' }, "⇥", 2),
       repeatable = true,
       condition = checkMenuItemByKeybinding({ 'shift', 'ctrl' }, "⇥"),
       fn = receiveMenuItem
     },
     ["showNextTab"] = {
-      message = function()
-        return findMenuItemByKeyBinding(findApplication("com.apple.finder"), { 'ctrl' }, "⇥")[2]
-      end,
+      message = menuItemMessage({ 'ctrl' }, "⇥", 2),
       repeatable = true,
       condition = checkMenuItemByKeybinding({ 'ctrl' }, "⇥"),
       fn = receiveMenuItem
@@ -497,17 +509,13 @@ appHotKeyCallbacks = {
       fn = function(menuItemTitle, appObject) deleteAllMessages(appObject, menuItemTitle) end
     },
     ["goToPreviousConversation"] = {
-      message = function()
-        return findMenuItemByKeyBinding(findApplication("com.apple.MobileSMS"), { 'shift', 'ctrl' }, "⇥")[2]
-      end,
+      message = menuItemMessage({ 'shift', 'ctrl' }, "⇥", 2),
       repeatable = true,
       condition = checkMenuItemByKeybinding({ 'shift', 'ctrl' }, "⇥"),
       fn = receiveMenuItem
     },
     ["goToNextConversation"] = {
-      message = function()
-        return findMenuItemByKeyBinding(findApplication("com.apple.MobileSMS"), { 'ctrl' }, "⇥")[2]
-      end,
+      message = menuItemMessage({ 'ctrl' }, "⇥", 2),
       repeatable = true,
       condition = checkMenuItemByKeybinding({ 'ctrl' }, "⇥"),
       fn = receiveMenuItem
@@ -527,7 +535,7 @@ appHotKeyCallbacks = {
   {
     ["back"] = {
       mods = "⌘", key = "[",
-      message = localizedMessage("Back", "com.apple.AppStore", "Localizable"),
+      message = localizedMessage("Back", "Localizable"),
       repeatable = true,
       condition = function(appObject)
         local menuItem, menuItemTitle = findMenuItem(appObject, { "Store", "Back" },
@@ -665,12 +673,12 @@ appHotKeyCallbacks = {
   ["com.readdle.PDFExpert-Mac"] =
   {
     ["showInFinder"] = {
-      message = localizedMessage("Show in Finder", "com.readdle.PDFExpert-Mac", "MainMenu"),
+      message = localizedMessage("Show in Finder", "MainMenu"),
       condition = checkMenuItem({ "File", "Show in Finder" }, { localeFile = "MainMenu" }),
       fn = receiveMenuItem
     },
     ["openRecent"] = {
-      message = localizedMessage("Open Recent", "com.readdle.PDFExpert-Mac", "MainMenu"),
+      message = localizedMessage("Open Recent", "MainMenu"),
       fn = function(appObject)
         selectMenuItem(appObject, { "File", "Open Recent" },
                        { localeFile = "MainMenu" }, true)
@@ -681,19 +689,19 @@ appHotKeyCallbacks = {
   ["abnerworks.Typora"] =
   {
     ["openFileLocation"] = {
-      message = localizedMessage("Open File Location", "abnerworks.Typora", "Menu"),
+      message = localizedMessage("Open File Location","Menu"),
       condition = checkMenuItem({ "File", "Open File Location" }, { localeFile = "Menu" }),
       fn = receiveMenuItem
     },
     ["openRecent"] = {
-      message = localizedMessage("Open Recent", "abnerworks.Typora", "Menu"),
+      message = localizedMessage("Open Recent", "Menu"),
       fn = function(appObject)
         selectMenuItem(appObject, { "File", "Open Recent" },
                        { localeFile = "Menu" }, true)
       end
     },
     ["pasteAsPlainText"] = {
-      message = localizedMessage("Paste as Plain Text", "abnerworks.Typora", "Menu"),
+      message = localizedMessage("Paste as Plain Text", "Menu"),
       repeatable = true,
       fn = function(appObject)
         selectMenuItem(appObject, { "Edit", "Paste as Plain Text" },
@@ -719,7 +727,7 @@ appHotKeyCallbacks = {
   ["com.superace.updf.mac"] =
   {
     ["showInFinder"] = {
-      message = localizedMessage("Show in Finder", "com.superace.updf.mac", "Localizable"),
+      message = localizedMessage("Show in Finder", "Localizable"),
       condition = checkMenuItem({ "File", "Show in Finder" }, { localeFile = "Localizable" }),
       fn = receiveMenuItem
     }
@@ -728,9 +736,7 @@ appHotKeyCallbacks = {
   ["com.kingsoft.wpsoffice.mac"] =
   {
     ["newWorkspace"] = {
-      message = function()
-        return findMenuItemByKeyBinding(findApplication("com.kingsoft.wpsoffice.mac"), { 'ctrl', 'alt' }, "N")[2]
-      end,
+      message = menuItemMessage({ 'ctrl', 'alt' }, "N", 2),
       repeatable = true,
       condition = checkMenuItemByKeybinding({ 'ctrl', 'alt' }, "N"),
       fn = receiveMenuItem
@@ -742,17 +748,13 @@ appHotKeyCallbacks = {
       fn = receiveMenuItem
     },
     ["previousWindow"] = {
-      message = function()
-        return findMenuItemByKeyBinding(findApplication("com.kingsoft.wpsoffice.mac"), { 'shift', 'ctrl' }, "⇥")[2]
-      end,
+      message = menuItemMessage({ 'shift', 'ctrl' }, "⇥", 2),
       repeatable = true,
       condition = checkMenuItemByKeybinding({ 'shift', 'ctrl' }, "⇥"),
       fn = receiveMenuItem
     },
     ["nextWindow"] = {
-      message = function()
-        return findMenuItemByKeyBinding(findApplication("com.kingsoft.wpsoffice.mac"), { 'ctrl' }, "⇥")[2]
-      end,
+      message = menuItemMessage({ 'ctrl' }, "⇥", 2),
       repeatable = true,
       condition = checkMenuItemByKeybinding({ 'ctrl' }, "⇥"),
       fn = receiveMenuItem
@@ -821,7 +823,7 @@ appHotKeyCallbacks = {
   ["com.apple.iWork.Keynote"] =
   {
     ["export"] = {
-      message = localizedMessage({ "1780.title", "1781.title" }, "com.apple.iWork.Keynote", "MainMenu"),
+      message = localizedMessage({ "1780.title", "1781.title" }, "MainMenu"),
       condition = checkMenuItem({ "81.title", "1780.title", "1781.title" }, { localeFile = "MainMenu" }),
       fn = function(menuItemTitle, appObject)
         appObject:selectMenuItem({ menuItemTitle[1], menuItemTitle[2] })
@@ -829,24 +831,24 @@ appHotKeyCallbacks = {
       end
     },
     ["pasteAndMatchStyle"] = {
-      message = localizedMessage("689.title", "com.apple.iWork.Keynote", "MainMenu"),
+      message = localizedMessage("689.title", "MainMenu"),
       repeatable = true,
       condition = checkMenuItem({ "681.title", "689.title" }, { localeFile = "MainMenu" }),
       fn = receiveMenuItem
     },
     ["paste"] = {
-      message = localizedMessage("688.title", "com.apple.iWork.Keynote", "MainMenu"),
+      message = localizedMessage("688.title", "MainMenu"),
       repeatable = true,
       condition = checkMenuItem({ "681.title", "688.title" }, { localeFile = "MainMenu" }),
       fn = receiveMenuItem
     },
     ["play"] = {
-      message = localizedMessage("1527.title", "com.apple.iWork.Keynote", "MainMenu"),
+      message = localizedMessage("1527.title", "MainMenu"),
       condition = checkMenuItem({ "1526.title", "1527.title" }, { localeFile = "MainMenu" }),
       fn = receiveMenuItem
     },
     ["insertEquation"] = {
-      message = localizedMessage({ "849.title", "1677.title" }, "com.apple.iWork.Keynote", "MainMenu"),
+      message = localizedMessage({ "849.title", "1677.title" }, "MainMenu"),
       condition = checkMenuItem({ "849.title", "1677.title" }, { localeFile = "MainMenu" }),
       fn = receiveMenuItem
     },
@@ -1752,7 +1754,7 @@ local function registerRunningAppHotKeys(bid, appObject)
              and hs.application.pathForBundleID(bid) ~= ""))) then
       local fn = hs.fnutils.partial(cfg.fn, appObject)
       local repeatedFn = cfg.repeatable and fn or nil
-      local msg = (appObject ~= nil and type(cfg.message) ~= 'string') and cfg.message() or cfg.message
+      local msg = (appObject ~= nil and type(cfg.message) ~= 'string') and cfg.message(appObject) or cfg.message
       local hotkey = bindSpecSuspend(keyBinding, msg, fn, nil, repeatedFn)
       if keyBinding.persist == true then
         hotkey.persist = true
@@ -1887,7 +1889,7 @@ local function registerInAppHotKeys(appName, eventType, appObject)
         fn = inAppHotKeysWrapper(appObject, keyBinding,
                                  hs.fnutils.partial(fn, appObject, appName, eventType))
         local repeatedFn = cfg.repeatable and fn or nil
-        local msg = type(cfg.message) == 'string' and cfg.message or cfg.message()
+        local msg = type(cfg.message) == 'string' and cfg.message or cfg.message(appObject)
         local hotkey = bindSpecSuspend(keyBinding, msg, fn, nil, repeatedFn)
         hotkey.kind = HK.IN_APP
         hotkey.condition = cfg.condition
@@ -1985,7 +1987,7 @@ local function registerInWinHotKeys(appObject)
       if type(hkID) ~= 'number' then
         if keyBinding.windowFilter ~= nil and (spec.bindCondition == nil or spec.bindCondition())
             and not spec.notActivateApp then
-          local msg = type(spec.message) == 'string' and spec.message or spec.message()
+          local msg = type(spec.message) == 'string' and spec.message or spec.message(appObject)
           local fn = inWinHotKeysWrapper(appObject, keyBinding.windowFilter, keyBinding, msg, spec.fn)
           local repeatedFn = spec.repeatable and fn or nil
           local hotkey = bindSpecSuspend(keyBinding, msg, fn, nil, repeatedFn)
@@ -1996,7 +1998,7 @@ local function registerInWinHotKeys(appObject)
         local cfg = spec[1]
         for _, spec in ipairs(cfg) do
           if (spec.bindCondition == nil or spec.bindCondition()) and not spec.notActivateApp then
-            local msg = type(spec.message) == 'string' and spec.message or spec.message()
+            local msg = type(spec.message) == 'string' and spec.message or spec.message(appObject)
             local fn = inWinHotKeysWrapper(appObject, cfg.filter, spec, msg, spec.fn)
             local repeatedFn = spec.repeatable and fn or nil
             local hotkey = bindSpecSuspend(spec, msg, fn, nil, repeatedFn)
@@ -2023,7 +2025,7 @@ local function registerInWinHotKeys(appObject)
         if keyBinding.windowFilter ~= nil then
           local hkIdx = hotkeyIdx(keyBinding.mods, keyBinding.key)
           local prevHotkeyInfo = inWinHotkeyInfoChain[bid][hkIdx]
-          local msg = type(spec.message) == 'string' and spec.message or spec.message()
+          local msg = type(spec.message) == 'string' and spec.message or spec.message(appObject)
           inWinHotkeyInfoChain[bid][hkIdx] = {
             appName = appObject:name(),
             filter = keyBinding.windowFilter,
@@ -2036,7 +2038,7 @@ local function registerInWinHotKeys(appObject)
         for _, spec in ipairs(cfg) do
           local hkIdx = hotkeyIdx(spec.mods, spec.key)
           local prevHotkeyInfo = inWinHotkeyInfoChain[bid][hkIdx]
-          local msg = type(spec.message) == 'string' and spec.message or spec.message()
+          local msg = type(spec.message) == 'string' and spec.message or spec.message(appObject)
           inWinHotkeyInfoChain[bid][hkIdx] = {
             appName = appObject:name(),
             filter = cfg.filter,
@@ -2088,7 +2090,7 @@ local function inWinOfUnactivatedAppWatcherEnableCallback(bid, filter, winObj, a
   for hkID, spec in pairs(appHotKeyCallbacks[bid]) do
     if type(hkID) ~= 'number' then
       if (spec.bindCondition == nil or spec.bindCondition()) and sameFilter(keybindingConfigs.hotkeys[bid][hkID].windowFilter, filter) then
-        local msg = type(spec.message) == 'string' and spec.message or spec.message()
+        local msg = type(spec.message) == 'string' and spec.message or spec.message(winObj:application())
         local hotkey = bindSpecSuspend(keybindingConfigs.hotkeys[bid][hkID], msg,
                                        spec.fn, nil, spec.repeatable and spec.fn or nil)
         hotkey.kind = HK.IN_WIN
@@ -2100,7 +2102,7 @@ local function inWinOfUnactivatedAppWatcherEnableCallback(bid, filter, winObj, a
       if sameFilter(cfg.filter, filter) then
         for _, spec in ipairs(cfg) do
           if (spec.bindCondition == nil or spec.bindCondition()) then
-            local msg = type(spec.message) == 'string' and spec.message or spec.message()
+            local msg = type(spec.message) == 'string' and spec.message or spec.message(winObj:application())
             local hotkey = bindSuspend(spec.mods, spec.key, msg,
                                        spec.fn, nil, spec.repeatable and spec.fn or nil)
             hotkey.kind = HK.IN_WIN
