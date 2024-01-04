@@ -280,7 +280,7 @@ local function testValid(entry)
   local actualMsg
   if valid then
     valid = valid and (entry.enabled == nil or entry.enabled == true)
-        and (entry.condition == nil or entry.condition())
+        and (entry.condition == nil or entry.condition(hs.application.frontmostApplication()))
     if valid and (entry.kind == HK.APP_MENU or entry.kind == HK.IN_APP) then
       valid = hs.window.frontmostWindow() == nil or hs.application.frontmostApplication():focusedWindow() == nil
           or hs.window.frontmostWindow():application():bundleID() == hs.application.frontmostApplication():bundleID()
@@ -1022,7 +1022,7 @@ local searchHotkey = bindSpecSuspend(misc["searchHotkeys"], "Search Hotkey", fun
     local actualMsg
     if valid then
       valid = valid and (entry.enabled == nil or entry.enabled == true)
-          and (entry.condition == nil or entry.condition())
+          and (entry.condition == nil or entry.condition(hs.application.frontmostApplication()))
       if valid and (entry.kind == HK.APP_MENU or entry.kind == HK.IN_APP) then
         valid = hs.window.frontmostWindow() == nil or hs.application.frontmostApplication():focusedWindow() == nil
             or hs.window.frontmostWindow():application():bundleID() == hs.application.frontmostApplication():bundleID()
