@@ -823,6 +823,13 @@ appHotKeyCallbacks = {
 
   ["com.apple.iWork.Keynote"] =
   {
+    ["openRecent"] = {  -- File > Open Recent
+      message = localizedMessage("125.title", "MainMenu"),
+      fn = function(appObject)
+        selectMenuItem(appObject, { "81.title", "125.title" },
+                       { localeFile = "MainMenu" }, true)
+      end
+    },
     ["export"] = {  -- File > Export To > PDF…
       message = localizedMessage({ "1780.title", "1781.title" }, "MainMenu"),
       condition = checkMenuItem({ "81.title", "1780.title", "1781.title" }, { localeFile = "MainMenu" }),

@@ -973,6 +973,10 @@
       }
     },
     "com.apple.iWork.Keynote": {
+      "openRecent": {
+        "mods": "control",
+        "key": "R"
+      },
       "export": {
         "mods": "command",
         "key": "E"
