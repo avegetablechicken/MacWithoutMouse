@@ -2234,7 +2234,7 @@ for bid, appConfig in pairs(appHotKeyCallbacks) do
 end
 
 -- simplify switching to previous tab
-function remapPreviousTab()
+function remapPreviousTab(spec)
   if remapPreviousTabHotkey then
     remapPreviousTabHotkey:delete()
     remapPreviousTabHotkey = nil
@@ -2246,18 +2246,18 @@ function remapPreviousTab()
       local menuItemCond = appObject:findMenuItem(menuItemPath)
       return menuItemCond ~= nil and menuItemCond.enabled
     end
-    local fn = inAppHotKeysWrapper(appObject, "⌃", "`",
+    local fn = inAppHotKeysWrapper(appObject, spec.mods, spec.key,
         function()
           if cond(appObject) then appObject:selectMenuItem(menuItemPath)
-          else hs.eventtap.keyStroke("⌃", "`") end
+          else hs.eventtap.keyStroke(spec.mods, spec.key) end
         end)
-    remapPreviousTabHotkey = bindSuspend("⌃", "`", menuItemPath[#menuItemPath],
-                                         fn, nil, fn)
+    remapPreviousTabHotkey = bindSpecSuspend(spec, menuItemPath[#menuItemPath],
+                                             fn, nil, fn)
     remapPreviousTabHotkey.condition = cond
     remapPreviousTabHotkey.kind = HK.IN_APP
   end
 end
-remapPreviousTab()
+remapPreviousTab(keybindingConfigs.hotkeys.appCommon["remapPreviousTab"])
 
 function registerOpenRecent(spec)
   if openRecentHotkey then
@@ -2769,7 +2769,7 @@ function app_applicationCallback(appName, eventType, appObject)
       return
     end
     selectInputSourceInApp(appObject:bundleID())
-    remapPreviousTab()
+    remapPreviousTab(keybindingConfigs.hotkeys.appCommon["remapPreviousTab"])
     registerRunningAppHotKeys(appObject:bundleID(), appObject)
     registerInAppHotKeys(appName, eventType, appObject)
     registerInWinHotKeys(appObject)

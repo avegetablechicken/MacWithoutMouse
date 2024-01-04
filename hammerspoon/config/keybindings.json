@@ -635,6 +635,10 @@
     },
 
     "appCommon": {
+      "remapPreviousTab": {
+        "mods": "control",
+        "key": "`"
+      },
       "openRecent": {
         "mods": "control",
         "key": "R"
