@@ -2257,7 +2257,12 @@ function remapPreviousTab(spec)
     remapPreviousTabHotkey.kind = HK.IN_APP
   end
 end
-remapPreviousTab(keybindingConfigs.hotkeys.appCommon["remapPreviousTab"])
+
+local frontmostApplication = hs.application.frontmostApplication()
+if not hs.fnutils.contains(keybindingConfigs.hotkeys.appCommon["remapPreviousTab"].excluded or {},
+                           frontmostApplication:bundleID()) then
+  remapPreviousTab(keybindingConfigs.hotkeys.appCommon["remapPreviousTab"])
+end
 
 function registerOpenRecent(spec)
   if openRecentHotkey then
@@ -2286,9 +2291,10 @@ function registerOpenRecent(spec)
   end
 end
 
-local frontmostApplication = hs.application.frontmostApplication()
-if appHotKeyCallbacks[frontmostApplication:bundleID()] == nil
-    or appHotKeyCallbacks[frontmostApplication:bundleID()]["openRecent"] == nil then
+if (appHotKeyCallbacks[frontmostApplication:bundleID()] == nil
+    or appHotKeyCallbacks[frontmostApplication:bundleID()]["openRecent"] == nil)
+    and not hs.fnutils.contains(keybindingConfigs.hotkeys.appCommon["openRecent"].excluded or {},
+                                frontmostApplication:bundleID()) then
   registerOpenRecent(keybindingConfigs.hotkeys.appCommon["openRecent"])
 end
 
@@ -2769,13 +2775,18 @@ function app_applicationCallback(appName, eventType, appObject)
       return
     end
     selectInputSourceInApp(appObject:bundleID())
-    remapPreviousTab(keybindingConfigs.hotkeys.appCommon["remapPreviousTab"])
+    if not hs.fnutils.contains(keybindingConfigs.hotkeys.appCommon["remapPreviousTab"].excluded or {},
+                               appObject:bundleID()) then
+      remapPreviousTab(keybindingConfigs.hotkeys.appCommon["remapPreviousTab"])
+    end
     registerRunningAppHotKeys(appObject:bundleID(), appObject)
     registerInAppHotKeys(appName, eventType, appObject)
     registerInWinHotKeys(appObject)
     altMenuItem(appObject)
-    if appHotKeyCallbacks[appObject:bundleID()] == nil
-        or appHotKeyCallbacks[appObject:bundleID()]["openRecent"] == nil then
+    if (appHotKeyCallbacks[appObject:bundleID()] == nil
+        or appHotKeyCallbacks[appObject:bundleID()]["openRecent"] == nil)
+        and not hs.fnutils.contains(keybindingConfigs.hotkeys.appCommon["openRecent"].excluded or {},
+                                    appObject:bundleID()) then
       registerOpenRecent(keybindingConfigs.hotkeys.appCommon["openRecent"])
     end
     local frontAppBid = hs.fnutils.find(appsWatchMenuItems, function(bid)
