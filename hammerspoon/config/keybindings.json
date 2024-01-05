@@ -1113,18 +1113,6 @@
         "persist": true
       }
     },
-    "com.parallels.desktop.console": {
-      "closeWindow": {
-        "mods": "command",
-        "key": "W",
-        "windowFilter": {
-          "allowTitles": [
-            "^Control Center$",
-            "^控制中心$"
-          ]
-        }
-      }
-    },
     "com.jetbrains.CLion": {
       "newProject": {
         "mods": "command",

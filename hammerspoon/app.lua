@@ -1326,7 +1326,7 @@ appHotKeyCallbacks = {
       mods = "⌘", key = "W",
       message = "Close Window",
       windowFilter = {
-        allowTitles = "^Control Center$"
+        allowTitles = '^' .. localizedString("Control Center", "com.parallels.desktop.console") .. '$'
       },
       repeatable = true,
       fn = function(winObj) winObj:close() end
