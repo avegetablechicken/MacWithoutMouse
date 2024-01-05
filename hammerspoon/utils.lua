@@ -413,6 +413,10 @@ function delocalizedMenuItem(string, bundleID, locale, localeFile)
     return nil
   end
 
+  if bundleID == "org.zotero.zotero" then
+    return parseZoteroJarFile(string)
+  end
+
   local resourceDir = hs.application.pathForBundleID(bundleID) .. "/Contents/Resources"
   local localeDir
   if locale ~= nil then
@@ -552,6 +556,56 @@ function delocalizedMenuItem(string, bundleID, locale, localeFile)
   end
 
   menuItemLocaleMap[bundleID][string] = 'nil'
+end
+
+function parseZoteroJarFile(string)
+  local appLocale = menuItemAppLocaleMap["org.zotero.zotero"]
+  local localDetails = hs.host.locale.details(appLocale)
+  local language = localDetails.languageCode
+  local script = localDetails.scriptCode
+  local country = localDetails.countryCode
+  if script == nil then
+    local localeItems = hs.fnutils.split(appLocale, '-')
+    if #localeItems == 3 or (#localeItems == 2 and localeItems[2] ~= country) then
+      script = localeItems[2]
+    end
+  end
+
+  menuItemLocaleMap["org.zotero.zotero"][string] = 'nil'
+
+  local resourceDir = hs.application.pathForBundleID("org.zotero.zotero") .. "/Contents/Resources"
+  local locales, status = hs.execute("unzip -l \"" .. resourceDir .. "/zotero.jar\" 'chrome/locale/*/' | grep -Eo 'chrome/locale/[^/]*' | grep -Eo '[a-zA-Z-]*$' | uniq")
+  if status ~= true then return nil end
+  local localeFile
+  for _, loc in ipairs(hs.fnutils.split(locales, '\n')) do
+    local fileLocale = hs.host.locale.details(loc)
+    local fileLanguage = fileLocale.languageCode
+    local fileScript = fileLocale.scriptCode
+    local fileCountry = fileLocale.countryCode
+    if fileScript == nil then
+      local localeItems = hs.fnutils.split(loc)
+      if #localeItems == 3 or (#localeItems == 2 and localeItems[2] ~= fileCountry) then
+        fileScript = localeItems[2]
+      end
+    end
+    if fileLanguage == language
+        and (script == nil or fileScript == nil or fileScript == script)
+        and (country == nil or fileCountry == nil or fileCountry == country) then
+      localeFile = 'chrome/locale/' .. loc .. '/zotero/standalone.dtd'
+      break
+    end
+  end
+  if localeFile == nil then return nil end
+  local enLocaleFile = 'chrome/locale/en-US/zotero/standalone.dtd'
+  local key, status = hs.execute("unzip -p \"" .. resourceDir .. "/zotero.jar\" \"" .. localeFile .. "\""
+      .. " | awk '/<!ENTITY .* \"" .. string .. "\">/ { gsub(/<!ENTITY | \"" .. string .. "\">/, \"\"); printf \"%s\", $0 }'")
+  if status ~= true then return nil end
+  local enValue, status = hs.execute("unzip -p \"" .. resourceDir .. "/zotero.jar\" \"" .. enLocaleFile .. "\""
+      .. " | grep '" .. key .. "' | cut -d '\"' -f 2 | tr -d '\\n'")
+  if status ~= true then return nil end
+
+  menuItemLocaleMap["org.zotero.zotero"][string] = enValue
+  return enValue
 end
 
 
