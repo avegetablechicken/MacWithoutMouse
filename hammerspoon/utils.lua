@@ -565,7 +565,10 @@ function delocalizedMenuItem(string, bundleID, locale, localeFile)
       local output, status = hs.execute("zsh scripts/qm_delocalize.sh"
           .. " '" .. localeDir .. '/' .. file .. "'"
           .. " '" .. string .. "'")
-      if status and output ~= "" then return output end
+      if status and output ~= "" then
+        menuItemLocaleMap[bundleID][string] = output
+        return output
+      end
     end
   end
 
