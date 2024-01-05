@@ -253,12 +253,14 @@ function deleteSelectedMessage(appObject, menuItem, force)
 end
 
 function deleteAllMessages(appObject)
-  local menuItem
+  local menuItem, menuItemTitle
   if getOSVersion() < OS.Ventura then
-    menuItem = { en = {"File", "Delete Conversation…"}, zh = {"文件", "删除对话…"} }
+    menuItemTitle = { en = {"File", "Delete Conversation…"}, zh = {"文件", "删除对话…"} }
   else
-    menuItem = { en = {"Conversations", "Delete Conversation…"}, zh = {"对话", "删除对话…"} }
+    menuItemTitle = { en = {"Conversations", "Delete Conversation…"}, zh = {"对话", "删除对话…"} }
   end
+  menuItem, menuItemTitle = findMenuItem(appObject, menuItemTitle)
+  if menuItem == nil then return end
   appUIObj = hs.axuielement.applicationElement(appObject)
   appUIObj:elementSearch(
     function(msg, results, count)
@@ -270,10 +272,10 @@ function deleteAllMessages(appObject)
         return
       end
 
-      for _, messageItem in ipairs( messageItems) do
+      for _, messageItem in ipairs(messageItems) do
         messageItem:performAction("AXPress")
         hs.timer.usleep(0.1 * 1000000)
-        deleteSelectedMessage(appObject, menuItem, true)
+        deleteSelectedMessage(appObject, menuItemTitle, true)
         hs.timer.usleep(1 * 1000000)
       end
       deleteAllMessages(appObject)
