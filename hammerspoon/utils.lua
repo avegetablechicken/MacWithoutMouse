@@ -447,6 +447,7 @@ end
 
 local menuItemLocaleMap = {}
 local menuItemAppLocaleMap = {}
+local menuItemLocaleInversedMap = {}
 local stringsFilePatterns = { "(.-)MainMenu(.-)", "Menu", "MenuBar",
                               "MenuItems", "Localizable", "Main", "MainWindow" }
 function delocalizedMenuItem(string, bundleID, locale, localeFile)
@@ -458,6 +459,7 @@ function delocalizedMenuItem(string, bundleID, locale, localeFile)
   local appLocale = locales[1]
   if menuItemAppLocaleMap[bundleID] ~= appLocale then
     menuItemLocaleMap[bundleID] = {}
+    menuItemLocaleInversedMap[bundleID] = {}
   end
   menuItemAppLocaleMap[bundleID] = appLocale
   if menuItemLocaleMap[bundleID][string] == 'nil' then
@@ -609,17 +611,20 @@ function delocalizedMenuItem(string, bundleID, locale, localeFile)
   end
 
   if localeFile ~= nil then
-    if menuItemLocaleMap[bundleID][string] == nil then
+    if menuItemLocaleInversedMap[bundleID][string] == nil then
       local fullPath = localeDir .. '/' .. localeFile .. '.strings'
       if hs.fs.attributes(fullPath) ~= nil then
-        menuItemLocaleMap[bundleID] = parseStringsFile(fullPath, false)
+        menuItemLocaleInversedMap[bundleID] = parseStringsFile(fullPath, false)
       end
     end
-    if menuItemLocaleMap[bundleID] ~= nil and menuItemLocaleMap[bundleID][string] ~= nil then
-      local result = searchFunc(menuItemLocaleMap[bundleID][string])
+    if menuItemLocaleInversedMap[bundleID] ~= nil
+        and menuItemLocaleInversedMap[bundleID][string] ~= nil then
+      local result = searchFunc(menuItemLocaleInversedMap[bundleID][string])
       if result ~= nil then
+        menuItemLocaleMap[bundleID][string] = result
         return result
-      elseif not (string.match(menuItemLocaleMap[bundleID][string], "[^%a]")) then
+      elseif not (string.match(menuItemLocaleInversedMap[bundleID][string], "[^%a]")) then
+        menuItemLocaleMap[bundleID][string] = menuItemLocaleInversedMap[bundleID][string]
         return menuItemLocaleMap[bundleID][string]
       end
     end
@@ -640,17 +645,21 @@ function delocalizedMenuItem(string, bundleID, locale, localeFile)
       end)
     end
     for _, file in ipairs(stringsFiles) do
-      if menuItemLocaleMap[bundleID][string] == nil then
+      if menuItemLocaleInversedMap[bundleID][string] == nil then
         local fullPath = localeDir .. '/' .. file
-        menuItemLocaleMap[bundleID] = parseStringsFile(fullPath, false)
+        menuItemLocaleInversedMap[bundleID] = parseStringsFile(fullPath, false)
       end
-      if menuItemLocaleMap[bundleID][string] ~= nil then
-        local result = searchFunc(menuItemLocaleMap[bundleID][string])
-        if result ~= nil then return result end
+      if menuItemLocaleInversedMap[bundleID][string] ~= nil then
+        local result = searchFunc(menuItemLocaleInversedMap[bundleID][string])
+        if result ~= nil then
+          menuItemLocaleMap[bundleID][string] = result
+          return result
+        end
       end
     end
-    if menuItemLocaleMap[bundleID][string] ~= nil
-        and not string.match(menuItemLocaleMap[bundleID][string], "[^%a]") then
+    if menuItemLocaleInversedMap[bundleID][string] ~= nil
+        and not string.match(menuItemLocaleInversedMap[bundleID][string], "[^%a]") then
+      menuItemLocaleMap[bundleID][string] = menuItemLocaleInversedMap[bundleID][string]
       return menuItemLocaleMap[bundleID][string]
     end
   end
