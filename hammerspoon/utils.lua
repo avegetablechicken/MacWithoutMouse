@@ -411,6 +411,8 @@ function delocalizedMenuItem(string, bundleID, locale, localeFile)
   menuItemAppLocaleMap[bundleID] = appLocale
   if menuItemLocaleMap[bundleID][string] == 'nil' then
     return nil
+  elseif menuItemLocaleMap[bundleID][string] ~= nil then
+    return menuItemLocaleMap[bundleID][string]
   end
 
   if bundleID == "org.zotero.zotero" then
