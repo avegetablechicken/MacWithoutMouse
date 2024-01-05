@@ -234,7 +234,13 @@ function localizedString(string, bundleID, params)
   end
   local localesDict = appLocaleMap[bundleID][appLocale]
 
-  local resourceDir = hs.application.pathForBundleID(bundleID) .. "/Contents/Resources"
+  local resourceDir
+  if localeFile == nil or localeFile:sub(-10) ~= ".framework" then
+    resourceDir = hs.application.pathForBundleID(bundleID) .. "/Contents/Resources"
+  else
+    resourceDir = hs.application.pathForBundleID(bundleID) .. "/Contents/Frameworks/"
+        .. localeFile .. "/Resources"
+  end
   if localeDir == nil or localeDir == false then
     if locale == nil then locale = appLocaleDir[bundleID][appLocale] end
     if locale ~= nil then
@@ -295,6 +301,51 @@ function localizedString(string, bundleID, params)
     end
   end
   if localeDir == nil then
+    return nil
+  end
+
+  if localeFile ~= nil and localeFile:sub(-10) == ".framework" then
+    for _, _localeDir in ipairs{"en", "English", "Base", "en-GB"} do
+      if hs.fs.attributes(resourceDir .. '/' .. _localeDir .. '.lproj') ~= nil then
+        for file in hs.fs.dir(resourceDir .. '/' .. _localeDir .. '.lproj') do
+          if file:sub(-4) == ".pak" then
+            local fullPath = resourceDir .. '/' .. _localeDir .. '.lproj/' .. file
+            local fileStem = file:sub(1, -5)
+            local enTmpdir = hs.fs.temporaryDirectory()
+                .. '/hs-localization-' .. bundleID .. '-' .. _localeDir .. '-' .. fileStem
+            if hs.fs.attributes(enTmpdir) == nil then
+              hs.execute("scripts/pak"
+                  .. " -u '" .. fullPath .. "'"
+                  .. " '" .. enTmpdir .. "'")
+            end
+            local output, status = hs.execute("grep -lrE '^" .. string .. "$' '" .. enTmpdir .. "' | tr -d '\\n'")
+            if status and output ~= "" then
+              if hs.fs.attributes(localeDir .. '/' .. file) then
+                local matchFile = output:match("^.*/(.*)$")
+                local tmpdir = hs.fs.temporaryDirectory()
+                    .. '/hs-localization-' .. bundleID .. '-' .. appLocale .. '-' .. fileStem
+                if hs.fs.attributes(tmpdir) == nil then
+                  hs.execute("scripts/pak"
+                      .. " -u '" .. localeDir .. '/' .. file .. "'"
+                      .. " '" .. tmpdir .. "'")
+                end
+                local matchFullPath = tmpdir .. '/' .. matchFile
+                if hs.fs.attributes(matchFullPath) ~= nil then
+                  local file = io.open(matchFullPath, "r")
+                  local content = file:read("*a")
+                  file:close()
+                  if localesDict[fileStem] == nil then
+                    localesDict[fileStem] = {}
+                  end
+                  localesDict[fileStem][string] = content
+                  return content
+                end
+              end
+            end
+          end
+        end
+      end
+    end
     return nil
   end
 
