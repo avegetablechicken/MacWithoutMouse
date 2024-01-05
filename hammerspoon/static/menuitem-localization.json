@@ -36,6 +36,10 @@
     "表格": "Table",
     "工作区": "Workspace"
   },
+  "com.google.Chrome":
+  {
+    "标签页": "Tab"
+  },
   "net.xmind.vana.app":
   {
     "插入": "Insert",
