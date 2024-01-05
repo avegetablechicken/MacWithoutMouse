@@ -2023,8 +2023,10 @@ local function registerInWinHotKeys(appObject)
         keyBinding = {
           mods = spec.mods,
           key = spec.key,
-          windowFilter = spec.windowFilter,
         }
+      end
+      if keyBinding.windowFilter == nil then
+        keyBinding.windowFilter = spec.windowFilter
       end
       if type(hkID) ~= 'number' then
         if keyBinding.windowFilter ~= nil and (spec.bindCondition == nil or spec.bindCondition())
@@ -2060,8 +2062,10 @@ local function registerInWinHotKeys(appObject)
         keyBinding = {
           mods = spec.mods,
           key = spec.key,
-          windowFilter = spec.windowFilter,
         }
+      end
+      if keyBinding.windowFilter == nil then
+        keyBinding.windowFilter = spec.windowFilter
       end
       if type(hkID) ~= 'number' then
         if keyBinding.windowFilter ~= nil then
