@@ -454,6 +454,15 @@ function delocalizedMenuItem(string, bundleID, locale, localeFile)
     return nil
   end
 
+  for file in hs.fs.dir(localeDir) do
+    if file:sub(-3) == ".qm" then
+      local output, status = hs.execute("zsh scripts/qm_delocalize.sh"
+          .. " '" .. localeDir .. '/' .. file .. "'"
+          .. " '" .. string .. "'")
+      if status and output ~= "" then return output end
+    end
+  end
+
   local searchFunc = function(string)
     for _, localeDir in ipairs({
         resourceDir .. "/en.lproj",
