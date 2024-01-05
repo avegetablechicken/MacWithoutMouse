@@ -298,6 +298,15 @@ function localizedString(string, bundleID, params)
     return nil
   end
 
+  for file in hs.fs.dir(localeDir) do
+    if file:sub(-3) == ".qm" then
+      local output, status = hs.execute("zsh scripts/qm_localize.sh"
+          .. " '" .. localeDir .. '/' .. file .. "'"
+          .. " '" .. string .. "'")
+      if status and output ~= "" then return output end
+    end
+  end
+
   local searchFunc = function(string)
     if localeFile ~= nil then
       if localesDict[localeFile] == nil
