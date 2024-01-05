@@ -907,7 +907,7 @@ appHotKeyCallbacks = {
   ["com.tencent.xinWeChat"] =
   {
     ["back"] = {
-      message = localizedString("Common.Navigation.Back", "com.tencent.xinWeChat", "Localizable"),
+      message = localizedMessage("Common.Navigation.Back", "Localizable"),
       repeatable = true,
       condition = function(appObject)
         local bundleID = appObject:bundleID()
@@ -1007,7 +1007,7 @@ appHotKeyCallbacks = {
       end
     },
     ["forward"] = {
-      message = localizedString("WebView.Next.Item", "com.tencent.xinWeChat", "Localizable"),
+      message = localizedMessage("WebView.Next.Item", "Localizable"),
       repeatable = true,
       condition = function(appObject)
         local bundleID = appObject:bundleID()
