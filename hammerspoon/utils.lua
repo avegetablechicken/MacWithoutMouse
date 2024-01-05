@@ -419,7 +419,13 @@ function delocalizedMenuItem(string, bundleID, locale, localeFile)
     return parseZoteroJarFile(string)
   end
 
-  local resourceDir = hs.application.pathForBundleID(bundleID) .. "/Contents/Resources"
+  local resourceDir
+  if localeFile == nil or localeFile:sub(-10) ~= ".framework" then
+    resourceDir = hs.application.pathForBundleID(bundleID) .. "/Contents/Resources"
+  else
+    resourceDir = hs.application.pathForBundleID(bundleID) .. "/Contents/Frameworks/"
+        .. localeFile .. "/Resources"
+  end
   local localeDir
   if locale ~= nil then
     localeDir = resourceDir .. "/" .. locale .. ".lproj"
@@ -456,6 +462,47 @@ function delocalizedMenuItem(string, bundleID, locale, localeFile)
     end
   end
   if localeDir == nil then
+    menuItemLocaleMap[bundleID][string] = 'nil'
+    return nil
+  end
+
+  if localeFile ~= nil and localeFile:sub(-10) == ".framework" then
+    for file in hs.fs.dir(localeDir) do
+      if file:sub(-4) == ".pak" then
+        local fileStem = file:sub(1, -5)
+        local tmpdir = hs.fs.temporaryDirectory()
+            .. '/hs-localization-' .. bundleID .. '-' .. appLocale .. '-' .. fileStem
+        if hs.fs.attributes(tmpdir) == nil then
+          hs.execute("scripts/pak"
+              .. " -u '" .. localeDir .. '/' .. file .. "'"
+              .. " '" .. tmpdir .. "'")
+        end
+        local output, status = hs.execute("grep -lrE '^" .. string .. "$' '" .. tmpdir .. "' | tr -d '\\n'")
+        if status and output ~= "" then
+          local matchFile = output:match("^.*/(.*)$")
+          for _, _localeDir in ipairs{"en", "English", "Base", "en-GB"} do
+            local fullPath = resourceDir .. '/' .. _localeDir .. '.lproj/' .. file
+            if hs.fs.attributes(fullPath) ~= nil then
+              local enTmpdir = hs.fs.temporaryDirectory()
+                  .. '/hs-localization-' .. bundleID .. '-' .. _localeDir .. '-' .. fileStem
+              if hs.fs.attributes(enTmpdir) == nil then
+                hs.execute("scripts/pak"
+                    .. " -u '" .. fullPath .. "'"
+                    .. " '" .. enTmpdir .. "'")
+              end
+              local matchFullPath = enTmpdir .. '/' .. matchFile
+              if hs.fs.attributes(matchFullPath) ~= nil then
+                local file = io.open(matchFullPath, "r")
+                local content = file:read("*a")
+                file:close()
+                menuItemLocaleMap[bundleID][string] = content
+                return content
+              end
+            end
+          end
+        end
+      end
+    end
     menuItemLocaleMap[bundleID][string] = 'nil'
     return nil
   end

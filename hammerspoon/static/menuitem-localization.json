@@ -36,21 +36,6 @@
     "表格": "Table",
     "工作区": "Workspace"
   },
-  "com.google.Chrome":
-  {
-    "视图": "View",
-    "历史记录": "History",
-    "书签": "Bookmarks",
-    "个人资料": "Profiles",
-    "标签页": "Tab"
-  },
-  "com.microsoft.edgemac":
-  {
-    "视图": "View",
-    "历史记录": "History",
-    "收藏夹": "Favorites",
-    "个人资料": "Profiles"
-  },
   "net.xmind.vana.app":
   {
     "插入": "Insert",
