@@ -252,7 +252,13 @@ function deleteSelectedMessage(appObject, menuItem, force)
   end
 end
 
-function deleteAllMessages(appObject, menuItem)
+function deleteAllMessages(appObject)
+  local menuItem
+  if getOSVersion() < OS.Ventura then
+    menuItem = { en = {"File", "Delete Conversation…"}, zh = {"文件", "删除对话…"} }
+  else
+    menuItem = { en = {"Conversations", "Delete Conversation…"}, zh = {"对话", "删除对话…"} }
+  end
   appUIObj = hs.axuielement.applicationElement(appObject)
   appUIObj:elementSearch(
     function(msg, results, count)
@@ -270,7 +276,7 @@ function deleteAllMessages(appObject, menuItem)
         deleteSelectedMessage(appObject, menuItem, true)
         hs.timer.usleep(1 * 1000000)
       end
-      deleteAllMessages(appObject, menuItem)
+      deleteAllMessages(appObject)
     end,
     function(element)
       return element.AXIdentifier == "ConversationList"
@@ -504,10 +510,7 @@ appHotKeyCallbacks = {
     },
     ["deleteAllMessages"] = {
       message = "Delete All Messages",
-      condition = checkMenuItem(getOSVersion() < OS.Ventura
-          and { en = {"File", "Delete Conversation…"}, zh = {"文件", "删除对话…"} }
-          or { en = {"Conversations", "Delete Conversation…"}, zh = {"对话", "删除对话…"} }),
-      fn = function(menuItemTitle, appObject) deleteAllMessages(appObject, menuItemTitle) end
+      fn = deleteAllMessages
     },
     ["goToPreviousConversation"] = {
       message = menuItemMessage({ 'shift', 'ctrl' }, "⇥", 2),
