@@ -1796,16 +1796,23 @@ local function registerRunningAppHotKeys(bid, appObject)
              and hs.application.pathForBundleID(bid) ~= ""))) then
       local fn = hs.fnutils.partial(cfg.fn, appObject)
       local repeatedFn = cfg.repeatable and fn or nil
-      local msg = (appObject ~= nil and type(cfg.message) ~= 'string') and cfg.message(appObject) or cfg.message
-      local hotkey = bindSpecSuspend(keyBinding, msg, fn, nil, repeatedFn)
-      if keyBinding.persist == true then
-        hotkey.persist = true
-      else
-        allPersist = false
+      local msg
+      if type(cfg.message) == 'string' then
+        msg = cfg.message
+      elseif keyBinding.persist ~= true then
+        msg = cfg.message(appObject)
       end
-      hotkey.kind = cfg.kind or HK.BACKGROUND
-      hotkey.bundleID = bid
-      table.insert(runningAppHotKeys[bid], hotkey)
+      if msg ~= nil then
+        local hotkey = bindSpecSuspend(keyBinding, msg, fn, nil, repeatedFn)
+        if keyBinding.persist == true then
+          hotkey.persist = true
+        else
+          allPersist = false
+        end
+        hotkey.kind = cfg.kind or HK.BACKGROUND
+        hotkey.bundleID = bid
+        table.insert(runningAppHotKeys[bid], hotkey)
+      end
     end
   end
 
