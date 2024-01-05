@@ -1222,13 +1222,7 @@ appHotKeyCallbacks = {
     ["showSystemStatus"] = {
       message = "Show System Status",
       kind = HK.MENUBAR,
-      fn = function(appObject)
-        local bundleID = appObject:bundleID()
-        if hiddenByBartender(bundleID) and hasTopNotch(hs.screen.mainScreen()) then
-          hs.osascript.applescript([[tell application id "com.surteesstudios.Bartender" to activate "]] .. bundleID .. [[-Item-0"]])
-        end
-        clickRightMenuBarItem(bundleID)
-      end
+      fn = function(appObject) clickRightMenuBarItem(appObject:bundleID()) end
     }
   },
 
@@ -1237,12 +1231,9 @@ appHotKeyCallbacks = {
     ["invokeInAppScreenSaver"] = {
       message = localizedString("j8f-jJ-zXq.title", "whbalzac.Dongtaizhuomian", "HotkeyWindowController"),
       fn = function(appObject)
-        local bundleID = appObject:bundleID()
-        if hiddenByBartender(bundleID) and hasTopNotch(hs.screen.mainScreen()) then
-          hs.osascript.applescript([[tell application id "com.surteesstudios.Bartender" to activate "]] .. bundleID .. [[-Item-0"]])
-        end
-        clickRightMenuBarItem(bundleID, { localized = "j8f-jJ-zXq.title",
-                                          strings = "HotkeyWindowController" })
+        clickRightMenuBarItem(appObject:bundleID(),
+                             { localized = "j8f-jJ-zXq.title",
+                               strings = "HotkeyWindowController" })
       end
     }
   },

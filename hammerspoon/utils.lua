@@ -611,6 +611,13 @@ function clickAppRightMenuBarItem(bundleID, menuItem, subMenuItem)
 
   ]], bundleID)
 
+  if hiddenByBartender(bundleID) and hasTopNotch(hs.screen.mainScreen()) then
+    clickMenuBarItemCmd = [[
+      tell application id "com.surteesstudios.Bartender" to activate "]] .. bundleID .. [[-Item-0"
+
+    ]] .. clickMenuBarItemCmd
+  end
+
   if type(menuItem) == "number" then
     menuItem = tostring(menuItem)
   elseif type(menuItem) == "string" then
