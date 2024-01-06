@@ -2497,7 +2497,18 @@ function altMenuItem(appObject)
 
     local notSetItems = {}
     for i, title in ipairs(itemTitles) do
-      notSetItems[i] = title
+      local enTitle = type(title) == 'string' and title or title[2]
+      if hs.fnutils.contains({ 'File', 'Edit', 'View', 'Window', 'Help' }, enTitle) then
+        local hotkey = string.sub(enTitle, 1, 1)
+        local showTitle = type(title) == 'string' and title or title[1]
+        local hotkeyObject = bindAltMenu(appObject, "⌥", hotkey, showTitle, function()
+          appObject:selectMenuItem({showTitle})
+        end)
+        alreadySetHotkeys[hotkey] = true
+        table.insert(altMenuItemHotkeys, hotkeyObject)
+      else
+        table.insert(notSetItems, title)
+      end
     end
     notSetItems, alreadySetHotkeys = bindHotkeyByNth(appObject, notSetItems, alreadySetHotkeys, 1)
     -- if there are still items not set, set them by first letter of second word
