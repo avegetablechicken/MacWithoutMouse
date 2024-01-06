@@ -2025,8 +2025,13 @@ local function registerInWinHotKeys(appObject)
           key = spec.key,
         }
       end
-      if keyBinding.windowFilter == nil then
+      if keyBinding.windowFilter == nil and spec.windowFilter ~= nil then
         keyBinding.windowFilter = spec.windowFilter
+        for k, v in pairs(keyBinding.windowFilter) do
+          if type(v) == 'function' then
+            keyBinding.windowFilter[k] = v(appObject)
+          end
+        end
       end
       if type(hkID) ~= 'number' then
         if keyBinding.windowFilter ~= nil and (spec.bindCondition == nil or spec.bindCondition())
@@ -2064,8 +2069,13 @@ local function registerInWinHotKeys(appObject)
           key = spec.key,
         }
       end
-      if keyBinding.windowFilter == nil then
+      if keyBinding.windowFilter == nil and spec.windowFilter ~= nil then
         keyBinding.windowFilter = spec.windowFilter
+        for k, v in pairs(keyBinding.windowFilter) do
+          if type(v) == 'function' then
+            keyBinding.windowFilter[k] = v(appObject)
+          end
+        end
       end
       if type(hkID) ~= 'number' then
         if keyBinding.windowFilter ~= nil then
@@ -2221,7 +2231,11 @@ for bid, appConfig in pairs(appHotKeyCallbacks) do
           local cfg = spec[1]
           filter = cfg.filter
         end
-        if inWinOfUnactivatedAppWatchers[bid] == nil
+        local notFunctionalFilter = hs.fnutils.every(filter, function(v, k)
+          return type(v) ~= 'function'
+        end)
+        if notFunctionalFilter
+          and inWinOfUnactivatedAppWatchers[bid] == nil
           or inWinOfUnactivatedAppWatchers[bid][filter] == nil then
           if inWinOfUnactivatedAppWatchers[bid] == nil then
             inWinOfUnactivatedAppWatchers[bid] = {}
