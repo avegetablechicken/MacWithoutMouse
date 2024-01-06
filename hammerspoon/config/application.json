@@ -12,7 +12,8 @@
       "net.xmind.vana.app",
       "com.tencent.xinWeChat",
       "com.hexrays.ida64",
-      "re.rizin.cutter"
+      "re.rizin.cutter",
+      "org.jkiss.dbeaver.core.product"
     ]
   },
 
