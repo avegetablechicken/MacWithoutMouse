@@ -1953,7 +1953,8 @@ local function getActiveControlCenterPanel()
   return panel
 end
 
-if hs.window.focusedWindow():application():bundleID() == "com.apple.controlcenter"
+if hs.window.focusedWindow() ~= nil
+    and hs.window.focusedWindow():application():bundleID() == "com.apple.controlcenter"
     and hs.window.focusedWindow():subrole() == "AXSystemDialog" then
   registerControlCenterHotKeys(getActiveControlCenterPanel())
 end
