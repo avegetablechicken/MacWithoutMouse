@@ -1711,15 +1711,10 @@ function registerControlCenterHotKeys(panel)
                   set g to group 1 of group 4 of group 1 of group 2 of UI element "Experiments" of group 1 of group 1 of group 1 of group 1 of win
                 ]]
               else
-                local experiment = localizedString("Experiments", bundleID,
-                    { localeFile = ahs.application.frontmostApplication():name() .. " Framework.framework" })
+                local experiments = localizedString("Experiments", bundleID)
                 getOptionParentCmd = [[
                   set win to ]] .. aWinFor(bundleID) .. [[
-                  if exists UI element "Experiments" of group 1 of group 1 of group 1 of group 1 of win then
-                    set g to group 1 of group 3 of group 1 of group 2 of group 1 of UI element "Experiments" of group 1 of group 1 of group 1 of group 1 of win
-                  else
-                    set g to group 1 of group 3 of group 1 of group 2 of group 1 of UI element "]] .. experiment .. [[" of group 1 of group 1 of group 1 of group 1 of win
-                  end if
+                  set g to group 1 of group 3 of group 1 of group 2 of group 1 of UI element "]] .. experiments .. [[" of group 1 of group 1 of group 1 of group 1 of win
                 ]]
               end
               local aWin = activatedWindowIndex()

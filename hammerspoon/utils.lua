@@ -234,13 +234,30 @@ function localizedString(string, bundleID, params)
   end
   local localesDict = appLocaleMap[bundleID][appLocale]
 
+  if bundleID == "com.google.Chrome" then
+    localeFile = "Google Chrome Framework.framework"
+  elseif bundleID == "com.microsoft.edgemac" then
+    localeFile = "Microsoft Edge Framework.framework"
+  end
+
   local resourceDir
-  if localeFile == nil or localeFile:sub(-10) ~= ".framework" then
-    resourceDir = hs.application.pathForBundleID(bundleID) .. "/Contents/Resources"
-  else
+  if localeFile ~= nil and localeFile:sub(-10) == ".framework" then
     resourceDir = hs.application.pathForBundleID(bundleID) .. "/Contents/Frameworks/"
         .. localeFile .. "/Resources"
+  else
+    local frameworkDir = hs.application.pathForBundleID(bundleID) .. "/Contents/Frameworks"
+    for _, fw in ipairs{"Electron Framework", "Chromium Embedded Framework"} do
+      if hs.fs.attributes(frameworkDir .. '/' .. fw .. ".framework") ~= nil then
+        resourceDir = frameworkDir .. '/' .. fw .. ".framework/Resources"
+        localeFile = fw .. ".framework"
+        break
+      end
+    end
+    if resourceDir == nil then
+      resourceDir = hs.application.pathForBundleID(bundleID) .. "/Contents/Resources"
+    end
   end
+
   if localeDir == nil or localeDir == false then
     if locale == nil then locale = appLocaleDir[bundleID][appLocale] end
     if locale ~= nil then
@@ -470,15 +487,30 @@ function delocalizedMenuItem(string, bundleID, locale, localeFile)
 
   if bundleID == "org.zotero.zotero" then
     return parseZoteroJarFile(string)
+  elseif bundleID == "com.google.Chrome" then
+    localeFile = "Google Chrome Framework.framework"
+  elseif bundleID == "com.microsoft.edgemac" then
+    localeFile = "Microsoft Edge Framework.framework"
   end
 
   local resourceDir
-  if localeFile == nil or localeFile:sub(-10) ~= ".framework" then
-    resourceDir = hs.application.pathForBundleID(bundleID) .. "/Contents/Resources"
-  else
+  if localeFile ~= nil and localeFile:sub(-10) == ".framework" then
     resourceDir = hs.application.pathForBundleID(bundleID) .. "/Contents/Frameworks/"
         .. localeFile .. "/Resources"
+  else
+    local frameworkDir = hs.application.pathForBundleID(bundleID) .. "/Contents/Frameworks"
+    for _, fw in ipairs{"Electron Framework", "Chromium Embedded Framework"} do
+      if hs.fs.attributes(frameworkDir .. '/' .. fw .. ".framework") ~= nil then
+        resourceDir = frameworkDir .. '/' .. fw .. ".framework/Resources"
+        localeFile = fw .. ".framework"
+        break
+      end
+    end
+    if resourceDir == nil then
+      resourceDir = hs.application.pathForBundleID(bundleID) .. "/Contents/Resources"
+    end
   end
+
   local localeDir
   if locale ~= nil then
     localeDir = resourceDir .. "/" .. locale .. ".lproj"

@@ -2467,13 +2467,7 @@ function altMenuItem(appObject)
           end
         end
         if not substituted then
-          local localeFile
-          if appObject:bundleID() == "com.google.Chrome" then
-            localeFile = "Google Chrome Framework.framework"
-          elseif appObject:bundleID() == "com.microsoft.edgemac" then
-            localeFile = "Microsoft Edge Framework.framework"
-          end
-          local title = delocalizedMenuItem(itemTitles[i], appObject:bundleID(), localeFile)
+          local title = delocalizedMenuItem(itemTitles[i], appObject:bundleID())
           if title ~= nil then
             itemTitles[i] = {itemTitles[i], title}
             substituted = true
