@@ -62,7 +62,13 @@
     "com.termius-dmg.mac": "com.apple.keylayout.ABC",
     "com.kapeli.dashdoc": "com.apple.keylayout.ABC",
     "org.klatexformula.klatexformula": "com.apple.keylayout.ABC",
-    "com.tencent.xinWeChat": "com.apple.inputmethod.SCIM.Shuangpin",
-    "com.tencent.qq": "com.apple.inputmethod.SCIM.Shuangpin"
+    "com.tencent.xinWeChat": [
+      "com.apple.inputmethod.SCIM.Shuangpin",
+      "com.apple.inputmethod.SCIM.ITABC"
+    ],
+    "com.tencent.qq": [
+      "com.apple.inputmethod.SCIM.Shuangpin",
+      "com.apple.inputmethod.SCIM.ITABC"
+    ]
   }
 }
