@@ -811,7 +811,9 @@ function clickAppRightMenuBarItem(bundleID, menuItem, subMenuItem)
       if lang == 'localized' then
         item = localizedString(item, bundleID, menuItem.strings)
       end
-      menuItem[lang] = '"'..item..'"'
+      if lang ~= strings then
+        menuItem[lang] = '"'..item..'"'
+      end
     end
   end
 
