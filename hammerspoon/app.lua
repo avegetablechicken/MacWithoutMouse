@@ -2372,43 +2372,24 @@ local function bindAltMenu(appObject, mods, key, message, fn)
   return hotkey
 end
 
-local function bindHotkeyByNth(appObject, itemTitles, alreadySetHotkeys, index)
+local function searchHotkeyByNth(appObject, itemTitles, alreadySetHotkeys, index)
   local notSetItems = {}
   for i, title in pairs(itemTitles) do
-    local hotkey
-    local showTitle
-    if type(title) == "table" then
-      showTitle = title[1]
-      if index == nil then
-        index = string.find(title[2], " ")
-        if index ~= nil then
-          index = index + 1
-        end
-      end
+    if index == nil then
+      index = string.find(title[2], " ")
       if index ~= nil then
-        hotkey = string.upper(string.sub(title[2], index, index))
-      end
-    else
-      showTitle = title
-      if index == nil then
-        index = string.find(title, " ")
-        if index ~= nil then
-          index = index + 1
-        end
-      end
-      if index ~= nil then
-        hotkey = string.upper(string.sub(title, index, index))
+        index = index + 1
       end
     end
+    local hotkey
+    if index ~= nil then
+      hotkey = string.upper(string.sub(title[2], index, index))
+    end
 
-    if hotkey ~= nil and not alreadySetHotkeys[hotkey] then
-      hotkeyObject = bindAltMenu(appObject, "⌥", hotkey, showTitle, function()
-        appObject:selectMenuItem({showTitle})
-      end)
-      alreadySetHotkeys[hotkey] = true
-      table.insert(altMenuItemHotkeys, hotkeyObject)
+    if hotkey ~= nil and alreadySetHotkeys[hotkey] == nil then
+      alreadySetHotkeys[hotkey] = title[1]
     else
-      notSetItems[i] = title
+      table.insert(notSetItems, title)
     end
   end
   return notSetItems, alreadySetHotkeys
@@ -2450,11 +2431,7 @@ function altMenuItem(appObject)
     for i=2,#menuItems do
       local title, letter = menuItems[i].AXTitle:match("(.-)%s*%((.-)%)")
       if letter then
-        local hotkeyObject = bindAltMenu(appObject, "⌥", letter, title, function()
-          appObject:selectMenuItem({menuItems[i].AXTitle})
-        end)
-        alreadySetHotkeys[letter] = true
-        table.insert(altMenuItemHotkeys, hotkeyObject)
+        alreadySetHotkeys[letter] = {menuItems[i].AXTitle, title}
       else
         table.insert(itemTitles, menuItems[i].AXTitle)
       end
@@ -2468,7 +2445,9 @@ function altMenuItem(appObject)
     end
     for i=#itemTitles,1,-1 do
       -- remove titles starting with non-ascii characters
-      if string.byte(itemTitles[i], 1) > 127 then
+      if string.byte(itemTitles[i], 1) <= 127 then
+        itemTitles[i] = {itemTitles[i], itemTitles[i]}
+      else
         local substituted = false
         if titleMap ~= nil then
           if titleMap[itemTitles[i]] ~= nil then
@@ -2497,26 +2476,34 @@ function altMenuItem(appObject)
 
     local notSetItems = {}
     for i, title in ipairs(itemTitles) do
-      local enTitle = type(title) == 'string' and title or title[2]
-      if hs.fnutils.contains({ 'File', 'Edit', 'View', 'Window', 'Help' }, enTitle) then
-        local hotkey = string.sub(enTitle, 1, 1)
-        local showTitle = type(title) == 'string' and title or title[1]
-        local hotkeyObject = bindAltMenu(appObject, "⌥", hotkey, showTitle, function()
-          appObject:selectMenuItem({showTitle})
-        end)
-        alreadySetHotkeys[hotkey] = true
-        table.insert(altMenuItemHotkeys, hotkeyObject)
+      if hs.fnutils.contains({ 'File', 'Edit', 'View', 'Window', 'Help' }, title[2]) then
+        local hotkey = string.sub(title[2], 1, 1)
+        alreadySetHotkeys[hotkey] = title[1]
       else
         table.insert(notSetItems, title)
       end
     end
-    notSetItems, alreadySetHotkeys = bindHotkeyByNth(appObject, notSetItems, alreadySetHotkeys, 1)
+    notSetItems, alreadySetHotkeys = searchHotkeyByNth(appObject, notSetItems, alreadySetHotkeys, 1)
     -- if there are still items not set, set them by first letter of second word
-    notSetItems, alreadySetHotkeys = bindHotkeyByNth(appObject, notSetItems, alreadySetHotkeys, nil)
+    notSetItems, alreadySetHotkeys = searchHotkeyByNth(appObject, notSetItems, alreadySetHotkeys, nil)
     -- if there are still items not set, set them by second letter
-    notSetItems, alreadySetHotkeys = bindHotkeyByNth(appObject, notSetItems, alreadySetHotkeys, 2)
+    notSetItems, alreadySetHotkeys = searchHotkeyByNth(appObject, notSetItems, alreadySetHotkeys, 2)
     -- if there are still items not set, set them by third letter
-    bindHotkeyByNth(appObject, notSetItems, alreadySetHotkeys, 3)
+    searchHotkeyByNth(appObject, notSetItems, alreadySetHotkeys, 3)
+    local invMap = {}
+    for key, title in pairs(alreadySetHotkeys) do
+      local menuItem = type(title) == 'table' and title[1] or title
+      local msg = type(title) == 'table' and title[2] or title
+      invMap[menuItem] = {key, msg}
+    end
+    for i=2,#menuItems do
+      local spec = invMap[menuItems[i].AXTitle]
+      if spec ~= nil then
+        local hotkeyObject = bindAltMenu(appObject, "⌥", spec[1], spec[2],
+            function() appObject:selectMenuItem({menuItems[i].AXTitle}) end)
+        table.insert(altMenuItemHotkeys, hotkeyObject)
+      end
+    end
   end
 
   -- by index
