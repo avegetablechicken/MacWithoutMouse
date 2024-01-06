@@ -982,6 +982,7 @@ end)
 
 local searchHotkey = bindSpecSuspend(misc["searchHotkeys"], "Search Hotkey", function()
   local allKeys = {}
+  local enabledAltMenuHotkeys = {}
 
   for i, modal in ipairs(doubleTapModalList) do
     table.insert(allKeys, { modalType = 2,
@@ -1006,52 +1007,25 @@ local searchHotkey = bindSpecSuspend(misc["searchHotkeys"], "Search Hotkey", fun
 
   for _, entry in ipairs(hs.hotkey.getHotkeys()) do
     if entry.idx ~= nil then  -- weird bug
-      table.insert(allKeys, { modalType = 0,
-                              idx = entry.idx, msg = entry.msg,
-                              condition = entry.condition,
-                              kind = entry.kind, subkind = entry.subkind,
-                              bundleID = entry.bundleID, appPath = entry.appPath,
-                              icon = entry.icon })
+      local newEntry = { modalType = 0,
+                         idx = entry.idx, msg = entry.msg,
+                         condition = entry.condition,
+                         kind = entry.kind, subkind = entry.subkind,
+                         bundleID = entry.bundleID, appPath = entry.appPath,
+                         icon = entry.icon }
+      if entry.kind ~= HK.APP_MENU then
+        table.insert(allKeys, newEntry)
+      else
+        table.insert(enabledAltMenuHotkeys, newEntry)
+      end
     end
   end
 
   for _, entry in ipairs(allKeys) do
-    local pos = string.find(entry.msg, ": ")
-    local valid = pos ~= nil
-        and not (entry.suspendable and hotkeySuspended)
-    local actualMsg
-    if valid then
-      valid = valid and (entry.enabled == nil or entry.enabled == true)
-          and (entry.condition == nil or entry.condition(hs.application.frontmostApplication()))
-      if valid and (entry.kind == HK.APP_MENU or entry.kind == HK.IN_APP) then
-        valid = hs.window.frontmostWindow() == nil or hs.application.frontmostApplication():focusedWindow() == nil
-            or hs.window.frontmostWindow():application():bundleID() == hs.application.frontmostApplication():bundleID()
-      end
-      if valid and entry.kind == HK.IN_APPWIN then
-        local bundleID
-        if hs.window.frontmostWindow() == nil
-            or hs.window.frontmostWindow():application():bundleID() == hs.application.frontmostApplication():bundleID()
-        then
-          bundleID = hs.application.frontmostApplication():bundleID()
-        else
-          bundleID = hs.window.frontmostWindow():application():bundleID()
-        end
-        if inWinHotkeyInfoChain ~= nil and inWinHotkeyInfoChain[bundleID] ~= nil then
-          local hotkeyInfo = inWinHotkeyInfoChain[bundleID][entry.idx]
-          if hotkeyInfo then
-            valid, actualMsg = getValidMessage(hotkeyInfo)
-          end
-        elseif not entry.notActivateApp then
-          valid = false
-        end
-      end
-      entry.valid = valid
-      if actualMsg ~= nil then
-        entry.msg = string.sub(entry.msg, 1, pos - 1) .. ": " .. string.sub(entry.msg, pos + 2)
-      end
-    else
-      entry.valid = false
-    end
+    testValid(entry)
+  end
+  for _, entry in ipairs(enabledAltMenuHotkeys) do
+    testValid(entry)
   end
 
   for _, entry in ipairs(allKeys) do
@@ -1106,6 +1080,21 @@ local searchHotkey = bindSpecSuspend(misc["searchHotkeys"], "Search Hotkey", fun
       return a.pretty_idx < b.pretty_idx
     end
   end)
+  if #enabledAltMenuHotkeys ~= 0 then
+    local insertIdx = 1
+    for i, hotkey in ipairs(allKeys) do
+      if hotkey.kind > HK.APP_MENU then insertIdx = i break end
+    end
+    for i, hk in ipairs(altMenuItemHotkeys) do
+      local entry = hs.fnutils.find(enabledAltMenuHotkeys, function(menuHK)
+        return menuHK.idx == hk.idx
+      end)
+      if entry ~= nil then
+        table.insert(allKeys, insertIdx + i - 1, entry)
+      end
+    end
+    enabledAltMenuHotkeys = nil
+  end
 
   local appHotkeys = {}
   for _, menuItem in ipairs(hs.application.frontmostApplication():getMenuItems()) do
