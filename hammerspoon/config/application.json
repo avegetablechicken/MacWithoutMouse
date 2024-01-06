@@ -19,6 +19,7 @@
 
   "autoHideWithNoWindow": [
     "org.hammerspoon.Hammerspoon",
+    "cn.better365.iCopy",
     "com.tencent.xinWeChat",
     "com.tencent.qq",
     "com.apple.finder"

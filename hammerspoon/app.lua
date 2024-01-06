@@ -1681,71 +1681,86 @@ appHotKeyCallbacks = {
       {
         {
           mods = "⌘", key = "1",
+          message = "Select 1st Item",
           fn = function(winObj) iCopySelectHotkeyRemap(winObj, 1) end,
           bindCondition = iCopySelectHotkeyRemapRequired
         },
         {
           mods = "⌘", key = "2",
+          message = "Select 2nd Item",
           fn = function(winObj) iCopySelectHotkeyRemap(winObj, 2) end,
           bindCondition = iCopySelectHotkeyRemapRequired
         },
         {
           mods = "⌘", key = "3",
+          message = "Select 3rd Item",
           fn = function(winObj) iCopySelectHotkeyRemap(winObj, 3) end,
           bindCondition = iCopySelectHotkeyRemapRequired
         },
         {
           mods = "⌘", key = "4",
+          message = "Select 4th Item",
           fn = function(winObj) iCopySelectHotkeyRemap(winObj, 4) end,
           bindCondition = iCopySelectHotkeyRemapRequired
         },
         {
           mods = "⌘", key = "5",
+          message = "Select 5th Item",
           fn = function(winObj) iCopySelectHotkeyRemap(winObj, 5) end,
           bindCondition = iCopySelectHotkeyRemapRequired
         },
         {
           mods = "⌘", key = "6",
+          message = "Select 6th Item",
           fn = function(winObj) iCopySelectHotkeyRemap(winObj, 6) end,
           bindCondition = iCopySelectHotkeyRemapRequired
         },
         {
           mods = "⌘", key = "7",
+          message = "Select 7th Item",
           fn = function(winObj) iCopySelectHotkeyRemap(winObj, 7) end,
           bindCondition = iCopySelectHotkeyRemapRequired
         },
         {
           mods = "⌘", key = "8",
+          message = "Select 8th Item",
           fn = function(winObj) iCopySelectHotkeyRemap(winObj, 8) end,
           bindCondition = iCopySelectHotkeyRemapRequired
         },
         {
           mods = "⌘", key = "9",
+          message = "Select 9th Item",
           fn = function(winObj) iCopySelectHotkeyRemap(winObj, 9) end,
           bindCondition = iCopySelectHotkeyRemapRequired
         },
         {
           mods = "⌘", key = "[",
+          message = "Next Category",
           fn = function(winObj) hs.eventtap.keyStroke("", "Left", nil, winObj:application()) end
         },
         {
           mods = "⌘", key = "]",
+          message = "Previous Category",
           fn = function(winObj) hs.eventtap.keyStroke("", "Right", nil, winObj:application()) end
         },
         {
           mods = "", key = "Left",
+          message = "Previous Item",
           fn = function(winObj) hs.eventtap.keyStroke("", "Up", nil, winObj:application()) end
         },
         {
           mods = "", key = "Right",
+          message = "Next Item",
           fn = function(winObj) hs.eventtap.keyStroke("", "Down", nil, winObj:application()) end
         },
         {
           mods = "", key = "Up",
+          message = "Cancel Up",
           fn = function() end
         },
         {
           mods = "", key = "Down",
+          message = "Cancel Down",
           fn = function() end
         },
       }
@@ -1907,6 +1922,7 @@ local function registerInAppHotKeys(appName, eventType, appObject)
   if not inAppHotKeys[bid] then
     inAppHotKeys[bid] = {}
     for hkID, cfg in pairs(appHotKeyCallbacks[bid]) do
+      if type(hkID) == 'number' then break end
       local keyBinding = keyBindings[hkID]
       if keyBinding == nil then
         keyBinding = {
@@ -2046,8 +2062,8 @@ local function registerInWinHotKeys(appObject)
           table.insert(inWinHotKeys[bid], hotkey)
         end
       else
-        local cfg = spec[1]
-        for _, spec in ipairs(cfg) do
+        local cfg = spec
+        for _, spec in ipairs(cfg.hotkeys) do
           if (spec.bindCondition == nil or spec.bindCondition()) and not spec.notActivateApp then
             local msg = type(spec.message) == 'string' and spec.message or spec.message(appObject)
             local fn = inWinHotKeysWrapper(appObject, cfg.filter, spec, msg, spec.fn)
@@ -2092,8 +2108,8 @@ local function registerInWinHotKeys(appObject)
           }
         end
       else
-        local cfg = spec[1]
-        for _, spec in ipairs(cfg) do
+        local cfg = spec
+        for _, spec in ipairs(cfg.hotkeys) do
           local hkIdx = hotkeyIdx(spec.mods, spec.key)
           local prevHotkeyInfo = inWinHotkeyInfoChain[bid][hkIdx]
           local msg = type(spec.message) == 'string' and spec.message or spec.message(appObject)
