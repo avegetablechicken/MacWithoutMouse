@@ -2272,7 +2272,7 @@ function remapPreviousTab(spec)
     local fn = inAppHotKeysWrapper(appObject, spec.mods, spec.key,
         function()
           if cond(appObject) then appObject:selectMenuItem(menuItemPath)
-          else hs.eventtap.keyStroke(spec.mods, spec.key) end
+          else hs.eventtap.keyStroke(spec.mods, spec.key, nil, appObject) end
         end)
     remapPreviousTabHotkey = bindSpecSuspend(spec, menuItemPath[#menuItemPath],
                                              fn, nil, fn)
@@ -2306,7 +2306,7 @@ function registerOpenRecent(spec)
               appObject:selectMenuItem({menuItemPath[1]})
               appObject:selectMenuItem(menuItemPath)
             end)()
-          else hs.eventtap.keyStroke(spec.mods, spec.key) end
+          else hs.eventtap.keyStroke(spec.mods, spec.key, nil, appObject) end
         end)
     openRecentHotkey = bindSpecSuspend(spec, menuItemPath[2], fn)
     openRecentHotkey.condition = cond
