@@ -313,8 +313,9 @@ function localizedString(string, bundleID, params)
             local fileStem = file:sub(1, -5)
             local enTmpdir = hs.fs.temporaryDirectory()
                 .. '/hs-localization-' .. bundleID .. '-' .. _localeDir .. '-' .. fileStem
+            local arch = hs.execute('uname -m | tr -d "\\n"')
             if hs.fs.attributes(enTmpdir) == nil then
-              hs.execute("scripts/pak-arm64"
+              hs.execute("scripts/pak-" .. arch
                   .. " -u '" .. fullPath .. "'"
                   .. " '" .. enTmpdir .. "'")
             end
@@ -325,7 +326,7 @@ function localizedString(string, bundleID, params)
                 local tmpdir = hs.fs.temporaryDirectory()
                     .. '/hs-localization-' .. bundleID .. '-' .. appLocale .. '-' .. fileStem
                 if hs.fs.attributes(tmpdir) == nil then
-                  hs.execute("scripts/pak-arm64"
+                  hs.execute("scripts/pak-" .. arch
                       .. " -u '" .. localeDir .. '/' .. file .. "'"
                       .. " '" .. tmpdir .. "'")
                 end
@@ -525,8 +526,9 @@ function delocalizedMenuItem(string, bundleID, locale, localeFile)
         local fileStem = file:sub(1, -5)
         local tmpdir = hs.fs.temporaryDirectory()
             .. '/hs-localization-' .. bundleID .. '-' .. appLocale .. '-' .. fileStem
+        local arch = hs.execute('uname -m | tr -d "\\n"')
         if hs.fs.attributes(tmpdir) == nil then
-          hs.execute("scripts/pak-arm64"
+          hs.execute("scripts/pak-" .. arch
               .. " -u '" .. localeDir .. '/' .. file .. "'"
               .. " '" .. tmpdir .. "'")
         end
@@ -539,7 +541,7 @@ function delocalizedMenuItem(string, bundleID, locale, localeFile)
               local enTmpdir = hs.fs.temporaryDirectory()
                   .. '/hs-localization-' .. bundleID .. '-' .. _localeDir .. '-' .. fileStem
               if hs.fs.attributes(enTmpdir) == nil then
-                hs.execute("scripts/pak-arm64"
+                hs.execute("scripts/pak-" .. arch
                     .. " -u '" .. fullPath .. "'"
                     .. " '" .. enTmpdir .. "'")
               end
