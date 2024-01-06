@@ -321,6 +321,43 @@ function localizedString(string, bundleID, params)
     return nil
   end
 
+  if localeFile ~= nil then
+    if hs.fs.attributes(resourceDir .. '/' .. localeFile .. '.loctable') ~= nil then
+      if localesDict[localeFile] == nil then localesDict[localeFile] = {} end
+      if localesDict[localeFile][string] ~= nil then
+        return localesDict[localeFile][string]
+      end
+      local loc = localeDir:match("^.*/(.*)%.lproj$")
+      local output, status = hs.execute("/usr/bin/python3 scripts/loctable_localize.py"
+          .. " '" .. resourceDir .. '/' .. localeFile .. ".loctable'"
+          .. " '" .. string .. "'"
+          .. " '" .. loc .. "'")
+      if status and output ~= "" then
+        localesDict[localeFile][string] = output
+        return output
+      end
+    end
+  else
+    for file in hs.fs.dir(resourceDir) do
+      local loc = localeDir:match("^.*/(.*)%.lproj$")
+      if file:sub(-9) == ".loctable" then
+        local fileStem = file:sub(1, -10)
+        if localesDict[fileStem] == nil then localesDict[fileStem] = {} end
+        if localesDict[fileStem][string] ~= nil then
+          return localesDict[fileStem][string]
+        end
+        local output, status = hs.execute("/usr/bin/python3 scripts/loctable_localize.py"
+            .. " '" .. resourceDir .. '/' .. file .. "'"
+            .. " '" .. string .. "'"
+            .. " '" .. loc .. "'")
+        if status and output ~= "" then
+          localesDict[fileStem][string] = output
+          return output
+        end
+      end
+    end
+  end
+
   if localeFile ~= nil and localeFile:sub(-10) == ".framework" then
     for _, _localeDir in ipairs{"en", "English", "Base", "en-GB"} do
       if hs.fs.attributes(resourceDir .. '/' .. _localeDir .. '.lproj') ~= nil then
@@ -590,6 +627,34 @@ function delocalizedMenuItem(string, bundleID, locale, localeFile)
     end
     menuItemLocaleMap[bundleID][string] = 'nil'
     return nil
+  end
+
+  if localeFile ~= nil then
+    if hs.fs.attributes(resourceDir .. '/' .. localeFile .. '.loctable') ~= nil then
+      local loc = localeDir:match("^.*/(.*)%.lproj$")
+      local output, status = hs.execute("/usr/bin/python3 scripts/loctable_delocalize.py"
+          .. " '" .. resourceDir .. '/' .. localeFile .. ".loctable'"
+          .. " '" .. string .. "'"
+          .. " '" .. loc .. "'")
+      if status and output ~= "" then
+        menuItemLocaleMap[bundleID][string] = output
+        return output
+      end
+    end
+  else
+    for file in hs.fs.dir(resourceDir) do
+      local loc = localeDir:match("^.*/(.*)%.lproj$")
+      if file:sub(-9) == ".loctable" then
+        local output, status = hs.execute("/usr/bin/python3 scripts/loctable_delocalize.py"
+            .. " '" .. resourceDir .. '/' .. file .. "'"
+            .. " '" .. string .. "'"
+            .. " '" .. loc .. "'")
+        if status and output ~= "" then
+          menuItemLocaleMap[bundleID][string] = output
+          return output
+        end
+      end
+    end
   end
 
   for file in hs.fs.dir(localeDir) do

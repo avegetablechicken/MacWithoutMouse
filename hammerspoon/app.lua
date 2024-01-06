@@ -2351,16 +2351,9 @@ if menuBarTitleLocalizationMap == nil then
   menuBarTitleLocalizationMap = {}
 end
 menuBarTitleLocalizationMap.common = {}
-for _, title in ipairs{ 'File', 'Edit', 'View', 'Window', 'Help' } do
-  local localizedTitle = localizedString(title, "com.apple.finder", "MenuBar")
+for _, title in ipairs{ 'File', 'Edit', 'View', 'Window', 'Help', 'Format' } do
+  local localizedTitle = localizedString(title,  "com.apple.Notes", "MainMenu")
   menuBarTitleLocalizationMap.common[localizedTitle] = title
-end
-for _, bundleID in ipairs{ "com.apple.Notes", "com.apple.iWork.Keynote", "com.apple.iWork.Numbers", "com.apple.iWork.Pages" } do
-  local localizedTitle = localizedString('Format', bundleID, "MainMenu")
-  if localizedTitle ~= nil then
-    menuBarTitleLocalizationMap.common[localizedTitle] = 'Format'
-    break
-  end
 end
 altMenuItemHotkeys = {}
 
