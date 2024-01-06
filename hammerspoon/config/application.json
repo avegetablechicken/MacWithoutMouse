@@ -52,6 +52,7 @@
       "com.microsoft.VSCode",
       "com.mathworks.matlab",
       "com.apple.Terminal",
+      "org.xquartz.X11",
       "com.termius.mac",
       "com.termius-dmg.mac",
       "com.kapeli.dashdoc",
