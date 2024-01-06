@@ -2323,7 +2323,7 @@ end
 
 -- bind `alt+?` hotkeys to menu bar 1 functions
 -- to be registered in application callback
-local menuBarTitleLocalizationMap = hs.json.read("static/menuitem-localization.json")
+local menuBarTitleLocalizationMap = hs.json.read("config/menuitem-localization.json")
 if menuBarTitleLocalizationMap == nil then
   menuBarTitleLocalizationMap = {}
 end
