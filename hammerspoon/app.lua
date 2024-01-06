@@ -2172,7 +2172,9 @@ local function inWinOfUnactivatedAppWatcherEnableCallback(bid, filter, winObj, a
     end
   end
 end
-local function registerInWinOfUnactivatedAppWatchers(bid, appName, filter)
+local function registerSingleWinFilterForDaemonApp(appObject, filter)
+  local bid = appObject:bundleID()
+  local appName = appObject:name()
   local filterEnable = hs.window.filter.new(false):setAppFilter(appName, filter):subscribe(
       {hs.window.filter.windowCreated, hs.window.filter.windowFocused},
       hs.fnutils.partial(inWinOfUnactivatedAppWatcherEnableCallback, bid, filter)
@@ -2195,6 +2197,39 @@ local function registerInWinOfUnactivatedAppWatchers(bid, appName, filter)
     end
   end)
   inWinOfUnactivatedAppWatchers[bid][filter] = { filterEnable, filterDisable }
+end
+
+local function registerWinFiltersForDaemonApp(appObject, appConfig)
+  for hkID, spec in pairs(appConfig) do
+    if spec.notActivateApp then
+      local filter
+      if type(hkID) ~= 'number' then
+        filter = keybindingConfigs.hotkeys[bid][hkID].windowFilter or spec.windowFilter
+      else
+        local cfg = spec[1]
+        filter = cfg.filter
+      end
+      for k, v in pairs(filter) do
+        if type(v) == 'function' then
+          filter[k] = v(appObject)
+        end
+      end
+      if inWinOfUnactivatedAppWatchers[bid] == nil
+        or inWinOfUnactivatedAppWatchers[bid][filter] == nil then
+        if inWinOfUnactivatedAppWatchers[bid] == nil then
+          inWinOfUnactivatedAppWatchers[bid] = {}
+        end
+        if type(hkID) ~= 'number' then
+          registerSingleWinFilterForDaemonApp(appObject, filter)
+        else
+          local cfg = spec[1]
+          for _, spec in ipairs(cfg) do
+            registerSingleWinFilterForDaemonApp(appObject, filter)
+          end
+        end
+      end
+    end
+  end
 end
 
 for bid, _ in pairs(appHotKeyCallbacks) do
@@ -2222,37 +2257,9 @@ if frontWin ~= nil then
 end
 
 for bid, appConfig in pairs(appHotKeyCallbacks) do
-  local appName = hs.application.nameForBundleID(bid)
-  if appName ~= nil then
-    for hkID, spec in pairs(appConfig) do
-      if spec.notActivateApp then
-        local filter
-        if type(hkID) ~= 'number' then
-          filter = keybindingConfigs.hotkeys[bid][hkID].windowFilter or spec.windowFilter
-        else
-          local cfg = spec[1]
-          filter = cfg.filter
-        end
-        local notFunctionalFilter = hs.fnutils.every(filter, function(v, k)
-          return type(v) ~= 'function'
-        end)
-        if notFunctionalFilter
-          and inWinOfUnactivatedAppWatchers[bid] == nil
-          or inWinOfUnactivatedAppWatchers[bid][filter] == nil then
-          if inWinOfUnactivatedAppWatchers[bid] == nil then
-            inWinOfUnactivatedAppWatchers[bid] = {}
-          end
-          if type(hkID) ~= 'number' then
-            registerInWinOfUnactivatedAppWatchers(bid, appName, filter)
-          else
-            local cfg = spec[1]
-            for _, spec in ipairs(cfg) do
-              registerInWinOfUnactivatedAppWatchers(bid, appName, filter)
-            end
-          end
-        end
-      end
-    end
+  local appObject = findApplication(bid)
+  if appObject ~= nil then
+    registerWinFiltersForDaemonApp(appObject, appConfig)
   end
 end
 
@@ -2807,6 +2814,9 @@ function app_applicationCallback(appName, eventType, appObject)
                      { localeFile = "MenuBar" })
     end
     altMenuItemHelper(appObject, eventType)
+    if appHotKeyCallbacks[bundleID] ~= nil then
+      registerWinFiltersForDaemonApp(appObject, appHotKeyCallbacks[bundleID])
+    end
   elseif eventType == hs.application.watcher.activated then
     windowCreatedSince = {}
     if bundleID == "cn.better365.iShotProHelper" then
