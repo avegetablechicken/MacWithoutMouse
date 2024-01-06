@@ -10,7 +10,8 @@
       "com.jetbrains.intellij",
       "com.jetbrains.pycharm",
       "net.xmind.vana.app",
-      "com.tencent.xinWeChat"
+      "com.tencent.xinWeChat",
+      "com.hexrays.ida64"
     ]
   },
 
