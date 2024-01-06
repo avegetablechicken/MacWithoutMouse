@@ -2216,7 +2216,7 @@ for bid, appConfig in pairs(appHotKeyCallbacks) do
       if spec.notActivateApp then
         local filter
         if type(hkID) ~= 'number' then
-          filter = keybindingConfigs.hotkeys[bid][hkID].windowFilter
+          filter = keybindingConfigs.hotkeys[bid][hkID].windowFilter or spec.windowFilter
         else
           local cfg = spec[1]
           filter = cfg.filter
