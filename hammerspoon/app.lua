@@ -2383,7 +2383,7 @@ local function bindHotkeyByNth(appObject, itemTitles, alreadySetHotkeys, index)
         appObject:selectMenuItem({showTitle})
       end)
       alreadySetHotkeys[hotkey] = true
-      altMenuItemHotkeys[i] = hotkeyObject
+      table.insert(altMenuItemHotkeys, hotkeyObject)
     else
       notSetItems[i] = title
     end
@@ -2421,10 +2421,20 @@ function altMenuItem(appObject)
   if #menuItems == 0 then return end
 
   -- by initial or otherwise second letter in title
+  local alreadySetHotkeys = {}
   if enableLetter == true then
     local itemTitles = {}
     for i=2,#menuItems do
-      table.insert(itemTitles, menuItems[i].AXTitle)
+      local title, letter = menuItems[i].AXTitle:match("(.-)%s*%((.-)%)")
+      if letter then
+        local hotkeyObject = bindAltMenu(appObject, "⌥", letter, title, function()
+          appObject:selectMenuItem({menuItems[i].AXTitle})
+        end)
+        alreadySetHotkeys[letter] = true
+        table.insert(altMenuItemHotkeys, hotkeyObject)
+      else
+        table.insert(itemTitles, menuItems[i].AXTitle)
+      end
     end
 
     -- process localized titles
@@ -2468,7 +2478,6 @@ function altMenuItem(appObject)
       end
     end
 
-    local alreadySetHotkeys = {}
     local notSetItems = {}
     for i, title in ipairs(itemTitles) do
       notSetItems[i] = title
@@ -2492,12 +2501,12 @@ function altMenuItem(appObject)
     local hotkeyObject = bindAltMenu(appObject, "⌥", "`", itemTitles[1] .. " Menu",
         function() appObject:selectMenuItem({itemTitles[1]}) end)
     hotkeyObject.subkind = 0
-    altMenuItemHotkeys[#altMenuItemHotkeys + 1] = hotkeyObject
+    table.insert(altMenuItemHotkeys, hotkeyObject)
     local maxMenuItemHotkey = #itemTitles > 11 and 10 or (#itemTitles - 1)
     for i=1,maxMenuItemHotkey do
       hotkeyObject = bindAltMenu(appObject, "⌥", tostring(i % 10), itemTitles[i+1] .. " Menu",
           function() appObject:selectMenuItem({itemTitles[i+1]}) end)
-      altMenuItemHotkeys[#altMenuItemHotkeys + 1] = hotkeyObject
+      table.insert(altMenuItemHotkeys, hotkeyObject)
     end
   end
 end
