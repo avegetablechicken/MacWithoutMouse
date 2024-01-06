@@ -314,7 +314,7 @@ function localizedString(string, bundleID, params)
             local enTmpdir = hs.fs.temporaryDirectory()
                 .. '/hs-localization-' .. bundleID .. '-' .. _localeDir .. '-' .. fileStem
             if hs.fs.attributes(enTmpdir) == nil then
-              hs.execute("scripts/pak"
+              hs.execute("scripts/pak-arm64"
                   .. " -u '" .. fullPath .. "'"
                   .. " '" .. enTmpdir .. "'")
             end
@@ -325,7 +325,7 @@ function localizedString(string, bundleID, params)
                 local tmpdir = hs.fs.temporaryDirectory()
                     .. '/hs-localization-' .. bundleID .. '-' .. appLocale .. '-' .. fileStem
                 if hs.fs.attributes(tmpdir) == nil then
-                  hs.execute("scripts/pak"
+                  hs.execute("scripts/pak-arm64"
                       .. " -u '" .. localeDir .. '/' .. file .. "'"
                       .. " '" .. tmpdir .. "'")
                 end
@@ -526,7 +526,7 @@ function delocalizedMenuItem(string, bundleID, locale, localeFile)
         local tmpdir = hs.fs.temporaryDirectory()
             .. '/hs-localization-' .. bundleID .. '-' .. appLocale .. '-' .. fileStem
         if hs.fs.attributes(tmpdir) == nil then
-          hs.execute("scripts/pak"
+          hs.execute("scripts/pak-arm64"
               .. " -u '" .. localeDir .. '/' .. file .. "'"
               .. " '" .. tmpdir .. "'")
         end
@@ -539,7 +539,7 @@ function delocalizedMenuItem(string, bundleID, locale, localeFile)
               local enTmpdir = hs.fs.temporaryDirectory()
                   .. '/hs-localization-' .. bundleID .. '-' .. _localeDir .. '-' .. fileStem
               if hs.fs.attributes(enTmpdir) == nil then
-                hs.execute("scripts/pak"
+                hs.execute("scripts/pak-arm64"
                     .. " -u '" .. fullPath .. "'"
                     .. " '" .. enTmpdir .. "'")
               end
