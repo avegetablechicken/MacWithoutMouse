@@ -43,24 +43,20 @@
   ],
 
   "inputSource": {
-    "com.apple.keylayout.ABC": [
-      "com.apple.dt.Xcode",
-      "com.jetbrains.CLion",
-      "com.jetbrains.CLion-EAP",
-      "com.jetbrains.intellij",
-      "com.jetbrains.pycharm",
-      "com.microsoft.VSCode",
-      "com.mathworks.matlab",
-      "com.apple.Terminal",
-      "org.xquartz.X11",
-      "com.termius.mac",
-      "com.termius-dmg.mac",
-      "com.kapeli.dashdoc",
-      "org.klatexformula.klatexformula"
-    ],
-    "com.apple.inputmethod.SCIM.Shuangpin": [
-      "com.tencent.xinWeChat",
-      "com.tencent.qq"
-    ]
+    "com.apple.dt.Xcode": "com.apple.keylayout.ABC",
+    "com.jetbrains.CLion": "com.apple.keylayout.ABC",
+    "com.jetbrains.CLion-EAP": "com.apple.keylayout.ABC",
+    "com.jetbrains.intellij": "com.apple.keylayout.ABC",
+    "com.jetbrains.pycharm": "com.apple.keylayout.ABC",
+    "com.microsoft.VSCode": "com.apple.keylayout.ABC",
+    "com.mathworks.matlab": "com.apple.keylayout.ABC",
+    "com.apple.Terminal": "com.apple.keylayout.ABC",
+    "org.xquartz.X11": "com.apple.keylayout.ABC",
+    "com.termius.mac": "com.apple.keylayout.ABC",
+    "com.termius-dmg.mac": "com.apple.keylayout.ABC",
+    "com.kapeli.dashdoc": "com.apple.keylayout.ABC",
+    "org.klatexformula.klatexformula": "com.apple.keylayout.ABC",
+    "com.tencent.xinWeChat": "com.apple.inputmethod.SCIM.Shuangpin",
+    "com.tencent.qq": "com.apple.inputmethod.SCIM.Shuangpin"
   }
 }

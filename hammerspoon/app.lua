@@ -2726,17 +2726,19 @@ end
 
 -- application callbacks
 
-local appsInputSource = applicationConfigs.inputSource
-local appsInputSourceMap = {}
-for inputSource, appBundleIDs in pairs(appsInputSource) do
-  for _, appBundleID in ipairs(appBundleIDs) do
-    appsInputSourceMap[appBundleID] = inputSource
-  end
-end
-
+local appsInputSourceMap = applicationConfigs.inputSource
 function selectInputSourceInApp(bid)
-  if appsInputSourceMap[bid] ~= nil then
-    hs.keycodes.currentSourceID(appsInputSourceMap[bid])
+  local inputSource = appsInputSourceMap[bid]
+  if inputSource ~= nil then
+    if type(inputSource) == 'string' then
+      hs.keycodes.currentSourceID(inputSource)
+    else
+      for _, source in ipairs(inputSource) do
+        if hs.keycodes.currentSourceID(source) then
+          break
+        end
+      end
+    end
   end
 end
 
