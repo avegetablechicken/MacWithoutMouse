@@ -71,6 +71,7 @@ local filterPattern = {
 
 generalPBWatcher = hs.pasteboard.watcher.new(
 function(v)
+  if v == nil then return end
   if hs.fnutils.contains(hs.pasteboard.contentTypes(), "public.utf8-plain-text") then
     for _, pattern in ipairs(filterPattern) do
       local match = string.match(v, pattern)
