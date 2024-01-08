@@ -617,8 +617,6 @@ local function parseZoteroJarFile(string, appLocale)
     end
   end
 
-  menuItemLocaleMap["org.zotero.zotero"][string] = false
-
   local resourceDir = hs.application.pathForBundleID("org.zotero.zotero") .. "/Contents/Resources"
   local locales, status = hs.execute("unzip -l \"" .. resourceDir .. "/zotero.jar\" 'chrome/locale/*/' | grep -Eo 'chrome/locale/[^/]*' | grep -Eo '[a-zA-Z-]*$' | uniq")
   if status ~= true then return nil end
@@ -650,7 +648,6 @@ local function parseZoteroJarFile(string, appLocale)
       .. " | grep '" .. key .. "' | cut -d '\"' -f 2 | tr -d '\\n'")
   if status ~= true then return nil end
 
-  menuItemLocaleMap["org.zotero.zotero"][string] = enValue
   return enValue
 end
 
