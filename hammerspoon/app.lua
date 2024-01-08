@@ -2404,6 +2404,11 @@ local function searchHotkeyByNth(appObject, itemTitles, alreadySetHotkeys, index
 end
 
 function altMenuItem(appObject)
+  -- check whether called by window filter (possibly with delay)
+  if appObject:bundleID() ~= hs.application.frontmostApplication():bundleID() then
+    return
+  end
+
   -- delete previous hotkeys
   for _, hotkeyObject in ipairs(altMenuItemHotkeys) do
     hotkeyObject:delete()
