@@ -627,7 +627,8 @@ local function parseZoteroJarFile(string, appLocale)
     local fileScript = fileLocale.scriptCode
     local fileCountry = fileLocale.countryCode
     if fileScript == nil then
-      local localeItems = hs.fnutils.split(loc)
+      local newLoc = loc:gsub('_', '-')
+      local localeItems = hs.fnutils.split(newLoc, '-')
       if #localeItems == 3 or (#localeItems == 2 and localeItems[2] ~= fileCountry) then
         fileScript = localeItems[2]
       end
