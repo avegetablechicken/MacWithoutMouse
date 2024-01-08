@@ -847,11 +847,11 @@
       }
     },
     "com.apple.MobileSMS": {
-      "deleteSelectedMessage": {
+      "deleteConversation": {
         "mods": "command",
         "key": "delete"
       },
-      "deleteAllMessages": {
+      "deleteAllConversations": {
         "mods": ["option", "command"],
         "key": "delete"
       },

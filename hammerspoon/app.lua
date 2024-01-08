@@ -527,15 +527,19 @@ appHotKeyCallbacks = {
 
   ["com.apple.MobileSMS"] =
   {
-    ["deleteSelectedMessage"] = {
-      message = "Delete Selected Message",
+    ["deleteConversation"] = {
+      message = function(appObject)
+        local _, title = findMenuItem(appObject,
+            { en = {"File", "Delete Conversation…"}, zh = {"文件", "删除对话…"} })
+        return title[2]
+      end,
       condition = checkMenuItem(getOSVersion() < OS.Ventura
           and { en = {"File", "Delete Conversation…"}, zh = {"文件", "删除对话…"} }
           or { en = {"Conversations", "Delete Conversation…"}, zh = {"对话", "删除对话…"} }),
       fn = function(menuItemTitle, appObject) deleteSelectedMessage(appObject, menuItemTitle) end
     },
-    ["deleteAllMessages"] = {
-      message = "Delete All Messages",
+    ["deleteAllConversations"] = {
+      message = "Delete All Conversations",
       fn = deleteAllMessages
     },
     ["goToPreviousConversation"] = {
