@@ -1321,15 +1321,15 @@ appHotKeyCallbacks = {
 
   ["com.tencent.LemonUpdate"] =
   {
-    ["minimizeWindow"] = {
+    ["minimize"] = {
       mods = "⌘", key = "M",
       message = "Minize",
       repeatable = true,
       fn = function(appObject) appObject:focusedWindow():minimize() end
     },
-    ["hideApp"] = {
+    ["hide"] = {
       mods = "⌘", key = "H",
-      message = "Hide LemonUpdate",
+      message = "Hide",
       fn = function(appObject) appObject:hide() end
     }
   },
