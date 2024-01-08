@@ -2408,30 +2408,46 @@ function altMenuItem(appObject)
       or appObject:bundleID() == "com.google.Chrome" then
     hs.timer.usleep(0.5 * 100000)
   end
-  local menuItems = appObject:getMenuItems()
-  if menuItems == nil then
-    hs.timer.usleep(0.1 * 1000000)
-    menuItems = appObject:getMenuItems()
+  local menuItemTitles
+  if appObject:bundleID() == "com.mathworks.matlab" and appObject:focusedWindow() ~= nil then
+    local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
+    if #winUIObj:childrenWithRole("AXMenuBar") > 0 then
+      local menuObj = winUIObj:childrenWithRole("AXMenuBar")[1]:childrenWithRole("AXMenu")
+      menuItemTitles = hs.fnutils.map(menuObj, function(item)
+        return item:attributeValue("AXTitle"):match("(.-)%s")
+      end)
+      table.insert(menuItemTitles, 1, "MATLAB")
+    end
+  end
+  if menuItemTitles == nil then
+    local menuItems = appObject:getMenuItems()
     if menuItems == nil then
       hs.timer.usleep(0.1 * 1000000)
       menuItems = appObject:getMenuItems()
       if menuItems == nil then
-        return
+        hs.timer.usleep(0.1 * 1000000)
+        menuItems = appObject:getMenuItems()
+        if menuItems == nil then
+          return
+        end
       end
     end
+    menuItemTitles = hs.fnutils.map(menuItems, function(item)
+      return item.AXTitle
+    end)
   end
-  if #menuItems == 0 then return end
+  if menuItemTitles == nil or #menuItemTitles == 0 then return end
 
   -- by initial or otherwise second letter in title
   local alreadySetHotkeys = {}
   if enableLetter == true then
     local itemTitles = {}
-    for i=2,#menuItems do
-      local title, letter = menuItems[i].AXTitle:match("(.-)%s*%((.-)%)")
+    for i=2,#menuItemTitles do
+      local title, letter = menuItemTitles[i]:match("(.-)%s*%((.-)%)")
       if letter then
-        alreadySetHotkeys[letter] = {menuItems[i].AXTitle, title}
+        alreadySetHotkeys[letter] = {menuItemTitles[i], title}
       else
-        table.insert(itemTitles, menuItems[i].AXTitle)
+        table.insert(itemTitles, menuItemTitles[i])
       end
     end
 
@@ -2494,11 +2510,23 @@ function altMenuItem(appObject)
       local msg = type(title) == 'table' and title[2] or title
       invMap[menuItem] = {key, msg}
     end
-    for i=2,#menuItems do
-      local spec = invMap[menuItems[i].AXTitle]
+    for i=2,#menuItemTitles do
+      local spec = invMap[menuItemTitles[i]]
       if spec ~= nil then
-        local hotkeyObject = bindAltMenu(appObject, "⌥", spec[1], spec[2],
-            function() appObject:selectMenuItem({menuItems[i].AXTitle}) end)
+        local fn
+        if appObject:bundleID() == "com.mathworks.matlab" and #menuItemTitles > 3 then
+          fn = function()
+            local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
+            local menuObj = winUIObj:childrenWithRole("AXMenuBar")[1]:childrenWithRole("AXMenu")
+            local targetMenuObj = hs.fnutils.find(menuObj, function(item)
+              return item:attributeValue("AXTitle"):match("(.-)%s") == spec[2]
+            end)
+            targetMenuObj:performAction("AXPick")
+          end
+        else
+          fn = function() appObject:selectMenuItem({ menuItemTitles[i] }) end
+        end
+        local hotkeyObject = bindAltMenu(appObject, "⌥", spec[1], spec[2], fn)
         table.insert(altMenuItemHotkeys, hotkeyObject)
       end
     end
@@ -2506,10 +2534,7 @@ function altMenuItem(appObject)
 
   -- by index
   if enableIndex == true then
-    local itemTitles = {}
-    for _, item in ipairs(menuItems) do
-      table.insert(itemTitles, item.AXTitle)
-    end
+    local itemTitles = hs.fnutils.copy(menuItemTitles)
 
     local hotkeyObject = bindAltMenu(appObject, "⌥", "`", itemTitles[1] .. " Menu",
         function() appObject:selectMenuItem({itemTitles[1]}) end)
