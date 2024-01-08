@@ -176,7 +176,7 @@ function bindHotkeySpec(spec, ...)
   local hotkey = newHotkey(spec.mods, spec.key, ...)
   if hotkey ~= nil then
     local validHyperModal = hs.fnutils.find(hyperModalList, function(modal)
-      return modal.hyper == mods
+      return modal.hyper == spec.mods
     end)
     if validHyperModal == nil then
       hotkey:enable()
