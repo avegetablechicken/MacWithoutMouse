@@ -652,6 +652,56 @@ local function parseZoteroJarFile(string, appLocale)
   return enValue
 end
 
+local function parseMATLABFigureMenu(string, appLocale)
+  local localDetails = hs.host.locale.details(appLocale)
+  local language = localDetails.languageCode
+  local script = localDetails.scriptCode
+  local country = localDetails.countryCode
+  if script == nil then
+    local localeItems = hs.fnutils.split(appLocale, '-')
+    if #localeItems == 3 or (#localeItems == 2 and localeItems[2] ~= country) then
+      script = localeItems[2]
+    end
+  end
+
+  local resourceDir = hs.application.pathForBundleID("com.mathworks.matlab") .. "/resources/MATLAB"
+  local locales = {}
+  for file in hs.fs.dir(resourceDir) do
+    table.insert(locales, file)
+  end
+  for file in hs.fs.dir(resourceDir) do
+    local fileLocale = hs.host.locale.details(file)
+    local fileLanguage = fileLocale.languageCode
+    local fileScript = fileLocale.scriptCode
+    local fileCountry = fileLocale.countryCode
+    if fileScript == nil then
+      local newFile = file:gsub('_', '-')
+      local localeItems = hs.fnutils.split(newFile, '-')
+      if #localeItems == 3 or (#localeItems == 2 and localeItems[2] ~= fileCountry) then
+        fileScript = localeItems[2]
+      end
+    end
+    if fileLanguage == language
+        and (script == nil or fileScript == nil or fileScript == script)
+        and (country == nil or fileCountry == nil or fileCountry == country) then
+      localeFile = resourceDir .. '/' .. file .. '/uistring/figuremenu.xml'
+      break
+    end
+  end
+  if localeFile == nil then return nil end
+  local enLocaleFile = resourceDir .. '/en/uistring/figuremenu.xml'
+  local shell_pattern = 'key="([^"]*?)">' .. string .. '\\(&amp;[A-Z]\\)</entry>'
+  local key, status = hs.execute(string.format(
+      "grep -Eo '%s' '%s' | cut -d '\"' -f 2 | tr -d '\\n'", shell_pattern, localeFile))
+  if status and key ~= "" then
+    local inverse_pattern = 'key="' .. key .. '">&amp;([^<]*?)</entry>'
+    local enValue, status = hs.execute(string.format(
+        "grep -Eo '%s' '%s' | cut -d ';' -f 2  | cut -d '<' -f 1 | tr -d '\\n'", inverse_pattern, enLocaleFile))
+    if status and enValue ~= "" then return enValue end
+  end
+  return nil
+end
+
 local menuItemLocaleMap = {}
 local menuItemLocaleDir = {}
 local menuItemLocaleInversedMap = {}
@@ -682,6 +732,10 @@ function delocalizedMenuItem(string, bundleID, locale, localeFile)
 
   if bundleID == "org.zotero.zotero" then
     local result = parseZoteroJarFile(string, appLocale)
+    menuItemLocaleMap[bundleID][string] = result or false
+    return result
+  elseif bundleID == "com.mathworks.matlab" then
+    local result = parseMATLABFigureMenu(string, appLocale)
     menuItemLocaleMap[bundleID][string] = result or false
     return result
   end
