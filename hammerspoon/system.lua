@@ -739,20 +739,10 @@ local function registerProxyMenuImpl()
       table.insert(proxyMenu, { title = name, disabled = true })
       if enabledProxy == name and mode ~= nil then
         if mode == "PAC" then
-          local PACFile
-          if status_ok then
-            PACFile = config.PAC
-          else
-            PACFile = config.PAC
-          end
+          local PACFile = config.PAC
           table.insert(proxyMenu, { title = "PAC File: " .. PACFile, disabled = true })
         else
-          local addr
-          if status_ok then
-            addr = config.global
-          else
-            addr = config.global
-          end
+          local addr = config.global
           table.insert(proxyMenu, { title = "HTTP Proxy: " .. addr[1] .. ":" .. addr[2], disabled = true })
           table.insert(proxyMenu, { title = "SOCKS5 Proxy: " .. addr[5] .. ":" .. addr[6], disabled = true })
         end
