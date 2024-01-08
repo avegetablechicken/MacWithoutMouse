@@ -368,12 +368,18 @@ function parseProxyConfigurations(configs)
   end
 end
 
-local proxyConfigs = hs.json.read("config/proxy.json")
+local proxyConfigs
+if hs.fs.attributes("config/proxy.json") ~= nil then
+  proxyConfigs = hs.json.read("config/proxy.json")
+end
 if proxyConfigs ~= nil then
   parseProxyConfigurations(proxyConfigs)
 end
 
-local privateProxyConfigs = hs.json.read("config/private-proxy.json")
+local privateProxyConfigs
+if hs.fs.attributes("config/private-proxy.json") ~= nil then
+  privateProxyConfigs = hs.json.read("config/private-proxy.json")
+end
 if privateProxyConfigs ~= nil then
   parseProxyConfigurations(privateProxyConfigs)
 end

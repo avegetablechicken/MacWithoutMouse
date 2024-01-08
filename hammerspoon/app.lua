@@ -1,6 +1,9 @@
 require "utils"
 
-local applicationConfigs = hs.json.read("config/application.json")
+local applicationConfigs
+if hs.fs.attributes("config/application.json") ~= nil then
+  applicationConfigs = hs.json.read("config/application.json")
+end
 
 
 -- launch or hide applications
@@ -166,7 +169,7 @@ local function getParallelsVMPath(osname)
   end
 end
 
-local appConfigs = keybindingConfigs.hotkeys.appkeys
+local appConfigs = keybindingConfigs.hotkeys.appkeys or {}
 appHotkeys = {}
 
 hyperModal = require('modal/hyper')
@@ -2310,8 +2313,10 @@ function remapPreviousTab(spec)
 end
 
 local frontmostApplication = hs.application.frontmostApplication()
-if not hs.fnutils.contains(keybindingConfigs.hotkeys.appCommon["remapPreviousTab"].excluded or {},
-                           frontmostApplication:bundleID()) then
+if keybindingConfigs.hotkeys.appCommon ~= nil
+    and keybindingConfigs.hotkeys.appCommon["remapPreviousTab"] ~= nil
+    and not hs.fnutils.contains(keybindingConfigs.hotkeys.appCommon["remapPreviousTab"].excluded or {},
+                                frontmostApplication:bundleID()) then
   remapPreviousTab(keybindingConfigs.hotkeys.appCommon["remapPreviousTab"])
 end
 
@@ -2344,6 +2349,8 @@ end
 
 if (appHotKeyCallbacks[frontmostApplication:bundleID()] == nil
     or appHotKeyCallbacks[frontmostApplication:bundleID()]["openRecent"] == nil)
+    and keybindingConfigs.hotkeys.appCommon ~= nil
+    and keybindingConfigs.hotkeys.appCommon["openRecent"] ~= nil
     and not hs.fnutils.contains(keybindingConfigs.hotkeys.appCommon["openRecent"].excluded or {},
                                 frontmostApplication:bundleID()) then
   registerOpenRecent(keybindingConfigs.hotkeys.appCommon["openRecent"])
@@ -2351,14 +2358,16 @@ end
 
 -- bind `alt+?` hotkeys to menu bar 1 functions
 -- to be registered in application callback
-local menuBarTitleLocalizationMap = hs.json.read("config/menuitem-localization.json")
-if menuBarTitleLocalizationMap == nil then
-  menuBarTitleLocalizationMap = {}
+local menuBarTitleLocalizationMap = {}
+if hs.fs.attributes("config/menuitem-localization.json") ~= nil then
+  menuBarTitleLocalizationMap = hs.json.read("config/menuitem-localization.json")
 end
 menuBarTitleLocalizationMap.common = {}
 for _, title in ipairs{ 'File', 'Edit', 'View', 'Window', 'Help', 'Format' } do
   local localizedTitle = localizedString(title,  "com.apple.Notes", "MainMenu")
-  menuBarTitleLocalizationMap.common[localizedTitle] = title
+  if localizedTitle ~= nil then
+    menuBarTitleLocalizationMap.common[localizedTitle] = title
+  end
 end
 altMenuItemHotkeys = {}
 
@@ -2400,8 +2409,18 @@ function altMenuItem(appObject)
   end
   altMenuItemHotkeys = {}
 
-  local enableIndex = keybindingConfigs.hotkeys.menuItems.enableIndex
-  local enableLetter = keybindingConfigs.hotkeys.menuItems.enableLetter
+  local enableIndex, enableLetter
+  if keybindingConfigs.hotkeys.menuItems ~= nil then
+    if keybindingConfigs.hotkeys.menuItems.enableIndex ~= nil then
+      enableIndex = keybindingConfigs.hotkeys.menuItems.enableIndex
+    end
+    if keybindingConfigs.hotkeys.menuItems.enableLetter ~= nil then
+      enableLetter = keybindingConfigs.hotkeys.menuItems.enableLetter
+    end
+  else
+    enableIndex = false
+    enableLetter = true
+  end
   if enableIndex == false and enableLetter == false then return end
 
   if appObject:bundleID() == "com.microsoft.VSCode"
@@ -2550,7 +2569,10 @@ function altMenuItem(appObject)
 end
 altMenuItem(frontmostApplication)
 
-appsWatchMenuItems = applicationConfigs.menuItemsMayChange.basic
+local appsWatchMenuItems
+if applicationConfigs ~= nil and applicationConfigs.menuItemsMayChange ~= nil then
+  appsWatchMenuItems = applicationConfigs.menuItemsMayChange.basic or {}
+end
 appsMenuItemsWatchers = {}
 
 local function watchMenuItems(appObject)
@@ -2597,17 +2619,22 @@ if frontAppBid ~= nil then
 end
 
 
-local appsMayChangeMenu = applicationConfigs.menuItemsMayChange.window
-local windowFilterAppsMayChangeMenu = hs.window.filter.new():subscribe(
-  {hs.window.filter.windowCreated, hs.window.filter.windowDestroyed,
-   hs.window.filter.windowFocused, hs.window.filter.windowUnfocused},  -- may fail
-function(winObj)
-  if winObj == nil or winObj:application() == nil then return end
-  local bundleID = winObj:application():bundleID()
-  if hs.fnutils.contains(appsMayChangeMenu, bundleID) then
-    altMenuItem(winObj:application())
-  end
-end)
+local appsMayChangeMenu
+if applicationConfigs ~= nil and applicationConfigs.menuItemsMayChange ~= nil then
+  appsMayChangeMenu = applicationConfigs.menuItemsMayChange.window
+end
+if appsMayChangeMenu ~= nil then
+  local windowFilterAppsMayChangeMenu = hs.window.filter.new():subscribe(
+    {hs.window.filter.windowCreated, hs.window.filter.windowDestroyed,
+    hs.window.filter.windowFocused, hs.window.filter.windowUnfocused},  -- may fail
+  function(winObj)
+    if winObj == nil or winObj:application() == nil then return end
+    local bundleID = winObj:application():bundleID()
+    if hs.fnutils.contains(appsMayChangeMenu, bundleID) then
+      altMenuItem(winObj:application())
+    end
+  end)
+end
 
 local function processAppWithNoWindows(appObject, quit)
   if #appObject:visibleWindows() == 0 then
@@ -2677,7 +2704,7 @@ newMessageWindowFilter = hs.window.filter.new(false):
           end
         end)
 
-remoteDesktopsMappingModifiers = keybindingConfigs.remap
+remoteDesktopsMappingModifiers = keybindingConfigs.remap or {}
 local modifiersShort = {
   control = "ctrl",
   option = "alt",
@@ -2861,7 +2888,9 @@ function app_applicationCallback(appName, eventType, appObject)
       return
     end
     selectInputSourceInApp(bundleID)
-    if not hs.fnutils.contains(keybindingConfigs.hotkeys.appCommon["remapPreviousTab"].excluded or {},
+    if keybindingConfigs.hotkeys.appCommon ~= nil
+        and keybindingConfigs.hotkeys.appCommon["remapPreviousTab"] ~= nil
+        and not hs.fnutils.contains(keybindingConfigs.hotkeys.appCommon["remapPreviousTab"].excluded or {},
                                bundleID) then
       remapPreviousTab(keybindingConfigs.hotkeys.appCommon["remapPreviousTab"])
     end
@@ -2871,6 +2900,8 @@ function app_applicationCallback(appName, eventType, appObject)
     altMenuItem(appObject)
     if (appHotKeyCallbacks[bundleID] == nil
         or appHotKeyCallbacks[bundleID]["openRecent"] == nil)
+        and keybindingConfigs.hotkeys.appCommon ~= nil
+        and keybindingConfigs.hotkeys.appCommon["openRecent"] ~= nil
         and not hs.fnutils.contains(keybindingConfigs.hotkeys.appCommon["openRecent"].excluded or {},
                                     bundleID) then
       registerOpenRecent(keybindingConfigs.hotkeys.appCommon["openRecent"])
@@ -2940,7 +2971,10 @@ end
 -- wifi callbacks
 
 -- launch `Mountain Duck` automatically when connected to laboratory wifi
-local labproxyConfig = hs.json.read("config/private-proxy.json")
+local labproxyConfig
+if hs.fs.attributes("config/private-proxy.json") ~= nil then
+  labproxyConfig = hs.json.read("config/private-proxy.json")
+end
 if labproxyConfig ~= nil then
   labProxyConfig = labproxyConfig["Lab Proxy"]
 end

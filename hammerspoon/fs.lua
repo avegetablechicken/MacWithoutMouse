@@ -70,12 +70,17 @@ rm "%s"
     target .. ".tmp"))
 end
 
-local config = hs.json.read("config/sync.json")
-for k, v in pairs(config.variable) do
+local config
+if hs.fs.attributes("config/sync.json") ~= nil then
+  config = hs.json.read("config/sync.json")
+else
+  config = { variable = {}, file = {} }
+end
+for k, v in pairs(config.variable or {}) do
   config.variable[k] = computePath(config.variable, v)
 end
 filesToSync = {}
-for k, v in pairs(config.file) do
+for k, v in pairs(config.file or {}) do
   local spec = {
     computePath(config.variable, k),
     computePath(config.variable, type(v) == "table" and v[1] or v),
