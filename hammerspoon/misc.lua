@@ -872,7 +872,7 @@ function()
     enteredModal.hyperMode.Entered = false
   end
 
-  HSKeybindings:show(true, true, false, false)
+  HSKeybindings:show()
   hkKeybindingsOptionDown = false
   hkKeybindingsLastModifier = {}
   hkKeybindingsWatcher = hs.eventtap.new({hs.eventtap.event.types.flagsChanged,

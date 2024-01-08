@@ -221,9 +221,8 @@ local toggleHotkey = bindHotkeySpec(misc["toggleHotkeys"], function()
     local showHS = HSKeybindings.showHS
     local showKara = HSKeybindings.showKara
     local showApp = HSKeybindings.showApp
-    local evFlags = HSKeybindings.evFlags
     HSKeybindings:reset()
-    HSKeybindings:update(validOnly, showHS, showKara, showApp, evFlags)
+    HSKeybindings:update(validOnly, showHS, showKara, showApp)
   end
 end)
 toggleHotkey.msg = toggleHotkey.idx .. ": Toggle Hotkeys"
