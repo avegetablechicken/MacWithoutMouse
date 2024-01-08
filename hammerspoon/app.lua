@@ -2224,6 +2224,7 @@ local function registerSingleWinFilterForDaemonApp(appObject, filter)
 end
 
 local function registerWinFiltersForDaemonApp(appObject, appConfig)
+  local bid = appObject:bundleID()
   for hkID, spec in pairs(appConfig) do
     if spec.notActivateApp then
       local filter
