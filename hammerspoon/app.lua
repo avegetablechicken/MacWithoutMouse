@@ -1,7 +1,6 @@
 require "utils"
 
 local applicationConfigs = hs.json.read("config/application.json")
-local misc = keybindingConfigs.hotkeys.global
 
 
 -- launch or hide applications
