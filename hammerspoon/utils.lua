@@ -601,6 +601,7 @@ local function delocalizeByChromium(string, localeDir, bundleID)
       end
     end
   end
+  localesDict[string] = false
   return nil
 end
 
