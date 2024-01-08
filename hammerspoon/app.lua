@@ -318,6 +318,32 @@ function confirmDeleteForAppleApps(appObject)
   ]])
 end
 
+local specialCommonHotkeyConfigs = {
+  ["closeWindow"] = {
+    mods = "⌘", key = "W",
+    message = "Close Window",
+    repeatable = true,
+    condition = function(appObject)
+      return appObject:focusedWindow() ~= nil, appObject:focusedWindow()
+    end,
+    fn = function(winObj) winObj:close() end
+  },
+  ["minimize"] = {
+    mods = "⌘", key = "M",
+    message = "Minimize",
+    repeatable = true,
+    condition = function(appObject)
+      return appObject:focusedWindow() ~= nil, appObject:focusedWindow()
+    end,
+    fn = function(winObj) winObj:minimize() end
+  },
+  ["hide"] = {
+    mods = "⌘", key = "H",
+    message = "Hide",
+    fn = function(appObject) appObject:hide() end
+  }
+}
+
 local function VSCodeToggleSideBarSection(sidebar, section)
   local focusedWindow = hs.application.frontmostApplication():focusedWindow()
   if focusedWindow == nil then return end
@@ -888,20 +914,8 @@ appHotKeyCallbacks = {
 
   ["cn.edu.idea.paper"] =
   {
-    ["minimize"] = {
-      mods = "⌘", key = "M",
-      message = "Minimize",
-      repeatable = true,
-      condition = function(appObject)
-        return appObject:focusedWindow() ~= nil, appObject:focusedWindow()
-      end,
-      fn = function(winObj) winObj:minimize() end
-    },
-    ["hide"] = {
-      mods = "⌘", key = "H",
-      message = "Hide",
-      fn = function(appObject) appObject:hide() end
-    }
+    ["minimize"] = specialCommonHotkeyConfigs["minimize"],
+    ["hide"] = specialCommonHotkeyConfigs["hide"]
   },
 
   ["com.tencent.xinWeChat"] =
@@ -1112,12 +1126,7 @@ appHotKeyCallbacks = {
       message = "Toggle Barrier Connect",
       fn = toggleBarrierConnect,
     },
-    ["closeWindow"] = {
-      mods = "⌘", key = "W",
-      message = "Close Window",
-      repeatable = true,
-      fn = function(appObject) appObject:focusedWindow():close() end
-    }
+    ["closeWindow"] = specialCommonHotkeyConfigs["closeWindow"]
   },
 
   ["com.objective-see.lulu.app"] =
@@ -1209,12 +1218,7 @@ appHotKeyCallbacks = {
         hs.osascript.applescript([[tell application id "com.surteesstudios.Bartender" to quick search]])
       end
     },
-    ["closeWindow"] = {
-      mods = "⌘", key = "W",
-      message = "Close Window",
-      repeatable = true,
-      fn = function(appObject) appObject:focusedWindow():close() end
-    }
+    ["closeWindow"] = specialCommonHotkeyConfigs["closeWindow"]
   },
 
   ["com.gaosun.eul"] =
@@ -1277,71 +1281,30 @@ appHotKeyCallbacks = {
 
   ["com.macosgame.iwallpaper"] =
   {
-    ["closeWindow"] = {
-      mods = "⌘", key = "W",
-      message = "Close Window",
-      repeatable = true,
-      fn = function(appObject) appObject:focusedWindow():close() end
-    },
-    ["minimize"] = {
-      mods = "⌘", key = "M",
-      message = "Minimize",
-      repeatable = true,
-      condition = function(appObject)
-        return appObject:focusedWindow() ~= nil, appObject:focusedWindow()
-      end,
-      fn = function(winObj) winObj:minimize() end
-    },
-    ["hide"] = {
-      mods = "⌘", key = "H",
-      message = "Hide",
-      fn = function(appObject) appObject:hide() end
-    }
+    ["closeWindow"] = specialCommonHotkeyConfigs["closeWindow"],
+    ["minimize"] = specialCommonHotkeyConfigs["minimize"],
+    ["hide"] = specialCommonHotkeyConfigs["hide"]
   },
 
   ["org.pqrs.Karabiner-EventViewer"] =
   {
-    ["closeWindow"] = {
-      mods = "⌘", key = "W",
-      message = "Close Window",
-      repeatable = true,
-      fn = function(appObject) appObject:focusedWindow():close() end
-    }
+    ["closeWindow"] = specialCommonHotkeyConfigs["closeWindow"]
   },
 
   ["com.pigigaldi.pock"] =
   {
-    ["closeWindow"] = {
-      mods = "⌘", key = "W",
-      message = "Close Window",
-      repeatable = true,
-      fn = function(appObject) appObject:focusedWindow():close() end
-    }
+    ["closeWindow"] = specialCommonHotkeyConfigs["closeWindow"]
   },
 
   ["com.tencent.LemonUpdate"] =
   {
-    ["minimize"] = {
-      mods = "⌘", key = "M",
-      message = "Minize",
-      repeatable = true,
-      fn = function(appObject) appObject:focusedWindow():minimize() end
-    },
-    ["hide"] = {
-      mods = "⌘", key = "H",
-      message = "Hide",
-      fn = function(appObject) appObject:hide() end
-    }
+    ["minimize"] = specialCommonHotkeyConfigs["minimize"],
+    ["hide"] = specialCommonHotkeyConfigs["hide"]
   },
 
   ["com.apple.CaptiveNetworkAssistant"] =
   {
-    ["closeWindow"] = {
-      mods = "⌘", key = "W",
-      message = "Close Window",
-      repeatable = true,
-      fn = function(appObject) appObject:focusedWindow():close() end
-    }
+    ["closeWindow"] = specialCommonHotkeyConfigs["closeWindow"]
   },
 
   ["com.parallels.desktop.console"] =
