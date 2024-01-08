@@ -211,59 +211,59 @@ end
 local function localizeByStrings()
 end
 
-local function localizeByLoctableImpl(string, filePath, fileStem, locale, localesDict)
+local function localizeByLoctableImpl(str, filePath, fileStem, locale, localesDict)
   if localesDict[fileStem] == nil then localesDict[fileStem] = {} end
-  if localesDict[fileStem][string] ~= nil then
-    return localesDict[fileStem][string]
+  if localesDict[fileStem][str] ~= nil then
+    return localesDict[fileStem][str]
   end
 
   local output, status = hs.execute(string.format(
       "/usr/bin/python3 scripts/loctable_localize.py '%s' '%s' %s",
-      filePath, string, locale))
+      filePath, str, locale))
   if status and output ~= "" then
-    localesDict[fileStem][string] = output
+    localesDict[fileStem][str] = output
     return output
   end
 end
 
-local function localizeByLoctable(string, resourceDir, localeFile, loc, localesDict)
+local function localizeByLoctable(str, resourceDir, localeFile, loc, localesDict)
   if localeFile ~= nil then
     local fullPath = resourceDir .. '/' .. localeFile .. '.loctable'
     if hs.fs.attributes(fullPath) ~= nil then
-      return localizeByLoctableImpl(string, fullPath, localeFile, loc, localesDict)
+      return localizeByLoctableImpl(str, fullPath, localeFile, loc, localesDict)
     end
   else
     for file in hs.fs.dir(resourceDir) do
       if file:sub(-9) == ".loctable" then
         local fullPath = resourceDir .. '/' .. file
         local fileStem = file:sub(1, -10)
-        local result = localizeByLoctableImpl(string, fullPath, fileStem, loc, localesDict)
+        local result = localizeByLoctableImpl(str, fullPath, fileStem, loc, localesDict)
         if result ~= nil then return result end
       end
     end
   end
 end
 
-local function localizeByQt(string, localeDir, localesDict)
+local function localizeByQt(str, localeDir, localesDict)
   for file in hs.fs.dir(localeDir) do
     if file:sub(-3) == ".qm" then
       local fileStem = file:sub(1, -4)
-      if localesDict[fileStem] ~= nil and localesDict[fileStem][string] ~= nil then
-        return localesDict[fileStem][string]
+      if localesDict[fileStem] ~= nil and localesDict[fileStem][str] ~= nil then
+        return localesDict[fileStem][str]
       end
       local output, status = hs.execute(string.format(
           "zsh scripts/qm_localize.sh '%s' '%s'",
-          localeDir .. '/' .. file, string))
+          localeDir .. '/' .. file, str))
       if status and output ~= "" then
         if localesDict[fileStem] == nil then localesDict[fileStem] = {} end
-        localesDict[fileStem][string] = output
+        localesDict[fileStem][str] = output
         return output
       end
     end
   end
 end
 
-local function localizeByChromium(string, localeDir, localesDict, bundleID)
+local function localizeByChromium(str, localeDir, localesDict, bundleID)
   local resourceDir = localeDir .. '/..'
   local locale = localeDir:match("^.*/(.*)%.lproj$")
   for _, enLocale in ipairs{"en", "English", "Base", "en-GB"} do
@@ -278,7 +278,7 @@ local function localizeByChromium(string, localeDir, localesDict, bundleID)
             hs.execute(string.format(
                 "scripts/pak -u '%s' '%s'", fullPath, enTmpdir))
           end
-          local output, status = hs.execute("grep -lrE '^" .. string .. "$' '" .. enTmpdir .. "' | tr -d '\\n'")
+          local output, status = hs.execute("grep -lrE '^" .. str .. "$' '" .. enTmpdir .. "' | tr -d '\\n'")
           if status and output ~= "" then
             if hs.fs.attributes(localeDir .. '/' .. file) then
               local matchFile = output:match("^.*/(.*)$")
@@ -296,7 +296,7 @@ local function localizeByChromium(string, localeDir, localesDict, bundleID)
                 if localesDict[fileStem] == nil then
                   localesDict[fileStem] = {}
                 end
-                localesDict[fileStem][string] = content
+                localesDict[fileStem][str] = content
                 return content
               end
             end
@@ -311,7 +311,7 @@ end
 local appLocaleMap = {}
 local appLocaleDir = {}
 local appLocaleInversedMap = {}
-function localizedString(string, bundleID, params)
+function localizedString(str, bundleID, params)
   if hs.application.pathForBundleID(bundleID) == nil
       or hs.application.pathForBundleID(bundleID) == "" then
     return nil
@@ -428,17 +428,17 @@ function localizedString(string, bundleID, params)
   local result
 
   if chromium then
-    result = localizeByChromium(string, localeDir, localesDict, bundleID)
+    result = localizeByChromium(str, localeDir, localesDict, bundleID)
     if result ~= nil then return result end
   end
 
-  result = localizeByLoctable(string, resourceDir, localeFile, locale, localesDict)
+  result = localizeByLoctable(str, resourceDir, localeFile, locale, localesDict)
   if result ~= nil then return result end
 
-  result = localizeByQt(string, localeDir, localesDict)
+  result = localizeByQt(str, localeDir, localesDict)
   if result ~= nil then return result end
 
-  local searchFunc = function(string)
+  local searchFunc = function(str)
     if localeFile ~= nil then
       local jsonDict = localesDict[localeFile]
       if jsonDict == nil
@@ -448,9 +448,9 @@ function localizedString(string, bundleID, params)
           jsonDict = parseStringsFile(fullPath)
         end
       end
-      if jsonDict ~= nil and jsonDict[string] ~= nil then
+      if jsonDict ~= nil and jsonDict[str] ~= nil then
         localesDict[localeFile] = jsonDict
-        return jsonDict[string]
+        return jsonDict[str]
       end
     else
       for file in hs.fs.dir(localeDir) do
@@ -462,15 +462,15 @@ function localizedString(string, bundleID, params)
             local fullPath = localeDir .. '/' .. file
             jsonDict = parseStringsFile(fullPath)
           end
-          if jsonDict[string] ~= nil then
+          if jsonDict[str] ~= nil then
             localesDict[fileStem] = jsonDict
-            return jsonDict[string]
+            return jsonDict[str]
           end
         end
       end
     end
   end
-  local result = searchFunc(string)
+  local result = searchFunc(str)
   if result ~= nil then return result end
   if appLocaleDir[bundleID][appLocale] == 'en' then
     for _, _localeDir in ipairs{
@@ -479,7 +479,7 @@ function localizedString(string, bundleID, params)
         resourceDir .. "/en_GB.lproj"} do
       if hs.fs.attributes(_localeDir) ~= nil then
         localeDir = _localeDir
-        result = searchFunc(string)
+        result = searchFunc(str)
         if result ~= nil then return result end
       end
     end
@@ -503,8 +503,8 @@ function localizedString(string, bundleID, params)
           end
         end
         if localesInvDict[localeFile] ~= nil
-            and localesInvDict[localeFile][string] ~= nil then
-          local result = searchFunc(localesInvDict[localeFile][string])
+            and localesInvDict[localeFile][str] ~= nil then
+          local result = searchFunc(localesInvDict[localeFile][str])
           if result ~= nil then return result end
         end
         localesInvDict[localeFile] = nil
@@ -517,8 +517,8 @@ function localizedString(string, bundleID, params)
               localesInvDict[fileStem] = parseStringsFile(fullPath, false)
             end
             if localesInvDict[fileStem] ~= nil
-                and localesInvDict[fileStem][string] ~= nil then
-              local result = searchFunc(localesInvDict[fileStem][string])
+                and localesInvDict[fileStem][str] ~= nil then
+              local result = searchFunc(localesInvDict[fileStem][str])
               if result ~= nil then return result end
             end
             localesInvDict[fileStem] = nil
@@ -529,41 +529,41 @@ function localizedString(string, bundleID, params)
   end
 end
 
-local function delocalizeByLoctableImpl(string, filePath, locale)
+local function delocalizeByLoctableImpl(str, filePath, locale)
   local output, status = hs.execute(string.format(
       "/usr/bin/python3 scripts/loctable_delocalize.py '%s' '%s' %s",
-      filePath, string, locale))
+      filePath, str, locale))
   if status and output ~= "" then return output end
 end
 
-local function delocalizeByLoctable(string, resourceDir, localeFile, locale)
+local function delocalizeByLoctable(str, resourceDir, localeFile, locale)
   if localeFile ~= nil then
     local fullPath = resourceDir .. '/' .. localeFile .. '.loctable'
     if hs.fs.attributes(fullPath) ~= nil then
-      return delocalizeByLoctableImpl(string, fullPath, locale)
+      return delocalizeByLoctableImpl(str, fullPath, locale)
     end
   else
     for file in hs.fs.dir(resourceDir) do
       if file:sub(-9) == ".loctable" then
-        local result = delocalizeByLoctableImpl(string, resourceDir .. '/' .. file, locale)
+        local result = delocalizeByLoctableImpl(str, resourceDir .. '/' .. file, locale)
         if result ~= nil then return result end
       end
     end
   end
 end
 
-local function delocalizeByQt(string, localeDir)
+local function delocalizeByQt(str, localeDir)
   for file in hs.fs.dir(localeDir) do
     if file:sub(-3) == ".qm" then
       local output, status = hs.execute(string.format(
           "zsh scripts/qm_delocalize.sh '%s' '%s'",
-          localeDir .. '/' .. file, string))
+          localeDir .. '/' .. file, str))
       if status and output ~= "" then return output end
     end
   end
 end
 
-local function delocalizeByChromium(string, localeDir, bundleID)
+local function delocalizeByChromium(str, localeDir, bundleID)
   local resourceDir = localeDir .. '/..'
   local locale = localeDir:match("^.*/(.*)%.lproj$")
   for file in hs.fs.dir(localeDir) do
@@ -575,7 +575,7 @@ local function delocalizeByChromium(string, localeDir, bundleID)
         hs.execute(string.format(
           "scripts/pak  -u '%s' '%s'", localeDir .. '/' .. file, tmpdir))
       end
-      local pattern = '^' .. string .. '$'
+      local pattern = '^' .. str .. '$'
       local output, status = hs.execute(string.format(
             "grep -lrE '%s' '%s' | tr -d '\\n'", pattern, tmpdir))
       if status and output ~= "" then
@@ -601,11 +601,11 @@ local function delocalizeByChromium(string, localeDir, bundleID)
       end
     end
   end
-  localesDict[string] = false
+  localesDict[str] = false
   return nil
 end
 
-local function parseZoteroJarFile(string, appLocale)
+local function parseZoteroJarFile(str, appLocale)
   local localDetails = hs.host.locale.details(appLocale)
   local language = localDetails.languageCode
   local script = localDetails.scriptCode
@@ -643,7 +643,7 @@ local function parseZoteroJarFile(string, appLocale)
   if localeFile == nil then return nil end
   local enLocaleFile = 'chrome/locale/en-US/zotero/standalone.dtd'
   local key, status = hs.execute("unzip -p \"" .. resourceDir .. "/zotero.jar\" \"" .. localeFile .. "\""
-      .. " | awk '/<!ENTITY .* \"" .. string .. "\">/ { gsub(/<!ENTITY | \"" .. string .. "\">/, \"\"); printf \"%s\", $0 }'")
+      .. " | awk '/<!ENTITY .* \"" .. str .. "\">/ { gsub(/<!ENTITY | \"" .. str .. "\">/, \"\"); printf \"%s\", $0 }'")
   if status ~= true then return nil end
   local enValue, status = hs.execute("unzip -p \"" .. resourceDir .. "/zotero.jar\" \"" .. enLocaleFile .. "\""
       .. " | grep '" .. key .. "' | cut -d '\"' -f 2 | tr -d '\\n'")
@@ -652,7 +652,7 @@ local function parseZoteroJarFile(string, appLocale)
   return enValue
 end
 
-local function parseMATLABFigureMenu(string, appLocale)
+local function parseMATLABFigureMenu(str, appLocale)
   local localDetails = hs.host.locale.details(appLocale)
   local language = localDetails.languageCode
   local script = localDetails.scriptCode
@@ -690,7 +690,7 @@ local function parseMATLABFigureMenu(string, appLocale)
   end
   if localeFile == nil then return nil end
   local enLocaleFile = resourceDir .. '/en/uistring/figuremenu.xml'
-  local shell_pattern = 'key="([^"]*?)">' .. string .. '\\(&amp;[A-Z]\\)</entry>'
+  local shell_pattern = 'key="([^"]*?)">' .. str .. '\\(&amp;[A-Z]\\)</entry>'
   local key, status = hs.execute(string.format(
       "grep -Eo '%s' '%s' | cut -d '\"' -f 2 | tr -d '\\n'", shell_pattern, localeFile))
   if status and key ~= "" then
@@ -707,7 +707,7 @@ local menuItemLocaleDir = {}
 local menuItemLocaleInversedMap = {}
 local stringsFilePatterns = { "(.-)MainMenu(.-)", "Menu", "MenuBar",
                               "MenuItems", "Localizable", "Main", "MainWindow" }
-function delocalizedMenuItem(string, bundleID, locale, localeFile)
+function delocalizedMenuItem(str, bundleID, locale, localeFile)
   if localeFile == nil then
     localeFile = locale
     locale = nil
@@ -724,19 +724,19 @@ function delocalizedMenuItem(string, bundleID, locale, localeFile)
     menuItemLocaleInversedMap[bundleID] = {}
   end
 
-  if menuItemLocaleMap[bundleID][string] == false then
+  if menuItemLocaleMap[bundleID][str] == false then
     return nil
-  elseif menuItemLocaleMap[bundleID][string] ~= nil then
-    return menuItemLocaleMap[bundleID][string]
+  elseif menuItemLocaleMap[bundleID][str] ~= nil then
+    return menuItemLocaleMap[bundleID][str]
   end
 
   if bundleID == "org.zotero.zotero" then
-    local result = parseZoteroJarFile(string, appLocale)
-    menuItemLocaleMap[bundleID][string] = result or false
+    local result = parseZoteroJarFile(str, appLocale)
+    menuItemLocaleMap[bundleID][str] = result or false
     return result
   elseif bundleID == "com.mathworks.matlab" then
-    local result = parseMATLABFigureMenu(string, appLocale)
-    menuItemLocaleMap[bundleID][string] = result or false
+    local result = parseMATLABFigureMenu(str, appLocale)
+    menuItemLocaleMap[bundleID][str] = result or false
     return result
   end
   
@@ -805,33 +805,33 @@ function delocalizedMenuItem(string, bundleID, locale, localeFile)
     end
   end
   if locale == nil then
-    menuItemLocaleMap[bundleID][string] = false
+    menuItemLocaleMap[bundleID][str] = false
     return nil
   end
 
   local result
 
   if chromium then
-    result = delocalizeByChromium(string, localeDir, bundleID)
+    result = delocalizeByChromium(str, localeDir, bundleID)
     if result ~= nil then
-      menuItemLocaleMap[bundleID][string] = result
+      menuItemLocaleMap[bundleID][str] = result
       return result
     end
   end
 
-  result = delocalizeByLoctable(string, resourceDir, localeFile, locale)
+  result = delocalizeByLoctable(str, resourceDir, localeFile, locale)
   if result ~= nil then
-    menuItemLocaleMap[bundleID][string] = result
+    menuItemLocaleMap[bundleID][str] = result
     return result
   end
 
-  result = delocalizeByQt(string, localeDir)
+  result = delocalizeByQt(str, localeDir)
   if result ~= nil then
-    menuItemLocaleMap[bundleID][string] = result
+    menuItemLocaleMap[bundleID][str] = result
     return result
   end
 
-  local searchFunc = function(string)
+  local searchFunc = function(str)
     for _, localeDir in ipairs{
         resourceDir .. "/en.lproj",
         resourceDir .. "/English.lproj",
@@ -842,7 +842,7 @@ function delocalizedMenuItem(string, bundleID, locale, localeFile)
           local fullPath = localeDir .. '/' .. localeFile .. '.strings'
           if hs.fs.attributes(fullPath) ~= nil then
             local jsonDict = parseStringsFile(fullPath)
-            return jsonDict[string]
+            return jsonDict[str]
           end
         else
           local stringsFiles = {}
@@ -863,8 +863,8 @@ function delocalizedMenuItem(string, bundleID, locale, localeFile)
           for _, file in ipairs(stringsFiles) do
             local fullPath = localeDir .. '/' .. file
             local jsonDict = parseStringsFile(fullPath)
-            if jsonDict[string] ~= nil then
-              return jsonDict[string]
+            if jsonDict[str] ~= nil then
+              return jsonDict[str]
             end
           end
         end
@@ -873,21 +873,21 @@ function delocalizedMenuItem(string, bundleID, locale, localeFile)
   end
 
   if localeFile ~= nil then
-    if menuItemLocaleInversedMap[bundleID][string] == nil then
+    if menuItemLocaleInversedMap[bundleID][str] == nil then
       local fullPath = localeDir .. '/' .. localeFile .. '.strings'
       if hs.fs.attributes(fullPath) ~= nil then
         menuItemLocaleInversedMap[bundleID] = parseStringsFile(fullPath, false)
       end
     end
     if menuItemLocaleInversedMap[bundleID] ~= nil
-        and menuItemLocaleInversedMap[bundleID][string] ~= nil then
-      local result = searchFunc(menuItemLocaleInversedMap[bundleID][string])
+        and menuItemLocaleInversedMap[bundleID][str] ~= nil then
+      local result = searchFunc(menuItemLocaleInversedMap[bundleID][str])
       if result ~= nil then
-        menuItemLocaleMap[bundleID][string] = result
+        menuItemLocaleMap[bundleID][str] = result
         return result
-      elseif not (string.match(menuItemLocaleInversedMap[bundleID][string], "[^%a]")) then
-        menuItemLocaleMap[bundleID][string] = menuItemLocaleInversedMap[bundleID][string]
-        return menuItemLocaleMap[bundleID][string]
+      elseif not (string.match(menuItemLocaleInversedMap[bundleID][str], "[^%a]")) then
+        menuItemLocaleMap[bundleID][str] = menuItemLocaleInversedMap[bundleID][str]
+        return menuItemLocaleMap[bundleID][str]
       end
     end
   else
@@ -907,26 +907,26 @@ function delocalizedMenuItem(string, bundleID, locale, localeFile)
       end)
     end
     for _, file in ipairs(stringsFiles) do
-      if menuItemLocaleInversedMap[bundleID][string] == nil then
+      if menuItemLocaleInversedMap[bundleID][str] == nil then
         local fullPath = localeDir .. '/' .. file
         menuItemLocaleInversedMap[bundleID] = parseStringsFile(fullPath, false)
       end
-      if menuItemLocaleInversedMap[bundleID][string] ~= nil then
-        local result = searchFunc(menuItemLocaleInversedMap[bundleID][string])
+      if menuItemLocaleInversedMap[bundleID][str] ~= nil then
+        local result = searchFunc(menuItemLocaleInversedMap[bundleID][str])
         if result ~= nil then
-          menuItemLocaleMap[bundleID][string] = result
+          menuItemLocaleMap[bundleID][str] = result
           return result
         end
       end
     end
-    if menuItemLocaleInversedMap[bundleID][string] ~= nil
-        and not string.match(menuItemLocaleInversedMap[bundleID][string], "[^%a]") then
-      menuItemLocaleMap[bundleID][string] = menuItemLocaleInversedMap[bundleID][string]
-      return menuItemLocaleMap[bundleID][string]
+    if menuItemLocaleInversedMap[bundleID][str] ~= nil
+        and not string.match(menuItemLocaleInversedMap[bundleID][str], "[^%a]") then
+      menuItemLocaleMap[bundleID][str] = menuItemLocaleInversedMap[bundleID][str]
+      return menuItemLocaleMap[bundleID][str]
     end
   end
 
-  menuItemLocaleMap[bundleID][string] = false
+  menuItemLocaleMap[bundleID][str] = false
 end
 
 
