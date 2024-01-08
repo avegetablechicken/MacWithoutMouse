@@ -2422,6 +2422,11 @@ function altMenuItem(appObject)
     enableIndex = false
     enableLetter = true
   end
+  if keybindingConfigs.hotkeys.menuItems.excludedForLetter ~= nil
+      and hs.fnutils.contains(keybindingConfigs.hotkeys.menuItems.excludedForLetter,
+        appObject:bundleID()) then
+    enableLetter = false
+  end
   if enableIndex == false and enableLetter == false then return end
 
   if appObject:bundleID() == "com.microsoft.VSCode"
