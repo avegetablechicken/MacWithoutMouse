@@ -918,8 +918,7 @@ appHotKeyCallbacks = {
 
   ["cn.edu.idea.paper"] =
   {
-    ["minimize"] = specialCommonHotkeyConfigs["minimize"],
-    ["hide"] = specialCommonHotkeyConfigs["hide"]
+    ["minimize"] = specialCommonHotkeyConfigs["minimize"]
   },
 
   ["com.tencent.xinWeChat"] =
