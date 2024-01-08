@@ -2574,9 +2574,13 @@ local function processAppWithNoWindows(appObject, quit)
     else
       appObject:hide()
     end
-  elseif appObject:bundleID() == "com.apple.finder" and #appObject:visibleWindows() == 1
-      and #hs.window.visibleWindows() > #hs.screen.allScreens() then
-    appObject:hide()
+  elseif appObject:bundleID() == "com.apple.finder" then
+    local wFilter = hs.window.filter.new(appObject:name())
+    local windows = wFilter:getWindows()
+    local standard = hs.fnutils.find(windows, function(win) return win:isStandard() end)
+    if standard == nil then
+      appObject:hide()
+    end
   end
 end
 
