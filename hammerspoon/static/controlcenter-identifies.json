@@ -1,6 +1,9 @@
 {
   "menubar": {
+    "Clock": "clock",
     "Control Center": "controlcenter",
+    "Battery": "battery",
+    "Shortcuts": "shortcuts",
     "WiFi": "wifi",
     "Bluetooth": "bluetooth",
     "Focus": "focusmode",
