@@ -1760,6 +1760,11 @@ appHotKeyCallbacks = {
           message = "Cancel Down",
           fn = function() end
         },
+        {
+          mods = "", key = "Tab",
+          message = "Cancel Tab",
+          fn = function() end
+        },
       }
     }
   }
