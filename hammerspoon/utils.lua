@@ -1150,7 +1150,6 @@ end
 local controlCenterIdentifiers = hs.json.read("static/controlcenter-identifies.json")
 local controlCenterMenuBarItemIdentifiers = controlCenterIdentifiers.menubar
 function clickControlCenterMenuBarItemSinceBigSur(menuItem)
-  local osVersion = getOSVersion()
   local succ = hs.osascript.applescript(string.format([[
     tell application "System Events"
       set controlitems to menu bar 1 of application process "ControlCenter"
@@ -1174,22 +1173,22 @@ function controlCenterLocalized(panel, key)
   if key == nil then
     key = panel == "WiFi" and "Wi‑Fi" or panel
   end
-  if controlCenterSubMenuBarItems == nil then return key end
   if panel == "Control Center" then
-    return controlCenterSubMenuBarItems.InfoPlist.CFBundleName
+    return findApplication("com.apple.controlcenter"):name()
   end
   panel = panel:gsub("%s+", "")
   return localizedString(key, "com.apple.controlcenter", panel)
 end
 
-
 function clickRightMenuBarItem(menuBarName, menuItem, subMenuItem)
-  if menuBarName == "Control Center" or (controlCenterSubMenuBarItems ~= nil
-      and controlCenterSubMenuBarItems[menuBarName:gsub("%s+", "")] ~= nil) then
+  if menuBarName == "Control Center" then
     return clickControlCenterMenuBarItem(menuBarName)
-  else
-    return clickAppRightMenuBarItem(menuBarName, menuItem, subMenuItem)
   end
+  local resourceDir = findApplication("com.apple.controlcenter"):path() .. "/Contents/Resources/en.lproj"
+  if hs.fs.attributes(resourceDir .. '/' .. menuBarName:gsub("%s+", "") .. '.strings') ~= nil then
+    return clickControlCenterMenuBarItem(menuBarName)
+  end
+  return clickAppRightMenuBarItem(menuBarName, menuItem, subMenuItem)
 end
 
 
