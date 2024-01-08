@@ -631,7 +631,10 @@
 
     "menuItems": {
       "enableIndex": false,
-      "enableLetter": true
+      "enableLetter": true,
+      "excludedForLetter": [
+        "org.blenderfoundation.blender"
+      ]
     },
 
     "appCommon": {
