@@ -529,9 +529,9 @@ appHotKeyCallbacks = {
   {
     ["deleteConversation"] = {
       message = function(appObject)
-        local _, title = findMenuItem(appObject,
+        local menuItem, title = findMenuItem(appObject,
             { en = {"File", "Delete Conversation…"}, zh = {"文件", "删除对话…"} })
-        return title[2]
+        if menuItem ~= nil then return title[2] end
       end,
       condition = checkMenuItem(getOSVersion() < OS.Ventura
           and { en = {"File", "Delete Conversation…"}, zh = {"文件", "删除对话…"} }
@@ -1939,10 +1939,12 @@ local function registerInAppHotKeys(appName, eventType, appObject)
                                  hs.fnutils.partial(fn, appObject, appName, eventType))
         local repeatedFn = cfg.repeatable and fn or nil
         local msg = type(cfg.message) == 'string' and cfg.message or cfg.message(appObject)
-        local hotkey = bindSpecSuspend(keyBinding, msg, fn, nil, repeatedFn)
-        hotkey.kind = HK.IN_APP
-        hotkey.condition = cfg.condition
-        table.insert(inAppHotKeys[bid], hotkey)
+        if msg ~= nil then
+          local hotkey = bindSpecSuspend(keyBinding, msg, fn, nil, repeatedFn)
+          hotkey.kind = HK.IN_APP
+          hotkey.condition = cfg.condition
+          table.insert(inAppHotKeys[bid], hotkey)
+        end
       end
     end
   else
@@ -2044,22 +2046,26 @@ local function registerInWinHotKeys(appObject)
         if keyBinding.windowFilter ~= nil and (spec.bindCondition == nil or spec.bindCondition())
             and not spec.notActivateApp then
           local msg = type(spec.message) == 'string' and spec.message or spec.message(appObject)
-          local fn = inWinHotKeysWrapper(appObject, keyBinding.windowFilter, keyBinding, msg, spec.fn)
-          local repeatedFn = spec.repeatable and fn or nil
-          local hotkey = bindSpecSuspend(keyBinding, msg, fn, nil, repeatedFn)
-          hotkey.kind = HK.IN_APPWIN
-          table.insert(inWinHotKeys[bid], hotkey)
+          if msg ~= nil then
+            local fn = inWinHotKeysWrapper(appObject, keyBinding.windowFilter, keyBinding, msg, spec.fn)
+            local repeatedFn = spec.repeatable and fn or nil
+            local hotkey = bindSpecSuspend(keyBinding, msg, fn, nil, repeatedFn)
+            hotkey.kind = HK.IN_APPWIN
+            table.insert(inWinHotKeys[bid], hotkey)
+          end
         end
       else
         local cfg = spec
         for _, spec in ipairs(cfg.hotkeys) do
           if (spec.bindCondition == nil or spec.bindCondition()) and not spec.notActivateApp then
             local msg = type(spec.message) == 'string' and spec.message or spec.message(appObject)
-            local fn = inWinHotKeysWrapper(appObject, cfg.filter, spec, msg, spec.fn)
-            local repeatedFn = spec.repeatable and fn or nil
-            local hotkey = bindSpecSuspend(spec, msg, fn, nil, repeatedFn)
-            hotkey.kind = HK.IN_APPWIN
-            table.insert(inWinHotKeys[bid], hotkey)
+            if msg ~= nil then
+              local fn = inWinHotKeysWrapper(appObject, cfg.filter, spec, msg, spec.fn)
+              local repeatedFn = spec.repeatable and fn or nil
+              local hotkey = bindSpecSuspend(spec, msg, fn, nil, repeatedFn)
+              hotkey.kind = HK.IN_APPWIN
+              table.insert(inWinHotKeys[bid], hotkey)
+            end
           end
         end
       end
@@ -2089,12 +2095,14 @@ local function registerInWinHotKeys(appObject)
           local hkIdx = hotkeyIdx(keyBinding.mods, keyBinding.key)
           local prevHotkeyInfo = inWinHotkeyInfoChain[bid][hkIdx]
           local msg = type(spec.message) == 'string' and spec.message or spec.message(appObject)
-          inWinHotkeyInfoChain[bid][hkIdx] = {
-            appName = appObject:name(),
-            filter = keyBinding.windowFilter,
-            message = msg,
-            previous = prevHotkeyInfo
-          }
+          if msg ~= nil then
+            inWinHotkeyInfoChain[bid][hkIdx] = {
+              appName = appObject:name(),
+              filter = keyBinding.windowFilter,
+              message = msg,
+              previous = prevHotkeyInfo
+            }
+          end
         end
       else
         local cfg = spec
@@ -2102,12 +2110,14 @@ local function registerInWinHotKeys(appObject)
           local hkIdx = hotkeyIdx(spec.mods, spec.key)
           local prevHotkeyInfo = inWinHotkeyInfoChain[bid][hkIdx]
           local msg = type(spec.message) == 'string' and spec.message or spec.message(appObject)
-          inWinHotkeyInfoChain[bid][hkIdx] = {
-            appName = appObject:name(),
-            filter = cfg.filter,
-            message = msg,
-            previous = prevHotkeyInfo
-          }
+          if msg ~= nil then
+            inWinHotkeyInfoChain[bid][hkIdx] = {
+              appName = appObject:name(),
+              filter = cfg.filter,
+              message = msg,
+              previous = prevHotkeyInfo
+            }
+          end
         end
       end
     end
@@ -2154,11 +2164,13 @@ local function inWinOfUnactivatedAppWatcherEnableCallback(bid, filter, winObj, a
     if type(hkID) ~= 'number' then
       if (spec.bindCondition == nil or spec.bindCondition()) and sameFilter(keybindingConfigs.hotkeys[bid][hkID].windowFilter, filter) then
         local msg = type(spec.message) == 'string' and spec.message or spec.message(winObj:application())
-        local hotkey = bindSpecSuspend(keybindingConfigs.hotkeys[bid][hkID], msg,
-                                       spec.fn, nil, spec.repeatable and spec.fn or nil)
-        hotkey.kind = HK.IN_WIN
-        hotkey.notActivateApp = spec.notActivateApp
-        table.insert(inWinOfUnactivatedAppHotKeys[bid], hotkey)
+        if msg ~= nil then
+          local hotkey = bindSpecSuspend(keybindingConfigs.hotkeys[bid][hkID], msg,
+                                        spec.fn, nil, spec.repeatable and spec.fn or nil)
+          hotkey.kind = HK.IN_WIN
+          hotkey.notActivateApp = spec.notActivateApp
+          table.insert(inWinOfUnactivatedAppHotKeys[bid], hotkey)
+        end
       end
     else
       local cfg = spec[1]
@@ -2166,11 +2178,13 @@ local function inWinOfUnactivatedAppWatcherEnableCallback(bid, filter, winObj, a
         for _, spec in ipairs(cfg) do
           if (spec.bindCondition == nil or spec.bindCondition()) then
             local msg = type(spec.message) == 'string' and spec.message or spec.message(winObj:application())
-            local hotkey = bindSuspend(spec.mods, spec.key, msg,
-                                       spec.fn, nil, spec.repeatable and spec.fn or nil)
-            hotkey.kind = HK.IN_WIN
-            hotkey.notActivateApp = cfg.notActivateApp
-            table.insert(inWinOfUnactivatedAppHotKeys[bid], hotkey)
+            if msg ~= nil then
+              local hotkey = bindSuspend(spec.mods, spec.key, msg,
+                                        spec.fn, nil, spec.repeatable and spec.fn or nil)
+              hotkey.kind = HK.IN_WIN
+              hotkey.notActivateApp = cfg.notActivateApp
+              table.insert(inWinOfUnactivatedAppHotKeys[bid], hotkey)
+            end
           end
         end
       end
