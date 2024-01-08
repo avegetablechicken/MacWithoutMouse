@@ -1010,6 +1010,16 @@
         "key": "E"
       }
     },
+    "cn.edu.idea.paper": {
+      "showPrevTab": {
+        "mods": ["shift", "command"],
+        "key": "["
+      },
+      "showNextTab": {
+        "mods": ["shift", "command"],
+        "key": "]"
+      }
+    },
     "com.tencent.xinWeChat": {
       "back": {
         "mods": "command",

@@ -918,6 +918,16 @@ appHotKeyCallbacks = {
 
   ["cn.edu.idea.paper"] =
   {
+    ["showPrevTab"] = {
+      message = "Show Previous Tab",
+      repeatable = true,
+      fn = function(appObject) hs.eventtap.keyStroke("⌘", "Left", nil, appObject) end
+    },
+    ["showNextTab"] = {
+      message = "Show Next Tab",
+      repeatable = true,
+      fn = function(appObject) hs.eventtap.keyStroke("⌘", "Right", nil, appObject) end
+    },
     ["minimize"] = specialCommonHotkeyConfigs["minimize"]
   },
 
