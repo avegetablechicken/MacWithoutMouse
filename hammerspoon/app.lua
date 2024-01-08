@@ -4,8 +4,6 @@ local applicationConfigs = hs.json.read("config/application.json")
 local misc = keybindingConfigs.hotkeys.global
 
 
-hs.application.enableSpotlightForNameSearches(true)
-
 -- launch or hide applications
 local function focusOrHideFinder(appObject)
   local windowFilter = hs.window.filter.new(false):setAppFilter(appObject:name())
