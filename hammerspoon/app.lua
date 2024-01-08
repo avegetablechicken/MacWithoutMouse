@@ -340,6 +340,11 @@ local specialCommonHotkeyConfigs = {
     mods = "⌘", key = "H",
     message = "Hide",
     fn = function(appObject) appObject:hide() end
+  },
+  ["confirmDelete"] = {
+    message = "Confirm Delete",
+    condition = confirmDeleteConditionForAppleApps,
+    fn = confirmDeleteForAppleApps
   }
 }
 
@@ -557,11 +562,7 @@ appHotKeyCallbacks = {
 
   ["com.apple.ScriptEditor2"] =
   {
-    ["confirmDelete"] = {
-      message = "Confirm Delete",
-      condition = confirmDeleteConditionForAppleApps,
-      fn = confirmDeleteForAppleApps
-    }
+    ["confirmDelete"] = specialCommonHotkeyConfigs["confirmDelete"]
   },
 
   ["com.apple.AppStore"] =
@@ -714,20 +715,12 @@ appHotKeyCallbacks = {
                        { localeFile = "Menu" })
       end
     },
-    ["confirmDelete"] = {
-      message = "Confirm Delete",
-      condition = confirmDeleteConditionForAppleApps,
-      fn = confirmDeleteForAppleApps
-    }
+    ["confirmDelete"] = specialCommonHotkeyConfigs["confirmDelete"]
   },
 
   ["com.vallettaventures.Texpad"] =
   {
-    ["confirmDelete"] = {
-      message = "Confirm Delete",
-      condition = confirmDeleteConditionForAppleApps,
-      fn = confirmDeleteForAppleApps
-    }
+    ["confirmDelete"] = specialCommonHotkeyConfigs["confirmDelete"]
   },
 
   ["com.superace.updf.mac"] =
@@ -875,11 +868,7 @@ appHotKeyCallbacks = {
       end,
       fn = function(filePath) hs.execute("open -R '" .. filePath .. "'") end
     },
-    ["confirmDelete"] = {
-      message = "Confirm Delete",
-      condition = confirmDeleteConditionForAppleApps,
-      fn = confirmDeleteForAppleApps
-    }
+    ["confirmDelete"] = specialCommonHotkeyConfigs["confirmDelete"]
   },
 
   ["net.xmind.vana.app"] =
