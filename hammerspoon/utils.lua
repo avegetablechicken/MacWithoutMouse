@@ -563,6 +563,13 @@ local function delocalizeByQt(str, localeDir)
   end
 end
 
+local function delocalizeByMono(str, localeDir)
+  local output, status = hs.execute(string.format(
+      "zsh scripts/mono_delocalize.sh '%s' '%s'",
+      localeDir .. '/LC_MESSAGES/monodevelop.mo', str))
+  if status and output ~= "" then return output end
+end
+
 local function delocalizeByChromium(str, localeDir, bundleID)
   local resourceDir = localeDir .. '/..'
   local locale = localeDir:match("^.*/(.*)%.lproj$")
@@ -746,7 +753,7 @@ function delocalizedMenuItem(str, bundleID, locale, localeFile)
   end
 
   local resourceDir
-  local chromium = false
+  local chromium, mono = false, false
   if localeFile ~= nil and localeFile:sub(-10) == ".framework" then
     resourceDir = hs.application.pathForBundleID(bundleID) .. "/Contents/Frameworks/"
         .. localeFile .. "/Resources"
@@ -760,6 +767,10 @@ function delocalizedMenuItem(str, bundleID, locale, localeFile)
         break
       end
     end
+    if resourceDir == nil and bundleID == "com.microsoft.visual-studio" then
+      resourceDir = hs.application.pathForBundleID(bundleID) .. "/Contents/MacOS/share/locale"
+      mono = true
+    end
     if resourceDir == nil then
       resourceDir = hs.application.pathForBundleID(bundleID) .. "/Contents/Resources"
     end
@@ -768,7 +779,8 @@ function delocalizedMenuItem(str, bundleID, locale, localeFile)
   local localeDir
   if locale == nil then locale = menuItemLocaleDir[bundleID][appLocale] end
   if locale ~= nil then
-    localeDir = resourceDir .. "/" .. locale .. ".lproj"
+    localeDir = resourceDir .. "/" .. locale
+    if not mono then localeDir = localeDir .. ".lproj" end
   else
     local localDetails = hs.host.locale.details(appLocale)
     local language = localDetails.languageCode
@@ -781,13 +793,15 @@ function delocalizedMenuItem(str, bundleID, locale, localeFile)
       end
     end
     for file in hs.fs.dir(resourceDir) do
-      if file:sub(-6) == ".lproj" then
-        local fileLocale = hs.host.locale.details(file:sub(1, -7))
+      if mono or (not mono and file:sub(-6) == ".lproj") then
+        local fileStem = mono and file or file:sub(1, -7)
+        local fileLocale = hs.host.locale.details(fileStem)
         local fileLanguage = fileLocale.languageCode
         local fileScript = fileLocale.scriptCode
         local fileCountry = fileLocale.countryCode
         if fileScript == nil then
-          local localeItems = hs.fnutils.split(file:sub(1, -7), '-')
+          local newFileStem = string.gsub(fileStem, '_', '-')
+          local localeItems = hs.fnutils.split(newFileStem, '-')
           if #localeItems == 3 or (#localeItems == 2 and localeItems[2] ~= fileCountry) then
             fileScript = localeItems[2]
           end
@@ -796,7 +810,7 @@ function delocalizedMenuItem(str, bundleID, locale, localeFile)
             and (script == nil or fileScript == nil or fileScript == script)
             and (country == nil or fileCountry == nil or fileCountry == country) then
           localeDir = resourceDir .. "/" .. file
-          locale = file:sub(1, -7)
+          locale = fileStem
           menuItemLocaleDir[bundleID][appLocale] = locale
           break
         end
@@ -813,6 +827,17 @@ function delocalizedMenuItem(str, bundleID, locale, localeFile)
   if chromium then
     result = delocalizeByChromium(str, localeDir, bundleID)
     if result ~= nil then
+      menuItemLocaleMap[bundleID][str] = result
+      return result
+    end
+  end
+  
+  if mono then
+    result = delocalizeByMono(str, localeDir)
+    if result ~= nil then
+      if bundleID == "com.microsoft.visual-studio" then
+        result = result:gsub('_', '')
+      end
       menuItemLocaleMap[bundleID][str] = result
       return result
     end
