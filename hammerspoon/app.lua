@@ -1275,6 +1275,30 @@ appHotKeyCallbacks = {
     }
   },
 
+  ["com.macosgame.iwallpaper"] =
+  {
+    ["closeWindow"] = {
+      mods = "⌘", key = "W",
+      message = "Close Window",
+      repeatable = true,
+      fn = function(appObject) appObject:focusedWindow():close() end
+    },
+    ["minimize"] = {
+      mods = "⌘", key = "M",
+      message = "Minimize",
+      repeatable = true,
+      condition = function(appObject)
+        return appObject:focusedWindow() ~= nil, appObject:focusedWindow()
+      end,
+      fn = function(winObj) winObj:minimize() end
+    },
+    ["hide"] = {
+      mods = "⌘", key = "H",
+      message = "Hide",
+      fn = function(appObject) appObject:hide() end
+    }
+  },
+
   ["org.pqrs.Karabiner-EventViewer"] =
   {
     ["closeWindow"] = {
