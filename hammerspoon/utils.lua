@@ -564,10 +564,14 @@ local function delocalizeByQt(str, localeDir)
 end
 
 local function delocalizeByMono(str, localeDir)
-  local output, status = hs.execute(string.format(
-      "zsh scripts/mono_delocalize.sh '%s' '%s'",
-      localeDir .. '/LC_MESSAGES/monodevelop.mo', str))
-  if status and output ~= "" then return output end
+  for file in hs.fs.dir(localeDir .. '/LC_MESSAGES') do
+    if file:sub(-3) == ".mo" then
+      local output, status = hs.execute(string.format(
+          "zsh scripts/mono_delocalize.sh '%s' '%s'",
+          localeDir .. '/LC_MESSAGES/' .. file, str))
+      if status and output ~= "" then return output end
+    end
+  end
 end
 
 local function delocalizeByChromium(str, localeDir, bundleID)
