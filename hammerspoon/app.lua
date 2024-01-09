@@ -2589,27 +2589,28 @@ if applicationConfigs ~= nil and applicationConfigs.menuItemsMayChange ~= nil th
 end
 appsMenuItemsWatchers = {}
 
-local function watchMenuItems(appObject)
-  local getMenuItemTitlesString = function(appObject)
-    local menuItems = appObject:getMenuItems()
+local getMenuItemTitlesString = function(appObject)
+  local menuItems = appObject:getMenuItems()
+  if menuItems == nil then
+    hs.timer.usleep(0.1 * 1000000)
+    menuItems = appObject:getMenuItems()
     if menuItems == nil then
       hs.timer.usleep(0.1 * 1000000)
       menuItems = appObject:getMenuItems()
       if menuItems == nil then
-        hs.timer.usleep(0.1 * 1000000)
-        menuItems = appObject:getMenuItems()
-        if menuItems == nil then
-          return
-        end
+        return
       end
     end
-    if #menuItems == 0 then return "" end
-    local menuItemTitles = {}
-    for _, item in ipairs(menuItems) do
-      table.insert(menuItemTitles, item.AXTitle)
-    end
-    return table.concat(menuItemTitles, "|")
   end
+  if #menuItems == 0 then return "" end
+  local menuItemTitles = {}
+  for _, item in ipairs(menuItems) do
+    table.insert(menuItemTitles, item.AXTitle)
+  end
+  return table.concat(menuItemTitles, "|")
+end
+
+local function watchMenuItems(appObject)
   local menuItemTitlesString = getMenuItemTitlesString(appObject)
   if appsMenuItemsWatchers[appObject:bundleID()] == nil then
     local watcher = hs.timer.new(1, function()
@@ -2637,6 +2638,7 @@ local appsMayChangeMenu
 if applicationConfigs ~= nil and applicationConfigs.menuItemsMayChange ~= nil then
   appsMayChangeMenu = applicationConfigs.menuItemsMayChange.window
 end
+local curAppMenuItemWatcher
 if appsMayChangeMenu ~= nil then
   local windowFilterAppsMayChangeMenu = hs.window.filter.new():subscribe(
     {hs.window.filter.windowCreated, hs.window.filter.windowDestroyed,
@@ -2645,7 +2647,18 @@ if appsMayChangeMenu ~= nil then
     if winObj == nil or winObj:application() == nil then return end
     local bundleID = winObj:application():bundleID()
     if hs.fnutils.contains(appsMayChangeMenu, bundleID) then
-      altMenuItem(winObj:application())
+      local appObject = winObj:application()
+      altMenuItem(appObject)
+      local menuItemStr = getMenuItemTitlesString(appObject)
+      curAppMenuItemWatcher = hs.timer.doAfter(1, function()
+        if hs.application.frontmostApplication():bundleID() ~= appObject:bundleID() then
+          return
+        end
+        local newMenuItemTitlesString = getMenuItemTitlesString(appObject)
+        if newMenuItemTitlesString ~= menuItemStr then
+          altMenuItem(winObj:application())
+        end
+      end)
     end
   end)
 end
@@ -2913,6 +2926,10 @@ function app_applicationCallback(appName, eventType, appObject)
     registerRunningAppHotKeys(bundleID, appObject)
     registerInAppHotKeys(appName, eventType, appObject)
     registerInWinHotKeys(appObject)
+    if curAppMenuItemWatcher ~= nil then
+      curAppMenuItemWatcher:stop()
+      curAppMenuItemWatcher = nil
+    end
     altMenuItem(appObject)
     if (appHotKeyCallbacks[bundleID] == nil
         or appHotKeyCallbacks[bundleID]["openRecent"] == nil)
