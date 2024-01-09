@@ -562,6 +562,7 @@ function localizedString(str, bundleID, params)
             end
             if localesInvDict[fileStem] ~= nil
                 and localesInvDict[fileStem][str] ~= nil then
+              localeFile = file:sub(1, -9)
               local result = searchFunc(localesInvDict[fileStem][str])
               if result ~= nil then
                 appLocaleMap[bundleID][appLocale][str] = result
@@ -895,6 +896,7 @@ function delocalizedMenuItem(str, bundleID, locale, localeFile)
         menuItemLocaleInversedMap[bundleID] = parseStringsFile(fullPath, false)
       end
       if menuItemLocaleInversedMap[bundleID][str] ~= nil then
+        localeFile = file:sub(1, -9)
         local result = searchFunc(menuItemLocaleInversedMap[bundleID][str])
         if result ~= nil then
           menuItemLocaleMap[bundleID][str] = result
