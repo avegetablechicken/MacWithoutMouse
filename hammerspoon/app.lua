@@ -2854,48 +2854,44 @@ local tryTimes = {}
 local tryInterval = 1
 local maxTryTimes = 15
 
-function altMenuItemHelper(appObject, eventType)
-  if eventType == hs.application.watcher.activated then
-    altMenuItem(appObject)
-  elseif eventType == hs.application.watcher.launched then
-    local app = hs.fnutils.find(appsLaunchSlow, function(app)
-      return appObject:bundleID() == app.bundleID
+function altMenuItemAfterLaunch(appObject)
+  local app = hs.fnutils.find(appsLaunchSlow, function(app)
+    return appObject:bundleID() == app.bundleID
+  end)
+  if app == nil then
+    app = hs.fnutils.find(appsLaunchSlow, function(app)
+      return appObject:path() == app.appPath
     end)
-    if app == nil then
-      app = hs.fnutils.find(appsLaunchSlow, function(app)
-        return appObject:path() == app.appPath
-      end)
+  end
+  if app ~= nil then
+    local bid = appObject:bundleID()
+    -- app was killed
+    if findApplication(bid) == nil then
+      tryTimes[bid] = nil
+      return
     end
-    if app ~= nil then
-      local bid = appObject:bundleID()
-      -- app was killed
-      if findApplication(bid) == nil then
-        tryTimes[bid] = nil
-        return
-      end
 
-      -- start counting
-      if tryTimes[bid] == nil then
-        tryTimes[bid] = 0
-      end
+    -- start counting
+    if tryTimes[bid] == nil then
+      tryTimes[bid] = 0
+    end
 
-      if app.criterion(appObject) then
-        tryTimes[bid] = nil
-        altMenuItem(appObject)
-      else
-        -- try until fully launched
-        tryTimes[bid] = tryTimes[bid] + 1
-        if tryTimes[bid] > maxTryTimes then
-          tryTimes[bid] = nil
-        else
-          hs.timer.doAfter(tryInterval, function()
-            altMenuItemHelper(appObject, eventType)
-          end)
-        end
-      end
-    else
+    if app.criterion(appObject) then
+      tryTimes[bid] = nil
       altMenuItem(appObject)
+    else
+      -- try until fully launched
+      tryTimes[bid] = tryTimes[bid] + 1
+      if tryTimes[bid] > maxTryTimes then
+        tryTimes[bid] = nil
+      else
+        hs.timer.doAfter(tryInterval, function()
+          altMenuItemAfterLaunch(appObject)
+        end)
+      end
     end
+  else
+    altMenuItem(appObject)
   end
 end
 
@@ -2906,7 +2902,7 @@ function app_applicationCallback(appName, eventType, appObject)
       selectMenuItem(appObject, { "File", "New Finder Window" },
                      { localeFile = "MenuBar" })
     end
-    altMenuItemHelper(appObject, eventType)
+    altMenuItemAfterLaunch(appObject)
     if appHotKeyCallbacks[bundleID] ~= nil then
       registerWinFiltersForDaemonApp(appObject, appHotKeyCallbacks[bundleID])
     end
