@@ -229,8 +229,7 @@ local function getResourceDir(bundleID, localeFile)
   return resourceDir, framework
 end
 
-local function getMatchedLocale(appLocale, resourceDir, mode)
-  if mode == nil then mode = 'lproj' end
+local function getMatchedLocale(appLocale, localeSource, mode)
   local localDetails = hs.host.locale.details(appLocale)
   local language = localDetails.languageCode
   local script = localDetails.scriptCode
@@ -241,29 +240,36 @@ local function getMatchedLocale(appLocale, resourceDir, mode)
       script = localeItems[2]
     end
   end
-  for file in hs.fs.dir(resourceDir) do
-    if (mode == 'lproj' and file:sub(-6) == ".lproj")
-        or (mode == 'strings' and file:sub(-8) == ".strings")
-        or mode == 'mono' then
-      local fileStem
-      if mode == 'mono' then fileStem = file
-      elseif mode == 'lproj' then fileStem = file:sub(1, -7)
-      else fileStem = file:sub(1, -9) end
-      local newFileStem = string.gsub(fileStem, '_', '-')
-      local fileLocale = hs.host.locale.details(newFileStem)
-      local fileLanguage = fileLocale.languageCode
-      local fileScript = fileLocale.scriptCode
-      local fileCountry = fileLocale.countryCode
-      if fileScript == nil then
-        local localeItems = hs.fnutils.split(newFileStem, '-')
-        if #localeItems == 3 or (#localeItems == 2 and localeItems[2] ~= fileCountry) then
-          fileScript = localeItems[2]
+  if type(localeSource) == 'string' then
+    local resourceDir = localeSource
+    localeSource = {}
+    for file in hs.fs.dir(resourceDir) do
+      table.insert(localeSource, file)
+    end
+  end
+  for _, loc in ipairs(localeSource) do
+    if (mode == 'lproj' and loc:sub(-6) == ".lproj")
+        or (mode == 'strings' and loc:sub(-8) == ".strings")
+        or mode == nil then
+      local locale
+      if mode == nil then locale = loc
+      elseif mode == 'lproj' then locale = loc:sub(1, -7)
+      else locale = loc:sub(1, -9) end
+      local newLocale = string.gsub(locale, '_', '-')
+      local thisLocale = hs.host.locale.details(newLocale)
+      local thisLanguage = thisLocale.languageCode
+      local thisScript = thisLocale.scriptCode
+      local thisCountry = thisLocale.countryCode
+      if thisScript == nil then
+        local localeItems = hs.fnutils.split(newLocale, '-')
+        if #localeItems == 3 or (#localeItems == 2 and localeItems[2] ~= thisCountry) then
+          thisScript = localeItems[2]
         end
       end
-      if fileLanguage == language
-          and (script == nil or fileScript == nil or fileScript == script)
-          and (country == nil or fileCountry == nil or fileCountry == country) then
-        return fileStem
+      if thisLanguage == language
+          and (script == nil or thisScript == nil or thisScript == script)
+          and (country == nil or thisCountry == nil or thisCountry == country) then
+        return locale
       end
     end
   end
@@ -419,33 +425,28 @@ function localizedString(str, bundleID, params)
   elseif bundleID == "com.microsoft.edgemac" then
     localeFile = "Microsoft Edge Framework.framework"
   end
-
   local resourceDir, framework = getResourceDir(bundleID, localeFile)
 
   if localeDir == nil or localeDir == false then
-    if locale == nil then locale = appLocaleDir[bundleID][appLocale] end
-    if locale ~= nil then
-      if localeDir == false then
-        localeDir = resourceDir
-        if localeFile == nil then localeFile = locale end
-      else
-        localeDir = resourceDir .. "/" .. locale .. ".lproj"
-      end
-    else
-      local mode = localeDir == nil and 'lproj' or 'strings'
+    local mode = localeDir == nil and 'lproj' or 'strings'
+    if locale == nil then
+      locale = appLocaleDir[bundleID][appLocale]
+    end
+    if locale == nil then
       locale = getMatchedLocale(appLocale, resourceDir, mode)
       if locale ~= nil then
         appLocaleDir[bundleID][appLocale] = locale
-      end
-      if mode == 'strings' then
-        localeDir = resourceDir
       else
-        localeDir = resourceDir .. "/" .. locale .. ".lproj"
+        appLocaleMap[bundleID][appLocale][str] = false
+        return nil
       end
     end
-  end
-  if localeDir == nil or localeDir == false then
-    return nil
+    if mode == 'strings' then
+      localeDir = resourceDir
+      if localeFile == nil then localeFile = locale end
+    else
+      localeDir = resourceDir .. "/" .. locale .. ".lproj"
+    end
   end
 
   local result
@@ -573,6 +574,8 @@ function localizedString(str, bundleID, params)
       end
     end
   end
+
+  appLocaleMap[bundleID][appLocale][str] = false
 end
 
 
@@ -679,41 +682,12 @@ local function delocalizeByChromium(str, localeDir, bundleID)
 end
 
 local function parseZoteroJarFile(str, appLocale)
-  local localDetails = hs.host.locale.details(appLocale)
-  local language = localDetails.languageCode
-  local script = localDetails.scriptCode
-  local country = localDetails.countryCode
-  if script == nil then
-    local localeItems = hs.fnutils.split(appLocale, '-')
-    if #localeItems == 3 or (#localeItems == 2 and localeItems[2] ~= country) then
-      script = localeItems[2]
-    end
-  end
-
   local resourceDir = hs.application.pathForBundleID("org.zotero.zotero") .. "/Contents/Resources"
   local locales, status = hs.execute("unzip -l \"" .. resourceDir .. "/zotero.jar\" 'chrome/locale/*/' | grep -Eo 'chrome/locale/[^/]*' | grep -Eo '[a-zA-Z-]*$' | uniq")
   if status ~= true then return nil end
-  local localeFile
-  for _, loc in ipairs(hs.fnutils.split(locales, '\n')) do
-    local fileLocale = hs.host.locale.details(loc)
-    local fileLanguage = fileLocale.languageCode
-    local fileScript = fileLocale.scriptCode
-    local fileCountry = fileLocale.countryCode
-    if fileScript == nil then
-      local newLoc = loc:gsub('_', '-')
-      local localeItems = hs.fnutils.split(newLoc, '-')
-      if #localeItems == 3 or (#localeItems == 2 and localeItems[2] ~= fileCountry) then
-        fileScript = localeItems[2]
-      end
-    end
-    if fileLanguage == language
-        and (script == nil or fileScript == nil or fileScript == script)
-        and (country == nil or fileCountry == nil or fileCountry == country) then
-      localeFile = 'chrome/locale/' .. loc .. '/zotero/standalone.dtd'
-      break
-    end
-  end
-  if localeFile == nil then return nil end
+  local locale = getMatchedLocale(appLocale, hs.fnutils.split(locales, '\n'))
+  if locale == nil then return nil end
+  local localeFile = 'chrome/locale/' .. locale .. '/zotero/standalone.dtd'
   local enLocaleFile = 'chrome/locale/en-US/zotero/standalone.dtd'
   local key, status = hs.execute("unzip -p \"" .. resourceDir .. "/zotero.jar\" \"" .. localeFile .. "\""
       .. " | awk '/<!ENTITY .* \"" .. str .. "\">/ { gsub(/<!ENTITY | \"" .. str .. "\">/, \"\"); printf \"%s\", $0 }'")
@@ -726,42 +700,10 @@ local function parseZoteroJarFile(str, appLocale)
 end
 
 local function parseMATLABFigureMenu(str, appLocale)
-  local localDetails = hs.host.locale.details(appLocale)
-  local language = localDetails.languageCode
-  local script = localDetails.scriptCode
-  local country = localDetails.countryCode
-  if script == nil then
-    local localeItems = hs.fnutils.split(appLocale, '-')
-    if #localeItems == 3 or (#localeItems == 2 and localeItems[2] ~= country) then
-      script = localeItems[2]
-    end
-  end
-
   local resourceDir = hs.application.pathForBundleID("com.mathworks.matlab") .. "/resources/MATLAB"
-  local locales = {}
-  for file in hs.fs.dir(resourceDir) do
-    table.insert(locales, file)
-  end
-  for file in hs.fs.dir(resourceDir) do
-    local fileLocale = hs.host.locale.details(file)
-    local fileLanguage = fileLocale.languageCode
-    local fileScript = fileLocale.scriptCode
-    local fileCountry = fileLocale.countryCode
-    if fileScript == nil then
-      local newFile = file:gsub('_', '-')
-      local localeItems = hs.fnutils.split(newFile, '-')
-      if #localeItems == 3 or (#localeItems == 2 and localeItems[2] ~= fileCountry) then
-        fileScript = localeItems[2]
-      end
-    end
-    if fileLanguage == language
-        and (script == nil or fileScript == nil or fileScript == script)
-        and (country == nil or fileCountry == nil or fileCountry == country) then
-      localeFile = resourceDir .. '/' .. file .. '/uistring/figuremenu.xml'
-      break
-    end
-  end
-  if localeFile == nil then return nil end
+  local locale = getMatchedLocale(appLocale, resourceDir)
+  if locale == nil then return nil end
+  local localeFile = resourceDir .. '/' .. locale .. '/uistring/figuremenu.xml'
   local enLocaleFile = resourceDir .. '/en/uistring/figuremenu.xml'
   local shell_pattern = 'key="([^"]*?)">' .. str .. '\\(&amp;[A-Z]\\)</entry>'
   local key, status = hs.execute(string.format(
@@ -816,29 +758,27 @@ function delocalizedMenuItem(str, bundleID, locale, localeFile)
   elseif bundleID == "com.microsoft.edgemac" then
     localeFile = "Microsoft Edge Framework.framework"
   end
-
   local resourceDir, framework = getResourceDir(bundleID, localeFile)
 
   local localeDir
-  if locale == nil then locale = menuItemLocaleDir[bundleID][appLocale] end
-  if locale ~= nil then
-    localeDir = resourceDir .. "/" .. locale
-    if not framework.mono then localeDir = localeDir .. ".lproj" end
-  else
-    local mode = framework.mono and 'mono' or 'lproj'
+  local mode = nil
+  if not framework.mono then mode = 'lproj' end
+  if locale == nil then
+    locale = menuItemLocaleDir[bundleID][appLocale]
+  end
+  if locale == nil then
     locale = getMatchedLocale(appLocale, resourceDir, mode)
     if locale ~= nil then
       menuItemLocaleDir[bundleID][appLocale] = locale
-    end
-    if mode == 'mono' then
-      localeDir = resourceDir .. "/" .. locale
     else
-      localeDir = resourceDir .. "/" .. locale .. ".lproj"
+      menuItemLocaleMap[bundleID][str] = false
+      return nil
     end
   end
-  if localeDir == nil then
-    menuItemLocaleMap[bundleID][str] = false
-    return nil
+  if mode == 'lproj' then
+    localeDir = resourceDir .. "/" .. locale .. ".lproj"
+  else
+    localeDir = resourceDir .. "/" .. locale
   end
 
   local result
