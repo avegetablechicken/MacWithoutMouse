@@ -263,13 +263,7 @@ local function getMatchedLocale(appLocale, resourceDir, mode)
       if fileLanguage == language
           and (script == nil or fileScript == nil or fileScript == script)
           and (country == nil or fileCountry == nil or fileCountry == country) then
-        local localeDir
-        if mode == 'strings' then
-          localeDir = resourceDir
-        else
-          localeDir = resourceDir .. "/" .. file
-        end
-        return fileStem, localeDir
+        return fileStem
       end
     end
   end
@@ -439,9 +433,14 @@ function localizedString(str, bundleID, params)
       end
     else
       local mode = localeDir == nil and 'lproj' or 'strings'
-      locale, localeDir = getMatchedLocale(appLocale, resourceDir, mode)
+      locale = getMatchedLocale(appLocale, resourceDir, mode)
       if locale ~= nil then
         appLocaleDir[bundleID][appLocale] = locale
+      end
+      if mode == 'strings' then
+        localeDir = resourceDir
+      else
+        localeDir = resourceDir .. "/" .. locale .. ".lproj"
       end
     end
   end
@@ -827,9 +826,14 @@ function delocalizedMenuItem(str, bundleID, locale, localeFile)
     if not framework.mono then localeDir = localeDir .. ".lproj" end
   else
     local mode = framework.mono and 'mono' or 'lproj'
-    locale, localeDir = getMatchedLocale(appLocale, resourceDir, mode)
+    locale = getMatchedLocale(appLocale, resourceDir, mode)
     if locale ~= nil then
       menuItemLocaleDir[bundleID][appLocale] = locale
+    end
+    if mode == 'mono' then
+      localeDir = resourceDir .. "/" .. locale
+    else
+      localeDir = resourceDir .. "/" .. locale .. ".lproj"
     end
   end
   if localeDir == nil then
