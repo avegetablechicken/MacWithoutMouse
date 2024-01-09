@@ -682,7 +682,7 @@ local function delocalizeByChromium(str, localeDir, bundleID)
   return nil
 end
 
-local function parseZoteroJarFile(str, appLocale)
+local function delocalizeZoteroMenu(str, appLocale)
   local resourceDir = hs.application.pathForBundleID("org.zotero.zotero") .. "/Contents/Resources"
   local locales, status = hs.execute("unzip -l \"" .. resourceDir .. "/zotero.jar\" 'chrome/locale/*/' | grep -Eo 'chrome/locale/[^/]*' | grep -Eo '[a-zA-Z-]*$' | uniq")
   if status ~= true then return nil end
@@ -700,7 +700,7 @@ local function parseZoteroJarFile(str, appLocale)
   return enValue
 end
 
-local function parseMATLABFigureMenu(str, appLocale)
+local function delocalizeMATLABFigureMenu(str, appLocale)
   local resourceDir = hs.application.pathForBundleID("com.mathworks.matlab") .. "/resources/MATLAB"
   local locale = getMatchedLocale(appLocale, resourceDir)
   if locale == nil then return nil end
@@ -745,11 +745,11 @@ function delocalizedMenuItem(str, bundleID, locale, localeFile)
   end
 
   if bundleID == "org.zotero.zotero" then
-    local result = parseZoteroJarFile(str, appLocale)
+    local result = delocalizeZoteroMenu(str, appLocale)
     menuItemLocaleMap[bundleID][str] = result or false
     return result
   elseif bundleID == "com.mathworks.matlab" then
-    local result = parseMATLABFigureMenu(str, appLocale)
+    local result = delocalizeMATLABFigureMenu(str, appLocale)
     menuItemLocaleMap[bundleID][str] = result or false
     return result
   end
