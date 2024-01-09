@@ -193,7 +193,86 @@ function applicationLocales(bundleID)
   return hs.fnutils.split(locales, ',')
 end
 
-local function getMatchedLocale()
+local function getResourceDir(bundleID, localeFile)
+  local resourceDir
+  local framework = {}
+  local appContentPath = hs.application.pathForBundleID(bundleID) .. "/Contents"
+  if localeFile ~= nil and localeFile:sub(-10) == ".framework" then
+    resourceDir = appContentPath .. "/Frameworks/"
+        .. localeFile .. "/Resources"
+    framework.chromium = true
+  else
+    local frameworkDir = appContentPath .. "/Frameworks"
+    for _, fw in ipairs{"Electron Framework", "Chromium Embedded Framework"} do
+      if hs.fs.attributes(frameworkDir .. '/' .. fw .. ".framework") ~= nil then
+        resourceDir = frameworkDir .. '/' .. fw .. ".framework/Resources"
+        framework.chromium = true
+        break
+      end
+    end
+    if resourceDir == nil then
+      local monoLocaleDirs, status = hs.execute(string.format(
+          "find '%s' -type f -path '*/locale/*/LC_MESSAGES/*.mo'" ..
+          " | awk -F'/locale/' '{print $1}' | uniq | tr -d '\\n'", appContentPath))
+      if status and monoLocaleDirs ~= "" then
+        monoLocaleDirs = hs.fnutils.split(monoLocaleDirs, '\n')
+        if #monoLocaleDirs == 1 then
+          resourceDir = monoLocaleDirs[1] .. "/locale"
+          framework.mono = true
+        end
+      end
+    end
+    if resourceDir == nil then
+      resourceDir = appContentPath .. "/Resources"
+    end
+  end
+  return resourceDir, framework
+end
+
+local function getMatchedLocale(appLocale, resourceDir, mode)
+  if mode == nil then mode = 'lproj' end
+  local localDetails = hs.host.locale.details(appLocale)
+  local language = localDetails.languageCode
+  local script = localDetails.scriptCode
+  local country = localDetails.countryCode
+  if script == nil then
+    local localeItems = hs.fnutils.split(appLocale, '-')
+    if #localeItems == 3 or (#localeItems == 2 and localeItems[2] ~= country) then
+      script = localeItems[2]
+    end
+  end
+  for file in hs.fs.dir(resourceDir) do
+    if (mode == 'lproj' and file:sub(-6) == ".lproj")
+        or (mode == 'strings' and file:sub(-8) == ".strings")
+        or mode == 'mono' then
+      local fileStem
+      if mode == 'mono' then fileStem = file
+      elseif mode == 'lproj' then fileStem = file:sub(1, -7)
+      else fileStem = file:sub(1, -9) end
+      local newFileStem = string.gsub(fileStem, '_', '-')
+      local fileLocale = hs.host.locale.details(newFileStem)
+      local fileLanguage = fileLocale.languageCode
+      local fileScript = fileLocale.scriptCode
+      local fileCountry = fileLocale.countryCode
+      if fileScript == nil then
+        local localeItems = hs.fnutils.split(newFileStem, '-')
+        if #localeItems == 3 or (#localeItems == 2 and localeItems[2] ~= fileCountry) then
+          fileScript = localeItems[2]
+        end
+      end
+      if fileLanguage == language
+          and (script == nil or fileScript == nil or fileScript == script)
+          and (country == nil or fileCountry == nil or fileCountry == country) then
+        local localeDir
+        if mode == 'strings' then
+          localeDir = resourceDir
+        else
+          localeDir = resourceDir .. "/" .. file
+        end
+        return fileStem, localeDir
+      end
+    end
+  end
 end
 
 local function parseStringsFile(file, keepOrder)
@@ -206,9 +285,6 @@ local function parseStringsFile(file, keepOrder)
     localesDict[v] = k
   end
   return localesDict
-end
-
-local function localizeByStrings()
 end
 
 local function localizeByLoctableImpl(str, filePath, fileStem, locale, localesDict)
@@ -343,25 +419,7 @@ function localizedString(str, bundleID, params)
     localeFile = "Microsoft Edge Framework.framework"
   end
 
-  local resourceDir
-  local chromium = false
-  if localeFile ~= nil and localeFile:sub(-10) == ".framework" then
-    resourceDir = hs.application.pathForBundleID(bundleID) .. "/Contents/Frameworks/"
-        .. localeFile .. "/Resources"
-    chromium = true
-  else
-    local frameworkDir = hs.application.pathForBundleID(bundleID) .. "/Contents/Frameworks"
-    for _, fw in ipairs{"Electron Framework", "Chromium Embedded Framework"} do
-      if hs.fs.attributes(frameworkDir .. '/' .. fw .. ".framework") ~= nil then
-        resourceDir = frameworkDir .. '/' .. fw .. ".framework/Resources"
-        chromium = true
-        break
-      end
-    end
-    if resourceDir == nil then
-      resourceDir = hs.application.pathForBundleID(bundleID) .. "/Contents/Resources"
-    end
-  end
+  local resourceDir, framework = getResourceDir(bundleID, localeFile)
 
   if localeDir == nil or localeDir == false then
     if locale == nil then locale = appLocaleDir[bundleID][appLocale] end
@@ -373,70 +431,31 @@ function localizedString(str, bundleID, params)
         localeDir = resourceDir .. "/" .. locale .. ".lproj"
       end
     else
-      local tryDir = localeDir == nil
-      if localeDir == false then localeDir = resourceDir end
-      local localDetails = hs.host.locale.details(appLocale)
-      local language = localDetails.languageCode
-      local script = localDetails.scriptCode
-      local country = localDetails.countryCode
-      if script == nil then
-        local localeItems = hs.fnutils.split(appLocale, '-')
-        if #localeItems == 3 or (#localeItems == 2 and localeItems[2] ~= country) then
-          script = localeItems[2]
-        end
-      end
-      for file in hs.fs.dir(resourceDir) do
-        if (tryDir and file:sub(-6) == ".lproj")
-            or (not tryDir and localeFile == nil and file:sub(-8) == ".strings") then
-          local fileStem
-          if file:sub(-6) == ".lproj" then
-            fileStem = file:sub(1, -7)
-          else
-            fileStem = file:sub(1, -9)
-          end
-          local newFileStem = string.gsub(fileStem, '_', '-')
-          local fileLocale = hs.host.locale.details(fileStem)
-          local fileLanguage = fileLocale.languageCode
-          local fileScript = fileLocale.scriptCode
-          local fileCountry = fileLocale.countryCode
-          if fileScript == nil then
-            local localeItems = hs.fnutils.split(newFileStem, '-')
-            if #localeItems == 3 or (#localeItems == 2 and localeItems[2] ~= fileCountry) then
-              fileScript = localeItems[2]
-            end
-          end
-          if fileLanguage == language
-              and (script == nil or fileScript == nil or fileScript == script)
-              and (country == nil or fileCountry == nil or fileCountry == country) then
-            if file:sub(-6) == ".lproj" then
-              localeDir = resourceDir .. "/" .. file
-            else
-              localeDir = resourceDir
-            end
-            locale = fileStem
-            appLocaleDir[bundleID][appLocale] = locale
-            break
-          end
-        end
+      local mode = localeDir == nil and 'lproj' or 'strings'
+      locale, localeDir = getMatchedLocale(appLocale, resourceDir, mode)
+      if locale ~= nil then
+        appLocaleDir[bundleID][appLocale] = locale
       end
     end
   end
-  if locale == nil then
+  if localeDir == nil or localeDir == false then
     return nil
   end
 
   local result
 
-  if chromium then
+  if framework.chromium then
     result = localizeByChromium(str, localeDir, localesDict, bundleID)
     if result ~= nil then return result end
   end
 
-  result = localizeByLoctable(str, resourceDir, localeFile, locale, localesDict)
-  if result ~= nil then return result end
-
   result = localizeByQt(str, localeDir, localesDict)
   if result ~= nil then return result end
+
+  if locale ~= nil then
+    result = localizeByLoctable(str, resourceDir, localeFile, locale, localesDict)
+    if result ~= nil then return result end
+  end
 
   local searchFunc = function(str)
     if localeFile ~= nil then
@@ -749,94 +768,43 @@ function delocalizedMenuItem(str, bundleID, locale, localeFile)
     menuItemLocaleMap[bundleID][str] = result or false
     return result
   end
-  
+
   if bundleID == "com.google.Chrome" then
     localeFile = "Google Chrome Framework.framework"
   elseif bundleID == "com.microsoft.edgemac" then
     localeFile = "Microsoft Edge Framework.framework"
   end
 
-  local resourceDir
-  local chromium, mono = false, false
-  if localeFile ~= nil and localeFile:sub(-10) == ".framework" then
-    resourceDir = hs.application.pathForBundleID(bundleID) .. "/Contents/Frameworks/"
-        .. localeFile .. "/Resources"
-    chromium = true
-  else
-    local frameworkDir = hs.application.pathForBundleID(bundleID) .. "/Contents/Frameworks"
-    for _, fw in ipairs{"Electron Framework", "Chromium Embedded Framework"} do
-      if hs.fs.attributes(frameworkDir .. '/' .. fw .. ".framework") ~= nil then
-        resourceDir = frameworkDir .. '/' .. fw .. ".framework/Resources"
-        chromium = true
-        break
-      end
-    end
-    if resourceDir == nil and bundleID == "com.microsoft.visual-studio" then
-      resourceDir = hs.application.pathForBundleID(bundleID) .. "/Contents/MacOS/share/locale"
-      mono = true
-    end
-    if resourceDir == nil then
-      resourceDir = hs.application.pathForBundleID(bundleID) .. "/Contents/Resources"
-    end
-  end
+  local resourceDir, framework = getResourceDir(bundleID, localeFile)
 
   local localeDir
   if locale == nil then locale = menuItemLocaleDir[bundleID][appLocale] end
   if locale ~= nil then
     localeDir = resourceDir .. "/" .. locale
-    if not mono then localeDir = localeDir .. ".lproj" end
+    if not framework.mono then localeDir = localeDir .. ".lproj" end
   else
-    local localDetails = hs.host.locale.details(appLocale)
-    local language = localDetails.languageCode
-    local script = localDetails.scriptCode
-    local country = localDetails.countryCode
-    if script == nil then
-      local localeItems = hs.fnutils.split(appLocale, '-')
-      if #localeItems == 3 or (#localeItems == 2 and localeItems[2] ~= country) then
-        script = localeItems[2]
-      end
-    end
-    for file in hs.fs.dir(resourceDir) do
-      if mono or (not mono and file:sub(-6) == ".lproj") then
-        local fileStem = mono and file or file:sub(1, -7)
-        local fileLocale = hs.host.locale.details(fileStem)
-        local fileLanguage = fileLocale.languageCode
-        local fileScript = fileLocale.scriptCode
-        local fileCountry = fileLocale.countryCode
-        if fileScript == nil then
-          local newFileStem = string.gsub(fileStem, '_', '-')
-          local localeItems = hs.fnutils.split(newFileStem, '-')
-          if #localeItems == 3 or (#localeItems == 2 and localeItems[2] ~= fileCountry) then
-            fileScript = localeItems[2]
-          end
-        end
-        if fileLanguage == language
-            and (script == nil or fileScript == nil or fileScript == script)
-            and (country == nil or fileCountry == nil or fileCountry == country) then
-          localeDir = resourceDir .. "/" .. file
-          locale = fileStem
-          menuItemLocaleDir[bundleID][appLocale] = locale
-          break
-        end
-      end
+    local mode = framework.mono and 'mono' or 'lproj'
+    locale, localeDir = getMatchedLocale(appLocale, resourceDir, mode)
+    if locale ~= nil then
+      menuItemLocaleDir[bundleID][appLocale] = locale
     end
   end
-  if locale == nil then
+  if localeDir == nil then
     menuItemLocaleMap[bundleID][str] = false
     return nil
   end
 
   local result
 
-  if chromium then
+  if framework.chromium then
     result = delocalizeByChromium(str, localeDir, bundleID)
     if result ~= nil then
       menuItemLocaleMap[bundleID][str] = result
       return result
     end
   end
-  
-  if mono then
+
+  if framework.mono then
     result = delocalizeByMono(str, localeDir)
     if result ~= nil then
       if bundleID == "com.microsoft.visual-studio" then
