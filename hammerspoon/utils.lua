@@ -386,7 +386,8 @@ end
 
 local appLocaleMap = {}
 local appLocaleDir = {}
-local appLocaleInversedMap = {}
+local appLocaleAssetBuffer = {}
+local appLocaleAssetBufferInverse = {}
 function localizedString(str, bundleID, params)
   if hs.application.pathForBundleID(bundleID) == nil
       or hs.application.pathForBundleID(bundleID) == "" then
@@ -404,14 +405,20 @@ function localizedString(str, bundleID, params)
 
   if appLocaleMap[bundleID] == nil then
     appLocaleMap[bundleID] = {}
+    appLocaleAssetBuffer[bundleID] = {}
     appLocaleDir[bundleID] = {}
   end
   local locales = applicationLocales(bundleID)
   local appLocale = locales[1]
   if appLocaleMap[bundleID][appLocale] == nil then
     appLocaleMap[bundleID][appLocale] = {}
+    appLocaleAssetBuffer[bundleID][appLocale] = {}
+  elseif appLocaleMap[bundleID][appLocale][str] == false then
+    return nil
+  elseif appLocaleMap[bundleID][appLocale][str] ~= nil then
+    return appLocaleMap[bundleID][appLocale][str]
   end
-  local localesDict = appLocaleMap[bundleID][appLocale]
+  local localesDict = appLocaleAssetBuffer[bundleID][appLocale]
 
   if bundleID == "com.google.Chrome" then
     localeFile = "Google Chrome Framework.framework"
@@ -446,15 +453,24 @@ function localizedString(str, bundleID, params)
 
   if framework.chromium then
     result = localizeByChromium(str, localeDir, localesDict, bundleID)
-    if result ~= nil then return result end
+    if result ~= nil then
+      appLocaleMap[bundleID][appLocale][str] = result
+      return result
+    end
   end
 
   result = localizeByQt(str, localeDir, localesDict)
-  if result ~= nil then return result end
+  if result ~= nil then
+    appLocaleMap[bundleID][appLocale][str] = result
+    return result
+  end
 
   if locale ~= nil then
     result = localizeByLoctable(str, resourceDir, localeFile, locale, localesDict)
-    if result ~= nil then return result end
+    if result ~= nil then
+      appLocaleMap[bundleID][appLocale][str] = result
+      return result
+    end
   end
 
   local searchFunc = function(str)
@@ -490,7 +506,10 @@ function localizedString(str, bundleID, params)
     end
   end
   local result = searchFunc(str)
-  if result ~= nil then return result end
+  if result ~= nil then
+    appLocaleMap[bundleID][appLocale][str] = result
+    return result
+  end
   if appLocaleDir[bundleID][appLocale] == 'en' then
     for _, _localeDir in ipairs{
         resourceDir .. "/English.lproj",
@@ -499,15 +518,18 @@ function localizedString(str, bundleID, params)
       if hs.fs.attributes(_localeDir) ~= nil then
         localeDir = _localeDir
         result = searchFunc(str)
-        if result ~= nil then return result end
+        if result ~= nil then
+          appLocaleMap[bundleID][appLocale][str] = result
+          return result
+        end
       end
     end
   end
 
-  if appLocaleInversedMap[bundleID] == nil then
-    appLocaleInversedMap[bundleID] = {}
+  if appLocaleAssetBufferInverse[bundleID] == nil then
+    appLocaleAssetBufferInverse[bundleID] = {}
   end
-  localesInvDict = appLocaleInversedMap[bundleID]
+  localesInvDict = appLocaleAssetBufferInverse[bundleID]
   for _, localeDir in ipairs{
       resourceDir .. "/en.lproj",
       resourceDir .. "/English.lproj",
@@ -524,7 +546,10 @@ function localizedString(str, bundleID, params)
         if localesInvDict[localeFile] ~= nil
             and localesInvDict[localeFile][str] ~= nil then
           local result = searchFunc(localesInvDict[localeFile][str])
-          if result ~= nil then return result end
+          if result ~= nil then
+            appLocaleMap[bundleID][appLocale][str] = result
+            return result
+          end
         end
         localesInvDict[localeFile] = nil
       else
@@ -538,7 +563,10 @@ function localizedString(str, bundleID, params)
             if localesInvDict[fileStem] ~= nil
                 and localesInvDict[fileStem][str] ~= nil then
               local result = searchFunc(localesInvDict[fileStem][str])
-              if result ~= nil then return result end
+              if result ~= nil then
+                appLocaleMap[bundleID][appLocale][str] = result
+                return result
+              end
             end
             localesInvDict[fileStem] = nil
           end
