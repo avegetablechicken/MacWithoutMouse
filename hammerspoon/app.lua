@@ -2877,6 +2877,8 @@ function altMenuItemHelper(appObject, eventType)
           end)
         end
       end
+    else
+      altMenuItem(appObject)
     end
   end
 end
