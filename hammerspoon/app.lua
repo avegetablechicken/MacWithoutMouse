@@ -22,7 +22,11 @@ local function focusOrHideFinder(appObject)
       appObject:hide()
     end
   else
-    appObject:focusedWindow():focus()
+    if appObject:focusedWindow() ~= nil then
+      appObject:focusedWindow():focus()
+    else
+      appObject:activate()
+    end
   end
 end
 
