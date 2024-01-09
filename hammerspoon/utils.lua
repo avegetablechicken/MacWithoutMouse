@@ -576,6 +576,10 @@ function localizedString(str, bundleID, params)
   end
 end
 
+
+local stringsFilePatterns = { "(.-)MainMenu(.-)", "Menu", "MenuBar",
+                              "MenuItems", "Localizable", "Main", "MainWindow" }
+
 local function delocalizeByLoctableImpl(str, filePath, locale)
   local output, status = hs.execute(string.format(
       "/usr/bin/python3 scripts/loctable_delocalize.py '%s' '%s' %s",
@@ -590,11 +594,24 @@ local function delocalizeByLoctable(str, resourceDir, localeFile, locale)
       return delocalizeByLoctableImpl(str, fullPath, locale)
     end
   else
+    local loctableFiles = {}
     for file in hs.fs.dir(resourceDir) do
       if file:sub(-9) == ".loctable" then
-        local result = delocalizeByLoctableImpl(str, resourceDir .. '/' .. file, locale)
-        if result ~= nil then return result end
+        table.insert(loctableFiles, file)
       end
+    end
+    if #loctableFiles > 10 then
+      loctableFiles = hs.fnutils.filter(loctableFiles, function(file)
+        for _, pattern in ipairs(stringsFilePatterns) do
+          local pattern = "^" .. pattern  .. "%.loctable$"
+          if string.match(file, pattern) ~= nil then return true end
+        end
+        return false
+      end)
+    end
+    for _, file in ipairs(loctableFiles) do
+      local result = delocalizeByLoctableImpl(str, resourceDir .. '/' .. file, locale)
+      if result ~= nil then return result end
     end
   end
 end
@@ -762,8 +779,6 @@ end
 local menuItemLocaleMap = {}
 local menuItemLocaleDir = {}
 local menuItemLocaleInversedMap = {}
-local stringsFilePatterns = { "(.-)MainMenu(.-)", "Menu", "MenuBar",
-                              "MenuItems", "Localizable", "Main", "MainWindow" }
 function delocalizedMenuItem(str, bundleID, locale, localeFile)
   if localeFile == nil then
     localeFile = locale
