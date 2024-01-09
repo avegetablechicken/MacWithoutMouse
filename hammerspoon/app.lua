@@ -2465,6 +2465,9 @@ function altMenuItem(appObject)
     menuItemTitles = hs.fnutils.map(menuItems, function(item)
       return item.AXTitle
     end)
+    menuItemTitles = hs.fnutils.filter(menuItemTitles, function(item)
+      return item ~= nil and item ~= ""
+    end)
   end
   if menuItemTitles == nil or #menuItemTitles == 0 then return end
 
