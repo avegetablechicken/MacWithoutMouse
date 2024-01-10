@@ -867,6 +867,16 @@
         "key": "down"
       }
     },
+    "com.apple.FaceTime": {
+      "deleteMousePositionCall": {
+        "mods": "command",
+        "key": "delete"
+      },
+      "deleteAllCalls": {
+        "mods": ["option", "command"],
+        "key": "delete"
+      }
+    },
     "com.apple.ScriptEditor2": {
       "confirmDelete": {
         "mods": "option",

@@ -290,6 +290,69 @@ function deleteAllMessages(appObject)
   )
 end
 
+local function deleteMousePositionCall(appObject)
+  appUIObj = hs.axuielement.applicationElement(appObject)
+  appUIObj:elementSearch(
+    function(msg, results, count)
+      if count == 0 then return end
+
+      local collectionList = results[1].AXChildren
+      if collectionList == nil or #collectionList == 0 then return end
+      local sectionList = collectionList[1]:childrenWithRole("AXGroup")
+      if #sectionList == 0 then return end
+
+      local section = sectionList[1]
+      hs.eventtap.rightClick(hs.mouse.absolutePosition())
+      local popups = section:childrenWithRole("AXMenu")
+      for _, popup in ipairs(popups) do
+        for _, menuItem in ipairs(popup:childrenWithRole("AXMenuItem")) do
+          if menuItem.AXIdentifier == "menuRemovePersonFromRecents:" then
+            menuItem:performAction("AXPress")
+            break
+          end
+        end
+      end
+    end,
+    function(element)
+      return element.AXSubrole == "AXCollectionList"
+          and element.AXChildren ~= nil and #element.AXChildren > 0
+          and element.AXChildren[1].AXSubrole == "AXSectionList"
+    end
+  )
+end
+
+function deleteAllCalls(appObject)
+  appUIObj = hs.axuielement.applicationElement(appObject)
+  appUIObj:elementSearch(
+    function(msg, results, count)
+      if count == 0 then return end
+
+      local collectionList = results[1].AXChildren
+      if collectionList == nil or #collectionList == 0 then return end
+      local sectionList = collectionList[1]:childrenWithRole("AXGroup")
+      if #sectionList == 0 then return end
+
+      local section = sectionList[1]
+      rightClickAndRestore(section.AXPosition)
+      local popups = section:childrenWithRole("AXMenu")
+      for _, popup in ipairs(popups) do
+        for _, menuItem in ipairs(popup:childrenWithRole("AXMenuItem")) do
+          if menuItem.AXIdentifier == "menuRemovePersonFromRecents:" then
+            menuItem:performAction("AXPress")
+            break
+          end
+        end
+      end
+      deleteAllCalls(appObject)
+    end,
+    function(element)
+      return element.AXSubrole == "AXCollectionList"
+          and element.AXChildren ~= nil and #element.AXChildren > 0
+          and element.AXChildren[1].AXSubrole == "AXSectionList"
+    end
+  )
+end
+
 function confirmDeleteConditionForAppleApps(appObject)
   local ok, result = hs.osascript.applescript([[
     tell application "System Events"
@@ -564,6 +627,17 @@ appHotKeyCallbacks = {
       repeatable = true,
       condition = checkMenuItemByKeybinding({ 'ctrl' }, "⇥"),
       fn = receiveMenuItem
+    }
+  },
+
+  ["com.apple.FaceTime"] = {
+    ["deleteMousePositionCall"] = {
+      message = "Delete Call at Mouse Position",
+      fn = deleteMousePositionCall
+    },
+    ["deleteAllCalls"] = {
+      message = "Delete All Calls",
+      fn = deleteAllCalls
     }
   },
 
