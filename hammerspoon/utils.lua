@@ -275,6 +275,9 @@ local function getMatchedLocale(appLocale, localeSource, mode)
   end
 end
 
+local preferentialStringsFilePatterns = { "(.-)MainMenu(.-)", "Menu", "MenuBar",
+  "MenuItems", "Localizable", "Main", "MainWindow" }
+
 local function parseStringsFile(file, keepOrder)
   if keepOrder == nil then keepOrder = true end
   local jsonStr = hs.execute(string.format("plutil -convert json -o - '%s'", file))
@@ -309,15 +312,175 @@ local function localizeByLoctable(str, resourceDir, localeFile, loc, localesDict
       return localizeByLoctableImpl(str, fullPath, localeFile, loc, localesDict)
     end
   else
+    local stringsFiles = {}
+    local preferentialStringsFiles = {}
     for file in hs.fs.dir(resourceDir) do
       if file:sub(-9) == ".loctable" then
-        local fullPath = resourceDir .. '/' .. file
-        local fileStem = file:sub(1, -10)
-        local result = localizeByLoctableImpl(str, fullPath, fileStem, loc, localesDict)
-        if result ~= nil then return result end
+        table.insert(stringsFiles, file)
+      end
+    end
+    if #stringsFiles > 10 then
+      for i = #stringsFiles, 1, -1 do
+        for _, p in ipairs(preferentialStringsFilePatterns) do
+          local pattern = "^" .. p .. "%.loctable$"
+          if string.match(stringsFiles[i], pattern) ~= nil then
+            table.insert(preferentialStringsFiles, stringsFiles[i])
+            table.remove(stringsFiles, i)
+            break
+          end
+        end
+      end
+    end
+    for _, file in ipairs(preferentialStringsFiles) do
+      local fullPath = resourceDir .. '/' .. file
+      local fileStem = file:sub(1, -10)
+      local result = localizeByLoctableImpl(str, fullPath, fileStem, loc, localesDict)
+      if result ~= nil then return result end
+    end
+    for _, file in ipairs(stringsFiles) do
+      local fullPath = resourceDir .. '/' .. file
+      local fileStem = file:sub(1, -10)
+      local result = localizeByLoctableImpl(str, fullPath, fileStem, loc, localesDict)
+      if result ~= nil then return result end
+    end
+  end
+end
+
+local function localizeByStrings(str, localeDir, localeFile, locale, localesDict, localesInvDict)
+  local resourceDir = localeDir .. '/..'
+  local searchFunc = function(str, stringsFiles, localeDir)
+    if type(stringsFiles) == 'string' then
+      stringsFiles = {stringsFiles}
+    end
+    for _, file in ipairs(stringsFiles) do
+      local fileStem = file:sub(1, -9)
+      local jsonDict = localesDict[fileStem]
+      if jsonDict == nil
+          or (locale == 'en' and string.find(localeDir, 'en.lproj') == nil) then
+        local fullPath = localeDir .. '/' .. file
+        if hs.fs.attributes(fullPath) ~= nil then
+          jsonDict = parseStringsFile(fullPath)
+        end
+      end
+      if jsonDict ~= nil and jsonDict[str] ~= nil then
+        localesDict[fileStem] = jsonDict
+        return jsonDict[str]
       end
     end
   end
+
+  local stringsFiles = {}
+  local preferentialStringsFiles = {}
+  for file in hs.fs.dir(localeDir) do
+    if file:sub(-8) == ".strings" then
+      table.insert(stringsFiles, file)
+    end
+  end
+  if #stringsFiles > 10 then
+    for i = #stringsFiles, 1, -1 do
+      for _, p in ipairs(preferentialStringsFilePatterns) do
+        local pattern = "^" .. p .. "%.strings$"
+        if string.match(stringsFiles[i], pattern) ~= nil then
+          table.insert(preferentialStringsFiles, stringsFiles[i])
+          table.remove(stringsFiles, i)
+          break
+        end
+      end
+    end
+  end
+  local result
+  if localeFile ~= nil then
+    result = searchFunc(str, localeFile .. '.strings', localeDir)
+    if result ~= nil then return result end
+  else
+    result = searchFunc(str, preferentialStringsFiles, localeDir)
+    if result ~= nil then return result end
+  end
+  if locale == 'en' then
+    for _, _localeDir in ipairs{
+        resourceDir .. "/English.lproj",
+        resourceDir .. "/Base.lproj",
+        resourceDir .. "/en_GB.lproj"} do
+      if hs.fs.attributes(_localeDir) ~= nil then
+        if localeFile ~= nil then
+          result = searchFunc(str, localeFile .. '.strings', _localeDir)
+          if result ~= nil then return result end
+        else
+          result = searchFunc(str, preferentialStringsFiles, _localeDir)
+          if result ~= nil then return result end
+        end
+      end
+    end
+  end
+
+  local invSearchFunc = function(str, stringsFiles)
+    for _, localeDir in ipairs{
+        resourceDir .. "/en.lproj",
+        resourceDir .. "/English.lproj",
+        resourceDir .. "/Base.lproj",
+        resourceDir .. "/en_GB.lproj"} do
+      if hs.fs.attributes(localeDir) ~= nil then
+        if localeFile ~= nil then
+          if localesInvDict[localeFile] == nil then
+            local fullPath = localeDir .. '/' .. localeFile .. '.strings'
+            if hs.fs.attributes(fullPath) ~= nil then
+              localesInvDict[localeFile] = parseStringsFile(fullPath, false)
+            end
+          end
+          if localesInvDict[localeFile] ~= nil
+              and localesInvDict[localeFile][str] ~= nil then
+            local result = searchFunc(localesInvDict[localeFile][str], localeFile .. '.strings', localeDir)
+            if result ~= nil then return result end
+          end
+          localesInvDict[localeFile] = nil
+        else
+          for _, file in ipairs(stringsFiles) do
+            local fileStem = file:sub(1, -9)
+            if localesInvDict[fileStem] == nil then
+              local fullPath = localeDir .. '/' .. file
+              if hs.fs.attributes(fullPath) ~= nil then
+                localesInvDict[fileStem] = parseStringsFile(fullPath, false)
+              end
+            end
+            if localesInvDict[fileStem] ~= nil
+                and localesInvDict[fileStem][str] ~= nil then
+              local result = searchFunc(localesInvDict[fileStem][str], file, localeDir)
+              if result ~= nil then return result end
+            end
+            localesInvDict[fileStem] = nil
+          end
+        end
+      end
+    end
+  end
+  result = invSearchFunc(str, preferentialStringsFiles)
+  if result ~= nil then return result end
+
+  if localeFile ~= nil then
+    result = searchFunc(str, localeFile .. '.strings', localeDir)
+    if result ~= nil then return result end
+  else
+    result = searchFunc(str, stringsFiles, localeDir)
+    if result ~= nil then return result end
+  end
+  if locale == 'en' then
+    for _, _localeDir in ipairs{
+        resourceDir .. "/English.lproj",
+        resourceDir .. "/Base.lproj",
+        resourceDir .. "/en_GB.lproj"} do
+      if hs.fs.attributes(_localeDir) ~= nil then
+        if localeFile ~= nil then
+          result = searchFunc(str, localeFile .. '.strings', _localeDir)
+          if result ~= nil then return result end
+        else
+          result = searchFunc(str, stringsFiles, localeDir)
+          if result ~= nil then return result end
+        end
+      end
+    end
+  end
+  result = invSearchFunc(str, stringsFiles)
+  if result ~= nil then return result end
 end
 
 local function localizeByQt(str, localeDir, localesDict)
@@ -471,117 +634,21 @@ function localizedString(str, bundleID, params)
       appLocaleMap[bundleID][appLocale][str] = result
       return result
     end
-  end
 
-  local searchFunc = function(str)
-    if localeFile ~= nil then
-      local jsonDict = localesDict[localeFile]
-      if jsonDict == nil
-          or (appLocaleDir[bundleID][appLocale] == 'en' and string.find(localeDir, 'en.lproj') == nil) then
-        local fullPath = localeDir .. '/' .. localeFile .. '.strings'
-        if hs.fs.attributes(fullPath) ~= nil then
-          jsonDict = parseStringsFile(fullPath)
-        end
-      end
-      if jsonDict ~= nil and jsonDict[str] ~= nil then
-        localesDict[localeFile] = jsonDict
-        return jsonDict[str]
-      end
-    else
-      for file in hs.fs.dir(localeDir) do
-        if file:sub(-8) == ".strings" then
-          local fileStem = file:sub(1, -9)
-          local jsonDict = localesDict[fileStem]
-          if jsonDict == nil
-              or (appLocaleDir[bundleID][appLocale] == 'en' and string.find(localeDir, 'en.lproj') == nil) then
-            local fullPath = localeDir .. '/' .. file
-            jsonDict = parseStringsFile(fullPath)
-          end
-          if jsonDict[str] ~= nil then
-            localesDict[fileStem] = jsonDict
-            return jsonDict[str]
-          end
-        end
-      end
+    if appLocaleAssetBufferInverse[bundleID] == nil then
+      appLocaleAssetBufferInverse[bundleID] = {}
     end
-  end
-  local result = searchFunc(str)
-  if result ~= nil then
-    appLocaleMap[bundleID][appLocale][str] = result
-    return result
-  end
-  if appLocaleDir[bundleID][appLocale] == 'en' then
-    for _, _localeDir in ipairs{
-        resourceDir .. "/English.lproj",
-        resourceDir .. "/Base.lproj",
-        resourceDir .. "/en_GB.lproj"} do
-      if hs.fs.attributes(_localeDir) ~= nil then
-        localeDir = _localeDir
-        result = searchFunc(str)
-        if result ~= nil then
-          appLocaleMap[bundleID][appLocale][str] = result
-          return result
-        end
-      end
-    end
-  end
-
-  if appLocaleAssetBufferInverse[bundleID] == nil then
-    appLocaleAssetBufferInverse[bundleID] = {}
-  end
-  localesInvDict = appLocaleAssetBufferInverse[bundleID]
-  for _, localeDir in ipairs{
-      resourceDir .. "/en.lproj",
-      resourceDir .. "/English.lproj",
-      resourceDir .. "/Base.lproj",
-      resourceDir .. "/en_GB.lproj"} do
-    if hs.fs.attributes(localeDir) ~= nil then
-      if localeFile ~= nil then
-        if localesInvDict[localeFile] == nil then
-          local fullPath = localeDir .. '/' .. localeFile .. '.strings'
-          if hs.fs.attributes(fullPath) ~= nil then
-            localesInvDict[localeFile] = parseStringsFile(fullPath, false)
-          end
-        end
-        if localesInvDict[localeFile] ~= nil
-            and localesInvDict[localeFile][str] ~= nil then
-          local result = searchFunc(localesInvDict[localeFile][str])
-          if result ~= nil then
-            appLocaleMap[bundleID][appLocale][str] = result
-            return result
-          end
-        end
-        localesInvDict[localeFile] = nil
-      else
-        for file in hs.fs.dir(localeDir) do
-          if file:sub(-8) == ".strings" then
-            local fileStem = file:sub(1, -9)
-            if localesInvDict[fileStem] == nil then
-              local fullPath = localeDir .. '/' .. file
-              localesInvDict[fileStem] = parseStringsFile(fullPath, false)
-            end
-            if localesInvDict[fileStem] ~= nil
-                and localesInvDict[fileStem][str] ~= nil then
-              localeFile = file:sub(1, -9)
-              local result = searchFunc(localesInvDict[fileStem][str])
-              if result ~= nil then
-                appLocaleMap[bundleID][appLocale][str] = result
-                return result
-              end
-            end
-            localesInvDict[fileStem] = nil
-          end
-        end
-      end
+    result = localizeByStrings(str, localeDir, localeFile, locale, localesDict,
+                               appLocaleAssetBufferInverse[bundleID])
+    if result ~= nil then
+      appLocaleMap[bundleID][appLocale][str] = result
+      return result
     end
   end
 
   appLocaleMap[bundleID][appLocale][str] = false
 end
 
-
-local stringsFilePatterns = { "(.-)MainMenu(.-)", "Menu", "MenuBar",
-                              "MenuItems", "Localizable", "Main", "MainWindow" }
 
 local function delocalizeByLoctableImpl(str, filePath, locale)
   local output, status = hs.execute(string.format(
@@ -605,7 +672,7 @@ local function delocalizeByLoctable(str, resourceDir, localeFile, locale)
     end
     if #loctableFiles > 10 then
       loctableFiles = hs.fnutils.filter(loctableFiles, function(file)
-        for _, pattern in ipairs(stringsFilePatterns) do
+        for _, pattern in ipairs(preferentialStringsFilePatterns) do
           local pattern = "^" .. pattern  .. "%.loctable$"
           if string.match(file, pattern) ~= nil then return true end
         end
@@ -837,7 +904,7 @@ function delocalizedMenuItem(str, bundleID, locale, localeFile)
           end
           if #stringsFiles > 10 then
             stringsFiles = hs.fnutils.filter(stringsFiles, function(file)
-              for _, pattern in ipairs(stringsFilePatterns) do
+              for _, pattern in ipairs(preferentialStringsFilePatterns) do
                 local pattern = "^" .. pattern  .. "%.strings$"
                 if string.match(file, pattern) ~= nil then return true end
               end
@@ -883,7 +950,7 @@ function delocalizedMenuItem(str, bundleID, locale, localeFile)
     end
     if #stringsFiles > 10 then
       stringsFiles = hs.fnutils.filter(stringsFiles, function(file)
-        for _, pattern in ipairs(stringsFilePatterns) do
+        for _, pattern in ipairs(preferentialStringsFilePatterns) do
           local pattern = "^" .. pattern  .. "%.strings$"
           if string.match(file, pattern) ~= nil then return true end
         end
