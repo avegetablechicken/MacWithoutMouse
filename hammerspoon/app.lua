@@ -603,8 +603,9 @@ appHotKeyCallbacks = {
   {
     ["deleteConversation"] = {
       message = function(appObject)
-        local menuItem, title = findMenuItem(appObject,
-            { en = {"File", "Delete Conversation…"}, zh = {"文件", "删除对话…"} })
+        local menuItem, title = findMenuItem(appObject, getOSVersion() < OS.Ventura
+          and { en = {"File", "Delete Conversation…"}, zh = {"文件", "删除对话…"} }
+          or { en = {"Conversations", "Delete Conversation…"}, zh = {"对话", "删除对话…"} })
         if menuItem ~= nil then return title[2] end
       end,
       condition = checkMenuItem(getOSVersion() < OS.Ventura
