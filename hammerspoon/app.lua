@@ -2367,7 +2367,14 @@ for bid, appConfig in pairs(appHotKeyCallbacks) do
 end
 
 -- simplify switching to previous tab
-function remapPreviousTab(spec)
+function remapPreviousTab(bundleID)
+  if keybindingConfigs.hotkeys.appCommon == nil
+      or keybindingConfigs.hotkeys.appCommon["remapPreviousTab"] == nil
+      or hs.fnutils.contains(keybindingConfigs.hotkeys.appCommon["remapPreviousTab"].excluded or {},
+                             bundleID) then
+    return
+  end
+  local spec = keybindingConfigs.hotkeys.appCommon["remapPreviousTab"]
   if remapPreviousTabHotkey then
     remapPreviousTabHotkey:delete()
     remapPreviousTabHotkey = nil
@@ -2392,14 +2399,18 @@ function remapPreviousTab(spec)
 end
 
 local frontmostApplication = hs.application.frontmostApplication()
-if keybindingConfigs.hotkeys.appCommon ~= nil
-    and keybindingConfigs.hotkeys.appCommon["remapPreviousTab"] ~= nil
-    and not hs.fnutils.contains(keybindingConfigs.hotkeys.appCommon["remapPreviousTab"].excluded or {},
-                                frontmostApplication:bundleID()) then
-  remapPreviousTab(keybindingConfigs.hotkeys.appCommon["remapPreviousTab"])
-end
+remapPreviousTab(frontmostApplication:bundleID())
 
-function registerOpenRecent(spec)
+function registerOpenRecent(bundleID)
+  if (appHotKeyCallbacks[bundleID] ~= nil
+      and appHotKeyCallbacks[bundleID]["openRecent"] ~= nil)
+      or keybindingConfigs.hotkeys.appCommon == nil
+      or keybindingConfigs.hotkeys.appCommon["openRecent"] == nil
+      or hs.fnutils.contains(keybindingConfigs.hotkeys.appCommon["openRecent"].excluded or {},
+                              bundleID) then
+    return
+  end
+  local spec = keybindingConfigs.hotkeys.appCommon["openRecent"]
   if openRecentHotkey then
     openRecentHotkey:delete()
     openRecentHotkey = nil
@@ -2425,15 +2436,7 @@ function registerOpenRecent(spec)
     openRecentHotkey.kind = HK.IN_APP
   end
 end
-
-if (appHotKeyCallbacks[frontmostApplication:bundleID()] == nil
-    or appHotKeyCallbacks[frontmostApplication:bundleID()]["openRecent"] == nil)
-    and keybindingConfigs.hotkeys.appCommon ~= nil
-    and keybindingConfigs.hotkeys.appCommon["openRecent"] ~= nil
-    and not hs.fnutils.contains(keybindingConfigs.hotkeys.appCommon["openRecent"].excluded or {},
-                                frontmostApplication:bundleID()) then
-  registerOpenRecent(keybindingConfigs.hotkeys.appCommon["openRecent"])
-end
+registerOpenRecent(frontmostApplication:bundleID())
 
 -- bind `alt+?` hotkeys to menu bar 1 functions
 -- to be registered in application callback
@@ -2991,12 +2994,7 @@ function app_applicationCallback(appName, eventType, appObject)
       return
     end
     selectInputSourceInApp(bundleID)
-    if keybindingConfigs.hotkeys.appCommon ~= nil
-        and keybindingConfigs.hotkeys.appCommon["remapPreviousTab"] ~= nil
-        and not hs.fnutils.contains(keybindingConfigs.hotkeys.appCommon["remapPreviousTab"].excluded or {},
-                               bundleID) then
-      remapPreviousTab(keybindingConfigs.hotkeys.appCommon["remapPreviousTab"])
-    end
+    remapPreviousTab(bundleID)
     registerRunningAppHotKeys(bundleID, appObject)
     registerInAppHotKeys(appName, eventType, appObject)
     registerInWinHotKeys(appObject)
@@ -3005,14 +3003,7 @@ function app_applicationCallback(appName, eventType, appObject)
       curAppMenuItemWatcher = nil
     end
     altMenuItem(appObject)
-    if (appHotKeyCallbacks[bundleID] == nil
-        or appHotKeyCallbacks[bundleID]["openRecent"] == nil)
-        and keybindingConfigs.hotkeys.appCommon ~= nil
-        and keybindingConfigs.hotkeys.appCommon["openRecent"] ~= nil
-        and not hs.fnutils.contains(keybindingConfigs.hotkeys.appCommon["openRecent"].excluded or {},
-                                    bundleID) then
-      registerOpenRecent(keybindingConfigs.hotkeys.appCommon["openRecent"])
-    end
+    registerOpenRecent(bundleID)
     local frontAppBid = hs.fnutils.find(appsWatchMenuItems, function(bid)
       return bid == bundleID
     end)
