@@ -413,23 +413,24 @@ local function localizeByStrings(str, localeDir, localeFile, locale, localesDict
     end
   end
 
-  local invSearchFunc = function(str, stringsFiles)
-    for _, localeDir in ipairs{
+  local invSearchFunc = function(str, stringsFiles, localeDir)
+    for _, enLocaleDir in ipairs{
         resourceDir .. "/en.lproj",
         resourceDir .. "/English.lproj",
         resourceDir .. "/Base.lproj",
         resourceDir .. "/en_GB.lproj"} do
-      if hs.fs.attributes(localeDir) ~= nil then
+      if hs.fs.attributes(enLocaleDir) ~= nil then
         if localeFile ~= nil then
           if localesInvDict[localeFile] == nil then
-            local fullPath = localeDir .. '/' .. localeFile .. '.strings'
+            local fullPath = enLocaleDir .. '/' .. localeFile .. '.strings'
             if hs.fs.attributes(fullPath) ~= nil then
               localesInvDict[localeFile] = parseStringsFile(fullPath, false)
             end
           end
           if localesInvDict[localeFile] ~= nil
               and localesInvDict[localeFile][str] ~= nil then
-            local result = searchFunc(localesInvDict[localeFile][str], localeFile .. '.strings', localeDir)
+            local result = searchFunc(localesInvDict[localeFile][str],
+                                      localeFile .. '.strings', localeDir)
             if result ~= nil then return result end
           end
           localesInvDict[localeFile] = nil
@@ -437,7 +438,7 @@ local function localizeByStrings(str, localeDir, localeFile, locale, localesDict
           for _, file in ipairs(stringsFiles) do
             local fileStem = file:sub(1, -9)
             if localesInvDict[fileStem] == nil then
-              local fullPath = localeDir .. '/' .. file
+              local fullPath = enLocaleDir .. '/' .. file
               if hs.fs.attributes(fullPath) ~= nil then
                 localesInvDict[fileStem] = parseStringsFile(fullPath, false)
               end
@@ -453,7 +454,7 @@ local function localizeByStrings(str, localeDir, localeFile, locale, localesDict
       end
     end
   end
-  result = invSearchFunc(str, preferentialStringsFiles)
+  result = invSearchFunc(str, preferentialStringsFiles, localeDir)
   if result ~= nil then return result end
 
   if localeFile ~= nil then
@@ -473,13 +474,13 @@ local function localizeByStrings(str, localeDir, localeFile, locale, localesDict
           result = searchFunc(str, localeFile .. '.strings', _localeDir)
           if result ~= nil then return result end
         else
-          result = searchFunc(str, stringsFiles, localeDir)
+          result = searchFunc(str, stringsFiles, _localeDir)
           if result ~= nil then return result end
         end
       end
     end
   end
-  result = invSearchFunc(str, stringsFiles)
+  result = invSearchFunc(str, stringsFiles, localeDir)
   if result ~= nil then return result end
 end
 
