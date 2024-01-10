@@ -503,6 +503,14 @@ local function localizeByQt(str, localeDir, localesDict)
   end
 end
 
+local function dirNotExistOrEmpty(dir)
+  if hs.fs.attributes(dir) == nil then return true end
+  for file in hs.fs.dir(dir) do
+    if string.sub(file, 1, 1) ~= '.' then return false end
+  end
+  return true
+end
+
 local function localizeByChromium(str, localeDir, localesDict, bundleID)
   local resourceDir = localeDir .. '/..'
   local locale = localeDir:match("^.*/(.*)%.lproj$")
@@ -514,7 +522,7 @@ local function localizeByChromium(str, localeDir, localesDict, bundleID)
           local fileStem = file:sub(1, -5)
           local enTmpdir = hs.fs.temporaryDirectory()
               .. string.format('/hs-localization-%s-%s-%s', bundleID, enLocale, fileStem)
-          if hs.fs.attributes(enTmpdir) == nil then
+          if dirNotExistOrEmpty(enTmpdir) then
             hs.execute(string.format(
                 "scripts/pak -u '%s' '%s'", fullPath, enTmpdir))
           end
@@ -524,7 +532,7 @@ local function localizeByChromium(str, localeDir, localesDict, bundleID)
               local matchFile = output:match("^.*/(.*)$")
               local tmpdir = hs.fs.temporaryDirectory()
                   .. string.format('/hs-localization-%s-%s-%s', bundleID, locale, fileStem)
-              if hs.fs.attributes(tmpdir) == nil then
+              if dirNotExistOrEmpty(tmpdir) then
                 hs.execute(string.format(
                     "scripts/pak -u '%s' '%s'", localeDir .. '/' .. file, tmpdir))
               end
@@ -717,7 +725,7 @@ local function delocalizeByChromium(str, localeDir, bundleID)
       local fileStem = file:sub(1, -5)
       local tmpdir = hs.fs.temporaryDirectory()
           .. string.format('/hs-localization-%s-%s-%s', bundleID, locale, fileStem)
-      if hs.fs.attributes(tmpdir) == nil then
+      if dirNotExistOrEmpty(tmpdir) then
         hs.execute(string.format(
           "scripts/pak  -u '%s' '%s'", localeDir .. '/' .. file, tmpdir))
       end
@@ -731,7 +739,7 @@ local function delocalizeByChromium(str, localeDir, bundleID)
           if hs.fs.attributes(fullPath) ~= nil then
             local enTmpdir = hs.fs.temporaryDirectory()
                 .. string.format('/hs-localization-%s-%s-%s', bundleID, enLocale, fileStem)
-            if hs.fs.attributes(enTmpdir) == nil then
+            if dirNotExistOrEmpty(enTmpdir) then
               hs.execute(string.format(
                 "scripts/pak  -u '%s' '%s'", fullPath, enTmpdir))
             end
