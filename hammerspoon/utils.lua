@@ -560,6 +560,13 @@ local appLocaleMap = {}
 local appLocaleDir = {}
 local appLocaleAssetBuffer = {}
 local appLocaleAssetBufferInverse = {}
+local localeTmpFile = hs.fs.temporaryDirectory() .. 'hs-localization.json'
+if hs.fs.attributes(localeTmpFile) ~= nil then
+  local json = hs.json.read(localeTmpFile)
+  appLocaleDir = json.locale
+  appLocaleMap = json.map
+end
+
 function localizedString(str, bundleID, params)
   if hs.application.pathForBundleID(bundleID) == nil
       or hs.application.pathForBundleID(bundleID) == "" then
@@ -589,6 +596,12 @@ function localizedString(str, bundleID, params)
     return nil
   elseif appLocaleMap[bundleID][appLocale][str] ~= nil then
     return appLocaleMap[bundleID][appLocale][str]
+  end
+  if appLocaleAssetBuffer[bundleID] == nil then
+    appLocaleAssetBuffer[bundleID] = {}
+  end
+  if appLocaleAssetBuffer[bundleID][appLocale] == nil then
+    appLocaleAssetBuffer[bundleID][appLocale] = {}
   end
   local localesDict = appLocaleAssetBuffer[bundleID][appLocale]
 
@@ -625,37 +638,33 @@ function localizedString(str, bundleID, params)
 
   if framework.chromium then
     result = localizeByChromium(str, localeDir, localesDict, bundleID)
-    if result ~= nil then
-      appLocaleMap[bundleID][appLocale][str] = result
-      return result
-    end
+    if result ~= nil then goto L_END_LOCALIZED end
   end
 
   result = localizeByQt(str, localeDir, localesDict)
-  if result ~= nil then
-    appLocaleMap[bundleID][appLocale][str] = result
-    return result
-  end
+  if result ~= nil then goto L_END_LOCALIZED end
 
   if locale ~= nil then
     result = localizeByLoctable(str, resourceDir, localeFile, locale, localesDict)
-    if result ~= nil then
-      appLocaleMap[bundleID][appLocale][str] = result
-      return result
-    end
+    if result ~= nil then goto L_END_LOCALIZED end
 
     if appLocaleAssetBufferInverse[bundleID] == nil then
       appLocaleAssetBufferInverse[bundleID] = {}
     end
     result = localizeByStrings(str, localeDir, localeFile, locale, localesDict,
                                appLocaleAssetBufferInverse[bundleID])
-    if result ~= nil then
-      appLocaleMap[bundleID][appLocale][str] = result
-      return result
-    end
+    if result ~= nil then goto L_END_LOCALIZED end
   end
 
-  appLocaleMap[bundleID][appLocale][str] = false
+  ::L_END_LOCALIZED::
+  if result ~= nil then
+    appLocaleMap[bundleID][appLocale][str] = result
+    hs.json.write({ locale = appLocaleDir, map = appLocaleMap },
+                  localeTmpFile, false, true)
+  else
+    appLocaleMap[bundleID][appLocale][str] = false
+  end
+  return result
 end
 
 
@@ -906,7 +915,7 @@ function delocalizedMenuItem(str, bundleID, locale, localeFile)
           if #stringsFiles > 10 then
             stringsFiles = hs.fnutils.filter(stringsFiles, function(file)
               for _, pattern in ipairs(preferentialStringsFilePatterns) do
-                local pattern = "^" .. pattern  .. "%.strings$"
+                local pattern = "^" .. pattern .. "%.strings$"
                 if string.match(file, pattern) ~= nil then return true end
               end
               return false
