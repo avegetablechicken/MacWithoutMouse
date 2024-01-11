@@ -2980,6 +2980,7 @@ function altMenuItemAfterLaunch(appObject)
   end
 end
 
+local appLocales = {}
 function app_applicationCallback(appName, eventType, appObject)
   local bundleID = appObject:bundleID()
   if eventType == hs.application.watcher.launched then
@@ -2999,6 +3000,14 @@ function app_applicationCallback(appName, eventType, appObject)
     end
     selectInputSourceInApp(bundleID)
     hs.timer.doAfter(0, function()
+      local locales = applicationLocales(bundleID)
+      local appLocale = locales[1]
+      if appLocales[bundleID] ~= nil and appLocales[bundleID] ~= appLocale then
+        unregisterRunningAppHotKeys(bundleID, true)
+        unregisterInAppHotKeys(bundleID, eventType, true)
+        unregisterInWinHotKeys(bundleID, true)
+      end
+      appLocales[bundleID] = appLocale
       registerRunningAppHotKeys(bundleID, appObject)
       registerInAppHotKeys(appName, eventType, appObject)
       registerInWinHotKeys(appObject)
