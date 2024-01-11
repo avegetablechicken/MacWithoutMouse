@@ -527,16 +527,16 @@ local function iCopySelectHotkeyRemap(winObj, idx)
   hs.eventtap.keyStroke(iCopyMod, tostring(idx), nil, winObj:application())
 end
 
-local function localizedMessage(message, localeFile, sep)
+local function localizedMessage(message, params, sep)
   return function(appObject)
     local bundleID = appObject:bundleID()
     if type(message) == 'string' then
-      return localizedString(message, bundleID, localeFile)
+      return localizedString(message, bundleID, params)
     else
       if sep == nil then sep = ' > ' end
-      local str = localizedString(message[1], bundleID, localeFile)
+      local str = localizedString(message[1], bundleID, params)
       for i=2,#message do
-        str = str .. sep .. localizedString(message[i], bundleID, localeFile)
+        str = str .. sep .. localizedString(message[i], bundleID, params)
       end
       return str
     end

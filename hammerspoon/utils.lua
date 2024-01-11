@@ -577,17 +577,22 @@ function localizedString(str, bundleID, params)
     return nil
   end
 
-  local locale, localeFile, localeDir
+  local locale, localeFile, localeDir, key
   if type(params) == "table" then
     locale = params.locale
     localeFile = params.localeFile
     localeDir = params.localeDir
+    key = params.key
   else
     localeFile = params
   end
 
   local locales = applicationLocales(bundleID)
   local appLocale = locales[1]
+  local localeDetails = hs.host.locale.details(appLocale)
+  if localeDetails.languageCode == 'en' and key ~= true then
+    return str
+  end
 
   if appLocaleMap[bundleID] == nil then
     appLocaleMap[bundleID] = {}
