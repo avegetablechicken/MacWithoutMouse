@@ -1395,16 +1395,38 @@ appHotKeyCallbacks = {
 
   ["com.parallels.desktop.console"] =
   {
+    ["new..."] = {
+      mods = "⌘", key = "N",
+      message = localizedMessage("New..."),
+      repeatable = true,
+      fn = function(appObject)
+        selectMenuItem(appObject, { "File", "New..." })
+      end
+    },
+    ["open..."] = {
+      mods = "⌘", key = "O",
+      message = localizedMessage("Open..."),
+      repeatable = true,
+      fn = function(appObject)
+        selectMenuItem(appObject, { "File", "Open..." })
+      end
+    },
+    ["hide"] = specialCommonHotkeyConfigs["hide"],
+    ["minimize"] = {
+      mods = "⌘", key = "M",
+      message = localizedMessage("Minimize"),
+      repeatable = true,
+      fn = function(appObject)
+        selectMenuItem(appObject, { "Window", "Minimize" })
+      end
+    },
     ["closeWindow"] = {
       mods = "⌘", key = "W",
-      message = "Close Window",
-      windowFilter = {
-        allowTitles = function(appObject)
-          return '^' .. localizedMessage("Control Center")(appObject) .. '$'
-        end
-      },
+      message = localizedMessage("Close Window"),
       repeatable = true,
-      fn = function(winObj) winObj:close() end
+      fn = function(appObject)
+        selectMenuItem(appObject, { "File", "Close Window" })
+      end
     }
   },
 
