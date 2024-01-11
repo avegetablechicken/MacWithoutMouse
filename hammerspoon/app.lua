@@ -905,33 +905,33 @@ appHotKeyCallbacks = {
   ["com.apple.iWork.Keynote"] =
   {
     ["export"] = {  -- File > Export To > PDF…
-      message = localizedMessage({ "1780.title", "1781.title" }, "MainMenu"),
-      condition = checkMenuItem({ "81.title", "1780.title", "1781.title" }, { localeFile = "MainMenu" }),
+      message = localizedMessage({ "Export To", "PDF…" }, "MainMenu"),
+      condition = checkMenuItem({ "File", "Export To", "PDF…" }, { localeFile = "MainMenu" }),
       fn = function(menuItemTitle, appObject)
         appObject:selectMenuItem({ menuItemTitle[1], menuItemTitle[2] })
         appObject:selectMenuItem(menuItemTitle)
       end
     },
     ["pasteAndMatchStyle"] = {  -- Edit > Paste and Match Style
-      message = localizedMessage("689.title", "MainMenu"),
+      message = localizedMessage("Paste and Match Style", "MainMenu"),
       repeatable = true,
-      condition = checkMenuItem({ "681.title", "689.title" }, { localeFile = "MainMenu" }),
+      condition = checkMenuItem({ "Edit", "Paste and Match Style" }, { localeFile = "MainMenu" }),
       fn = receiveMenuItem
     },
     ["paste"] = {  -- Edit > Paste
-      message = localizedMessage("688.title", "MainMenu"),
+      message = localizedMessage("Paste", "MainMenu"),
       repeatable = true,
-      condition = checkMenuItem({ "681.title", "688.title" }, { localeFile = "MainMenu" }),
+      condition = checkMenuItem({ "Edit", "Paste" }, { localeFile = "MainMenu" }),
       fn = receiveMenuItem
     },
     ["play"] = {  -- Play > Play Slideshow
-      message = localizedMessage("1527.title", "MainMenu"),
-      condition = checkMenuItem({ "1526.title", "1527.title" }, { localeFile = "MainMenu" }),
+      message = localizedMessage("Play Slideshow", "MainMenu"),
+      condition = checkMenuItem({ "Play", "Play Slideshow" }, { localeFile = "MainMenu" }),
       fn = receiveMenuItem
     },
     ["insertEquation"] = {  -- Insert > Equation…
-      message = localizedMessage({ "849.title", "1677.title" }, "MainMenu"),
-      condition = checkMenuItem({ "849.title", "1677.title" }, { localeFile = "MainMenu" }),
+      message = localizedMessage({ "Insert", "Equation..." }, "MainMenu"),
+      condition = checkMenuItem({ "Insert", "Equation..." }, { localeFile = "MainMenu" }),
       fn = receiveMenuItem
     },
     ["revealInFinder"] = {
@@ -1005,14 +1005,15 @@ appHotKeyCallbacks = {
   ["com.tencent.xinWeChat"] =
   {
     ["back"] = {
-      message = localizedMessage("Common.Navigation.Back", "Localizable"),
+      message = localizedMessage("Common.Navigation.Back", { localeFir = "Localizable", key = true }),
       repeatable = true,
       condition = function(appObject)
         local bundleID = appObject:bundleID()
-        local back = localizedString("Common.Navigation.Back", bundleID, "Localizable")
-        local lastPage = localizedString("WebView.Previous.Item", bundleID, "Localizable")
-        local moments = localizedString("SNS_Feed_Window_Title", bundleID, "Localizable")
-        local detail = localizedString("SNS_Feed_Detail_Title", bundleID, "Localizable")
+        local params = { localeFir = "Localizable", key = true }
+        local back = localizedString("Common.Navigation.Back", bundleID, params)
+        local lastPage = localizedString("WebView.Previous.Item", bundleID, params)
+        local moments = localizedString("SNS_Feed_Window_Title", bundleID, params)
+        local detail = localizedString("SNS_Feed_Detail_Title", bundleID, params)
         local ok, result = hs.osascript.applescript([[
           tell application "System Events"
             tell ]] .. aWinFor(appObject) .. [[
@@ -1105,11 +1106,11 @@ appHotKeyCallbacks = {
       end
     },
     ["forward"] = {
-      message = localizedMessage("WebView.Next.Item", "Localizable"),
+      message = localizedMessage("WebView.Next.Item", { localeFir = "Localizable", key = true }),
       repeatable = true,
       condition = function(appObject)
         local bundleID = appObject:bundleID()
-        local nextPage = localizedString("WebView.Next.Item", bundleID, "Localizable")
+        local nextPage = localizedString("WebView.Next.Item", bundleID, { localeFir = "Localizable", key = true })
         local ok, valid = hs.osascript.applescript([[
           tell application "System Events"
             -- Push Notifications
@@ -1154,9 +1155,9 @@ appHotKeyCallbacks = {
         local major, minor, patch = string.match(version, "(%d+)%.(%d+)%.(%d+)")
         if tonumber(major) < 9 then
           local song = localizedString("COMMON_SONG", bundleID,
-                                      { localeDir = false })
+                                      { localeDir = false, key = true })
           local detail = localizedString("COMMON_DETAIL", bundleID,
-                                        { localeDir = false })
+                                        { localeDir = false, key = true })
           local ok, valid = hs.osascript.applescript([[
             tell application "System Events"
               tell ]] .. aWinFor(appObject) .. [[
@@ -1317,7 +1318,8 @@ appHotKeyCallbacks = {
   ["whbalzac.Dongtaizhuomian"] =
   {
     ["invokeInAppScreenSaver"] = {
-      message = localizedString("j8f-jJ-zXq.title", "whbalzac.Dongtaizhuomian", "HotkeyWindowController"),
+      message = localizedString("j8f-jJ-zXq.title", "whbalzac.Dongtaizhuomian",
+                                { localeFir = "HotkeyWindowController", key = true }),
       fn = function(appObject)
         clickRightMenuBarItem(appObject:bundleID(),
                              { localized = "j8f-jJ-zXq.title",
