@@ -769,6 +769,7 @@ appHotKeyCallbacks = {
   {
     ["view:toggleOutline"] = {
       message = "View: Toggle Outline",
+      condition = function(appObject) return appObject:focusedWindow() ~= nil end,
       fn = function() VSCodeToggleSideBarSection("EXPLORER", "OUTLINE") end
     }
   },
