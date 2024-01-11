@@ -86,11 +86,21 @@ function findMenuItem(appObject, menuItemTitle, params)
     local menuItem = appObject:findMenuItem(menuItemTitle)
     if menuItem ~= nil then return menuItem, menuItemTitle end
     targetMenuItem = {}
-    for i=#menuItemTitle,1,-1 do
+    for i=#menuItemTitle,2,-1 do
       local locStr = localizedString(menuItemTitle[i], appObject:bundleID(), params)
       if locStr == nil then return nil end
       table.insert(targetMenuItem, 1, locStr)
     end
+    local appMenus = appObject:getMenuItems()
+    for i=2,#appMenus do
+      local title = delocalizedMenuItem(appMenus[i].AXTitle, appObject:bundleID(),
+                                        params and params.localeFile or nil)
+      if menuItemTitle[1] == title then
+        table.insert(targetMenuItem, 1, appMenus[i].AXTitle)
+        break
+      end
+    end
+    if #targetMenuItem ~= #menuItemTitle then return nil end
   end
   return appObject:findMenuItem(targetMenuItem), targetMenuItem
 end
@@ -107,9 +117,21 @@ function selectMenuItem(appObject, menuItemTitle, params, show)
     targetMenuItem = menuItemTitle.zh
   else
     targetMenuItem = {}
-    for _, title in ipairs(menuItemTitle) do
-      table.insert(targetMenuItem, localizedString(title, appObject:bundleID(), params))
+    for i =#menuItemTitle,2,-1 do
+      local locStr = localizedString(menuItemTitle[i], appObject:bundleID(), params)
+      if locStr == nil then return nil end
+      table.insert(targetMenuItem, 1, locStr)
     end
+    local appMenus = appObject:getMenuItems()
+    for i=2,#appMenus do
+      local title = delocalizedMenuItem(appMenus[i].AXTitle, appObject:bundleID(),
+                                        params and params.localeFile or nil)
+      if menuItemTitle[1] == title then
+        table.insert(targetMenuItem, 1, appMenus[i].AXTitle)
+        break
+      end
+    end
+    if #targetMenuItem ~= #menuItemTitle then return nil end
   end
   if show then
     showMenuItemWrapper(function()
