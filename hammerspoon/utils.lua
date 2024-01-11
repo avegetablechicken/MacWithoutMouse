@@ -115,6 +115,8 @@ function selectMenuItem(appObject, menuItemTitle, params, show)
     targetMenuItem = menuItemTitle.en
   elseif menuItemTitle.zh and appObject:findMenuItem(menuItemTitle.zh) ~= nil then
     targetMenuItem = menuItemTitle.zh
+  elseif appObject:findMenuItem(menuItemTitle) then
+    targetMenuItem = menuItemTitle
   else
     targetMenuItem = {}
     for i =#menuItemTitle,2,-1 do
