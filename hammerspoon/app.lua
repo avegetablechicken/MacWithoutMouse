@@ -2591,7 +2591,11 @@ function altMenuItem(appObject)
     end
     for i=#itemTitles,1,-1 do
       -- remove titles starting with non-ascii characters
-      if string.byte(itemTitles[i], 1) <= 127 then
+      local splits = hs.fnutils.split(itemTitles[i], ' ')
+      if string.byte(itemTitles[i], 1) <= 127
+          and (string.len(itemTitles[i]) < 2 or string.byte(itemTitles[i], 2) <= 127)
+          and (string.len(itemTitles[i]) < 3 or string.byte(itemTitles[i], 3) <= 127)
+          and (#splits == 1 or string.byte(splits[2], 1) <= 127) then
         itemTitles[i] = {itemTitles[i], itemTitles[i]}
       else
         local substituted = false
