@@ -2995,22 +2995,28 @@ function app_applicationCallback(appName, eventType, appObject)
       return
     end
     selectInputSourceInApp(bundleID)
-    remapPreviousTab(bundleID)
-    registerRunningAppHotKeys(bundleID, appObject)
-    registerInAppHotKeys(appName, eventType, appObject)
-    registerInWinHotKeys(appObject)
-    if curAppMenuItemWatcher ~= nil then
-      curAppMenuItemWatcher:stop()
-      curAppMenuItemWatcher = nil
-    end
-    altMenuItem(appObject)
-    registerOpenRecent(bundleID)
-    local frontAppBid = hs.fnutils.find(appsWatchMenuItems, function(bid)
-      return bid == bundleID
+    hs.timer.doAfter(0, function()
+      registerRunningAppHotKeys(bundleID, appObject)
+      registerInAppHotKeys(appName, eventType, appObject)
+      registerInWinHotKeys(appObject)
+      hs.timer.doAfter(0, function()
+        altMenuItem(appObject)
+        if curAppMenuItemWatcher ~= nil then
+          curAppMenuItemWatcher:stop()
+          curAppMenuItemWatcher = nil
+        end
+        local frontAppBid = hs.fnutils.find(appsWatchMenuItems, function(bid)
+          return bid == bundleID
+        end)
+        if frontAppBid ~= nil then
+          watchMenuItems(appObject)
+        end
+        hs.timer.doAfter(0, function()
+          remapPreviousTab(bundleID)
+          registerOpenRecent(bundleID)
+        end)
+      end)
     end)
-    if frontAppBid ~= nil then
-      watchMenuItems(appObject)
-    end
     if remoteDesktopsMappingModifiers[bundleID] then
       if not remoteDesktopModifierTapper:isEnabled() then
         remoteDesktopModifierTapper:start()
