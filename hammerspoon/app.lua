@@ -1935,7 +1935,10 @@ local function unregisterRunningAppHotKeys(bid, force)
   if runningAppHotKeys[bid] then
     local allDeleted = true
     for _, hotkey in ipairs(runningAppHotKeys[bid]) do
-      if force == true or hotkey.persist ~= true then
+      if hotkey.persist ~= true then
+        hotkey:disable()
+      end
+      if force == true then
         hotkey:delete()
       else
         allDeleted = false
