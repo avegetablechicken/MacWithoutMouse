@@ -108,7 +108,7 @@ function module.bind(msg, func)
   end
   module.enabled = true
   if msg then module.msg = module.idx .. ": " .. msg end
-  return self
+  return module
 end
 
 function module.bindSuspend(msg, func)
@@ -122,12 +122,12 @@ end
 
 function module.enable()
   module.enabled = true
-  return self
+  return module
 end
 
 function module.disable()
   module.enabled = false
-  return self
+  return module
 end
 
 
