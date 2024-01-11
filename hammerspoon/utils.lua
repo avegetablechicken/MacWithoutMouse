@@ -854,6 +854,9 @@ function delocalizedMenuItem(str, bundleID, locale, localeFile)
     menuItemLocaleMap[bundleID] = {}
     menuItemLocaleDir[bundleID] = {}
   end
+  if menuItemLocaleInversedMap[bundleID] == nil then
+    menuItemLocaleInversedMap[bundleID] = {}
+  end
   local locales = applicationLocales(bundleID)
   local appLocale = locales[1]
   if menuItemLocaleDir[bundleID][appLocale] == nil then
