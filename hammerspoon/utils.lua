@@ -797,6 +797,12 @@ end
 local menuItemLocaleMap = {}
 local menuItemLocaleDir = {}
 local menuItemLocaleInversedMap = {}
+local menuItemTmpFile = hs.fs.temporaryDirectory() .. 'hs-localization-menuitems.json'
+if hs.fs.attributes(menuItemTmpFile) ~= nil then
+  local json = hs.json.read(menuItemTmpFile)
+  menuItemLocaleDir = json.locale
+  menuItemLocaleMap = json.map
+end
 function delocalizedMenuItem(str, bundleID, locale, localeFile)
   if localeFile == nil then
     localeFile = locale
@@ -820,14 +826,14 @@ function delocalizedMenuItem(str, bundleID, locale, localeFile)
     return menuItemLocaleMap[bundleID][str]
   end
 
+  local resourceDir, framework, localeDir, mode, result, searchFunc
+
   if bundleID == "org.zotero.zotero" then
-    local result = delocalizeZoteroMenu(str, appLocale)
-    menuItemLocaleMap[bundleID][str] = result or false
-    return result
+    result = delocalizeZoteroMenu(str, appLocale)
+    goto L_END_DELOCALIZED
   elseif bundleID == "com.mathworks.matlab" then
-    local result = delocalizeMATLABFigureMenu(str, appLocale)
-    menuItemLocaleMap[bundleID][str] = result or false
-    return result
+    result = delocalizeMATLABFigureMenu(str, appLocale)
+    goto L_END_DELOCALIZED
   end
 
   if bundleID == "com.google.Chrome" then
@@ -835,10 +841,8 @@ function delocalizedMenuItem(str, bundleID, locale, localeFile)
   elseif bundleID == "com.microsoft.edgemac" then
     localeFile = "Microsoft Edge Framework.framework"
   end
-  local resourceDir, framework = getResourceDir(bundleID, localeFile)
+  resourceDir, framework = getResourceDir(bundleID, localeFile)
 
-  local localeDir
-  local mode = nil
   if not framework.mono then mode = 'lproj' end
   if locale == nil then
     locale = menuItemLocaleDir[bundleID][appLocale]
@@ -858,14 +862,9 @@ function delocalizedMenuItem(str, bundleID, locale, localeFile)
     localeDir = resourceDir .. "/" .. locale
   end
 
-  local result
-
   if framework.chromium then
     result = delocalizeByChromium(str, localeDir, bundleID)
-    if result ~= nil then
-      menuItemLocaleMap[bundleID][str] = result
-      return result
-    end
+    if result ~= nil then goto L_END_DELOCALIZED end
   end
 
   if framework.mono then
@@ -874,29 +873,22 @@ function delocalizedMenuItem(str, bundleID, locale, localeFile)
       if bundleID == "com.microsoft.visual-studio" then
         result = result:gsub('_', '')
       end
-      menuItemLocaleMap[bundleID][str] = result
-      return result
+      goto L_END_DELOCALIZED
     end
   end
 
   result = delocalizeByLoctable(str, resourceDir, localeFile, locale)
-  if result ~= nil then
-    menuItemLocaleMap[bundleID][str] = result
-    return result
-  end
+  if result ~= nil then goto L_END_DELOCALIZED end
 
   result = delocalizeByQt(str, localeDir)
-  if result ~= nil then
-    menuItemLocaleMap[bundleID][str] = result
-    return result
-  end
+  if result ~= nil then goto L_END_DELOCALIZED end
 
-  local searchFunc = function(str)
-    for _, localeDir in ipairs{
-        resourceDir .. "/en.lproj",
-        resourceDir .. "/English.lproj",
-        resourceDir .. "/Base.lproj",
-        resourceDir .. "/en_GB.lproj"} do
+  searchFunc = function(str)
+    for _, localeDir in ipairs {
+      resourceDir .. "/en.lproj",
+      resourceDir .. "/English.lproj",
+      resourceDir .. "/Base.lproj",
+      resourceDir .. "/en_GB.lproj" } do
       if hs.fs.attributes(localeDir) ~= nil then
         if localeFile ~= nil then
           local fullPath = localeDir .. '/' .. localeFile .. '.strings'
@@ -941,13 +933,11 @@ function delocalizedMenuItem(str, bundleID, locale, localeFile)
     end
     if menuItemLocaleInversedMap[bundleID] ~= nil
         and menuItemLocaleInversedMap[bundleID][str] ~= nil then
-      local result = searchFunc(menuItemLocaleInversedMap[bundleID][str])
-      if result ~= nil then
-        menuItemLocaleMap[bundleID][str] = result
-        return result
+      result = searchFunc(menuItemLocaleInversedMap[bundleID][str])
+      if result ~= nil then goto L_END_DELOCALIZED
       elseif not (string.match(menuItemLocaleInversedMap[bundleID][str], "[^%a]")) then
-        menuItemLocaleMap[bundleID][str] = menuItemLocaleInversedMap[bundleID][str]
-        return menuItemLocaleMap[bundleID][str]
+        result = menuItemLocaleInversedMap[bundleID][str]
+        goto L_END_DELOCALIZED
       end
     end
   else
@@ -973,21 +963,26 @@ function delocalizedMenuItem(str, bundleID, locale, localeFile)
       end
       if menuItemLocaleInversedMap[bundleID][str] ~= nil then
         localeFile = file:sub(1, -9)
-        local result = searchFunc(menuItemLocaleInversedMap[bundleID][str])
-        if result ~= nil then
-          menuItemLocaleMap[bundleID][str] = result
-          return result
-        end
+        result = searchFunc(menuItemLocaleInversedMap[bundleID][str])
+        if result ~= nil then goto L_END_DELOCALIZED end
       end
     end
     if menuItemLocaleInversedMap[bundleID][str] ~= nil
         and not string.match(menuItemLocaleInversedMap[bundleID][str], "[^%a]") then
-      menuItemLocaleMap[bundleID][str] = menuItemLocaleInversedMap[bundleID][str]
-      return menuItemLocaleMap[bundleID][str]
+      result = menuItemLocaleInversedMap[bundleID][str]
+      goto L_END_DELOCALIZED
     end
   end
 
-  menuItemLocaleMap[bundleID][str] = false
+  ::L_END_DELOCALIZED::
+  if result ~= nil then
+    menuItemLocaleMap[bundleID][str] = result
+    hs.json.write({ locale = menuItemLocaleDir, map = menuItemLocaleMap },
+                  menuItemTmpFile, false, true)
+  else
+    menuItemLocaleMap[bundleID][str] = false
+  end
+  return result
 end
 
 
