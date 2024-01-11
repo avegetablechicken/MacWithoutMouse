@@ -187,6 +187,8 @@ function quitApplication(app)
   return false
 end
 
+local localeTmpDir = hs.fs.temporaryDirectory() .. 'org.hammerspoon.Hammerspoon/locale/'
+
 function applicationLocales(bundleID)
   local locales, ok = hs.execute(
       string.format("(defaults read %s AppleLanguages || defaults read -globalDomain AppleLanguages) | tr -d '()\" \\n'", bundleID))
@@ -520,8 +522,7 @@ local function localizeByChromium(str, localeDir, localesDict, bundleID)
         if file:sub(-4) == ".pak" then
           local fullPath = resourceDir .. '/' .. enLocale .. '.lproj/' .. file
           local fileStem = file:sub(1, -5)
-          local enTmpdir = hs.fs.temporaryDirectory()
-              .. string.format('/hs-localization-%s-%s-%s', bundleID, enLocale, fileStem)
+          local enTmpdir = string.format(localeTmpDir .. '%s-%s-%s', bundleID, enLocale, fileStem)
           if dirNotExistOrEmpty(enTmpdir) then
             hs.execute(string.format(
                 "scripts/pak -u '%s' '%s'", fullPath, enTmpdir))
@@ -530,8 +531,7 @@ local function localizeByChromium(str, localeDir, localesDict, bundleID)
           if status and output ~= "" then
             if hs.fs.attributes(localeDir .. '/' .. file) then
               local matchFile = output:match("^.*/(.*)$")
-              local tmpdir = hs.fs.temporaryDirectory()
-                  .. string.format('/hs-localization-%s-%s-%s', bundleID, locale, fileStem)
+              local tmpdir = string.format(localeTmpDir .. '%s-%s-%s', bundleID, locale, fileStem)
               if dirNotExistOrEmpty(tmpdir) then
                 hs.execute(string.format(
                     "scripts/pak -u '%s' '%s'", localeDir .. '/' .. file, tmpdir))
@@ -560,7 +560,7 @@ local appLocaleMap = {}
 local appLocaleDir = {}
 local appLocaleAssetBuffer = {}
 local appLocaleAssetBufferInverse = {}
-local localeTmpFile = hs.fs.temporaryDirectory() .. 'hs-localization.json'
+local localeTmpFile = localeTmpDir .. 'strings.json'
 if hs.fs.attributes(localeTmpFile) ~= nil then
   local json = hs.json.read(localeTmpFile)
   appLocaleDir = json.locale
@@ -568,6 +568,10 @@ if hs.fs.attributes(localeTmpFile) ~= nil then
 end
 
 function localizedString(str, bundleID, params)
+  if hs.fs.attributes(localeTmpDir) == nil then
+    hs.execute(string.format("mkdir -p '%s'", localeTmpDir))
+  end
+
   if hs.application.pathForBundleID(bundleID) == nil
       or hs.application.pathForBundleID(bundleID) == "" then
     return nil
@@ -732,8 +736,7 @@ local function delocalizeByChromium(str, localeDir, bundleID)
   for file in hs.fs.dir(localeDir) do
     if file:sub(-4) == ".pak" then
       local fileStem = file:sub(1, -5)
-      local tmpdir = hs.fs.temporaryDirectory()
-          .. string.format('/hs-localization-%s-%s-%s', bundleID, locale, fileStem)
+      local tmpdir = string.format(localeTmpDir .. '%s-%s-%s', bundleID, locale, fileStem)
       if dirNotExistOrEmpty(tmpdir) then
         hs.execute(string.format(
           "scripts/pak  -u '%s' '%s'", localeDir .. '/' .. file, tmpdir))
@@ -746,8 +749,7 @@ local function delocalizeByChromium(str, localeDir, bundleID)
         for _, enLocale in ipairs{"en", "English", "Base", "en-GB"} do
           local fullPath = resourceDir .. '/' .. enLocale .. '.lproj/' .. file
           if hs.fs.attributes(fullPath) ~= nil then
-            local enTmpdir = hs.fs.temporaryDirectory()
-                .. string.format('/hs-localization-%s-%s-%s', bundleID, enLocale, fileStem)
+            local enTmpdir = string.format(localeTmpDir .. '%s-%s-%s', bundleID, enLocale, fileStem)
             if dirNotExistOrEmpty(enTmpdir) then
               hs.execute(string.format(
                 "scripts/pak  -u '%s' '%s'", fullPath, enTmpdir))
@@ -806,13 +808,17 @@ end
 local menuItemLocaleMap = {}
 local menuItemLocaleDir = {}
 local menuItemLocaleInversedMap = {}
-local menuItemTmpFile = hs.fs.temporaryDirectory() .. 'hs-localization-menuitems.json'
+local menuItemTmpFile = localeTmpDir .. 'menuitems.json'
 if hs.fs.attributes(menuItemTmpFile) ~= nil then
   local json = hs.json.read(menuItemTmpFile)
   menuItemLocaleDir = json.locale
   menuItemLocaleMap = json.map
 end
 function delocalizedMenuItem(str, bundleID, locale, localeFile)
+  if hs.fs.attributes(localeTmpDir) == nil then
+    hs.execute(string.format("mkdir -p '%s'", localeTmpDir))
+  end
+
   if localeFile == nil then
     localeFile = locale
     locale = nil
