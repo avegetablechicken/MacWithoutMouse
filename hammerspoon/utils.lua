@@ -1031,6 +1031,35 @@ function delocalizedMenuItem(str, bundleID, locale, localeFile)
   return result
 end
 
+menuBarTitleLocalizationMap = {}
+if hs.fs.attributes("config/menuitem-localization.json") ~= nil then
+  menuBarTitleLocalizationMap = hs.json.read("config/menuitem-localization.json")
+end
+menuBarTitleLocalizationMap.common = {}
+local finderObject = findApplication("com.apple.finder")
+if finderObject ~= nil then
+  local finderMenuItems = finderObject:getMenuItems()
+  for i=2,#finderMenuItems do
+    local title = finderMenuItems[i].AXTitle
+    local enTitle = delocalizedMenuItem(title, "com.apple.finder", "MenuBar")
+    if enTitle ~= nil then
+      menuBarTitleLocalizationMap.common[title] = enTitle
+    end
+  end
+end
+for _, title in ipairs{ 'File', 'Edit', 'View', 'Window', 'Help' } do
+  if not hs.fnutils.contains(menuBarTitleLocalizationMap.common, title) then
+    local localizedTitle = localizedString(title, "com.apple.finder", "MenuBar")
+    if localizedTitle ~= nil then
+      menuBarTitleLocalizationMap.common[localizedTitle] = title
+    end
+  end
+  local localizedTitle = localizedString('Format', "com.apple.Notes", "MainMenu")
+  if localizedTitle ~= nil then
+    menuBarTitleLocalizationMap.common[localizedTitle] = title
+  end
+end
+
 
 -- helpers for click menubar to the right
 

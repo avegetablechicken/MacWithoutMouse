@@ -2469,17 +2469,6 @@ registerOpenRecent(frontmostApplication:bundleID())
 
 -- bind `alt+?` hotkeys to menu bar 1 functions
 -- to be registered in application callback
-local menuBarTitleLocalizationMap = {}
-if hs.fs.attributes("config/menuitem-localization.json") ~= nil then
-  menuBarTitleLocalizationMap = hs.json.read("config/menuitem-localization.json")
-end
-menuBarTitleLocalizationMap.common = {}
-for _, title in ipairs{ 'File', 'Edit', 'View', 'Window', 'Help', 'Format' } do
-  local localizedTitle = localizedString(title,  "com.apple.Notes", "MainMenu")
-  if localizedTitle ~= nil then
-    menuBarTitleLocalizationMap.common[localizedTitle] = title
-  end
-end
 altMenuItemHotkeys = {}
 
 local function bindAltMenu(appObject, mods, key, message, fn)

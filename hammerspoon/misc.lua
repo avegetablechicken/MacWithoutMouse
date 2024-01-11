@@ -191,12 +191,6 @@ local function menuItemHotkeyIdx(mods, key)
   return idx
 end
 
-local menuBarTitleLocalizationMap = {}
-for _, title in ipairs{ 'Edit', 'View' } do
-  local localizedTitle = localizedString(title, "com.apple.finder", "MenuBar")
-  menuBarTitleLocalizationMap[localizedTitle] = title
-end
-
 local function getSubMenuHotkeys(t, menuItem, titleAsEntry, titlePrefix)
   if menuItem.AXChildren == nil then return end
   if titleAsEntry == true then
@@ -213,13 +207,13 @@ local function getSubMenuHotkeys(t, menuItem, titleAsEntry, titlePrefix)
       local idx
       if subItem.AXMenuItemCmdChar ~= "" then
         if subItem.AXTitle == "Emoji & Symbols"
-            or ((menuBarTitleLocalizationMap[menuItem.AXTitle] == 'Edit' or menuItem.AXTitle == "Edit")
+            or ((menuBarTitleLocalizationMap.common[menuItem.AXTitle] == 'Edit' or menuItem.AXTitle == "Edit")
                 and subItem.AXMenuItemCmdChar == 'E' and subItem.AXMenuItemCmdGlyph == ""
                 and #subItem.AXMenuItemCmdModifiers == 0 and subItem.AXMenuItemMarkChar == ""
                 and subItem.AXChildren == nil) then
           idx = "🌐" .. subItem.AXMenuItemCmdChar
         elseif subItem.AXTitle == "Enter Full Screen"
-            or ((menuBarTitleLocalizationMap[menuItem.AXTitle] == 'View' or menuItem.AXTitle == "View")
+            or ((menuBarTitleLocalizationMap.common[menuItem.AXTitle] == 'View' or menuItem.AXTitle == "View")
                 and subItem.AXMenuItemCmdChar == 'F' and subItem.AXMenuItemCmdGlyph == ""
                 and #subItem.AXMenuItemCmdModifiers == 0 and subItem.AXMenuItemMarkChar == ""
                 and subItem.AXChildren == nil) then
