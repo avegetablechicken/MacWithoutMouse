@@ -30,6 +30,6 @@
     "~/Library/Application Support/Code/User/snippets/": "${COMMON_CONFIG_DIR}/vscode/snippets",
     "~/Library/Application Support/Code/User/keybindings.json": "${MACOS_CONFIG_DIR}/vscode",
     "~/Library/Application Support/Sublime Text/Packages/User/Default (OSX).sublime-keymap": "${MACOS_CONFIG_DIR}/sublime_text",
-    "/Library/WebServer/Documents/proxy.pac": "${COMMON_CONFIG_DIR}"
+    "/Library/WebServer/Documents/proxy.pac": "${COMMON_CONFIG_DIR}/proxy"
   }
 }
