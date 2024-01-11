@@ -981,7 +981,7 @@ function delocalizedMenuItem(str, bundleID, locale, localeFile)
         and menuItemLocaleInversedMap[bundleID][str] ~= nil then
       result = searchFunc(menuItemLocaleInversedMap[bundleID][str])
       if result ~= nil then goto L_END_DELOCALIZED
-      elseif not (string.match(menuItemLocaleInversedMap[bundleID][str], "[^%a]")) then
+      elseif not (string.match(menuItemLocaleInversedMap[bundleID][str], "[^%a ]")) then
         result = menuItemLocaleInversedMap[bundleID][str]
         goto L_END_DELOCALIZED
       end
@@ -1014,7 +1014,7 @@ function delocalizedMenuItem(str, bundleID, locale, localeFile)
       end
     end
     if menuItemLocaleInversedMap[bundleID][str] ~= nil
-        and not string.match(menuItemLocaleInversedMap[bundleID][str], "[^%a]") then
+        and not string.match(menuItemLocaleInversedMap[bundleID][str], "[^%a ]") then
       result = menuItemLocaleInversedMap[bundleID][str]
       goto L_END_DELOCALIZED
     end
