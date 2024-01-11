@@ -586,26 +586,25 @@ function localizedString(str, bundleID, params)
     localeFile = params
   end
 
-  if appLocaleMap[bundleID] == nil then
-    appLocaleMap[bundleID] = {}
-    appLocaleAssetBuffer[bundleID] = {}
-    appLocaleDir[bundleID] = {}
-  end
   local locales = applicationLocales(bundleID)
   local appLocale = locales[1]
-  if appLocaleMap[bundleID][appLocale] == nil then
-    appLocaleMap[bundleID][appLocale] = {}
-    appLocaleAssetBuffer[bundleID][appLocale] = {}
-  elseif appLocaleMap[bundleID][appLocale][str] == false then
-    return nil
-  elseif appLocaleMap[bundleID][appLocale][str] ~= nil then
-    return appLocaleMap[bundleID][appLocale][str]
+
+  if appLocaleMap[bundleID] == nil then
+    appLocaleMap[bundleID] = {}
+    appLocaleDir[bundleID] = {}
   end
   if appLocaleAssetBuffer[bundleID] == nil then
     appLocaleAssetBuffer[bundleID] = {}
   end
   if appLocaleAssetBuffer[bundleID][appLocale] == nil then
     appLocaleAssetBuffer[bundleID][appLocale] = {}
+  end
+  if appLocaleMap[bundleID][appLocale] == nil then
+    appLocaleMap[bundleID][appLocale] = {}
+  elseif appLocaleMap[bundleID][appLocale][str] == false then
+    return nil
+  elseif appLocaleMap[bundleID][appLocale][str] ~= nil then
+    return appLocaleMap[bundleID][appLocale][str]
   end
   local localesDict = appLocaleAssetBuffer[bundleID][appLocale]
 
