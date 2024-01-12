@@ -420,8 +420,7 @@ proxyMenuItemCandidates =
         title = "    Global Mode",
         fn = function()
           if toggleV2RayU(true) then
-            clickRightMenuBarItem(proxyAppBundleIDs.V2rayU,
-                                 { localized = "Global Mode", strings = "MainMenu" })
+            clickRightMenuBarItem(proxyAppBundleIDs.V2rayU, "Global Mode")
             enable_proxy_global("V2rayU")
           end
         end
@@ -431,8 +430,7 @@ proxyMenuItemCandidates =
         title = "    PAC Mode",
         fn = function()
           if toggleV2RayU(true) then
-            clickRightMenuBarItem(proxyAppBundleIDs.V2rayU,
-                                  { localized = "Pac Mode", strings = "MainMenu" })
+            clickRightMenuBarItem(proxyAppBundleIDs.V2rayU, "Pac Mode")
             enable_proxy_PAC("V2rayU")
           end
         end
@@ -2062,8 +2060,7 @@ function system_wifiChangedCallback()
               enable_proxy_global("MonoCloud")
             elseif findApplication(proxyAppBundleIDs.V2rayU) then
               toggleV2RayU(true)
-              clickRightMenuBarItem(proxyAppBundleIDs.V2rayU,
-                                    { localized = "Pac Mode", strings = "MainMenu" })
+              clickRightMenuBarItem(proxyAppBundleIDs.V2rayU, "Pac Mode")
               enable_proxy_PAC("V2rayU")
             elseif findApplication(proxyAppBundleIDs.V2RayX) then
               toggleV2RayX(true)

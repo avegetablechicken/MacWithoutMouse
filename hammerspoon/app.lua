@@ -1392,7 +1392,7 @@ appHotKeyCallbacks = {
                                 { localeFir = "HotkeyWindowController" }),
       fn = function(appObject)
         clickRightMenuBarItem(appObject:bundleID(),
-                             { localized = "In-app ScreenSaver",
+                             { "In-app ScreenSaver",
                                strings = "HotkeyWindowController" })
       end
     }

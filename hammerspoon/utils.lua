@@ -1224,13 +1224,19 @@ function clickAppRightMenuBarItem(bundleID, menuItem, subMenuItem)
   if type(menuItem) == "number" then
     menuItem = tostring(menuItem)
   elseif type(menuItem) == "string" then
+    local localized = localizedString(menuItem, bundleID)
+    if localized ~= nil then
+      menuItem = localized
+    end
     menuItem = '"'..menuItem..'"'
   else
+    if #menuItem > 0 then
+      menuItem['localized'] = '"'..localizedString(menuItem[1], bundleID, menuItem.strings)..'"'
+      menuItem[1] = nil
+      menuItem.strings = nil
+    end
     for lang, item in pairs(menuItem) do
-      if lang == 'localized' then
-        item = localizedString(item, bundleID, menuItem.strings)
-      end
-      if lang ~= 'strings' then
+      if lang ~= 'strings' and lang ~= 'localized' then
         menuItem[lang] = '"'..item..'"'
       end
     end
@@ -1240,13 +1246,21 @@ function clickAppRightMenuBarItem(bundleID, menuItem, subMenuItem)
     if type(subMenuItem) == "number" then
       subMenuItem = tostring(subMenuItem)
     elseif type(subMenuItem) == "string" then
+      local localized = localizedString(subMenuItem, bundleID)
+      if localized ~= nil then
+        subMenuItem = localized
+      end
       subMenuItem = '"'..subMenuItem..'"'
     else
+      if #subMenuItem > 0 then
+        subMenuItem['localized'] = '"' ..localizedString(subMenuItem[1], bundleID, subMenuItem.strings).. '"'
+        subMenuItem[1] = nil
+        subMenuItem.strings = nil
+      end
       for lang, item in pairs(subMenuItem) do
-        if lang == 'localized' then
-          item = localizedString(item, bundleID, menuItem.strings)
+        if lang ~= 'strings' and lang ~= 'localized' then
+          subMenuItem[lang] = '"' .. item .. '"'
         end
-        subMenuItem[lang] = '"'..item..'"'
       end
     end
   end
