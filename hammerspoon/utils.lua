@@ -316,14 +316,22 @@ end
 local preferentialStringsFilePatterns = { "(.-)MainMenu(.-)", "Menu", "MenuBar",
   "MenuItems", "Localizable", "Main", "MainWindow" }
 
-local function parseStringsFile(file, keepOrder)
+local function parseStringsFile(file, keepOrder, keepAll)
   if keepOrder == nil then keepOrder = true end
   local jsonStr = hs.execute(string.format("plutil -convert json -o - '%s'", file))
   local jsonDict = hs.json.decode(jsonStr)
   if keepOrder then return jsonDict end
   local localesDict = {}
   for k, v in pairs(jsonDict) do
-    localesDict[v] = k
+    if localesDict[v] == nil then
+      localesDict[v] = k
+    elseif keepAll then
+      if type(localesDict[v]) == 'string' then
+        localesDict[v] = { localesDict[v], k }
+      else
+        table.insert(localesDict[v], k)
+      end
+    end
   end
   return localesDict
 end
@@ -992,17 +1000,27 @@ function delocalizedMenuItemString(str, bundleID, locale, localeFile)
     if menuItemLocaleInversedMap[bundleID][str] == nil then
       local fullPath = localeDir .. '/' .. localeFile .. '.strings'
       if hs.fs.attributes(fullPath) ~= nil then
-        menuItemLocaleInversedMap[bundleID] = parseStringsFile(fullPath, false)
+        menuItemLocaleInversedMap[bundleID] = parseStringsFile(fullPath, false, true)
       end
     end
     if menuItemLocaleInversedMap[bundleID] ~= nil
         and menuItemLocaleInversedMap[bundleID][str] ~= nil then
-      result = searchFunc(menuItemLocaleInversedMap[bundleID][str])
-      if result ~= nil then
-        goto L_END_DELOCALIZED
-      elseif not (string.match(menuItemLocaleInversedMap[bundleID][str], "[^%a ]")) then
-        result = menuItemLocaleInversedMap[bundleID][str]
-        goto L_END_DELOCALIZED
+      local keys = menuItemLocaleInversedMap[bundleID][str]
+      if type(keys) == 'string' then keys = {keys} end
+      for _, k in ipairs(keys) do
+        result = searchFunc(k)
+        if result ~= nil then
+          goto L_END_DELOCALIZED
+        elseif menuBarTitleLocalizationMap.byKey[bundleID] ~= nil then
+          result = menuBarTitleLocalizationMap.byKey[bundleID][k]
+          if result ~= nil then goto L_END_DELOCALIZED end
+        end
+      end
+      for _, k in ipairs(keys) do
+        if not(string.match(k, "[^%a ]")) then
+          result = k
+          goto L_END_DELOCALIZED
+        end
       end
     end
   else
@@ -1024,18 +1042,28 @@ function delocalizedMenuItemString(str, bundleID, locale, localeFile)
     for _, file in ipairs(stringsFiles) do
       if menuItemLocaleInversedMap[bundleID][str] == nil then
         local fullPath = localeDir .. '/' .. file
-        menuItemLocaleInversedMap[bundleID] = parseStringsFile(fullPath, false)
+        menuItemLocaleInversedMap[bundleID] = parseStringsFile(fullPath, false, true)
       end
       if menuItemLocaleInversedMap[bundleID][str] ~= nil then
-        localeFile = file:sub(1, -9)
-        result = searchFunc(menuItemLocaleInversedMap[bundleID][str])
-        if result ~= nil then goto L_END_DELOCALIZED end
+        local keys = menuItemLocaleInversedMap[bundleID][str]
+        if type(keys) == 'string' then keys = {keys} end
+        for _, k in ipairs(keys) do
+          localeFile = file:sub(1, -9)
+          result = searchFunc(k)
+          if result ~= nil then
+            goto L_END_DELOCALIZED
+          elseif menuBarTitleLocalizationMap.byKey[bundleID] ~= nil then
+            result = menuBarTitleLocalizationMap.byKey[bundleID][k]
+            if result ~= nil then goto L_END_DELOCALIZED end
+          end
+        end
+        for _, k in ipairs(keys) do
+          if not(string.match(k, "[^%a ]")) then
+            result = k
+            goto L_END_DELOCALIZED
+          end
+        end
       end
-    end
-    if menuItemLocaleInversedMap[bundleID][str] ~= nil
-      and not string.match(menuItemLocaleInversedMap[bundleID][str], "[^%a ]") then
-      result = menuItemLocaleInversedMap[bundleID][str]
-      goto L_END_DELOCALIZED
     end
   end
 
@@ -1097,6 +1125,10 @@ for _, title in ipairs{ 'File', 'Edit', 'View', 'Window', 'Help' } do
   if localizedTitle ~= nil then
     menuBarTitleLocalizationMap.common[localizedTitle] = title
   end
+end
+menuBarTitleLocalizationMap.byKey = {}
+if hs.fs.attributes("static/menuitem-localization-keys.json") ~= nil then
+  menuBarTitleLocalizationMap.byKey = hs.json.read("static/menuitem-localization-keys.json")
 end
 
 
