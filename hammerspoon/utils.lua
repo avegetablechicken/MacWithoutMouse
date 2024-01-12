@@ -703,6 +703,14 @@ function localizedString(str, bundleID, params)
     if appLocaleAssetBufferInverse[bundleID] == nil then
       appLocaleAssetBufferInverse[bundleID] = {}
     end
+    if localizationMapByKey[bundleID] ~= nil then
+      local key = hs.fnutils.indexOf(localizationMapByKey[bundleID], str)
+      if key ~= nil then
+        result = localizeByStrings(key, localeDir, localeFile, locale, localesDict,
+                                  appLocaleAssetBufferInverse[bundleID])
+        if result ~= nil then goto L_END_LOCALIZED end
+      end
+    end
     result = localizeByStrings(str, localeDir, localeFile, locale, localesDict,
                                appLocaleAssetBufferInverse[bundleID])
     if result ~= nil then goto L_END_LOCALIZED end
@@ -1011,8 +1019,8 @@ function delocalizedMenuItemString(str, bundleID, locale, localeFile)
         result = searchFunc(k)
         if result ~= nil then
           goto L_END_DELOCALIZED
-        elseif menuBarTitleLocalizationMap.byKey[bundleID] ~= nil then
-          result = menuBarTitleLocalizationMap.byKey[bundleID][k]
+        elseif localizationMapByKey[bundleID] ~= nil then
+          result = localizationMapByKey[bundleID][k]
           if result ~= nil then goto L_END_DELOCALIZED end
         end
       end
@@ -1052,8 +1060,8 @@ function delocalizedMenuItemString(str, bundleID, locale, localeFile)
           result = searchFunc(k)
           if result ~= nil then
             goto L_END_DELOCALIZED
-          elseif menuBarTitleLocalizationMap.byKey[bundleID] ~= nil then
-            result = menuBarTitleLocalizationMap.byKey[bundleID][k]
+          elseif localizationMapByKey[bundleID] ~= nil then
+            result = localizationMapByKey[bundleID][k]
             if result ~= nil then goto L_END_DELOCALIZED end
           end
         end
@@ -1126,9 +1134,9 @@ for _, title in ipairs{ 'File', 'Edit', 'View', 'Window', 'Help' } do
     menuBarTitleLocalizationMap.common[localizedTitle] = title
   end
 end
-menuBarTitleLocalizationMap.byKey = {}
-if hs.fs.attributes("static/menuitem-localization-keys.json") ~= nil then
-  menuBarTitleLocalizationMap.byKey = hs.json.read("static/menuitem-localization-keys.json")
+localizationMapByKey = {}
+if hs.fs.attributes("static/localization-keys.json") ~= nil then
+  localizationMapByKey = hs.json.read("static/localization-keys.json")
 end
 
 
