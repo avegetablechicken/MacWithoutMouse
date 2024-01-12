@@ -535,7 +535,8 @@ local function localizedMessage(message, params, sep)
     else
       if sep == nil then sep = ' > ' end
       local str
-      local appMenus = appObject:getMenuItems()
+      local appMenus = getMenuItems(appObject)
+      if appMenus == nil then return end
       for i=2,#appMenus do
         local title = delocalizedMenuItem(appMenus[i].AXTitle, appObject:bundleID(),
                                           params and params.locale,
@@ -2670,18 +2671,8 @@ function altMenuItem(appObject)
     end
   end
   if menuItemTitles == nil then
-    local menuItems = appObject:getMenuItems()
-    if menuItems == nil then
-      hs.timer.usleep(0.1 * 1000000)
-      menuItems = appObject:getMenuItems()
-      if menuItems == nil then
-        hs.timer.usleep(0.1 * 1000000)
-        menuItems = appObject:getMenuItems()
-        if menuItems == nil then
-          return
-        end
-      end
-    end
+    local menuItems = getMenuItems(appObject)
+    if menuItems == nil then return end
     menuItemTitles = hs.fnutils.map(menuItems, function(item)
       return item.AXTitle
     end)
@@ -2776,19 +2767,8 @@ end
 appsMenuItemsWatchers = {}
 
 local getMenuItemTitlesString = function(appObject)
-  local menuItems = appObject:getMenuItems()
-  if menuItems == nil then
-    hs.timer.usleep(0.1 * 1000000)
-    menuItems = appObject:getMenuItems()
-    if menuItems == nil then
-      hs.timer.usleep(0.1 * 1000000)
-      menuItems = appObject:getMenuItems()
-      if menuItems == nil then
-        return
-      end
-    end
-  end
-  if #menuItems == 0 then return "" end
+  local menuItems = getMenuItems(appObject)
+  if menuItems == nil or #menuItems == 0 then return "" end
   local menuItemTitles = {}
   for _, item in ipairs(menuItems) do
     table.insert(menuItemTitles, item.AXTitle)

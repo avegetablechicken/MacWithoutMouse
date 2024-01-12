@@ -72,6 +72,22 @@ function showMenuItemWrapper(fn)
   end
 end
 
+function getMenuItems(appObject)
+  local menuItems = appObject:getMenuItems()
+  if menuItems == nil then
+    hs.timer.usleep(0.1 * 1000000)
+    menuItems = appObject:getMenuItems()
+    if menuItems == nil then
+      hs.timer.usleep(0.1 * 1000000)
+      menuItems = appObject:getMenuItems()
+      if menuItems == nil then
+        return
+      end
+    end
+  end
+  return menuItems
+end
+
 function findMenuItem(appObject, menuItemTitle, params)
   local targetMenuItem
   if menuItemTitle.en or menuItemTitle.zh then
@@ -86,7 +102,8 @@ function findMenuItem(appObject, menuItemTitle, params)
     local menuItem = appObject:findMenuItem(menuItemTitle)
     if menuItem ~= nil then return menuItem, menuItemTitle end
     targetMenuItem = {}
-    local appMenus = appObject:getMenuItems()
+    local appMenus = getMenuItems(appObject)
+    if appMenus == nil then return end
     for i=2,#appMenus do
       local title = delocalizedMenuItem(appMenus[i].AXTitle, appObject:bundleID(),
                                         params and params.locale,
@@ -121,7 +138,8 @@ function selectMenuItem(appObject, menuItemTitle, params, show)
     targetMenuItem = menuItemTitle
   else
     targetMenuItem = {}
-    local appMenus = appObject:getMenuItems()
+    local appMenus = getMenuItems(appObject)
+    if appMenus == nil then return end
     for i=2,#appMenus do
       local title = delocalizedMenuItem(appMenus[i].AXTitle, appObject:bundleID(),
                                         params and params.locale,
@@ -173,18 +191,8 @@ local function findMenuItemByKeyBindingImpl(mods, key, menuItem)
 end
 
 function findMenuItemByKeyBinding(appObject, mods, key)
-  local menuItems = appObject:getMenuItems()
-  if menuItems == nil then
-    hs.timer.usleep(0.1 * 1000000)
-    menuItems = appObject:getMenuItems()
-    if menuItems == nil then
-      hs.timer.usleep(0.1 * 1000000)
-      menuItems = appObject:getMenuItems()
-      if menuItems == nil then
-        return
-      end
-    end
-  end
+  local menuItems = getMenuItems(appObject)
+  if menuItems == nil then return end
   for i=#menuItems,1,-1 do
     local menuItem = menuItems[i]
     local menuItemPath, enabled = findMenuItemByKeyBindingImpl(mods, key, menuItem)
