@@ -96,9 +96,7 @@ function findMenuItem(appObject, menuItemTitle, params)
     local appMenus = getMenuItems(appObject)
     if appMenus == nil then return end
     for i=2,#appMenus do
-      local title = delocalizedMenuItem(appMenus[i].AXTitle, appObject:bundleID(),
-                                        params and params.locale,
-                                        params and params.localeFile)
+      local title = delocalizedMenuItem(appMenus[i].AXTitle, appObject:bundleID(), params)
       if menuItemTitle[1] == title then
         table.insert(targetMenuItem, appMenus[i].AXTitle)
         break
@@ -141,9 +139,7 @@ function selectMenuItem(appObject, menuItemTitle, params, show)
     local appMenus = getMenuItems(appObject)
     if appMenus == nil then return end
     for i=2,#appMenus do
-      local title = delocalizedMenuItem(appMenus[i].AXTitle, appObject:bundleID(),
-                                        params and params.locale,
-                                        params and params.localeFile)
+      local title = delocalizedMenuItem(appMenus[i].AXTitle, appObject:bundleID(), params)
       if menuItemTitle[1] == title then
         table.insert(targetMenuItem, 1, appMenus[i].AXTitle)
         break
@@ -230,11 +226,13 @@ function applicationLocales(bundleID)
   return hs.fnutils.split(locales, ',')
 end
 
-local function getResourceDir(bundleID)
+local function getResourceDir(bundleID, frameworkName)
   local resourceDir
   local framework = {}
   local appContentPath = hs.application.pathForBundleID(bundleID) .. "/Contents"
-  if bundleID == "com.google.Chrome" then
+  if frameworkName ~= nil and frameworkName:sub(-10) == ".framework" then
+    resourceDir = appContentPath .. "/Frameworks/" .. frameworkName .. "/Resources"
+  elseif bundleID == "com.google.Chrome" then
     resourceDir = appContentPath .. "/Frameworks/Google Chrome Framework.framework/Resources"
     framework.chromium = true
   elseif bundleID == "com.microsoft.edgemac" then
@@ -622,11 +620,12 @@ function localizedString(str, bundleID, params)
     return nil
   end
 
-  local locale, localeFile, localeDir, key
+  local locale, localeFile, localeDir, localeFramework, key
   if type(params) == "table" then
     locale = params.locale
     localeFile = params.localeFile
     localeDir = params.localeDir
+    localeFramework = params.framework
     key = params.key
   else
     localeFile = params
@@ -658,7 +657,7 @@ function localizedString(str, bundleID, params)
   end
   local localesDict = appLocaleAssetBuffer[bundleID][appLocale]
 
-  local resourceDir, framework = getResourceDir(bundleID)
+  local resourceDir, framework = getResourceDir(bundleID, localeFramework)
 
   if localeDir == nil or localeDir == false then
     local mode = localeDir == nil and 'lproj' or 'strings'
@@ -866,14 +865,18 @@ if hs.fs.attributes(menuItemTmpFile) ~= nil then
   menuItemLocaleDir = json.locale
   menuItemLocaleMap = json.map
 end
-function delocalizedMenuItemString(str, bundleID, locale, localeFile)
+function delocalizedMenuItemString(str, bundleID, params)
   if hs.fs.attributes(localeTmpDir) == nil then
     hs.execute(string.format("mkdir -p '%s'", localeTmpDir))
   end
 
-  if localeFile == nil then
-    localeFile = locale
-    locale = nil
+  local locale, localeFile, localeFramework
+  if type(params) == "table" then
+    locale = params.locale
+    localeFile = params.localeFile
+    localeFramework = params.framework
+  else
+    localeFile = params
   end
 
   if menuItemLocaleMap[bundleID] == nil then
@@ -914,7 +917,7 @@ function delocalizedMenuItemString(str, bundleID, locale, localeFile)
     goto L_END_DELOCALIZED
   end
 
-  resourceDir, framework = getResourceDir(bundleID)
+  resourceDir, framework = getResourceDir(bundleID, localeFramework)
 
   if not framework.mono then mode = 'lproj' end
   if locale == nil then
@@ -1078,7 +1081,7 @@ function delocalizedMenuItemString(str, bundleID, locale, localeFile)
   return result
 end
 
-function delocalizedMenuItem(title, bundleID, locale, localeFile)
+function delocalizedMenuItem(title, bundleID, params)
   if menuBarTitleLocalizationMap ~= nil then
     defaultTitleMap = menuBarTitleLocalizationMap.common
     titleMap = menuBarTitleLocalizationMap[bundleID]
@@ -1093,7 +1096,7 @@ function delocalizedMenuItem(title, bundleID, locale, localeFile)
       return defaultTitleMap[title]
     end
   end
-  local newTitle = delocalizedMenuItemString(title, bundleID, locale, localeFile)
+  local newTitle = delocalizedMenuItemString(title, bundleID, params)
   return newTitle
 end
 
