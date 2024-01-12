@@ -1424,8 +1424,22 @@ appHotKeyCallbacks = {
       mods = "⌘", key = "W",
       message = localizedMessage("Close Window"),
       repeatable = true,
-      fn = function(appObject)
-        selectMenuItem(appObject, { "File", "Close Window" })
+      condition = function(appObject)
+        local menuItem, menuItemTitle = findMenuItem(appObject, { "File", "Close Window" })
+        if menuItem ~= nil and menuItem.enabled then
+          return true, menuItemTitle
+        elseif appObject:focusedWindow() ~= nil then
+          return true, appObject:focusedWindow()
+        else
+          return false
+        end
+      end,
+      fn = function(result, appObject)
+        if type(result) == 'table' then
+          appObject:selectMenuItem(result)
+        else
+          result:close()
+        end
       end
     }
   },
