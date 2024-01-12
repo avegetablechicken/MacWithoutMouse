@@ -230,13 +230,15 @@ function applicationLocales(bundleID)
   return hs.fnutils.split(locales, ',')
 end
 
-local function getResourceDir(bundleID, localeFile)
+local function getResourceDir(bundleID)
   local resourceDir
   local framework = {}
   local appContentPath = hs.application.pathForBundleID(bundleID) .. "/Contents"
-  if localeFile ~= nil and localeFile:sub(-10) == ".framework" then
-    resourceDir = appContentPath .. "/Frameworks/"
-        .. localeFile .. "/Resources"
+  if bundleID == "com.google.Chrome" then
+    resourceDir = appContentPath .. "/Frameworks/Google Chrome Framework.framework/Resources"
+    framework.chromium = true
+  elseif bundleID == "com.microsoft.edgemac" then
+    resourceDir = appContentPath .. "/Frameworks/Microsoft Edge Framework.framework/Resources"
     framework.chromium = true
   else
     local frameworkDir = appContentPath .. "/Frameworks"
@@ -656,12 +658,7 @@ function localizedString(str, bundleID, params)
   end
   local localesDict = appLocaleAssetBuffer[bundleID][appLocale]
 
-  if bundleID == "com.google.Chrome" then
-    localeFile = "Google Chrome Framework.framework"
-  elseif bundleID == "com.microsoft.edgemac" then
-    localeFile = "Microsoft Edge Framework.framework"
-  end
-  local resourceDir, framework = getResourceDir(bundleID, localeFile)
+  local resourceDir, framework = getResourceDir(bundleID)
 
   if localeDir == nil or localeDir == false then
     local mode = localeDir == nil and 'lproj' or 'strings'
@@ -917,12 +914,7 @@ function delocalizedMenuItemString(str, bundleID, locale, localeFile)
     goto L_END_DELOCALIZED
   end
 
-  if bundleID == "com.google.Chrome" then
-    localeFile = "Google Chrome Framework.framework"
-  elseif bundleID == "com.microsoft.edgemac" then
-    localeFile = "Microsoft Edge Framework.framework"
-  end
-  resourceDir, framework = getResourceDir(bundleID, localeFile)
+  resourceDir, framework = getResourceDir(bundleID)
 
   if not framework.mono then mode = 'lproj' end
   if locale == nil then
