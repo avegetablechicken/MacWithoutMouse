@@ -816,7 +816,7 @@ local function delocalizeZoteroMenu(str, appLocale)
       .. " | grep '" .. key .. "' | cut -d '\"' -f 2 | tr -d '\\n'")
   if status ~= true then return nil end
 
-  return enValue
+  return enValue, locale
 end
 
 local function delocalizeMATLABFigureMenu(str, appLocale)
@@ -832,7 +832,7 @@ local function delocalizeMATLABFigureMenu(str, appLocale)
     local inverse_pattern = 'key="' .. key .. '">&amp;([^<]*?)</entry>'
     local enValue, status = hs.execute(string.format(
         "grep -Eo '%s' '%s' | cut -d ';' -f 2  | cut -d '<' -f 1 | tr -d '\\n'", inverse_pattern, enLocaleFile))
-    if status and enValue ~= "" then return enValue end
+    if status and enValue ~= "" then return enValue, locale end
   end
   return nil
 end
@@ -879,10 +879,18 @@ function delocalizedMenuItemString(str, bundleID, locale, localeFile)
   local resourceDir, framework, localeDir, mode, result, searchFunc
 
   if bundleID == "org.zotero.zotero" then
-    result = delocalizeZoteroMenu(str, appLocale)
+    result, locale = delocalizeZoteroMenu(str, appLocale)
+    if menuItemLocaleDir[bundleID][appLocale] ~= nil
+        and menuItemLocaleDir[bundleID][appLocale] ~= locale then
+      menuItemLocaleMap[bundleID] = {}
+    end
     goto L_END_DELOCALIZED
   elseif bundleID == "com.mathworks.matlab" then
-    result = delocalizeMATLABFigureMenu(str, appLocale)
+    result, locale = delocalizeMATLABFigureMenu(str, appLocale)
+    if menuItemLocaleDir[bundleID][appLocale] ~= nil
+        and menuItemLocaleDir[bundleID][appLocale] ~= locale then
+      menuItemLocaleMap[bundleID] = {}
+    end
     goto L_END_DELOCALIZED
   end
 
@@ -899,9 +907,7 @@ function delocalizedMenuItemString(str, bundleID, locale, localeFile)
   end
   if locale == nil then
     locale = getMatchedLocale(appLocale, resourceDir, mode)
-    if locale ~= nil then
-      menuItemLocaleDir[bundleID][appLocale] = locale
-    else
+    if locale == nil then
       menuItemLocaleMap[bundleID][str] = false
       return nil
     end
@@ -1028,6 +1034,7 @@ function delocalizedMenuItemString(str, bundleID, locale, localeFile)
   ::L_END_DELOCALIZED::
   if result ~= nil then
     menuItemLocaleMap[bundleID][str] = result
+    menuItemLocaleDir[bundleID][appLocale] = locale
     hs.json.write({ locale = menuItemLocaleDir, map = menuItemLocaleMap },
         menuItemTmpFile, false, true)
   else
