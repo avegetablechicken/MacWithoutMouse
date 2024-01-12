@@ -924,6 +924,11 @@ appHotKeyCallbacks = {
       condition = checkMenuItem({ "Edit", "Paste" }, { localeFile = "MainMenu" }),
       fn = receiveMenuItem
     },
+    ["showBuildOrder"] = {  -- View > Show Build Order
+      message = localizedMessage("Show Build Order", "MainMenu"),
+      condition = checkMenuItem({ "View", "Show Build Order" }, { localeFile = "MainMenu" }),
+      fn = receiveMenuItem
+    },
     ["play"] = {  -- Play > Play Slideshow
       message = localizedMessage("Play Slideshow", "MainMenu"),
       condition = checkMenuItem({ "Play", "Play Slideshow" }, { localeFile = "MainMenu" }),
