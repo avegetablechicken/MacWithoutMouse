@@ -6,6 +6,14 @@
   "org.xquartz.X11": {
     "应用程序": "Applications"
   },
+  "com.google.Chrome": {
+    "标签页": "Tab"
+  },
+  "net.xmind.vana.app": {
+    "插入": "Insert",
+    "工具": "Tools",
+    "查看": "View"
+  },
 
   "com.baidu.BaiduNetdisk-mac": {
     "账户": "Account"
@@ -17,7 +25,6 @@
   "com.tencent.QQMusicMac": {
     "播放控制": "Play Control"
   },
-
   "com.kingsoft.wpsoffice.mac": {
     "账户": "Account",
     "账号": "Account",
@@ -25,15 +32,5 @@
     "插入": "Insert",
     "表格": "Table",
     "工作区": "Workspace"
-  },
-  "com.google.Chrome":
-  {
-    "标签页": "Tab"
-  },
-  "net.xmind.vana.app":
-  {
-    "插入": "Insert",
-    "工具": "Tools",
-    "查看": "View"
   }
 }
