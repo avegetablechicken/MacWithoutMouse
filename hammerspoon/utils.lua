@@ -86,19 +86,21 @@ function findMenuItem(appObject, menuItemTitle, params)
     local menuItem = appObject:findMenuItem(menuItemTitle)
     if menuItem ~= nil then return menuItem, menuItemTitle end
     targetMenuItem = {}
-    for i=#menuItemTitle,2,-1 do
-      local locStr = localizedString(menuItemTitle[i], appObject:bundleID(), params)
-      if locStr == nil then return nil end
-      table.insert(targetMenuItem, 1, locStr)
-    end
     local appMenus = appObject:getMenuItems()
     for i=2,#appMenus do
       local title = delocalizedMenuItem(appMenus[i].AXTitle, appObject:bundleID(),
-                                        params and params.localeFile or nil)
+                                        params and params.locale,
+                                        params and params.localeFile)
       if menuItemTitle[1] == title then
-        table.insert(targetMenuItem, 1, appMenus[i].AXTitle)
+        table.insert(targetMenuItem, appMenus[i].AXTitle)
         break
       end
+    end
+    if #targetMenuItem == 0 then return nil end
+    for i=#menuItemTitle,2,-1 do
+      local locStr = localizedString(menuItemTitle[i], appObject:bundleID(), params)
+      if locStr == nil then return nil end
+      table.insert(targetMenuItem, 2, locStr)
     end
     if #targetMenuItem ~= #menuItemTitle then return nil end
   end
@@ -119,19 +121,21 @@ function selectMenuItem(appObject, menuItemTitle, params, show)
     targetMenuItem = menuItemTitle
   else
     targetMenuItem = {}
-    for i =#menuItemTitle,2,-1 do
-      local locStr = localizedString(menuItemTitle[i], appObject:bundleID(), params)
-      if locStr == nil then return nil end
-      table.insert(targetMenuItem, 1, locStr)
-    end
     local appMenus = appObject:getMenuItems()
     for i=2,#appMenus do
       local title = delocalizedMenuItem(appMenus[i].AXTitle, appObject:bundleID(),
-                                        params and params.localeFile or nil)
+                                        params and params.locale,
+                                        params and params.localeFile)
       if menuItemTitle[1] == title then
         table.insert(targetMenuItem, 1, appMenus[i].AXTitle)
         break
       end
+    end
+    if #targetMenuItem == 0 then return nil end
+    for i =#menuItemTitle,2,-1 do
+      local locStr = localizedString(menuItemTitle[i], appObject:bundleID(), params)
+      if locStr == nil then return nil end
+      table.insert(targetMenuItem, 2, locStr)
     end
     if #targetMenuItem ~= #menuItemTitle then return nil end
   end
@@ -842,7 +846,7 @@ if hs.fs.attributes(menuItemTmpFile) ~= nil then
   menuItemLocaleDir = json.locale
   menuItemLocaleMap = json.map
 end
-function delocalizedMenuItem(str, bundleID, locale, localeFile)
+function delocalizedMenuItemString(str, bundleID, locale, localeFile)
   if hs.fs.attributes(localeTmpDir) == nil then
     hs.execute(string.format("mkdir -p '%s'", localeTmpDir))
   end
@@ -931,10 +935,10 @@ function delocalizedMenuItem(str, bundleID, locale, localeFile)
 
   searchFunc = function(str)
     for _, localeDir in ipairs {
-      resourceDir .. "/en.lproj",
-      resourceDir .. "/English.lproj",
-      resourceDir .. "/Base.lproj",
-      resourceDir .. "/en_GB.lproj" } do
+        resourceDir .. "/en.lproj",
+        resourceDir .. "/English.lproj",
+        resourceDir .. "/Base.lproj",
+        resourceDir .. "/en_GB.lproj" } do
       if hs.fs.attributes(localeDir) ~= nil then
         if localeFile ~= nil then
           local fullPath = localeDir .. '/' .. localeFile .. '.strings'
@@ -980,7 +984,8 @@ function delocalizedMenuItem(str, bundleID, locale, localeFile)
     if menuItemLocaleInversedMap[bundleID] ~= nil
         and menuItemLocaleInversedMap[bundleID][str] ~= nil then
       result = searchFunc(menuItemLocaleInversedMap[bundleID][str])
-      if result ~= nil then goto L_END_DELOCALIZED
+      if result ~= nil then
+        goto L_END_DELOCALIZED
       elseif not (string.match(menuItemLocaleInversedMap[bundleID][str], "[^%a ]")) then
         result = menuItemLocaleInversedMap[bundleID][str]
         goto L_END_DELOCALIZED
@@ -996,7 +1001,7 @@ function delocalizedMenuItem(str, bundleID, locale, localeFile)
     if #stringsFiles > 10 then
       stringsFiles = hs.fnutils.filter(stringsFiles, function(file)
         for _, pattern in ipairs(preferentialStringsFilePatterns) do
-          local pattern = "^" .. pattern  .. "%.strings$"
+          local pattern = "^" .. pattern .. "%.strings$"
           if string.match(file, pattern) ~= nil then return true end
         end
         return false
@@ -1014,7 +1019,7 @@ function delocalizedMenuItem(str, bundleID, locale, localeFile)
       end
     end
     if menuItemLocaleInversedMap[bundleID][str] ~= nil
-        and not string.match(menuItemLocaleInversedMap[bundleID][str], "[^%a ]") then
+      and not string.match(menuItemLocaleInversedMap[bundleID][str], "[^%a ]") then
       result = menuItemLocaleInversedMap[bundleID][str]
       goto L_END_DELOCALIZED
     end
@@ -1024,11 +1029,30 @@ function delocalizedMenuItem(str, bundleID, locale, localeFile)
   if result ~= nil then
     menuItemLocaleMap[bundleID][str] = result
     hs.json.write({ locale = menuItemLocaleDir, map = menuItemLocaleMap },
-                  menuItemTmpFile, false, true)
+        menuItemTmpFile, false, true)
   else
     menuItemLocaleMap[bundleID][str] = false
   end
   return result
+end
+
+function delocalizedMenuItem(title, bundleID, locale, localeFile)
+  if menuBarTitleLocalizationMap ~= nil then
+    defaultTitleMap = menuBarTitleLocalizationMap.common
+    titleMap = menuBarTitleLocalizationMap[bundleID]
+  end
+  if titleMap ~= nil then
+    if titleMap[title] ~= nil then
+      return titleMap[title]
+    end
+  end
+  if defaultTitleMap ~= nil then
+    if defaultTitleMap[title] ~= nil then
+      return defaultTitleMap[title]
+    end
+  end
+  local newTitle = delocalizedMenuItemString(title, bundleID, locale, localeFile)
+  return newTitle
 end
 
 menuBarTitleLocalizationMap = {}
@@ -1041,7 +1065,7 @@ if finderObject ~= nil then
   local finderMenuItems = finderObject:getMenuItems()
   for i=2,#finderMenuItems do
     local title = finderMenuItems[i].AXTitle
-    local enTitle = delocalizedMenuItem(title, "com.apple.finder", "MenuBar")
+    local enTitle = delocalizedMenuItemString(title, "com.apple.finder", "MenuBar")
     if enTitle ~= nil then
       menuBarTitleLocalizationMap.common[title] = enTitle
     end

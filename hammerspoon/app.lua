@@ -534,7 +534,20 @@ local function localizedMessage(message, params, sep)
       return localizedString(message, bundleID, params)
     else
       if sep == nil then sep = ' > ' end
-      local str = localizedString(message[1], bundleID, params)
+      local str
+      local appMenus = appObject:getMenuItems()
+      for i=2,#appMenus do
+        local title = delocalizedMenuItem(appMenus[i].AXTitle, appObject:bundleID(),
+                                          params and params.locale,
+                                          params and params.localeFile)
+        if message[1] == title then
+          str = appMenus[i].AXTitle
+          break
+        end
+      end
+      if str == nil then
+        str = localizedString(message[1], bundleID, params)
+      end
       for i=2,#message do
         str = str .. sep .. localizedString(message[i], bundleID, params)
       end
@@ -2513,12 +2526,50 @@ local function searchHotkeyByNth(appObject, itemTitles, alreadySetHotkeys, index
     end
 
     if hotkey ~= nil and alreadySetHotkeys[hotkey] == nil then
-      alreadySetHotkeys[hotkey] = title[1]
+        alreadySetHotkeys[hotkey] = title[1]
     else
       table.insert(notSetItems, title)
     end
   end
   return notSetItems, alreadySetHotkeys
+end
+
+function delocalizeMenuItems(itemTitles, bundleID, localeFile)
+  local defaultTitleMap, titleMap
+  if menuBarTitleLocalizationMap ~= nil then
+    defaultTitleMap = menuBarTitleLocalizationMap.common
+    titleMap = menuBarTitleLocalizationMap[bundleID]
+  end
+  local result = {}
+  for _, title in ipairs(itemTitles) do
+    -- remove titles starting with non-ascii characters
+    local splits = hs.fnutils.split(title, ' ')
+    if string.byte(title, 1) <= 127
+        and (string.len(title) < 2 or string.byte(title, 2) <= 127)
+        and (string.len(title) < 3 or string.byte(title, 3) <= 127)
+        and (#splits == 1 or string.byte(splits[2], 1) <= 127) then
+      table.insert(result, { title, title })
+    else
+      if titleMap ~= nil then
+        if titleMap[title] ~= nil then
+          table.insert(result, { title, titleMap[title] })
+          goto L_CONTINUE
+        end
+      end
+      if defaultTitleMap ~= nil then
+        if defaultTitleMap[title] ~= nil then
+          table.insert(result, { title, defaultTitleMap[title] })
+          goto L_CONTINUE
+        end
+      end
+      local newTitle = delocalizedMenuItemString(title, bundleID, localeFile)
+      if newTitle ~= nil then
+        table.insert(result, { title, newTitle })
+      end
+      ::L_CONTINUE::
+    end
+  end
+  return result
 end
 
 function altMenuItem(appObject)
@@ -2603,45 +2654,7 @@ function altMenuItem(appObject)
     end
 
     -- process localized titles
-    local defaultTitleMap, titleMap
-    if menuBarTitleLocalizationMap ~= nil then
-      defaultTitleMap = menuBarTitleLocalizationMap.common
-      titleMap = menuBarTitleLocalizationMap[appObject:bundleID()]
-    end
-    for i=#itemTitles,1,-1 do
-      -- remove titles starting with non-ascii characters
-      local splits = hs.fnutils.split(itemTitles[i], ' ')
-      if string.byte(itemTitles[i], 1) <= 127
-          and (string.len(itemTitles[i]) < 2 or string.byte(itemTitles[i], 2) <= 127)
-          and (string.len(itemTitles[i]) < 3 or string.byte(itemTitles[i], 3) <= 127)
-          and (#splits == 1 or string.byte(splits[2], 1) <= 127) then
-        itemTitles[i] = {itemTitles[i], itemTitles[i]}
-      else
-        local substituted = false
-        if titleMap ~= nil then
-          if titleMap[itemTitles[i]] ~= nil then
-            itemTitles[i] = {itemTitles[i], titleMap[itemTitles[i]]}
-            substituted = true
-          end
-        end
-        if not substituted and defaultTitleMap ~= nil then
-          if defaultTitleMap[itemTitles[i]] ~= nil then
-            itemTitles[i] = {itemTitles[i], defaultTitleMap[itemTitles[i]]}
-            substituted = true
-          end
-        end
-        if not substituted then
-          local title = delocalizedMenuItem(itemTitles[i], appObject:bundleID())
-          if title ~= nil then
-            itemTitles[i] = {itemTitles[i], title}
-            substituted = true
-          end
-        end
-        if not substituted then
-          table.remove(itemTitles, i)
-        end
-      end
-    end
+    itemTitles = delocalizeMenuItems(itemTitles, appObject:bundleID())
 
     local notSetItems = {}
     for i, title in ipairs(itemTitles) do
