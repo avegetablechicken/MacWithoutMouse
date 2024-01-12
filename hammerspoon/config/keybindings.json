@@ -946,6 +946,18 @@
       }
     },
     "com.kingsoft.wpsoffice.mac": {
+      "closeDoNotSave": {
+        "mods": "option",
+        "key": "N"
+      },
+      "closeCancel": {
+        "mods": "option",
+        "key": "C"
+      },
+      "closeSave": {
+        "mods": "option",
+        "key": "S"
+      },
       "newWorkspace": {
         "mods": ["shift", "command"],
         "key": "N"

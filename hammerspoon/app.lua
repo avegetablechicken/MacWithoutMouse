@@ -854,6 +854,57 @@ appHotKeyCallbacks = {
       condition = checkMenuItemByKeybinding({ 'ctrl' }, "⇥"),
       fn = receiveMenuItem
     },
+    ["closeDoNotSave"] = {
+      message = "不保存",
+      condition = function(appObject)
+        if appObject:focusedWindow() == nil then return false end
+        local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
+        if winUIObj.AXSubrole == "AXDialog" then
+          local buttons = winUIObj:childrenWithRole("AXButton")
+          for _, button in ipairs(buttons) do
+            if button.AXTitle == "不保存" then
+              return true, button
+            end
+          end
+        end
+        return false
+      end,
+      fn = function(button) button:performAction("AXPress") end
+    },
+    ["closeCancel"] = {
+      message = "取消",
+      condition = function(appObject)
+        if appObject:focusedWindow() == nil then return false end
+        local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
+        if winUIObj.AXSubrole == "AXDialog" then
+          local buttons = winUIObj:childrenWithRole("AXButton")
+          for _, button in ipairs(buttons) do
+            if button.AXTitle == "取消" then
+              return true, button
+            end
+          end
+        end
+        return false
+      end,
+      fn = function(button) button:performAction("AXPress") end
+    },
+    ["closeSave"] = {
+      message = "保存",
+      condition = function(appObject)
+        if appObject:focusedWindow() == nil then return false end
+        local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
+        if winUIObj.AXSubrole == "AXDialog" then
+          local buttons = winUIObj:childrenWithRole("AXButton")
+          for _, button in ipairs(buttons) do
+            if button.AXTitle == "保存" then
+              return true, button
+            end
+          end
+        end
+        return false
+      end,
+      fn = function(button) button:performAction("AXPress") end
+    },
     ["goToFileTop"] = {
       message = "Go to File Top",
       fn = function(appObject) hs.eventtap.keyStroke("⌘", "Home", nil, appObject) end
