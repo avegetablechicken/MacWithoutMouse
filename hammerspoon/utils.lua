@@ -89,19 +89,10 @@ function getMenuItems(appObject)
 end
 
 function findMenuItem(appObject, menuItemTitle, params)
-  local targetMenuItem
-  if menuItemTitle.en or menuItemTitle.zh then
-    if menuItemTitle.en and appObject:findMenuItem(menuItemTitle.en) ~= nil then
-      targetMenuItem = menuItemTitle.en
-    elseif menuItemTitle.zh and appObject:findMenuItem(menuItemTitle.zh) ~= nil then
-      targetMenuItem = menuItemTitle.zh
-    else
-      return nil
-    end
-  else
+  if #menuItemTitle > 0 then
     local menuItem = appObject:findMenuItem(menuItemTitle)
     if menuItem ~= nil then return menuItem, menuItemTitle end
-    targetMenuItem = {}
+    local targetMenuItem = {}
     local appMenus = getMenuItems(appObject)
     if appMenus == nil then return end
     for i=2,#appMenus do
@@ -120,8 +111,15 @@ function findMenuItem(appObject, menuItemTitle, params)
       table.insert(targetMenuItem, 2, locStr)
     end
     if #targetMenuItem ~= #menuItemTitle then return nil end
+    return appObject:findMenuItem(targetMenuItem), targetMenuItem
+  else
+    for _, title in pairs(menuItemTitle) do
+      local menuItem = appObject:findMenuItem(title)
+      if menuItem ~= nil then
+        return menuItem, title
+      end
+    end
   end
-  return appObject:findMenuItem(targetMenuItem), targetMenuItem
 end
 
 function selectMenuItem(appObject, menuItemTitle, params, show)
@@ -129,15 +127,17 @@ function selectMenuItem(appObject, menuItemTitle, params, show)
     show = params params = nil
   end
 
-  local targetMenuItem
-  if menuItemTitle.en and appObject:findMenuItem(menuItemTitle.en) ~= nil then
-    targetMenuItem = menuItemTitle.en
-  elseif menuItemTitle.zh and appObject:findMenuItem(menuItemTitle.zh) ~= nil then
-    targetMenuItem = menuItemTitle.zh
-  elseif appObject:findMenuItem(menuItemTitle) then
-    targetMenuItem = menuItemTitle
-  else
-    targetMenuItem = {}
+  if show then
+    local menuItem, targetMenuItem = findMenuItem(appObject, menuItemTitle, params)
+    if menuItem ~= nil then
+      showMenuItemWrapper(function()
+        appObject:selectMenuItem(targetMenuItem[1])
+      end)()
+      return appObject:selectMenuItem(targetMenuItem)
+    end
+  elseif #menuItemTitle > 0 then
+    if appObject:selectMenuItem(menuItemTitle) then return true end
+    local targetMenuItem = {}
     local appMenus = getMenuItems(appObject)
     if appMenus == nil then return end
     for i=2,#appMenus do
@@ -150,19 +150,18 @@ function selectMenuItem(appObject, menuItemTitle, params, show)
       end
     end
     if #targetMenuItem == 0 then return nil end
-    for i =#menuItemTitle,2,-1 do
+    for i=#menuItemTitle,2,-1 do
       local locStr = localizedString(menuItemTitle[i], appObject:bundleID(), params)
       if locStr == nil then return nil end
       table.insert(targetMenuItem, 2, locStr)
     end
     if #targetMenuItem ~= #menuItemTitle then return nil end
+    return appObject:selectMenuItem(targetMenuItem)
+  else
+    for _, title in pairs(menuItemTitle) do
+      if appObject:selectMenuItem(title) then return true end
+    end
   end
-  if show then
-    showMenuItemWrapper(function()
-      appObject:selectMenuItem({targetMenuItem[1]})
-    end)()
-  end
-  appObject:selectMenuItem(targetMenuItem)
 end
 
 local function findMenuItemByKeyBindingImpl(mods, key, menuItem)
