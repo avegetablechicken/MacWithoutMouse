@@ -257,13 +257,10 @@ function deleteSelectedMessage(appObject, menuItem, force)
 end
 
 function deleteAllMessages(appObject)
-  local menuItem, menuItemTitle
-  if getOSVersion() < OS.Ventura then
-    menuItemTitle = { en = {"File", "Delete Conversation…"}, zh = {"文件", "删除对话…"} }
-  else
-    menuItemTitle = { en = {"Conversations", "Delete Conversation…"}, zh = {"对话", "删除对话…"} }
-  end
-  menuItem, menuItemTitle = findMenuItem(appObject, menuItemTitle)
+  local menuItemTitle = getOSVersion() < OS.Ventura and "File" or "Conversations"
+  local appLocale = applicationLocales(appObject:bundleID())[1]
+  local subMenuItem = appLocale:sub(1, 2) == "zh" and "删除对话…" or "Delete Conversation…"
+  local menuItem, menuItemPath = findMenuItem(appObject, { menuItemTitle, subMenuItem })
   if menuItem == nil then return end
   appUIObj = hs.axuielement.applicationElement(appObject)
   appUIObj:elementSearch(
@@ -279,7 +276,7 @@ function deleteAllMessages(appObject)
       for _, messageItem in ipairs(messageItems) do
         messageItem:performAction("AXPress")
         hs.timer.usleep(0.1 * 1000000)
-        deleteSelectedMessage(appObject, menuItemTitle, true)
+        deleteSelectedMessage(appObject, menuItemPath, true)
         hs.timer.usleep(1 * 1000000)
       end
       deleteAllMessages(appObject)
@@ -620,9 +617,12 @@ appHotKeyCallbacks = {
         local appLocale = applicationLocales(appObject:bundleID())[1]
         return appLocale:sub(1, 2) == "zh" and "删除对话…" or "Delete Conversation…"
       end,
-      condition = checkMenuItem(getOSVersion() < OS.Ventura
-          and { en = {"File", "Delete Conversation…"}, zh = {"文件", "删除对话…"} }
-          or { en = {"Conversations", "Delete Conversation…"}, zh = {"对话", "删除对话…"} }),
+      condition = function(appObject)
+        local menuItemTitle = getOSVersion() < OS.Ventura and "File" or "Conversations"
+        local appLocale = applicationLocales(appObject:bundleID())[1]
+        local subItemTitle = appLocale:sub(1, 2) == "zh" and "删除对话…" or "Delete Conversation…"
+        return checkMenuItem({ menuItemTitle, subItemTitle })(appObject)
+      end,
       fn = function(menuItemTitle, appObject) deleteSelectedMessage(appObject, menuItemTitle) end
     },
     ["deleteAllConversations"] = {
