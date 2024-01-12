@@ -3,9 +3,6 @@
   {
     "开发": "Develop"
   },
-  "com.charliemonroe.Downie-4": {
-    "调试": "Debug"
-  },
   "org.xquartz.X11": {
     "应用程序": "Applications"
   },

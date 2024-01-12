@@ -1069,6 +1069,12 @@ function delocalizedMenuItemString(str, bundleID, params)
     end
   end
 
+  if bundleID:match("^com%.charliemonroe%..*$") and localeFramework == nil then
+    result = delocalizedMenuItemString(str, bundleID,
+                                       { framework = "XUCore.framework" })
+    if result ~= nil then return result end
+  end
+
   ::L_END_DELOCALIZED::
   if result ~= nil then
     menuItemLocaleMap[bundleID][str] = result
