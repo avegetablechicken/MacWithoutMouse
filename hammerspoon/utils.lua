@@ -1109,6 +1109,10 @@ menuBarTitleLocalizationMap = {}
 if hs.fs.attributes("config/menuitem-localization.json") ~= nil then
   menuBarTitleLocalizationMap = hs.json.read("config/menuitem-localization.json")
 end
+localizationMapByKey = {}
+if hs.fs.attributes("static/localization-keys.json") ~= nil then
+  localizationMapByKey = hs.json.read("static/localization-keys.json")
+end
 menuBarTitleLocalizationMap.common = {}
 local finderObject = findApplication("com.apple.finder")
 if finderObject ~= nil then
@@ -1132,10 +1136,6 @@ for _, title in ipairs{ 'File', 'Edit', 'View', 'Window', 'Help' } do
   if localizedTitle ~= nil then
     menuBarTitleLocalizationMap.common[localizedTitle] = title
   end
-end
-localizationMapByKey = {}
-if hs.fs.attributes("static/localization-keys.json") ~= nil then
-  localizationMapByKey = hs.json.read("static/localization-keys.json")
 end
 
 
