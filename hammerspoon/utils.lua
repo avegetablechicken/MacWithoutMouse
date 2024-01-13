@@ -102,13 +102,13 @@ function findMenuItem(appObject, menuItemTitle, params)
         break
       end
     end
-    if #targetMenuItem == 0 then return nil end
+    if #targetMenuItem == 0 then
+      table.insert(targetMenuItem, menuItemTitle[1])
+    end
     for i=#menuItemTitle,2,-1 do
       local locStr = localizedString(menuItemTitle[i], appObject:bundleID(), params)
-      if locStr == nil then return nil end
-      table.insert(targetMenuItem, 2, locStr)
+      table.insert(targetMenuItem, 2, locStr or menuItemTitle[i])
     end
-    if #targetMenuItem ~= #menuItemTitle then return nil end
     return appObject:findMenuItem(targetMenuItem), targetMenuItem
   else
     for _, title in pairs(menuItemTitle) do
@@ -145,13 +145,13 @@ function selectMenuItem(appObject, menuItemTitle, params, show)
         break
       end
     end
-    if #targetMenuItem == 0 then return nil end
+    if #targetMenuItem == 0 then
+      table.insert(targetMenuItem, menuItemTitle[1])
+    end
     for i=#menuItemTitle,2,-1 do
       local locStr = localizedString(menuItemTitle[i], appObject:bundleID(), params)
-      if locStr == nil then return nil end
-      table.insert(targetMenuItem, 2, locStr)
+      table.insert(targetMenuItem, 2, locStr or menuItemTitle[i])
     end
-    if #targetMenuItem ~= #menuItemTitle then return nil end
     return appObject:selectMenuItem(targetMenuItem)
   else
     for _, title in pairs(menuItemTitle) do
