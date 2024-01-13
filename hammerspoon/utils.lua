@@ -185,12 +185,37 @@ local function findMenuItemByKeyBindingImpl(mods, key, menuItem)
   end
 end
 
+local modifierSymbolMap = {
+  command = 'cmd',
+  control = 'ctrl',
+  option = 'alt',
+  ["⌘"] = 'cmd',
+  ["⌃"] = 'ctrl',
+  ["⌥"] = 'alt',
+  ["⇧"] = 'shift'
+}
+
 function findMenuItemByKeyBinding(appObject, mods, key)
   local menuItems = getMenuItems(appObject)
   if menuItems == nil then return end
+  if mods == '' then mods = {} end
+  if type(mods) == 'string' and string.byte(mods, 1, 1) < 127 then
+    mods = { mods }
+  end
+  local newMods = {}
+  if type(mods) == 'string' then
+    for i=1,utf8.len(mods) do
+      local mod = string.sub(mods, i*3-2, i*3)
+      table.insert(newMods, modifierSymbolMap[mod] or mod)
+    end
+  else
+    for _, mod in ipairs(mods) do
+      table.insert(newMods, modifierSymbolMap[mod] or mod)
+    end
+  end
   for i=#menuItems,1,-1 do
     local menuItem = menuItems[i]
-    local menuItemPath, enabled = findMenuItemByKeyBindingImpl(mods, key, menuItem)
+    local menuItemPath, enabled = findMenuItemByKeyBindingImpl(newMods, key, menuItem)
     if menuItemPath ~= nil then
       table.insert(menuItemPath, 1, menuItem.AXTitle)
       return menuItemPath, enabled

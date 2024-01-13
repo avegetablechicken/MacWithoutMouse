@@ -604,13 +604,13 @@ appHotKeyCallbacks = {
       end
     },
     ["showPrevTab"] = {
-      message = menuItemMessage({ 'shift', 'ctrl' }, "⇥", 2),
-      condition = checkMenuItemByKeybinding({ 'shift', 'ctrl' }, "⇥"),
+      message = menuItemMessage('⇧⌃', "⇥", 2),
+      condition = checkMenuItemByKeybinding('⇧⌃', "⇥"),
       fn = receiveMenuItem
     },
     ["showNextTab"] = {
-      message = menuItemMessage({ 'ctrl' }, "⇥", 2),
-      condition = checkMenuItemByKeybinding({ 'ctrl' }, "⇥"),
+      message = menuItemMessage('⌃', "⇥", 2),
+      condition = checkMenuItemByKeybinding('⌃', "⇥"),
       fn = receiveMenuItem
     }
   },
@@ -635,13 +635,13 @@ appHotKeyCallbacks = {
       fn = deleteAllMessages
     },
     ["goToPreviousConversation"] = {
-      message = menuItemMessage({ 'shift', 'ctrl' }, "⇥", 2),
-      condition = noSelectedMenuItem(checkMenuItemByKeybinding({ 'shift', 'ctrl' }, "⇥")),
+      message = menuItemMessage('⇧⌃', "⇥", 2),
+      condition = noSelectedMenuItem(checkMenuItemByKeybinding('⇧⌃', "⇥")),
       fn = receiveMenuItem
     },
     ["goToNextConversation"] = {
-      message = menuItemMessage({ 'ctrl' }, "⇥", 2),
-      condition = noSelectedMenuItem(checkMenuItemByKeybinding({ 'ctrl' }, "⇥")),
+      message = menuItemMessage('⌃', "⇥", 2),
+      condition = noSelectedMenuItem(checkMenuItemByKeybinding('⌃', "⇥")),
       fn = receiveMenuItem
     }
   },
@@ -842,8 +842,8 @@ appHotKeyCallbacks = {
   ["com.kingsoft.wpsoffice.mac"] =
   {
     ["newWorkspace"] = {
-      message = menuItemMessage({ 'ctrl', 'alt' }, "N", 2),
-      condition = checkMenuItemByKeybinding({ 'ctrl', 'alt' }, "N"),
+      message = menuItemMessage('⌃⌥', "N", 2),
+      condition = checkMenuItemByKeybinding('⌃⌥', "N"),
       fn = receiveMenuItem
     },
     ["closeWorkspace"] = {
@@ -852,13 +852,13 @@ appHotKeyCallbacks = {
       fn = receiveMenuItem
     },
     ["previousWindow"] = {
-      message = menuItemMessage({ 'shift', 'ctrl' }, "⇥", 2),
-      condition = checkMenuItemByKeybinding({ 'shift', 'ctrl' }, "⇥"),
+      message = menuItemMessage('⇧⌃', "⇥", 2),
+      condition = checkMenuItemByKeybinding('⇧⌃', "⇥"),
       fn = receiveMenuItem
     },
     ["nextWindow"] = {
-      message = menuItemMessage({ 'ctrl' }, "⇥", 2),
-      condition = checkMenuItemByKeybinding({ 'ctrl' }, "⇥"),
+      message = menuItemMessage('⌃', "⇥", 2),
+      condition = checkMenuItemByKeybinding('⌃', "⇥"),
       fn = receiveMenuItem
     },
     ["closeDoNotSave"] = {
@@ -2503,7 +2503,7 @@ function remapPreviousTab(bundleID)
     remapPreviousTabHotkey = nil
   end
   local appObject = hs.application.frontmostApplication()
-  local menuItemPath = findMenuItemByKeyBinding(appObject, { 'shift', 'ctrl' }, '⇥')
+  local menuItemPath = findMenuItemByKeyBinding(appObject, '⇧⌃', '⇥')
   if menuItemPath ~= nil then
     local cond = function(appObject)
       local menuItemCond = appObject:findMenuItem(menuItemPath)
