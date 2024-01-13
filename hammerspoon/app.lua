@@ -594,6 +594,15 @@ local function noSelectedMenuItem(fn)
   end
 end
 
+function selectMenuItemOrKeyStroke(appObject, mods, key)
+  local menuItemPath, enabled = findMenuItemByKeyBinding(appObject, mods, key)
+  if menuItemPath ~= nil and enabled then
+    appObject:selectMenuItem(menuItemPath)
+  else
+    hs.eventtap.keyStroke(mods, key, nil, appObject)
+  end
+end
+
 appHotKeyCallbacks = {
   ["com.apple.finder"] =
   {
@@ -2093,10 +2102,10 @@ local function inAppHotKeysWrapper(appObject, mods, key, func)
   return function()
     if hs.window.frontmostWindow() ~= nil and appObject:focusedWindow() ~= nil
         and hs.window.frontmostWindow():application():bundleID() ~= appObject:bundleID() then
-      hs.eventtap.keyStroke(mods, key, nil, hs.window.frontmostWindow():application())
+      selectMenuItemOrKeyStroke(hs.window.frontmostWindow():application(), mods, key)
     elseif hs.window.frontmostWindow() ~= nil and appObject:focusedWindow() == nil
         and windowCreatedSince[hs.window.frontmostWindow():id()] then
-      hs.eventtap.keyStroke(mods, key, nil, hs.window.frontmostWindow():application())
+      selectMenuItemOrKeyStroke(hs.window.frontmostWindow():application(), mods, key)
     else
       func()
     end
@@ -2134,7 +2143,7 @@ local function registerInAppHotKeys(appName, eventType, appObject)
                 cfg.fn(appObject, appName, eventType)
               end
             else
-              hs.eventtap.keyStroke(keyBinding.mods, keyBinding.key, nil, appObject)
+              selectMenuItemOrKeyStroke(appObject, keyBinding.mods, keyBinding.key)
             end
           end
         end
@@ -2209,7 +2218,7 @@ local function inWinHotKeysWrapper(appObject, filter, mods, key, message, fn)
     elseif prevCallback ~= nil then
       prevCallback(winObj)
     else
-      hs.eventtap.keyStroke(mods, key, nil, appObject)
+      selectMenuItemOrKeyStroke(winObj:application(), mods, key)
     end
   end
   inWinCallbackChain[bid][hotkeyIdx(mods, key)] = wrapper

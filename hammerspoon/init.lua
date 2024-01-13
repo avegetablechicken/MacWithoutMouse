@@ -76,7 +76,7 @@ function forgiveWrapper(fn, mods, key)
       if not hs.fnutils.contains(forgivenApps, hs.application.frontmostApplication():bundleID()) then
         oldFn()
       elseif mods ~= nil and key ~= nil then
-        hs.eventtap.keyStroke(mods, key, nil, hs.window.frontmostWindow():application())
+        selectMenuItemOrKeyStroke(hs.window.frontmostWindow():application(), mods, key)
       end
     end
   end
