@@ -15,24 +15,28 @@ local function bindWindow(...)
   return hotkey
 end
 
-local function bindMoveWindow(spec, message, fn)
-  local hotkey = bindWindow(spec, message, function()
+local function bindMoveWindow(spec, message, fn, repeatable)
+  local newFn = function()
     fn()
     local win = hs.window.focusedWindow()
     frameCacheMaximize[win:id()] = nil
     frameCacheZoomToCenter[win:id()] = nil
-  end)
+  end
+  local repeatedFn = repeatable and newFn or nil
+  local hotkey = bindWindow(spec, message, newFn, nil, repeatedFn)
   hotkey.subkind = HK.WIN_OP_.MOVE
   return hotkey
 end
 
-local function bindResizeWindow(spec, message, fn)
-  local hotkey = bindWindow(spec, message, function()
+local function bindResizeWindow(spec, message, fn, repeatable)
+  local newFn = function()
     fn()
     local win = hs.window.focusedWindow()
     frameCacheMaximize[win:id()] = nil
     frameCacheZoomToCenter[win:id()] = nil
-  end)
+  end
+  local repeatedFn = repeatable and newFn or nil
+  local hotkey = bindWindow(spec, message, newFn, nil, repeatedFn)
   hotkey.subkind = HK.WIN_OP_.RESIZE
   return hotkey
 end
@@ -50,7 +54,7 @@ function()
   f.x = f.x - moveStep
   f.y = f.y - moveStep
   win:setFrame(f)
-end)
+end, true)
 
 -- move towards top
 bindMoveWindow(winHK["moveTowardsTop"], "Move towards Top",
@@ -60,7 +64,7 @@ function()
 
   f.y = f.y - moveStep
   win:setFrame(f)
-end)
+end, true)
 
 -- move towards top-right
 bindMoveWindow(winHK["moveTowardsTopRight"], "Move towards Top-Right",
@@ -71,7 +75,7 @@ function()
   f.x = f.x + moveStep
   f.y = f.y - moveStep
   win:setFrame(f)
-end)
+end, true)
 
 -- move towards left
 bindMoveWindow(winHK["moveTowardsLeft"], "Move towards Left",
@@ -81,7 +85,7 @@ function()
 
   f.x = f.x - moveStep
   win:setFrame(f)
-end)
+end, true)
 
 -- move towards right
 bindMoveWindow(winHK["moveTowardsRight"], "Move towards Right",
@@ -91,7 +95,7 @@ function()
 
   f.x = f.x + moveStep
   win:setFrame(f)
-end)
+end, true)
 
 -- move towards bottom-left
 bindMoveWindow(winHK["moveTowardsBottomLeft"], "Move towards Bottom-Left",
@@ -102,7 +106,7 @@ function()
   f.x = f.x - moveStep
   f.y = f.y + moveStep
   win:setFrame(f)
-end)
+end, true)
 
 -- move towards bottom
 bindMoveWindow(winHK["moveTowardsBottom"], "Move towards Bottom",
@@ -112,7 +116,7 @@ function()
 
   f.y = f.y + moveStep
   win:setFrame(f)
-end)
+end, true)
 
 -- move towards bottom-right
 bindMoveWindow(winHK["moveTowardsBottomRight"], "Move towards Bottom-Right",
@@ -123,7 +127,7 @@ function()
   f.x = f.x + moveStep
   f.y = f.y + moveStep
   win:setFrame(f)
-end)
+end, true)
 
 
 -- move and zoom to left
@@ -270,7 +274,7 @@ function()
   f.x = math.max(max.x, f.x - resizeStep)
   f.w = r - f.x
   win:setFrame(f)
-end)
+end, true)
 
 -- shrink on left
 bindResizeWindow(winHK["leftShrink"], "Left Border Shrink",
@@ -284,7 +288,7 @@ function()
   f.w = math.max(resizeStep, f.w - resizeStep)
   f.x = r - f.w
   win:setFrame(f)
-end)
+end, true)
 
 -- expand on right
 bindResizeWindow(winHK["rightExpand"], "Right Border Expand",
@@ -296,7 +300,7 @@ function()
 
   f.w = math.min(max.x + max.w - f.x, f.w + resizeStep)
   win:setFrame(f)
-end)
+end, true)
 
 -- shrink on right
 bindResizeWindow(winHK["rightShrink"], "Right Border Shrink",
@@ -308,7 +312,7 @@ function()
 
   f.w = math.max(resizeStep, f.w - resizeStep)
   win:setFrame(f)
-end)
+end, true)
 
 -- expand on bottom
 bindResizeWindow(winHK["topExpand"], "Top Border Expand",
@@ -322,7 +326,7 @@ function()
   f.y = math.max(max.y, f.y - resizeStep)
   f.h = b - f.y
   win:setFrame(f)
-end)
+end, true)
 
 -- shrink on bottom
 bindResizeWindow(winHK["topShrink"], "Top Border Shrink",
@@ -336,7 +340,7 @@ function()
   f.h = math.max(resizeStep, f.h - resizeStep)
   f.y = b - f.h
   win:setFrame(f)
-end)
+end, true)
 
 -- expand on bottom
 bindResizeWindow(winHK["bottomExpand"], "Bottom Border Expand",
@@ -348,7 +352,7 @@ function()
 
   f.h = math.min(max.y + max.h - f.y, f.h + resizeStep)
   win:setFrame(f)
-end)
+end, true)
 
 -- shrink on bottom
 bindResizeWindow(winHK["bottomShrink"], "Bottom Border Shrink",
@@ -360,7 +364,7 @@ function()
 
   f.h = math.max(resizeStep, f.h - resizeStep)
   win:setFrame(f)
-end)
+end, true)
 
 -- maximize
 frameCacheMaximize = {}
