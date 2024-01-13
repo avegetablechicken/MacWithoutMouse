@@ -2156,7 +2156,10 @@ local function registerInAppHotKeys(appName, eventType, appObject)
         end
         fn = inAppHotKeysWrapper(appObject, keyBinding,
                                  hs.fnutils.partial(fn, appObject, appName, eventType))
-        local repeatedFn = cfg.repeatable and fn or nil
+        local repeatedFn
+        if cfg.repeatable or (cfg.repeatable ~= false and cfg.condition ~= nil) then
+          repeatedFn = fn
+        end
         local msg = type(cfg.message) == 'string' and cfg.message or cfg.message(appObject)
         if msg ~= nil then
           local hotkey = bindSpecSuspend(keyBinding, msg, fn, nil, repeatedFn)
@@ -2267,7 +2270,7 @@ local function registerInWinHotKeys(appObject)
           local msg = type(spec.message) == 'string' and spec.message or spec.message(appObject)
           if msg ~= nil then
             local fn = inWinHotKeysWrapper(appObject, keyBinding.windowFilter, keyBinding, msg, spec.fn)
-            local repeatedFn = spec.repeatable and fn or nil
+            local repeatedFn = spec.repeatable ~= false and fn or nil
             local hotkey = bindSpecSuspend(keyBinding, msg, fn, nil, repeatedFn)
             hotkey.kind = HK.IN_APPWIN
             table.insert(inWinHotKeys[bid], hotkey)
@@ -2280,7 +2283,7 @@ local function registerInWinHotKeys(appObject)
             local msg = type(spec.message) == 'string' and spec.message or spec.message(appObject)
             if msg ~= nil then
               local fn = inWinHotKeysWrapper(appObject, cfg.filter, spec, msg, spec.fn)
-              local repeatedFn = spec.repeatable and fn or nil
+              local repeatedFn = spec.repeatable ~= false and fn or nil
               local hotkey = bindSpecSuspend(spec, msg, fn, nil, repeatedFn)
               hotkey.kind = HK.IN_APPWIN
               table.insert(inWinHotKeys[bid], hotkey)
