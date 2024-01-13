@@ -965,7 +965,7 @@ appHotKeyCallbacks = {
 
   ["com.apple.iWork.Keynote"] =
   {
-    ["export"] = {  -- File > Export To > PDF…
+    ["exportToPDF"] = {  -- File > Export To > PDF…
       message = localizedMessage({ "Export To", "PDF…" }, "MainMenu"),
       condition = checkMenuItem({ "File", "Export To", "PDF…" }, { localeFile = "MainMenu" }),
       fn = function(menuItemTitle, appObject)
