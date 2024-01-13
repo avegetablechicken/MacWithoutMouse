@@ -236,7 +236,7 @@ registerAppHotkeys()
 -- # hotkeys in specific application
 
 -- pipeline of copying latex to `klatexformula` and rendering
-function klatexformulaRender()
+local function klatexformulaRender()
   hs.osascript.applescript([[
     tell application "System Events"
       tell ]] .. aWinFor("org.klatexformula.klatexformula") .. [[
@@ -246,7 +246,7 @@ function klatexformulaRender()
   ]])
 end
 
-function deleteSelectedMessage(appObject, menuItem, force)
+local function deleteSelectedMessage(appObject, menuItem, force)
   appObject:selectMenuItem(menuItem)
   if force ~= nil then
     hs.timer.usleep(0.1 * 1000000)
@@ -256,7 +256,7 @@ function deleteSelectedMessage(appObject, menuItem, force)
   end
 end
 
-function deleteAllMessages(appObject)
+local function deleteAllMessages(appObject)
   local menuItemTitle = getOSVersion() < OS.Ventura and "File" or "Conversations"
   local appLocale = applicationLocales(appObject:bundleID())[1]
   local subMenuItem = appLocale:sub(1, 2) == "zh" and "删除对话…" or "Delete Conversation…"
@@ -318,7 +318,7 @@ local function deleteMousePositionCall(appObject)
   )
 end
 
-function deleteAllCalls(appObject)
+local function deleteAllCalls(appObject)
   appUIObj = hs.axuielement.applicationElement(appObject)
   appUIObj:elementSearch(
     function(msg, results, count)
@@ -350,7 +350,7 @@ function deleteAllCalls(appObject)
   )
 end
 
-function confirmDeleteConditionForAppleApps(appObject)
+local function confirmDeleteConditionForAppleApps(appObject)
   local ok, result = hs.osascript.applescript([[
     tell application "System Events"
       tell ]] .. aWinFor(appObject) .. [[
@@ -369,7 +369,7 @@ function confirmDeleteConditionForAppleApps(appObject)
   return ok and result
 end
 
-function confirmDeleteForAppleApps(appObject)
+local function confirmDeleteForAppleApps(appObject)
   hs.osascript.applescript([[
     tell application "System Events"
       tell ]] .. aWinFor(appObject) .. [[
@@ -567,21 +567,21 @@ local function menuItemMessage(mods, key, titleIndex, sep)
   end
 end
 
-function checkMenuItem(menuItemTitle, params)
+local function checkMenuItem(menuItemTitle, params)
   return function(appObject)
     local menuItem, menuItemTitle = findMenuItem(appObject, menuItemTitle, params)
     return menuItem ~= nil and menuItem.enabled, menuItemTitle
   end
 end
 
-function checkMenuItemByKeybinding(mods, key)
+local function checkMenuItemByKeybinding(mods, key)
   return function(appObject)
     local menuItem, enabled = findMenuItemByKeyBinding(appObject, mods, key)
     return menuItem ~= nil and enabled, menuItem
   end
 end
 
-function receiveMenuItem(menuItemTitle, appObject)
+local function receiveMenuItem(menuItemTitle, appObject)
   appObject:selectMenuItem(menuItemTitle)
 end
 
