@@ -587,8 +587,8 @@ local function noSelectedMenuItem(fn)
   return function(appObject)
     local appUIObj = hs.axuielement.applicationElement(appObject)
     local menuBar = appUIObj:childrenWithRole("AXMenuBar")[1]
-    for _, menuItem in ipairs(menuBar:childrenWithRole("AXMenuBarItem")) do
-      if menuItem.AXSelected then return false end
+    for i, menuItem in ipairs(menuBar:childrenWithRole("AXMenuBarItem")) do
+      if i > 1 and menuItem.AXSelected then return false end
     end
     return fn(appObject)
   end
