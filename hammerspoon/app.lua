@@ -1493,7 +1493,6 @@ appHotKeyCallbacks = {
     ["new..."] = {
       mods = "⌘", key = "N",
       message = localizedMessage("New..."),
-      repeatable = true,
       fn = function(appObject)
         selectMenuItem(appObject, { "File", "New..." })
       end
@@ -1501,7 +1500,6 @@ appHotKeyCallbacks = {
     ["open..."] = {
       mods = "⌘", key = "O",
       message = localizedMessage("Open..."),
-      repeatable = true,
       fn = function(appObject)
         selectMenuItem(appObject, { "File", "Open..." })
       end
