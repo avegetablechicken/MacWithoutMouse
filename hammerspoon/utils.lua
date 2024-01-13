@@ -1133,10 +1133,10 @@ for _, title in ipairs{ 'File', 'Edit', 'View', 'Window', 'Help' } do
       menuBarTitleLocalizationMap.common[localizedTitle] = title
     end
   end
-  local localizedTitle = localizedString('Format', "com.apple.Notes", "MainMenu")
-  if localizedTitle ~= nil then
-    menuBarTitleLocalizationMap.common[localizedTitle] = title
-  end
+end
+local localizedTitle = localizedString('Format', "com.apple.Notes", "MainMenu")
+if localizedTitle ~= nil then
+  menuBarTitleLocalizationMap.common[localizedTitle] = 'Format'
 end
 
 
