@@ -603,6 +603,7 @@ local ignoredApps = {
   "com.apple.notificationcenterui",
   "com.pigigaldi.pock",
   "whbalzac.Dongtaizhuomian",
+  "com.macosgame.iwallpaper",
 }
 switcher = nil
 
