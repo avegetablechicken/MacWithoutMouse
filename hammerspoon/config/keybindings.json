@@ -1000,6 +1000,10 @@
         "mods": "command",
         "key": "E"
       },
+      "exportToPPT": {
+        "mods": ["shift", "option", "command"],
+        "key": "E"
+      },
       "pasteAndMatchStyle": {
         "mods": "command",
         "key": "V"

@@ -973,6 +973,14 @@ appHotKeyCallbacks = {
         appObject:selectMenuItem(menuItemTitle)
       end
     },
+    ["exportToPPT"] = {  -- File > Export To > PowerPoint…
+      message = localizedMessage({ "Export To", "PowerPoint…" }, "MainMenu"),
+      condition = checkMenuItem({ "File", "Export To", "PowerPoint…" }, { localeFile = "MainMenu" }),
+      fn = function(menuItemTitle, appObject)
+        appObject:selectMenuItem({ menuItemTitle[1], menuItemTitle[2] })
+        appObject:selectMenuItem(menuItemTitle)
+      end
+    },
     ["pasteAndMatchStyle"] = {  -- Edit > Paste and Match Style
       message = localizedMessage("Paste and Match Style", "MainMenu"),
       repeatable = true,
