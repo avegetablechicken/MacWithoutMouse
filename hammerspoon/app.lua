@@ -585,6 +585,17 @@ function receiveMenuItem(menuItemTitle, appObject)
   appObject:selectMenuItem(menuItemTitle)
 end
 
+local function noSelectedMenuItem(fn)
+  return function(appObject)
+    local appUIObj = hs.axuielement.applicationElement(appObject)
+    local menuBar = appUIObj:childrenWithRole("AXMenuBar")[1]
+    for _, menuItem in ipairs(menuBar:childrenWithRole("AXMenuBarItem")) do
+      if menuItem.AXSelected then return false end
+    end
+    return fn(appObject)
+  end
+end
+
 appHotKeyCallbacks = {
   ["com.apple.finder"] =
   {
@@ -630,13 +641,13 @@ appHotKeyCallbacks = {
     ["goToPreviousConversation"] = {
       message = menuItemMessage({ 'shift', 'ctrl' }, "⇥", 2),
       repeatable = true,
-      condition = checkMenuItemByKeybinding({ 'shift', 'ctrl' }, "⇥"),
+      condition = noSelectedMenuItem(checkMenuItemByKeybinding({ 'shift', 'ctrl' }, "⇥")),
       fn = receiveMenuItem
     },
     ["goToNextConversation"] = {
       message = menuItemMessage({ 'ctrl' }, "⇥", 2),
       repeatable = true,
-      condition = checkMenuItemByKeybinding({ 'ctrl' }, "⇥"),
+      condition = noSelectedMenuItem(checkMenuItemByKeybinding({ 'ctrl' }, "⇥")),
       fn = receiveMenuItem
     }
   },
