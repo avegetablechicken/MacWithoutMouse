@@ -388,7 +388,6 @@ local specialCommonHotkeyConfigs = {
   ["closeWindow"] = {
     mods = "⌘", key = "W",
     message = "Close Window",
-    repeatable = true,
     condition = function(appObject)
       return appObject:focusedWindow() ~= nil, appObject:focusedWindow()
     end,
@@ -397,7 +396,6 @@ local specialCommonHotkeyConfigs = {
   ["minimize"] = {
     mods = "⌘", key = "M",
     message = "Minimize",
-    repeatable = true,
     condition = function(appObject)
       return appObject:focusedWindow() ~= nil, appObject:focusedWindow()
     end,
@@ -607,13 +605,11 @@ appHotKeyCallbacks = {
     },
     ["showPrevTab"] = {
       message = menuItemMessage({ 'shift', 'ctrl' }, "⇥", 2),
-      repeatable = true,
       condition = checkMenuItemByKeybinding({ 'shift', 'ctrl' }, "⇥"),
       fn = receiveMenuItem
     },
     ["showNextTab"] = {
       message = menuItemMessage({ 'ctrl' }, "⇥", 2),
-      repeatable = true,
       condition = checkMenuItemByKeybinding({ 'ctrl' }, "⇥"),
       fn = receiveMenuItem
     }
@@ -640,13 +636,11 @@ appHotKeyCallbacks = {
     },
     ["goToPreviousConversation"] = {
       message = menuItemMessage({ 'shift', 'ctrl' }, "⇥", 2),
-      repeatable = true,
       condition = noSelectedMenuItem(checkMenuItemByKeybinding({ 'shift', 'ctrl' }, "⇥")),
       fn = receiveMenuItem
     },
     ["goToNextConversation"] = {
       message = menuItemMessage({ 'ctrl' }, "⇥", 2),
-      repeatable = true,
       condition = noSelectedMenuItem(checkMenuItemByKeybinding({ 'ctrl' }, "⇥")),
       fn = receiveMenuItem
     }
@@ -673,7 +667,6 @@ appHotKeyCallbacks = {
     ["back"] = {
       mods = "⌘", key = "[",
       message = localizedMessage("Back", "Localizable"),
-      repeatable = true,
       condition = function(appObject)
         local menuItem, menuItemTitle = findMenuItem(appObject, { "Store", "Back" },
                                                      { localeFile = "Localizable" })
@@ -850,25 +843,21 @@ appHotKeyCallbacks = {
   {
     ["newWorkspace"] = {
       message = menuItemMessage({ 'ctrl', 'alt' }, "N", 2),
-      repeatable = true,
       condition = checkMenuItemByKeybinding({ 'ctrl', 'alt' }, "N"),
       fn = receiveMenuItem
     },
     ["closeWorkspace"] = {
       message = "关闭工作区",
-      repeatable = true,
       condition = checkMenuItem({ zh = { "工作区", "关闭工作区" }}),
       fn = receiveMenuItem
     },
     ["previousWindow"] = {
       message = menuItemMessage({ 'shift', 'ctrl' }, "⇥", 2),
-      repeatable = true,
       condition = checkMenuItemByKeybinding({ 'shift', 'ctrl' }, "⇥"),
       fn = receiveMenuItem
     },
     ["nextWindow"] = {
       message = menuItemMessage({ 'ctrl' }, "⇥", 2),
-      repeatable = true,
       condition = checkMenuItemByKeybinding({ 'ctrl' }, "⇥"),
       fn = receiveMenuItem
     },
@@ -1004,13 +993,11 @@ appHotKeyCallbacks = {
     },
     ["pasteAndMatchStyle"] = {  -- Edit > Paste and Match Style
       message = localizedMessage("Paste and Match Style", "MainMenu"),
-      repeatable = true,
       condition = checkMenuItem({ "Edit", "Paste and Match Style" }, { localeFile = "MainMenu" }),
       fn = receiveMenuItem
     },
     ["paste"] = {  -- Edit > Paste
       message = localizedMessage("Paste", "MainMenu"),
-      repeatable = true,
       condition = checkMenuItem({ "Edit", "Paste" }, { localeFile = "MainMenu" }),
       fn = receiveMenuItem
     },
@@ -1101,7 +1088,6 @@ appHotKeyCallbacks = {
   {
     ["back"] = {
       message = localizedMessage("Common.Navigation.Back", { localeFir = "Localizable", key = true }),
-      repeatable = true,
       condition = function(appObject)
         local bundleID = appObject:bundleID()
         local params = { localeFir = "Localizable", key = true }
@@ -1202,7 +1188,6 @@ appHotKeyCallbacks = {
     },
     ["forward"] = {
       message = localizedMessage("WebView.Next.Item", { localeFir = "Localizable", key = true }),
-      repeatable = true,
       condition = function(appObject)
         local bundleID = appObject:bundleID()
         local nextPage = localizedString("WebView.Next.Item", bundleID, { localeFir = "Localizable", key = true })
@@ -1516,7 +1501,6 @@ appHotKeyCallbacks = {
     ["closeWindow"] = {
       mods = "⌘", key = "W",
       message = localizedMessage("Close Window"),
-      repeatable = true,
       condition = function(appObject)
         local menuItem, menuItemTitle = findMenuItem(appObject, { "File", "Close Window" })
         if menuItem ~= nil and menuItem.enabled then
