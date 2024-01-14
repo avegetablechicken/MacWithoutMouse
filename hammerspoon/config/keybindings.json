@@ -656,6 +656,10 @@
         "mods": ["shift", "command"],
         "key": "L"
       },
+      "recentFolders": {
+        "mods": "control",
+        "key": "R"
+      },
       "showPrevTab": {
         "mods": ["shift", "command"],
         "key": "["

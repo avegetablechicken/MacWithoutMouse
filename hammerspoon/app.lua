@@ -617,6 +617,13 @@ appHotKeyCallbacks = {
         selectMenuItem(appObject, { "Go", "Downloads" }, { localeFile = "MenuBar" })
       end
     },
+    ["recentFolders"] = {
+      message = localizedMessage("Recent Folders", "MenuBar"),
+      fn = function(appObject)
+        selectMenuItem(appObject, { "Go", "Recent Folders" },
+                       { localeFile = "MenuBar" }, true)
+      end
+    },
     ["showPrevTab"] = {
       message = menuItemMessage('⇧⌃', "⇥", 2),
       condition = checkMenuItemByKeybinding('⇧⌃', "⇥"),
