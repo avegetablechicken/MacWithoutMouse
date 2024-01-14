@@ -129,7 +129,7 @@ function selectMenuItem(appObject, menuItemTitle, params, show)
     local menuItem, targetMenuItem = findMenuItem(appObject, menuItemTitle, params)
     if menuItem ~= nil then
       showMenuItemWrapper(function()
-        appObject:selectMenuItem(targetMenuItem[1])
+        appObject:selectMenuItem({targetMenuItem[1]})
       end)()
       return appObject:selectMenuItem(targetMenuItem)
     end
