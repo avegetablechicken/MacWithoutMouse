@@ -1792,10 +1792,10 @@ appHotKeyCallbacks = {
   {
     ["newProject"] = {
       message = "New Project",
-      fn = function(appObject)
+      fn = function(winObj)
         local ok, pos = hs.osascript.applescript([[
           tell application "System Events"
-            tell ]] .. aWinFor(appObject) .. [[
+            tell ]] .. aWinFor(winObj:application()) .. [[
               if exists button 1 of button 2 then
                 return position of button 1 of button 2
               else
@@ -1819,10 +1819,10 @@ appHotKeyCallbacks = {
   {
     ["newProject"] = {
       message = "New Project",
-      fn = function(appObject)
+      fn = function(winObj)
         local ok, pos = hs.osascript.applescript([[
           tell application "System Events"
-            tell ]] .. aWinFor(appObject) .. [[
+            tell ]] .. aWinFor(winObj:application()) .. [[
               if exists button 1 of button 2 then
                 return position of button 1 of button 2
               else
@@ -1846,10 +1846,10 @@ appHotKeyCallbacks = {
   {
       ["newProject"] = {
         message = "New Project",
-        fn = function(appObject)
+        fn = function(winObj)
           local ok, pos = hs.osascript.applescript([[
             tell application "System Events"
-              tell ]] .. aWinFor(appObject) .. [[
+              tell ]] .. aWinFor(winObj:application()) .. [[
                 set bt to button 1 of button 2
                 return position of bt
               end tell
@@ -1870,10 +1870,10 @@ appHotKeyCallbacks = {
   {
     ["newProject"] = {
       message = "New Project",
-      fn = function(appObject)
+      fn = function(winObj)
         local ok, pos = hs.osascript.applescript([[
           tell application "System Events"
-            tell ]] .. aWinFor(appObject) .. [[
+            tell ]] .. aWinFor(winObj:application()) .. [[
               set bt to button 1 of button 2
               return position of bt
             end tell
