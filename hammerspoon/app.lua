@@ -572,10 +572,15 @@ local function checkMenuItem(menuItemTitle, params)
   end
 end
 
+local NO_MENU_ITEM_BY_KEYBINDING = 1
 local function checkMenuItemByKeybinding(mods, key)
   return function(appObject)
     local menuItem, enabled = findMenuItemByKeyBinding(appObject, mods, key)
-    return menuItem ~= nil and enabled, menuItem
+    if menuItem ~= nil and enabled then
+      return true, menuItem
+    else
+      return false, NO_MENU_ITEM_BY_KEYBINDING
+    end
   end
 end
 
@@ -2142,6 +2147,8 @@ local function registerInAppHotKeys(appName, eventType, appObject)
               else
                 cfg.fn(appObject, appName, eventType)
               end
+            elseif result == NO_MENU_ITEM_BY_KEYBINDING then
+              hs.eventtap.keyStroke(keyBinding.mods, keyBinding.key, nil, appObject)
             else
               selectMenuItemOrKeyStroke(appObject, keyBinding.mods, keyBinding.key)
             end
