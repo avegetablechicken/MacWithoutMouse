@@ -633,6 +633,44 @@ appHotKeyCallbacks = {
       message = menuItemMessage('⌃', "⇥", 2),
       condition = checkMenuItemByKeybinding('⌃', "⇥"),
       fn = receiveMenuItem
+    },
+    ["QLControlOpen"] = {
+      message = function(appObject)
+        return localizedString("Quick Look", appObject:bundleID(), "MenuBar")
+            .. ' > ' .. localizedString("Open", appObject:bundleID(), "MenuBar")
+      end,
+      condition = function(appObject)
+        local status, btnName = hs.osascript.applescript([[
+          tell application "System Events"
+            tell ]] .. aWinFor(appObject) .. [[
+              if value of attribute "AXSubrole" is "Quick Look" then
+                repeat with g in groups
+                  if (exists value of attribute "AXIdentifier" of g) and (value of attribute "AXIdentifier" of g is "QLControlOpen") then
+                    return true
+                  end if
+                end repeat
+              end if
+              return false
+            end tell
+          end tell
+        ]])
+        return status and btnName
+      end,
+      fn = function(appObject)
+        hs.osascript.applescript([[
+          tell application "System Events"
+            tell ]] .. aWinFor(appObject) .. [[
+              if value of attribute "AXSubrole" is "Quick Look" then
+                repeat with g in groups
+                  if (exists value of attribute "AXIdentifier" of g) and (value of attribute "AXIdentifier" of g is "QLControlOpen") then
+                    perform action 1 of button 1 of g
+                  end if
+                end repeat
+              end if
+            end tell
+          end tell
+        ]])
+      end
     }
   },
 

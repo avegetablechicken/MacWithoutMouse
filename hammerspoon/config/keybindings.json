@@ -667,6 +667,10 @@
       "showNextTab": {
         "mods": ["shift", "command"],
         "key": "]"
+      },
+      "QLControlOpen": {
+        "mods": ["shift", "command"],
+        "key": "O"
       }
     },
     "com.apple.Terminal": {
