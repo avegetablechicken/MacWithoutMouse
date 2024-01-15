@@ -1280,6 +1280,24 @@ appHotKeyCallbacks = {
           end tell
         ]])
       end
+    },
+    ["openInDefaultBrowser"] = {
+      message = localizedMessage("Open in Default Browser"),
+      condition = function(appObject)
+        local status, result = hs.osascript.applescript([[
+          tell application "System Events"
+            tell ]] .. aWinFor(appObject) .. [[
+              return exists attribute "AXDOMClassList" of group 1
+            end tell
+          end tell
+        ]])
+        return status and result
+      end,
+      fn = function(appObject)
+        local frame = appObject:focusedWindow():frame()
+        local position = { frame.x + frame.w - 60, frame.y + 23 }
+        leftClickAndRestore(position)
+      end
     }
   },
 
