@@ -2928,8 +2928,8 @@ local function processAppWithNoWindows(appObject, quit)
   end
 end
 
-local appsAutoHideWithNoWindows = applicationConfigs.autoHideWithNoWindow
-local appsAutoQuitWithNoWindows = applicationConfigs.autoQuitWithNoWindow
+local appsAutoHideWithNoWindows = applicationConfigs.autoHideWithNoWindow or {}
+local appsAutoQuitWithNoWindows = applicationConfigs.autoQuitWithNoWindow or {}
 local windowFilterAutoHideQuit = hs.window.filter.new():subscribe(hs.window.filter.windowDestroyed,
 function(winObj)
   if winObj == nil or winObj:application() == nil then return end
@@ -3050,7 +3050,7 @@ end
 
 -- application callbacks
 
-local appsInputSourceMap = applicationConfigs.inputSource
+local appsInputSourceMap = applicationConfigs.inputSource or {}
 function selectInputSourceInApp(bid)
   local inputSource = appsInputSourceMap[bid]
   if inputSource ~= nil then
