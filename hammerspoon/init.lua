@@ -67,6 +67,7 @@ touchModalList = {}
 
 forgivenApps = {
   "com.devolutions.remotedesktopmanager", "com.devolutions.remotedesktopmanager.free",
+  "com.parallels.macvm",
 }
 
 function forgiveWrapper(fn, mods, key)
