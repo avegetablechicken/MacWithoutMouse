@@ -2581,13 +2581,10 @@ end
 
 -- simplify switching to previous tab
 function remapPreviousTab(bundleID)
-  if keybindingConfigs.hotkeys.appCommon == nil
-      or keybindingConfigs.hotkeys.appCommon["remapPreviousTab"] == nil
-      or hs.fnutils.contains(keybindingConfigs.hotkeys.appCommon["remapPreviousTab"].excluded or {},
-                             bundleID) then
+  local spec = get(keybindingConfigs.hotkeys.appCommon, "remapPreviousTab")
+  if spec == nil or hs.fnutils.contains(spec.excluded or {}, bundleID) then
     return
   end
-  local spec = keybindingConfigs.hotkeys.appCommon["remapPreviousTab"]
   if remapPreviousTabHotkey then
     remapPreviousTabHotkey:delete()
     remapPreviousTabHotkey = nil
@@ -2615,15 +2612,11 @@ local frontmostApplication = hs.application.frontmostApplication()
 remapPreviousTab(frontmostApplication:bundleID())
 
 function registerOpenRecent(bundleID)
-  if (appHotKeyCallbacks[bundleID] ~= nil
-      and appHotKeyCallbacks[bundleID]["openRecent"] ~= nil)
-      or keybindingConfigs.hotkeys.appCommon == nil
-      or keybindingConfigs.hotkeys.appCommon["openRecent"] == nil
-      or hs.fnutils.contains(keybindingConfigs.hotkeys.appCommon["openRecent"].excluded or {},
-                              bundleID) then
+  local spec = get(keybindingConfigs.hotkeys.appCommon, "openRecent")
+  if (get(appHotKeyCallbacks[bundleID], "openRecent") ~= nil)
+      or spec == nil or hs.fnutils.contains(spec.excluded or {}, bundleID) then
     return
   end
-  local spec = keybindingConfigs.hotkeys.appCommon["openRecent"]
   if openRecentHotkey then
     openRecentHotkey:delete()
     openRecentHotkey = nil
@@ -2736,21 +2729,13 @@ function altMenuItem(appObject)
   end
   altMenuItemHotkeys = {}
 
-  local enableIndex, enableLetter
-  if keybindingConfigs.hotkeys.menuItems ~= nil then
-    if keybindingConfigs.hotkeys.menuItems.enableIndex ~= nil then
-      enableIndex = keybindingConfigs.hotkeys.menuItems.enableIndex
-    end
-    if keybindingConfigs.hotkeys.menuItems.enableLetter ~= nil then
-      enableLetter = keybindingConfigs.hotkeys.menuItems.enableLetter
-    end
-  else
-    enableIndex = false
-    enableLetter = true
-  end
-  if keybindingConfigs.hotkeys.menuItems.excludedForLetter ~= nil
-      and hs.fnutils.contains(keybindingConfigs.hotkeys.menuItems.excludedForLetter,
-        appObject:bundleID()) then
+  local enableIndex = get(keybindingConfigs.hotkeys.menuItems, "enableIndex")
+  local enableLetter = get(keybindingConfigs.hotkeys.menuItems, "enableLetter")
+  if enableIndex == nil then enableIndex = false end
+  if enableLetter == nil then enableLetter = true end
+  local excludedForLetter = get(keybindingConfigs.hotkeys.menuItems, 'excludedForLetter')
+  if excludedForLetter ~= nil and hs.fnutils.contains(excludedForLetter,
+                                                      appObject:bundleID()) then
     enableLetter = false
   end
   if enableIndex == false and enableLetter == false then return end
@@ -2860,10 +2845,7 @@ function altMenuItem(appObject)
 end
 altMenuItem(frontmostApplication)
 
-local appsWatchMenuItems
-if applicationConfigs ~= nil and applicationConfigs.menuItemsMayChange ~= nil then
-  appsWatchMenuItems = applicationConfigs.menuItemsMayChange.basic or {}
-end
+local appsWatchMenuItems = get(applicationConfigs.menuItemsMayChange, 'basic') or {}
 appsMenuItemsWatchers = {}
 
 local getMenuItemTitlesString = function(appObject)
@@ -2900,10 +2882,7 @@ if frontAppBid ~= nil then
 end
 
 
-local appsMayChangeMenu
-if applicationConfigs ~= nil and applicationConfigs.menuItemsMayChange ~= nil then
-  appsMayChangeMenu = applicationConfigs.menuItemsMayChange.window
-end
+local appsMayChangeMenu = get(applicationConfigs.menuItemsMayChange, 'window')
 local curAppMenuItemWatcher
 if appsMayChangeMenu ~= nil then
   local windowFilterAppsMayChangeMenu = hs.window.filter.new():subscribe(
@@ -2997,7 +2976,7 @@ newMessageWindowFilter = hs.window.filter.new(false):
           end
         end)
 
-remoteDesktopsMappingModifiers = keybindingConfigs.remap or {}
+remoteDesktopsMappingModifiers = get(keybindingConfigs, 'remap') or {}
 local modifiersShort = {
   control = "ctrl",
   option = "alt",

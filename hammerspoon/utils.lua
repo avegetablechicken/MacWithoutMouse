@@ -21,6 +21,11 @@ function getOSVersion()
   end
 end
 
+function get(table, key, ...)
+  if table == nil or key == nil then return table end
+  return get(table[key], ...)
+end
+
 function inFullscreenWindow()
   local focusedWindow = hs.application.frontmostApplication():focusedWindow()
   return focusedWindow ~= nil
