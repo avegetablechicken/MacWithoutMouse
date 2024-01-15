@@ -2052,7 +2052,7 @@ function system_wifiChangedCallback()
           local _, status_ok = hs.execute(labProxyConfig.condition.shell_command)
           local loc = status_ok and locations[1] or locations[2]
           if status_ok then
-            enable_proxy_global("Lab Proxy", nil, loc)
+            enable_proxy_PAC("Lab Proxy", nil, loc)
           else
             if findApplication(proxyAppBundleIDs.MonoCloud) then
               hs.application.launchOrFocusByBundleID(proxyAppBundleIDs.MonoCloud)
