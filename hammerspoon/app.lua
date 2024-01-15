@@ -1148,6 +1148,8 @@ appHotKeyCallbacks = {
     ["back"] = {
       message = localizedMessage("Common.Navigation.Back", { localeFir = "Localizable", key = true }),
       condition = function(appObject)
+        local ok, menuItem = checkMenuItemByKeybinding("⌘", "[")(appObject)
+        if ok then return true, { 0, menuItem } end
         local bundleID = appObject:bundleID()
         local params = { localeFir = "Localizable", key = true }
         local back = localizedString("Common.Navigation.Back", bundleID, params)
@@ -1211,7 +1213,9 @@ appHotKeyCallbacks = {
         end
       end,
       fn = function(result, appObject)
-        if type(result[2]) == "table" then
+        if result[1] == 0 then
+          appObject:selectMenuItem(result[2])
+        elseif result[1] == 4 then
           leftClickAndRestore(result[2])
         else
           local script = [[
@@ -1248,6 +1252,8 @@ appHotKeyCallbacks = {
     ["forward"] = {
       message = localizedMessage("WebView.Next.Item", { localeFir = "Localizable", key = true }),
       condition = function(appObject)
+        local ok, menuItem = checkMenuItemByKeybinding("⌘", "]")(appObject)
+        if ok then return true, { 0, menuItem } end
         local bundleID = appObject:bundleID()
         local nextPage = localizedString("WebView.Next.Item", bundleID, { localeFir = "Localizable", key = true })
         local ok, valid = hs.osascript.applescript([[
@@ -1263,22 +1269,26 @@ appHotKeyCallbacks = {
             return false
           end tell
         ]])
-        return ok and valid, nextPage
+        return ok and valid, { 1, nextPage }
       end,
-      fn = function(nextPage, appObject)
-        hs.osascript.applescript([[
-          tell application "System Events"
-            -- Push Notifications
-            set bts to every button of ]] .. aWinFor(appObject) .. [[
-            repeat with bt in bts
-              if value of attribute "AXHelp" of bt is "]] .. nextPage .. [[" ¬
-                  and value of attribute "AXEnabled" of bt is True then
-                click bt
-                return
-              end if
-            end repeat
-          end tell
-        ]])
+      fn = function(result, appObject)
+        if result[1] == 0 then
+          appObject:selectMenuItem(result[2])
+        elseif result[1] == 1 then
+          hs.osascript.applescript([[
+            tell application "System Events"
+              -- Push Notifications
+              set bts to every button of ]] .. aWinFor(appObject) .. [[
+              repeat with bt in bts
+                if value of attribute "AXHelp" of bt is "]] .. nextPage .. [[" ¬
+                    and value of attribute "AXEnabled" of bt is True then
+                  click bt
+                  return
+                end if
+              end repeat
+            end tell
+          ]])
+        end
       end
     },
     ["openInDefaultBrowser"] = {
