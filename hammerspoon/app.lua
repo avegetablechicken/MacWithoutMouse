@@ -3168,10 +3168,16 @@ local appsInputSourceMap = applicationConfigs.inputSource or {}
 function selectInputSourceInApp(bid)
   local inputSource = appsInputSourceMap[bid]
   if inputSource ~= nil then
+    local currentSourceID = hs.keycodes.currentSourceID()
     if type(inputSource) == 'string' then
-      hs.keycodes.currentSourceID(inputSource)
+      if currentSourceID ~= inputSource then
+        hs.keycodes.currentSourceID(inputSource)
+      end
     else
       for _, source in ipairs(inputSource) do
+        if currentSourceID == source then
+          return
+        end
         if hs.keycodes.currentSourceID(source) then
           break
         end
