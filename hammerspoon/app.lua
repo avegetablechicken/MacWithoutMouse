@@ -2750,7 +2750,7 @@ local function bindAltMenu(appObject, mods, key, message, fn)
   return hotkey
 end
 
-local function searchHotkeyByNth(appObject, itemTitles, alreadySetHotkeys, index)
+local function searchHotkeyByNth(itemTitles, alreadySetHotkeys, index)
   local notSetItems = {}
   for i, title in pairs(itemTitles) do
     if index == nil then
@@ -2886,13 +2886,13 @@ function altMenuItem(appObject)
         table.insert(notSetItems, title)
       end
     end
-    notSetItems, alreadySetHotkeys = searchHotkeyByNth(appObject, notSetItems, alreadySetHotkeys, 1)
+    notSetItems, alreadySetHotkeys = searchHotkeyByNth(notSetItems, alreadySetHotkeys, 1)
     -- if there are still items not set, set them by first letter of second word
-    notSetItems, alreadySetHotkeys = searchHotkeyByNth(appObject, notSetItems, alreadySetHotkeys, nil)
+    notSetItems, alreadySetHotkeys = searchHotkeyByNth(notSetItems, alreadySetHotkeys, nil)
     -- if there are still items not set, set them by second letter
-    notSetItems, alreadySetHotkeys = searchHotkeyByNth(appObject, notSetItems, alreadySetHotkeys, 2)
+    notSetItems, alreadySetHotkeys = searchHotkeyByNth(notSetItems, alreadySetHotkeys, 2)
     -- if there are still items not set, set them by third letter
-    searchHotkeyByNth(appObject, notSetItems, alreadySetHotkeys, 3)
+    searchHotkeyByNth(notSetItems, alreadySetHotkeys, 3)
     local invMap = {}
     for key, title in pairs(alreadySetHotkeys) do
       local menuItem = type(title) == 'table' and title[1] or title
