@@ -37,6 +37,12 @@ function get(table, key, ...)
   return get(table[key], ...)
 end
 
+function getAXChildren(element, role, index, ...)
+  if element == nil or role == nil then return element end
+  local children = element:childrenWithRole(role)[index]
+  return getAXChildren(children, ...)
+end
+
 function inFullscreenWindow()
   local focusedWindow = hs.application.frontmostApplication():focusedWindow()
   return focusedWindow ~= nil

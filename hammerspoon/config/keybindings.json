@@ -648,6 +648,10 @@
         "excluded": [
           "com.microsoft.VSCode"
         ]
+      },
+      "confirmDelete": {
+        "mods": "option",
+        "key": "D"
       }
     },
 
@@ -885,12 +889,6 @@
         "key": "delete"
       }
     },
-    "com.apple.ScriptEditor2": {
-      "confirmDelete": {
-        "mods": "option",
-        "key": "D"
-      }
-    },
     "com.apple.AppStore": {
       "back": {
         "mods": "command",
@@ -935,16 +933,6 @@
       "pasteAsPlainText": {
         "mods": ["shift", "option", "command"],
         "key": "V"
-      },
-      "confirmDelete": {
-        "mods": "option",
-        "key": "D"
-      }
-    },
-    "com.vallettaventures.Texpad": {
-      "confirmDelete": {
-        "mods": "option",
-        "key": "D"
       }
     },
     "com.superace.updf.mac": {
@@ -1035,10 +1023,6 @@
       "revealInFinder": {
         "mods": ["shift", "option", "command"],
         "key": "F"
-      },
-      "confirmDelete": {
-        "mods": "option",
-        "key": "D"
       }
     },
     "com.apple.iWork.Pages": {
@@ -1065,10 +1049,6 @@
       "revealInFinder": {
         "mods": ["shift", "option", "command"],
         "key": "F"
-      },
-      "confirmDelete": {
-        "mods": "option",
-        "key": "D"
       }
     },
     "net.xmind.vana.app": {

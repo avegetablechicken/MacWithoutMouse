@@ -350,40 +350,6 @@ local function deleteAllCalls(appObject)
   )
 end
 
-local function confirmDeleteConditionForAppleApps(appObject)
-  local ok, result = hs.osascript.applescript([[
-    tell application "System Events"
-      tell ]] .. aWinFor(appObject) .. [[
-        if exists sheet 1 then
-          repeat with btn in buttons of sheet 1
-            if (exists attribute "AXIdentifier" of btn) ¬
-                and (the value of attribute "AXIdentifier" of btn is "DontSaveButton") then
-              return true
-            end if
-          end repeat
-        end if
-        return false
-      end tell
-    end tell
-  ]])
-  return ok and result
-end
-
-local function confirmDeleteForAppleApps(appObject)
-  hs.osascript.applescript([[
-    tell application "System Events"
-      tell ]] .. aWinFor(appObject) .. [[
-        repeat with btn in buttons of sheet 1
-          if (exists attribute "AXIdentifier" of btn) ¬
-              and (the value of attribute "AXIdentifier" of btn is "DontSaveButton") then
-            click btn
-          end if
-        end repeat
-      end tell
-    end tell
-  ]])
-end
-
 local specialCommonHotkeyConfigs = {
   ["closeWindow"] = {
     mods = "⌘", key = "W",
@@ -406,11 +372,6 @@ local specialCommonHotkeyConfigs = {
     message = "Hide",
     fn = function(appObject) appObject:hide() end
   },
-  ["confirmDelete"] = {
-    message = "Confirm Delete",
-    condition = confirmDeleteConditionForAppleApps,
-    fn = confirmDeleteForAppleApps
-  }
 }
 
 local function VSCodeToggleSideBarSection(sidebar, section)
@@ -716,11 +677,6 @@ appHotKeyCallbacks = {
     }
   },
 
-  ["com.apple.ScriptEditor2"] =
-  {
-    ["confirmDelete"] = specialCommonHotkeyConfigs["confirmDelete"]
-  },
-
   ["com.apple.AppStore"] =
   {
     ["back"] = {
@@ -882,12 +838,6 @@ appHotKeyCallbacks = {
                        { localeFile = "Menu" })
       end
     },
-    ["confirmDelete"] = specialCommonHotkeyConfigs["confirmDelete"]
-  },
-
-  ["com.vallettaventures.Texpad"] =
-  {
-    ["confirmDelete"] = specialCommonHotkeyConfigs["confirmDelete"]
   },
 
   ["com.superace.updf.mac"] =
@@ -1093,7 +1043,6 @@ appHotKeyCallbacks = {
       end,
       fn = function(filePath) hs.execute("open -R '" .. filePath .. "'") end
     },
-    ["confirmDelete"] = specialCommonHotkeyConfigs["confirmDelete"]
   },
 
   ["com.apple.iWork.Pages"] =
@@ -1146,7 +1095,6 @@ appHotKeyCallbacks = {
       end,
       fn = function(filePath) hs.execute("open -R '" .. filePath .. "'") end
     },
-    ["confirmDelete"] = specialCommonHotkeyConfigs["confirmDelete"]
   },
 
   ["net.xmind.vana.app"] =
@@ -2697,44 +2645,55 @@ function registerOpenRecent(bundleID)
 end
 registerOpenRecent(frontmostApplication:bundleID())
 
-function registerGoToDownloads(appObject)
-  if finderPanelObserver ~= nil then
-    finderPanelObserver:stop()
-    finderPanelObserver = nil
-  end
-  if goToDownloadsHotkey ~= nil then
-    goToDownloadsHotkey:delete()
-    goToDownloadsHotkey = nil
-  end
-
+function registerForOpenSavePanel(appObject)
   local bundleID = "com.apple.finder"
-  if appObject:bundleID() == bundleID then return end
-  local goToDownloadsSpec = get(keybindingConfigs.hotkeys, bundleID, "goToDownloads")
-  if goToDownloadsSpec == nil then return end
+  if get(keybindingConfigs.hotkeys.appCommon, "confirmDelete") == nil
+      and get(keybindingConfigs.hotkeys[bundleID], "goToDownloads") == nil then
+    return
+  end
 
-  local params = {
-    locale = applicationLocales(appObject:bundleID())[1],
-    localeFile = "MenuBar"
-  }
-  local enParams = {
-    locale = "en",
-    localeFile = "MenuBar"
-  }
-  local goString = localizedString("Go", bundleID, params)
-  local enGoString = localizedString("Go", bundleID, enParams)
-  local downloadsString = localizedString("Downloads", bundleID, params)
-  local enDownloadsString = localizedString("Downloads", bundleID, enParams)
-  local msg = string.format("%s > %s", goString, downloadsString)
-  local enMsg = string.format("%s > %s", enGoString, enDownloadsString)
+  if openSavePanelObserver ~= nil then
+    openSavePanelObserver:stop()
+    openSavePanelObserver = nil
+  end
+  if openSavePanelHotkey ~= nil then
+    openSavePanelHotkey:delete()
+    openSavePanelHotkey = nil
+  end
+
+  if appObject:bundleID() == bundleID then return end
 
   local getUIObj = function(winUIObj)
     if winUIObj:attributeValue("AXIdentifier") ~= "open-panel"
         and winUIObj:attributeValue("AXIdentifier") ~= "save-panel" then
       return
     end
-    local outlineUIObj = winUIObj:childrenWithRole("AXSplitGroup")[1]
-                                 :childrenWithRole("AXScrollArea")[1]
-                                 :childrenWithRole("AXOutline")[1]
+
+    if winUIObj:attributeValue("AXIdentifier") == "save-panel" then
+      for _, button in ipairs(winUIObj:childrenWithRole("AXButton")) do
+        if button.AXIdentifier == "DontSaveButton" then
+          return button, button.AXTitle
+        end
+      end
+    end
+
+    local outlineUIObj = getAXChildren(winUIObj,
+        "AXSplitGroup", 1, "AXScrollArea", 1, "AXOutline", 1)
+    if outlineUIObj == nil then return end
+    local params = {
+      locale = applicationLocales(appObject:bundleID())[1],
+      localeFile = "MenuBar"
+    }
+    local enParams = {
+      locale = "en",
+      localeFile = "MenuBar"
+    }
+    local goString = localizedString("Go", bundleID, params)
+    local enGoString = localizedString("Go", bundleID, enParams)
+    local downloadsString = localizedString("Downloads", bundleID, params)
+    local enDownloadsString = localizedString("Downloads", bundleID, enParams)
+    local msg = string.format("%s > %s", goString, downloadsString)
+    local enMsg = string.format("%s > %s", enGoString, enDownloadsString)
     for _, rowUIObj in ipairs(outlineUIObj:childrenWithRole("AXRow")) do
       if rowUIObj.AXChildren == nil then hs.timer.usleep(0.3 * 1000000) end
       if rowUIObj.AXChildren[1]:childrenWithRole("AXStaticText")[1].AXValue == downloadsString then
@@ -2747,32 +2706,40 @@ function registerGoToDownloads(appObject)
   end
 
   local actionFunc = function(winUIObj)
-    if goToDownloadsHotkey ~= nil then
-      goToDownloadsHotkey:delete()
-      goToDownloadsHotkey = nil
+    if openSavePanelHotkey ~= nil then
+      openSavePanelHotkey:delete()
+      openSavePanelHotkey = nil
     end
 
-    local goToDownloadsUIElement, message = getUIObj(winUIObj)
-    if goToDownloadsUIElement == nil then return end
-    goToDownloadsHotkey = bindSpecSuspend(goToDownloadsSpec, message, function()
-      goToDownloadsUIElement:performAction("AXOpen")
+    local openSavePanelActor, message = getUIObj(winUIObj)
+    if openSavePanelActor == nil then return end
+    local spec
+    if openSavePanelActor.AXRole == "AXButton" then
+      spec = get(keybindingConfigs.hotkeys.appCommon, "confirmDelete")
+    else
+      spec = get(keybindingConfigs.hotkeys[bundleID], "goToDownloads")
+    end
+    openSavePanelHotkey = bindSpecSuspend(spec, message, function()
+      local action = openSavePanelActor:actionNames()[1]
+      openSavePanelActor:performAction(action)
     end)
+    openSavePanelHotkey.kind = HK.IN_APP
   end
   if appObject:focusedWindow() ~= nil then
     actionFunc(hs.axuielement.windowElement(appObject:focusedWindow()))
   end
 
-  finderPanelObserver = hs.axuielement.observer.new(appObject:pid())
-  finderPanelObserver:addWatcher(
+  openSavePanelObserver = hs.axuielement.observer.new(appObject:pid())
+  openSavePanelObserver:addWatcher(
     hs.axuielement.applicationElement(appObject),
     hs.axuielement.observer.notifications.focusedWindowChanged
   )
-  finderPanelObserver:callback(function(observer, element, notifications)
+  openSavePanelObserver:callback(function(observer, element, notifications)
     actionFunc(element)
   end)
-  finderPanelObserver:start()
+  openSavePanelObserver:start()
 end
-registerGoToDownloads(frontmostApplication)
+registerForOpenSavePanel(frontmostApplication)
 
 
 -- bind `alt+?` hotkeys to menu bar 1 functions
@@ -3290,7 +3257,7 @@ function app_applicationCallback(appName, eventType, appObject)
       return
     end
     selectInputSourceInApp(bundleID)
-    registerGoToDownloads(appObject)
+    registerForOpenSavePanel(appObject)
     hs.timer.doAfter(0, function()
       local locales = applicationLocales(bundleID)
       local appLocale = locales[1]
