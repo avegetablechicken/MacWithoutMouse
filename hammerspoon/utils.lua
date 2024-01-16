@@ -675,10 +675,10 @@ function localizedString(str, bundleID, params)
   if appLocale == nil then
     local locales = applicationLocales(bundleID)
     appLocale = locales[1]
-  end
-  local localeDetails = hs.host.locale.details(appLocale)
-  if localeDetails.languageCode == 'en' and key ~= true then
-    return str
+    local localeDetails = hs.host.locale.details(appLocale)
+    if localeDetails.languageCode == 'en' and key ~= true then
+      return str
+    end
   end
 
   if appLocaleMap[bundleID] == nil then
@@ -923,16 +923,19 @@ function delocalizedMenuItemString(str, bundleID, params)
     localeFile = params
   end
 
+  if appLocale == nil then
+    local locales = applicationLocales(bundleID)
+    appLocale = locales[1]
+    local localeDetails = hs.host.locale.details(appLocale)
+    if localeDetails.languageCode == 'en' then return end
+  end
+
   if menuItemLocaleMap[bundleID] == nil then
     menuItemLocaleMap[bundleID] = {}
     menuItemLocaleDir[bundleID] = {}
   end
   if menuItemLocaleInversedMap[bundleID] == nil then
     menuItemLocaleInversedMap[bundleID] = {}
-  end
-  if appLocale == nil then
-    local locales = applicationLocales(bundleID)
-    appLocale = locales[1]
   end
   if menuItemLocaleDir[bundleID][appLocale] == nil then
     menuItemLocaleMap[bundleID] = {}
