@@ -1149,6 +1149,8 @@ function delocalizedMenuItem(title, bundleID, params)
   if defaultTitleMap ~= nil then
     if defaultTitleMap[title] ~= nil then
       return defaultTitleMap[title]
+    elseif hs.fnutils.indexOf(defaultTitleMap, title) ~= nil then
+      return title
     end
   end
   local newTitle = delocalizedMenuItemString(title, bundleID, params)
