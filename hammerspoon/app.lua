@@ -2972,39 +2972,55 @@ local function watchMenuItems(appObject)
   end
   appsMenuItemsWatchers[appObject:bundleID()][1]:start()
 end
-local frontAppBid = hs.fnutils.find(appsWatchMenuItems, function(bid)
-  return bid == frontmostApplication:bundleID()
-end)
-if frontAppBid ~= nil then
-  watchMenuItems(frontmostApplication)
-end
 
+local appsMayChangeMenu = get(applicationConfigs.menuItemsMayChange, 'window') or {}
 
-local appsMayChangeMenu = get(applicationConfigs.menuItemsMayChange, 'window')
-local curAppMenuItemWatcher
-if appsMayChangeMenu ~= nil then
-  local windowFilterAppsMayChangeMenu = hs.window.filter.new():subscribe(
-    {hs.window.filter.windowCreated, hs.window.filter.windowDestroyed,
-    hs.window.filter.windowFocused, hs.window.filter.windowUnfocused},  -- may fail
-  function(winObj)
-    if winObj == nil or winObj:application() == nil then return end
-    local bundleID = winObj:application():bundleID()
-    if hs.fnutils.contains(appsMayChangeMenu, bundleID) then
-      local appObject = winObj:application()
+local function appMenuChangeCallback(appObject)
+  altMenuItem(appObject)
+  local menuItemStr = getMenuItemTitlesString(appObject)
+  curAppMenuItemWatcher = hs.timer.doAfter(1, function()
+    if hs.application.frontmostApplication():bundleID() ~= appObject:bundleID() then
+      return
+    end
+    local newMenuItemTitlesString = getMenuItemTitlesString(appObject)
+    if newMenuItemTitlesString ~= menuItemStr then
       altMenuItem(appObject)
-      local menuItemStr = getMenuItemTitlesString(appObject)
-      curAppMenuItemWatcher = hs.timer.doAfter(1, function()
-        if hs.application.frontmostApplication():bundleID() ~= appObject:bundleID() then
-          return
-        end
-        local newMenuItemTitlesString = getMenuItemTitlesString(appObject)
-        if newMenuItemTitlesString ~= menuItemStr then
-          altMenuItem(winObj:application())
-        end
-      end)
     end
   end)
 end
+
+function registerObserverForMenuChange(appObject)
+  if appMenuChangeObserver ~= nil then
+    appMenuChangeObserver:stop()
+    appMenuChangeObserver = nil
+  end
+  if curAppMenuItemWatcher ~= nil then
+    curAppMenuItemWatcher:stop()
+    curAppMenuItemWatcher = nil
+  end
+
+  if hs.fnutils.contains(appsWatchMenuItems, appObject:bundleID()) then
+    watchMenuItems(appObject)
+  end
+
+  if not hs.fnutils.contains(appsMayChangeMenu, appObject:bundleID()) then
+    return
+  end
+
+  appMenuChangeObserver = hs.axuielement.observer.new(appObject:pid())
+  appMenuChangeObserver:addWatcher(
+    hs.axuielement.applicationElement(appObject),
+    hs.axuielement.observer.notifications.focusedWindowChanged
+  )
+  appMenuChangeObserver:callback(hs.fnutils.partial(appMenuChangeCallback, appObject))
+  appMenuChangeObserver:start()
+end
+registerObserverForMenuChange(frontmostApplication)
+appMenuChangeFilter = hs.window.filter.new():subscribe(hs.window.filter.windowDestroyed,
+function(winObj)
+  if winObj == nil or winObj:application() == nil then return end
+  appMenuChangeCallback(winObj:application())
+end)
 
 local function processAppWithNoWindows(appObject, quit)
   if #appObject:visibleWindows() == 0 then
@@ -3271,16 +3287,7 @@ function app_applicationCallback(appName, eventType, appObject)
       registerInWinHotKeys(appObject)
       hs.timer.doAfter(0, function()
         altMenuItem(appObject)
-        if curAppMenuItemWatcher ~= nil then
-          curAppMenuItemWatcher:stop()
-          curAppMenuItemWatcher = nil
-        end
-        local frontAppBid = hs.fnutils.find(appsWatchMenuItems, function(bid)
-          return bid == bundleID
-        end)
-        if frontAppBid ~= nil then
-          watchMenuItems(appObject)
-        end
+        registerObserverForMenuChange(appObject)
         hs.timer.doAfter(0, function()
           remapPreviousTab(bundleID)
           registerOpenRecent(bundleID)
