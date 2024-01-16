@@ -2697,6 +2697,47 @@ function registerOpenRecent(bundleID)
 end
 registerOpenRecent(frontmostApplication:bundleID())
 
+local goToDownloadsSpec = get(keybindingConfigs.hotkeys, "com.apple.finder", "goToDownloads")
+if goToDownloadsSpec ~= nil then
+  local openPanelFilter = hs.window.filter.new(function(winObj)
+    if winObj == nil or winObj:subrole() ~= "AXDialog" then return false end
+    local winUIObj = hs.axuielement.windowElement(winObj)
+    return winUIObj:attributeValue("AXIdentifier") == "open-panel"
+  end)
+  openPanelFilter:subscribe({ hs.window.filter.windowCreated, hs.window.filter.windowDestroyed,
+                              hs.window.filter.windowFocused, hs.window.filter.windowUnfocused },
+  function(winObj, appName, eventType)
+    if eventType == hs.window.filter.windowCreated
+        or eventType == hs.window.filter.windowFocused then
+      if goToDownloadsHotkey ~= nil then
+        goToDownloadsHotkey:enable()
+        return
+      end
+      local goString = localizedString("Go", "com.apple.finder", "MenuBar")
+      local downloadsString = localizedString("Downloads", "com.apple.finder", "MenuBar")
+      local msg = string.format("%s > %s", goString, downloadsString)
+        goToDownloadsHotkey = bindSpecSuspend(goToDownloadsSpec, msg, function()
+        hs.osascript.applescript([[
+          tell application "System Events"
+            tell ]] .. aWinFor(winObj:application()) .. [[
+              set aOutline to outline 1 of scroll area 1 of splitter group 1
+              repeat with r in rows of aOutline
+                if value of attribute "AXValue" of static text 1 of UI element 1 of r is "]] .. downloadsString .. [[" then
+                  perform action 1 of UI element 1 of r
+                end if
+              end repeat
+            end tell
+          end tell
+        ]])
+      end)
+    elseif not openPanelFilter:isWindowAllowed(hs.window.frontmostWindow()) then
+      if goToDownloadsHotkey ~= nil then
+        goToDownloadsHotkey:disable()
+      end
+    end
+  end)
+end
+
 -- bind `alt+?` hotkeys to menu bar 1 functions
 -- to be registered in application callback
 altMenuItemHotkeys = {}
