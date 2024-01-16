@@ -661,9 +661,9 @@ function localizedString(str, bundleID, params)
     return nil
   end
 
-  local locale, localeFile, localeDir, localeFramework, key
+  local appLocale, localeFile, localeDir, localeFramework, key
   if type(params) == "table" then
-    locale = params.locale
+    appLocale = params.locale
     localeFile = params.localeFile
     localeDir = params.localeDir
     localeFramework = params.framework
@@ -672,8 +672,10 @@ function localizedString(str, bundleID, params)
     localeFile = params
   end
 
-  local locales = applicationLocales(bundleID)
-  local appLocale = locales[1]
+  if appLocale == nil then
+    local locales = applicationLocales(bundleID)
+    appLocale = locales[1]
+  end
   local localeDetails = hs.host.locale.details(appLocale)
   if localeDetails.languageCode == 'en' and key ~= true then
     return str
@@ -700,6 +702,7 @@ function localizedString(str, bundleID, params)
 
   local resourceDir, framework = getResourceDir(bundleID, localeFramework)
 
+  local locale
   if localeDir == nil or localeDir == false then
     local mode = localeDir == nil and 'lproj' or 'strings'
     if locale == nil then
@@ -911,9 +914,9 @@ function delocalizedMenuItemString(str, bundleID, params)
     hs.execute(string.format("mkdir -p '%s'", localeTmpDir))
   end
 
-  local locale, localeFile, localeFramework
+  local appLocale, localeFile, localeFramework
   if type(params) == "table" then
-    locale = params.locale
+    appLocale = params.locale
     localeFile = params.localeFile
     localeFramework = params.framework
   else
@@ -927,8 +930,10 @@ function delocalizedMenuItemString(str, bundleID, params)
   if menuItemLocaleInversedMap[bundleID] == nil then
     menuItemLocaleInversedMap[bundleID] = {}
   end
-  local locales = applicationLocales(bundleID)
-  local appLocale = locales[1]
+  if appLocale == nil then
+    local locales = applicationLocales(bundleID)
+    appLocale = locales[1]
+  end
   if menuItemLocaleDir[bundleID][appLocale] == nil then
     menuItemLocaleMap[bundleID] = {}
     menuItemLocaleInversedMap[bundleID] = {}
@@ -940,7 +945,7 @@ function delocalizedMenuItemString(str, bundleID, params)
     return menuItemLocaleMap[bundleID][str]
   end
 
-  local resourceDir, framework, localeDir, mode, result, searchFunc
+  local locale, resourceDir, framework, localeDir, mode, result, searchFunc
 
   if bundleID == "org.zotero.zotero" then
     result, locale = delocalizeZoteroMenu(str, appLocale)
