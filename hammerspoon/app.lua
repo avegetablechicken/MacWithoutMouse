@@ -2702,10 +2702,6 @@ function registerGoToDownloads(appObject)
     finderPanelObserver:stop()
     finderPanelObserver = nil
   end
-  if finderPanelCloseObserver ~= nil then
-    finderPanelCloseObserver:stop()
-    finderPanelCloseObserver = nil
-  end
   if goToDownloadsHotkey ~= nil then
     goToDownloadsHotkey:delete()
     goToDownloadsHotkey = nil
@@ -2716,17 +2712,24 @@ function registerGoToDownloads(appObject)
   local goToDownloadsSpec = get(keybindingConfigs.hotkeys, bundleID, "goToDownloads")
   if goToDownloadsSpec == nil then return end
 
-  local goString = localizedString("Go", bundleID, "MenuBar")
-  local downloadsString = localizedString("Downloads", bundleID, "MenuBar")
+  local params = {
+    locale = applicationLocales(appObject:bundleID())[1],
+    localeFile = "MenuBar"
+  }
+  local enParams = {
+    locale = "en",
+    localeFile = "MenuBar"
+  }
+  local goString = localizedString("Go", bundleID, params)
+  local enGoString = localizedString("Go", bundleID, enParams)
+  local downloadsString = localizedString("Downloads", bundleID, params)
+  local enDownloadsString = localizedString("Downloads", bundleID, enParams)
   local msg = string.format("%s > %s", goString, downloadsString)
+  local enMsg = string.format("%s > %s", enGoString, enDownloadsString)
 
   local getUIObj = function(winUIObj)
     if winUIObj:attributeValue("AXIdentifier") ~= "open-panel"
         and winUIObj:attributeValue("AXIdentifier") ~= "save-panel" then
-      if goToDownloadsHotkey ~= nil then
-        goToDownloadsHotkey:delete()
-        goToDownloadsHotkey = nil
-      end
       return
     end
     local outlineUIObj = winUIObj:childrenWithRole("AXSplitGroup")[1]
@@ -2735,32 +2738,25 @@ function registerGoToDownloads(appObject)
     for _, rowUIObj in ipairs(outlineUIObj:childrenWithRole("AXRow")) do
       if rowUIObj.AXChildren == nil then hs.timer.usleep(0.3 * 1000000) end
       if rowUIObj.AXChildren[1]:childrenWithRole("AXStaticText")[1].AXValue == downloadsString then
-        return rowUIObj.AXChildren[1]
+        return rowUIObj.AXChildren[1], msg
+      end
+      if rowUIObj.AXChildren[1]:childrenWithRole("AXStaticText")[1].AXValue == enDownloadsString then
+        return rowUIObj.AXChildren[1], enMsg
       end
     end
   end
 
   local actionFunc = function(winUIObj)
-    local goToDownloadsUIElement = getUIObj(winUIObj)
+    if goToDownloadsHotkey ~= nil then
+      goToDownloadsHotkey:delete()
+      goToDownloadsHotkey = nil
+    end
+
+    local goToDownloadsUIElement, message = getUIObj(winUIObj)
     if goToDownloadsUIElement == nil then return end
-    goToDownloadsHotkey = bindSpecSuspend(goToDownloadsSpec, msg, function()
+    goToDownloadsHotkey = bindSpecSuspend(goToDownloadsSpec, message, function()
       goToDownloadsUIElement:performAction("AXOpen")
     end)
-
-    finderPanelCloseObserver = hs.axuielement.observer.new(appObject:pid())
-    finderPanelCloseObserver:addWatcher(
-      winUIObj,
-      hs.axuielement.observer.notifications.uIElementDestroyed
-    )
-    finderPanelCloseObserver:callback(function()
-      if goToDownloadsHotkey ~= nil then
-        goToDownloadsHotkey:delete()
-        goToDownloadsHotkey = nil
-      end
-      finderPanelCloseObserver:stop()
-      finderPanelCloseObserver = nil
-    end)
-    finderPanelCloseObserver:start()
   end
   if appObject:focusedWindow() ~= nil then
     actionFunc(hs.axuielement.windowElement(appObject:focusedWindow()))
@@ -2769,11 +2765,7 @@ function registerGoToDownloads(appObject)
   finderPanelObserver = hs.axuielement.observer.new(appObject:pid())
   finderPanelObserver:addWatcher(
     hs.axuielement.applicationElement(appObject),
-    hs.axuielement.observer.notifications.sheetCreated
-  )
-  finderPanelObserver:addWatcher(
-    hs.axuielement.applicationElement(appObject),
-    hs.axuielement.observer.notifications.windowCreated
+    hs.axuielement.observer.notifications.focusedWindowChanged
   )
   finderPanelObserver:callback(function(observer, element, notifications)
     actionFunc(element)
