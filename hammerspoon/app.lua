@@ -3257,7 +3257,6 @@ function app_applicationCallback(appName, eventType, appObject)
       return
     end
     selectInputSourceInApp(bundleID)
-    registerForOpenSavePanel(appObject)
     hs.timer.doAfter(0, function()
       local locales = applicationLocales(bundleID)
       local appLocale = locales[1]
@@ -3285,6 +3284,7 @@ function app_applicationCallback(appName, eventType, appObject)
         hs.timer.doAfter(0, function()
           remapPreviousTab(bundleID)
           registerOpenRecent(bundleID)
+          registerForOpenSavePanel(appObject)
         end)
       end)
     end)
