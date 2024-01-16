@@ -1041,6 +1041,36 @@
         "key": "D"
       }
     },
+    "com.apple.iWork.Pages": {
+      "exportToPDF": {
+        "mods": "command",
+        "key": "E"
+      },
+      "exportToWord": {
+        "mods": ["shift", "option", "command"],
+        "key": "E"
+      },
+      "pasteAndMatchStyle": {
+        "mods": "command",
+        "key": "V"
+      },
+      "paste": {
+        "mods": ["shift", "option", "command"],
+        "key": "V"
+      },
+      "insertEquation": {
+        "mods": ["option", "command"],
+        "key": "E"
+      },
+      "revealInFinder": {
+        "mods": ["shift", "option", "command"],
+        "key": "F"
+      },
+      "confirmDelete": {
+        "mods": "option",
+        "key": "D"
+      }
+    },
     "net.xmind.vana.app": {
       "export": {
         "mods": "command",

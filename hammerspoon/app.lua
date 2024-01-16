@@ -1096,6 +1096,59 @@ appHotKeyCallbacks = {
     ["confirmDelete"] = specialCommonHotkeyConfigs["confirmDelete"]
   },
 
+  ["com.apple.iWork.Pages"] =
+  {
+    ["exportToPDF"] = {  -- File > Export To > PDF…
+      message = localizedMessage({ "Export To", "PDF…" }, "MainMenu"),
+      condition = checkMenuItem({ "File", "Export To", "PDF…" }, { localeFile = "MainMenu" }),
+      fn = function(menuItemTitle, appObject)
+        appObject:selectMenuItem({ menuItemTitle[1], menuItemTitle[2] })
+        appObject:selectMenuItem(menuItemTitle)
+      end
+    },
+    ["exportToWord"] = {  -- File > Export To > Word…
+      message = localizedMessage({ "Export To", "Word…" }, "MainMenu"),
+      condition = checkMenuItem({ "File", "Export To", "Word…" }, { localeFile = "MainMenu" }),
+      fn = function(menuItemTitle, appObject)
+        appObject:selectMenuItem({ menuItemTitle[1], menuItemTitle[2] })
+        appObject:selectMenuItem(menuItemTitle)
+      end
+    },
+    ["pasteAndMatchStyle"] = {  -- Edit > Paste and Match Style
+      message = localizedMessage("Paste and Match Style", "MainMenu"),
+      condition = checkMenuItem({ "Edit", "Paste and Match Style" }, { localeFile = "MainMenu" }),
+      fn = receiveMenuItem
+    },
+    ["paste"] = {  -- Edit > Paste
+      message = localizedMessage("Paste", "MainMenu"),
+      condition = checkMenuItem({ "Edit", "Paste" }, { localeFile = "MainMenu" }),
+      fn = receiveMenuItem
+    },
+    ["insertEquation"] = {  -- Insert > Equation…
+      message = localizedMessage({ "Insert", "Equation…" }, "MainMenu"),
+      condition = checkMenuItem({ "Insert", "Equation…" }, { localeFile = "MainMenu" }),
+      fn = receiveMenuItem
+    },
+    ["revealInFinder"] = {
+      message = "Reveal in Finder",
+      condition = function(appObject)
+        local ok, filePath = hs.osascript.applescript([[
+          tell application id "]] .. appObject:bundleID() .. [[" to get file of front document
+        ]])
+        if ok and filePath ~= nil then
+          local pos = string.find(filePath, ":", 1)
+          filePath = string.sub(filePath, pos)
+          filePath = string.gsub(filePath, ":", "/")
+          return true, filePath
+        else
+          return false
+        end
+      end,
+      fn = function(filePath) hs.execute("open -R '" .. filePath .. "'") end
+    },
+    ["confirmDelete"] = specialCommonHotkeyConfigs["confirmDelete"]
+  },
+
   ["net.xmind.vana.app"] =
   {
     ["export"] = {
