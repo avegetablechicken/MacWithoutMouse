@@ -29,8 +29,15 @@
     "账户": "Account",
     "账号": "Account",
     "服务": "Service",
+    "视图": "View",
     "插入": "Insert",
     "表格": "Table",
+    "工具": "Tools",
+    "数据": "Data",
+    "图表": "Chart",
+    "幻灯片放映": "Slide Show",
+    "批注": "Annotate",
+    "页面": "Page",
     "工作区": "Workspace"
   }
 }
