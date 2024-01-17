@@ -799,17 +799,40 @@ appHotKeyCallbacks = {
     ["view:toggleOutline"] = {
       message = "View: Toggle Outline",
       repeatable = false,  -- fixme: otherwise unexpected repeating
-      condition = function(appObject) return appObject:focusedWindow() ~= nil end,
+      condition = function(appObject)
+        if appObject:focusedWindow() == nil then
+          return false
+        else
+          local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
+          return winUIObj:attributeValue("AXIdentifier") ~= "open-panel"
+        end
+      end,
       fn = function() VSCodeToggleSideBarSection("EXPLORER", "OUTLINE") end
     },
     ["toggleSearchEditorWholeWord"] = {
       mods = "⇧⌘⌥", key = "W",
       message = "Search Editor: Toggle Match Whole Word",
+      condition = function(appObject)
+        if appObject:focusedWindow() == nil then
+          return false
+        else
+          local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
+          return winUIObj:attributeValue("AXIdentifier") ~= "open-panel"
+        end
+      end,
       fn = function(appObject) hs.eventtap.keyStroke("⌘⌥", "W", nil, appObject) end
     },
     ["toggleSearchEditorRegex"] = {
       mods = "⇧⌘⌥", key = "R",
       message = "Search Editor: Toggle Use Regular Expression",
+      condition = function(appObject)
+        if appObject:focusedWindow() == nil then
+          return false
+        else
+          local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
+          return winUIObj:attributeValue("AXIdentifier") ~= "open-panel"
+        end
+      end,
       fn = function(appObject) hs.eventtap.keyStroke("⌘⌥", "R", nil, appObject) end
     }
   },
