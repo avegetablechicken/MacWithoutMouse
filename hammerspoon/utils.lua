@@ -709,14 +709,16 @@ local function localizeByChromium(str, localeDir, localesDict, bundleID)
               end
               local matchFullPath = tmpdir .. '/' .. matchFile
               if hs.fs.attributes(matchFullPath) ~= nil then
-                local file = io.open(matchFullPath, "r")
-                local content = file:read("*a")
-                file:close()
-                if localesDict[fileStem] == nil then
-                  localesDict[fileStem] = {}
+                local f = io.open(matchFullPath, "r")
+                if f ~= nil then
+                  local content = f:read("*a")
+                  f:close()
+                  if localesDict[fileStem] == nil then
+                    localesDict[fileStem] = {}
+                  end
+                  localesDict[fileStem][str] = content
+                  return content
                 end
-                localesDict[fileStem][str] = content
-                return content
               end
             end
           end
@@ -959,10 +961,12 @@ local function delocalizeByChromium(str, localeDir, bundleID)
             end
             local matchFullPath = enTmpdir .. '/' .. matchFile
             if hs.fs.attributes(matchFullPath) ~= nil then
-              local file = io.open(matchFullPath, "r")
-              local content = file:read("*a")
-              file:close()
-              return content
+              local f = io.open(matchFullPath, "r")
+              if f ~= nil then
+                local content = f:read("*a")
+                f:close()
+                return content
+              end
             end
           end
         end
