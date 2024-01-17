@@ -1282,7 +1282,7 @@ appHotKeyCallbacks = {
               -- Push Notifications
               set bts to every button of ]] .. aWinFor(appObject) .. [[
               repeat with bt in bts
-                if value of attribute "AXHelp" of bt is "]] .. nextPage .. [[" ¬
+                if value of attribute "AXHelp" of bt is "]] .. result[2] .. [[" ¬
                     and value of attribute "AXEnabled" of bt is True then
                   click bt
                   return
