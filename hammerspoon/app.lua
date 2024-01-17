@@ -597,7 +597,7 @@ appHotKeyCallbacks = {
     },
     ["QLControlOpen"] = {
       message = function(appObject)
-        return localizedString("Quick Look", appObject:bundleID(), "MenuBar")
+        return localizedString("QuickLook", appObject:bundleID(), "MenuBar")
             .. ' > ' .. localizedString("Open", appObject:bundleID(), "MenuBar")
       end,
       condition = function(appObject)
