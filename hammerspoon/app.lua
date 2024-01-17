@@ -871,57 +871,6 @@ appHotKeyCallbacks = {
       condition = checkMenuItemByKeybinding('⌃', "⇥"),
       fn = receiveMenuItem
     },
-    ["closeDoNotSave"] = {
-      message = "不保存",
-      condition = function(appObject)
-        if appObject:focusedWindow() == nil then return false end
-        local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
-        if winUIObj.AXSubrole == "AXDialog" then
-          local buttons = winUIObj:childrenWithRole("AXButton")
-          for _, button in ipairs(buttons) do
-            if button.AXTitle == "不保存" then
-              return true, button
-            end
-          end
-        end
-        return false
-      end,
-      fn = function(button) button:performAction("AXPress") end
-    },
-    ["closeCancel"] = {
-      message = "取消",
-      condition = function(appObject)
-        if appObject:focusedWindow() == nil then return false end
-        local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
-        if winUIObj.AXSubrole == "AXDialog" then
-          local buttons = winUIObj:childrenWithRole("AXButton")
-          for _, button in ipairs(buttons) do
-            if button.AXTitle == "取消" then
-              return true, button
-            end
-          end
-        end
-        return false
-      end,
-      fn = function(button) button:performAction("AXPress") end
-    },
-    ["closeSave"] = {
-      message = "保存",
-      condition = function(appObject)
-        if appObject:focusedWindow() == nil then return false end
-        local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
-        if winUIObj.AXSubrole == "AXDialog" then
-          local buttons = winUIObj:childrenWithRole("AXButton")
-          for _, button in ipairs(buttons) do
-            if button.AXTitle == "保存" then
-              return true, button
-            end
-          end
-        end
-        return false
-      end,
-      fn = function(button) button:performAction("AXPress") end
-    },
     ["goToFileTop"] = {
       message = "Go to File Top",
       fn = function(appObject) hs.eventtap.keyStroke("⌘", "Home", nil, appObject) end
@@ -2665,6 +2614,38 @@ function registerOpenRecent(bundleID)
 end
 registerOpenRecent(frontmostApplication:bundleID())
 
+local WPSCloseDialogHotkeys = {}
+local function WPSCloseDialog(winUIObj)
+  for _, hotkey in ipairs(WPSCloseDialogHotkeys) do
+    hotkey:delete()
+  end
+  WPSCloseDialogHotkeys = {}
+
+  local btnNames = {
+    closeDoNotSave = "不保存",
+    closeCancel = "取消",
+    closeSave = "保存"
+  }
+  local bundleID = "com.kingsoft.wpsoffice.mac"
+  local appConfig = appHotKeyCallbacks[bundleID]
+  if winUIObj.AXSubrole == "AXDialog" then
+    local buttons = winUIObj:childrenWithRole("AXButton")
+    for _, button in ipairs(buttons) do
+      for hkID, btnName in pairs(btnNames) do
+        if button.AXTitle == btnName then
+          local spec = get(keybindingConfigs.hotkeys, bundleID, hkID) or appConfig[hkID]
+          local hotkey = bindSpecSuspend(spec, btnName, function()
+            local action = button:actionNames()[1]
+            button:performAction(action)
+          end)
+          hotkey.kind = HK.IN_APPWIN
+          table.insert(WPSCloseDialogHotkeys, hotkey)
+        end
+      end
+    end
+  end
+end
+
 function registerForOpenSavePanel(appObject)
   local bundleID = "com.apple.finder"
   if get(keybindingConfigs.hotkeys.appCommon, "confirmDelete") == nil
@@ -2755,6 +2736,10 @@ function registerForOpenSavePanel(appObject)
     hs.axuielement.observer.notifications.focusedWindowChanged
   )
   openSavePanelObserver:callback(function(observer, element, notifications)
+    if hs.application.frontmostApplication():bundleID()
+        == "com.kingsoft.wpsoffice.mac" then
+      WPSCloseDialog(element)
+    end
     actionFunc(element)
   end)
   openSavePanelObserver:start()
