@@ -822,7 +822,7 @@ function localizedString(str, bundleID, params)
 
   if framework.chromium then
     result = localizeByChromium(str, localeDir, localesDict, bundleID)
-    if result ~= nil then goto L_END_LOCALIZED end
+    goto L_END_LOCALIZED
   end
 
   if framework.qt then
@@ -1103,7 +1103,7 @@ function delocalizedMenuItemString(str, bundleID, params)
 
   if framework.chromium then
     result = delocalizeByChromium(str, localeDir, bundleID)
-    if result ~= nil then goto L_END_DELOCALIZED end
+    goto L_END_DELOCALIZED
   end
 
   if framework.mono then
@@ -1112,8 +1112,8 @@ function delocalizedMenuItemString(str, bundleID, params)
       if bundleID == "com.microsoft.visual-studio" then
         result = result:gsub('_', '')
       end
-      goto L_END_DELOCALIZED
     end
+    goto L_END_DELOCALIZED
   end
 
   if framework.qt then
