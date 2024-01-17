@@ -950,6 +950,11 @@ appHotKeyCallbacks = {
       end,
       fn = receiveMenuItem
     },
+    ["insertEquation"] = {
+      message = "插入LaTeX公式",
+      condition = checkMenuItem({ zh = { "插入", "LaTeX公式..." } }),
+      fn = receiveMenuItem
+    },
     ["openFileLocation"] = {
       message = "打开文件位置",
       fn = function(appObject)

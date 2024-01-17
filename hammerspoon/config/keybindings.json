@@ -990,6 +990,10 @@
         "mods": ["shift", "option", "command"],
         "key": "E"
       },
+      "insertEquation": {
+        "mods": ["option", "command"],
+        "key": "E"
+      },
       "openFileLocation": {
         "mods": ["shift", "option", "command"],
         "key": "F"
