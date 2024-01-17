@@ -368,6 +368,63 @@ local function getMatchedLocale(appLocale, localeSource, mode)
   end
 end
 
+function getQtMatchedLocale(appLocale, resourceDir)
+  local localDetails = hs.host.locale.details(appLocale)
+  local language = localDetails.languageCode
+  local script = localDetails.scriptCode
+  local country = localDetails.countryCode
+  if script == nil then
+    local localeItems = hs.fnutils.split(appLocale, '-')
+    if #localeItems == 3 or (#localeItems == 2 and localeItems[2] ~= country) then
+      script = localeItems[2]
+    end
+  end
+  language = language:lower()
+  if script ~= nil then script = script:lower() end
+  if country ~= nil then country = country:lower() end
+  local dirs = { resourceDir }
+  for file in hs.fs.dir(resourceDir) do
+    if hs.fs.attributes(resourceDir .. '/' .. file, 'mode') == 'directory' then
+      table.insert(dirs, resourceDir .. '/' .. file)
+    end
+  end
+  for _, dir in ipairs(dirs) do
+    local languageMatches = {}
+    for file in hs.fs.dir(dir) do
+      if file:sub(-3) == '.qm' then
+        local lowerFile = file:sub(1, -4):lower()
+        local fileSplits = hs.fnutils.split(lowerFile:gsub('_', '-'), '-')
+        if hs.fnutils.contains(fileSplits, language) then
+          table.insert(languageMatches, { fileSplits, dir .. '/' .. file, language })
+        end
+      end
+    end
+    if #languageMatches == 1 then
+      return languageMatches[1][3], languageMatches[1][2]
+    elseif #languageMatches > 1 then
+      local countryMatches = {}
+      for _, item in ipairs(languageMatches) do
+        if country ~= nil and hs.fnutils.contains(item[1], country) then
+          table.insert(item, country)
+          table.insert(countryMatches, item)
+        end
+      end
+      if #countryMatches == 1 then
+        return countryMatches[1][3] .. '-' .. countryMatches[1][4]:upper(), languageMatches[1][2]
+      elseif #countryMatches > 1 then
+        for _, item in ipairs(countryMatches) do
+          if script ~= nil and hs.fnutils.contains(item[1], script) then
+            local capitalScript = script:sub(1, 1):upper() .. script:sub(2)
+            return item[3] .. '-' .. capitalScript .. '-' .. item[4]:upper(), item[2]
+          end
+        end
+        local allFiles = hs.fnutils.imap(countryMatches, function(item) return item[2] end)
+        return countryMatches[1][3] .. '-' .. countryMatches[1][4]:upper(), allFiles
+      end
+    end
+  end
+end
+
 local preferentialStringsFilePatterns = { "(.-)MainMenu(.-)", "Menu", "MenuBar",
   "MenuItems", "Localizable", "Main", "MainWindow" }
 
@@ -585,20 +642,35 @@ local function localizeByStrings(str, localeDir, localeFile, locale, localesDict
   if result ~= nil then return result end
 end
 
+local function localizeByQtImpl(str, dir, file, localesDict)
+  local fileStem = file:sub(1, -4)
+  if localesDict[fileStem] ~= nil and localesDict[fileStem][str] ~= nil then
+    return localesDict[fileStem][str]
+  end
+  local output, status = hs.execute(string.format(
+      "zsh scripts/qm_localize.sh '%s' '%s'", dir .. '/' .. file, str))
+  if status and output ~= "" then
+    if localesDict[fileStem] == nil then localesDict[fileStem] = {} end
+    localesDict[fileStem][str] = output
+    return output
+  end
+end
+
 local function localizeByQt(str, localeDir, localesDict)
-  for file in hs.fs.dir(localeDir) do
-    if file:sub(-3) == ".qm" then
-      local fileStem = file:sub(1, -4)
-      if localesDict[fileStem] ~= nil and localesDict[fileStem][str] ~= nil then
-        return localesDict[fileStem][str]
-      end
-      local output, status = hs.execute(string.format(
-          "zsh scripts/qm_localize.sh '%s' '%s'",
-          localeDir .. '/' .. file, str))
-      if status and output ~= "" then
-        if localesDict[fileStem] == nil then localesDict[fileStem] = {} end
-        localesDict[fileStem][str] = output
-        return output
+  if type(localeDir) == 'table' then
+    for _, filepath in ipairs(localeDir) do
+      local dir, file = filepath:match("^(.*)/(.*)$")
+      local result = localizeByQtImpl(str, dir, file, localesDict)
+      if result ~= nil then return result end
+    end
+  elseif hs.fs.attributes(localeDir, 'mode') == 'file' then
+    local dir, file = localeDir:match("^(.*)/(.*)$")
+    return localizeByQtImpl(str, dir, file, localesDict)
+  else
+    for file in hs.fs.dir(localeDir) do
+      if file:sub(-3) == ".qm" then
+        local result = localizeByQtImpl(str, localeDir, file, localesDict)
+        if result ~= nil then return result end
       end
     end
   end
@@ -725,6 +797,9 @@ function localizedString(str, bundleID, params)
     end
     if locale == nil then
       locale = getMatchedLocale(appLocale, resourceDir, mode)
+      if locale == nil and framework.qt then
+        locale, localeDir = getQtMatchedLocale(appLocale, resourceDir)
+      end
       if locale ~= nil then
         appLocaleDir[bundleID][appLocale] = locale
       else
@@ -735,8 +810,11 @@ function localizedString(str, bundleID, params)
     if mode == 'strings' then
       localeDir = resourceDir
       if localeFile == nil then localeFile = locale end
-    else
+    elseif localeDir == nil then
       localeDir = resourceDir .. "/" .. locale .. ".lproj"
+    end
+    if framework.qt and hs.fs.attributes(localeDir) == nil then
+      _, localeDir = getQtMatchedLocale(appLocale, resourceDir)
     end
   end
 
@@ -747,8 +825,10 @@ function localizedString(str, bundleID, params)
     if result ~= nil then goto L_END_LOCALIZED end
   end
 
-  result = localizeByQt(str, localeDir, localesDict)
-  if result ~= nil then goto L_END_LOCALIZED end
+  if framework.qt then
+    result = localizeByQt(str, localeDir, localesDict)
+    goto L_END_LOCALIZED
+  end
 
   if locale ~= nil then
     result = localizeByLoctable(str, resourceDir, localeFile, locale, localesDict)
@@ -818,13 +898,26 @@ local function delocalizeByLoctable(str, resourceDir, localeFile, locale)
   end
 end
 
+local function delocalizeByQtImpl(str, file)
+  local output, status = hs.execute(string.format(
+      "zsh scripts/qm_delocalize.sh '%s' '%s'", file, str))
+  if status and output ~= "" then return output end
+end
+
 local function delocalizeByQt(str, localeDir)
-  for file in hs.fs.dir(localeDir) do
-    if file:sub(-3) == ".qm" then
-      local output, status = hs.execute(string.format(
-          "zsh scripts/qm_delocalize.sh '%s' '%s'",
-          localeDir .. '/' .. file, str))
-      if status and output ~= "" then return output end
+  if type(localeDir) == 'table' then
+    for _, file in ipairs(localeDir) do
+      local result = delocalizeByQtImpl(str, file)
+      if result ~= nil then return result end
+    end
+  elseif hs.fs.attributes(localeDir, 'mode') == 'file' then
+    return delocalizeByQtImpl(str, localeDir)
+  else
+    for file in hs.fs.dir(localeDir) do
+      if file:sub(-3) == ".qm" then
+        local result = delocalizeByQtImpl(str, localeDir .. '/' .. file)
+        if result ~= "" then return result end
+      end
     end
   end
 end
@@ -989,15 +1082,23 @@ function delocalizedMenuItemString(str, bundleID, params)
   end
   if locale == nil then
     locale = getMatchedLocale(appLocale, resourceDir, mode)
+    if locale == nil and framework.qt then
+      locale, localeDir = getQtMatchedLocale(appLocale, resourceDir)
+    end
     if locale == nil then
       menuItemLocaleMap[bundleID][str] = false
       return nil
     end
   end
-  if mode == 'lproj' then
-    localeDir = resourceDir .. "/" .. locale .. ".lproj"
-  else
-    localeDir = resourceDir .. "/" .. locale
+  if localeDir == nil then
+    if mode == 'lproj' then
+      localeDir = resourceDir .. "/" .. locale .. ".lproj"
+    else
+      localeDir = resourceDir .. "/" .. locale
+    end
+    if framework.qt and hs.fs.attributes(localeDir) == nil then
+      _, localeDir = getQtMatchedLocale(appLocale, resourceDir)
+    end
   end
 
   if framework.chromium then
@@ -1015,10 +1116,12 @@ function delocalizedMenuItemString(str, bundleID, params)
     end
   end
 
-  result = delocalizeByLoctable(str, resourceDir, localeFile, locale)
-  if result ~= nil then goto L_END_DELOCALIZED end
+  if framework.qt then
+    result = delocalizeByQt(str, localeDir)
+    goto L_END_DELOCALIZED
+  end
 
-  result = delocalizeByQt(str, localeDir)
+  result = delocalizeByLoctable(str, resourceDir, localeFile, locale)
   if result ~= nil then goto L_END_DELOCALIZED end
 
   searchFunc = function(str)
