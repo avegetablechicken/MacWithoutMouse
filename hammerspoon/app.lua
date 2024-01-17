@@ -2459,11 +2459,13 @@ local function inWinOfUnactivatedAppWatcherEnableCallback(bid, filter, winObj, a
   end
   for hkID, spec in pairs(appHotKeyCallbacks[bid]) do
     if type(hkID) ~= 'number' then
-      if (spec.bindCondition == nil or spec.bindCondition()) and sameFilter(keybindingConfigs.hotkeys[bid][hkID].windowFilter, filter) then
+      local filterCfg = get(keybindingConfigs.hotkeys[bid], hkID) or spec
+      if (spec.bindCondition == nil or spec.bindCondition()) and sameFilter(filterCfg.windowFilter, filter) then
         local msg = type(spec.message) == 'string' and spec.message or spec.message(winObj:application())
         if msg ~= nil then
-          local hotkey = bindSpecSuspend(keybindingConfigs.hotkeys[bid][hkID], msg,
-                                        spec.fn, nil, spec.repeatable and spec.fn or nil)
+          local keyBinding = get(keybindingConfigs.hotkeys[bid], hkID) or spec
+          local hotkey = bindSpecSuspend(keyBinding, msg, spec.fn, nil,
+                                         spec.repeatable and spec.fn or nil)
           hotkey.kind = HK.IN_WIN
           hotkey.notActivateApp = spec.notActivateApp
           table.insert(inWinOfUnactivatedAppHotKeys[bid], hotkey)
@@ -2521,7 +2523,8 @@ local function registerWinFiltersForDaemonApp(appObject, appConfig)
     if spec.notActivateApp then
       local filter
       if type(hkID) ~= 'number' then
-        filter = keybindingConfigs.hotkeys[bid][hkID].windowFilter or spec.windowFilter
+        local cfg = get(keybindingConfigs.hotkeys[bid], hkID) or spec
+        filter = cfg.windowFilter
       else
         local cfg = spec[1]
         filter = cfg.filter
