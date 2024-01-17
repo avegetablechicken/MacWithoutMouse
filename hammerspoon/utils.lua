@@ -291,25 +291,34 @@ local function getResourceDir(bundleID, frameworkName)
       if hs.fs.attributes(frameworkDir .. '/' .. fw .. ".framework") ~= nil then
         resourceDir = frameworkDir .. '/' .. fw .. ".framework/Resources"
         framework.chromium = true
-        break
+        goto END_GET_RESOURCE_DIR
       end
     end
-    if resourceDir == nil then
-      local monoLocaleDirs, status = hs.execute(string.format(
-          "find '%s' -type f -path '*/locale/*/LC_MESSAGES/*.mo'" ..
-          " | awk -F'/locale/' '{print $1}' | uniq | tr -d '\\n'", appContentPath))
-      if status and monoLocaleDirs ~= "" then
-        monoLocaleDirs = hs.fnutils.split(monoLocaleDirs, '\n')
-        if #monoLocaleDirs == 1 then
-          resourceDir = monoLocaleDirs[1] .. "/locale"
-          framework.mono = true
-        end
+
+    if hs.fs.attributes(appContentPath .. "/Resources/qt.conf") ~= nil then
+      resourceDir = appContentPath .. "/Resources"
+      framework.qt = true
+      goto END_GET_RESOURCE_DIR
+    end
+
+    local monoLocaleDirs, status = hs.execute(string.format(
+        "find '%s' -type f -path '*/locale/*/LC_MESSAGES/*.mo'" ..
+        " | awk -F'/locale/' '{print $1}' | uniq | tr -d '\\n'", appContentPath))
+    if status and monoLocaleDirs ~= "" then
+      monoLocaleDirs = hs.fnutils.split(monoLocaleDirs, '\n')
+      if #monoLocaleDirs == 1 then
+        resourceDir = monoLocaleDirs[1] .. "/locale"
+        framework.mono = true
+        goto END_GET_RESOURCE_DIR
       end
     end
+
     if resourceDir == nil then
       resourceDir = appContentPath .. "/Resources"
     end
   end
+
+  ::END_GET_RESOURCE_DIR::
   return resourceDir, framework
 end
 
