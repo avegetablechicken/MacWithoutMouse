@@ -944,7 +944,7 @@
     "com.kingsoft.wpsoffice.mac": {
       "closeDoNotSave": {
         "mods": "option",
-        "key": "N"
+        "key": "D"
       },
       "closeCancel": {
         "mods": "option",
