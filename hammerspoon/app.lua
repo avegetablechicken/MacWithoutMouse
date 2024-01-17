@@ -3079,6 +3079,9 @@ function parseVerificationCodeFromFirstMessage()
         or string.find(string.lower(content), 'verification')
         or (string.find(content, 'Microsoft') and string.find(content, '安全代码'))
         or (string.find(content, '【Facebook】') and string.find(content, '输入')) then
+      if string.find(content, '【12306】') then
+        return string.match(content, '%d%d%d%d%d%d')
+      end
       return string.match(content, '%d%d%d%d+')
     end
   end
