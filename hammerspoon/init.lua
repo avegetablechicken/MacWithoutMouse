@@ -17,7 +17,7 @@ hyper = nil
 keybindingConfigs = nil
 local function loadKeybindings(filePath)
   keybindingConfigs = hs.json.read(filePath)
-  for k, hp in pairs(keybindingConfigs.hyper) do
+  for k, hp in pairs(keybindingConfigs.hyper or {}) do
     if type(hp) == "string" then
       if hs.fnutils.contains({"fn", "shift", "option", "control", "command"}) then
         hp = {hp}
@@ -33,8 +33,13 @@ local function loadKeybindings(filePath)
       keybindingConfigs.hyper[k] = modsRepr
     end
   end
-  hyper = keybindingConfigs.hyper.hyper
+  if keybindingConfigs.hyper ~= nil then
+    hyper = keybindingConfigs.hyper.hyper
+  end
 
+  if keybindingConfigs.hotkeys == nil then
+    keybindingConfigs.hotkeys = {}
+  end
   for kind, cfg in pairs(keybindingConfigs.hotkeys) do
     if kind ~= "menuItems" then
       for k, spec in pairs(cfg) do
