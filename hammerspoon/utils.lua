@@ -115,20 +115,10 @@ function findMenuItem(appObject, menuItemTitle, params)
     local menuItem = appObject:findMenuItem(menuItemTitle)
     if menuItem ~= nil then return menuItem, menuItemTitle end
     local targetMenuItem = {}
-    local appMenus = getMenuItems(appObject)
-    if appMenus == nil then return end
-    for i=2,#appMenus do
-      local title = delocalizedMenuItem(appMenus[i].AXTitle, appObject:bundleID(), params)
-      if menuItemTitle[1] == title then
-        table.insert(targetMenuItem, appMenus[i].AXTitle)
-        break
-      end
-    end
-    if #targetMenuItem == 0 then
-      table.insert(targetMenuItem, menuItemTitle[1])
-    end
+    local locStr = localizedMenuItem(menuItemTitle[1], appObject:bundleID())
+    table.insert(targetMenuItem, locStr or menuItemTitle[1])
     for i=#menuItemTitle,2,-1 do
-      local locStr = localizedString(menuItemTitle[i], appObject:bundleID(), params)
+      locStr = localizedString(menuItemTitle[i], appObject:bundleID(), params)
       table.insert(targetMenuItem, 2, locStr or menuItemTitle[i])
     end
     return appObject:findMenuItem(targetMenuItem), targetMenuItem
@@ -158,20 +148,10 @@ function selectMenuItem(appObject, menuItemTitle, params, show)
   elseif #menuItemTitle > 0 then
     if appObject:selectMenuItem(menuItemTitle) then return true end
     local targetMenuItem = {}
-    local appMenus = getMenuItems(appObject)
-    if appMenus == nil then return end
-    for i=2,#appMenus do
-      local title = delocalizedMenuItem(appMenus[i].AXTitle, appObject:bundleID(), params)
-      if menuItemTitle[1] == title then
-        table.insert(targetMenuItem, 1, appMenus[i].AXTitle)
-        break
-      end
-    end
-    if #targetMenuItem == 0 then
-      table.insert(targetMenuItem, menuItemTitle[1])
-    end
+    local locStr = localizedMenuItem(menuItemTitle[1], appObject:bundleID())
+    table.insert(targetMenuItem, locStr or menuItemTitle[1])
     for i=#menuItemTitle,2,-1 do
-      local locStr = localizedString(menuItemTitle[i], appObject:bundleID(), params)
+      locStr = localizedString(menuItemTitle[i], appObject:bundleID(), params)
       table.insert(targetMenuItem, 2, locStr or menuItemTitle[i])
     end
     return appObject:selectMenuItem(targetMenuItem)
@@ -1310,6 +1290,18 @@ end
 local localizedTitle = localizedString('Format', "com.apple.Notes")
 if localizedTitle ~= nil then
   menuBarTitleLocalizationMap.common[localizedTitle] = 'Format'
+end
+
+function localizedMenuItem(title, bundleID, params)
+  for _, dict in ipairs{
+    menuBarTitleLocalizationMap.common,
+    menuBarTitleLocalizationMap[bundleID] or {},
+    menuItemLocaleMap[bundleID] or {}
+  } do
+    local locTitle = hs.fnutils.indexOf(dict, title)
+    if locTitle ~= nil then return locTitle end
+  end
+  return localizedString(title, bundleID, params)
 end
 
 

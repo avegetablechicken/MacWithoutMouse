@@ -490,19 +490,7 @@ local function localizedMessage(message, params, sep)
       return localizedString(message, bundleID, params)
     else
       if sep == nil then sep = ' > ' end
-      local str
-      local appMenus = getMenuItems(appObject)
-      if appMenus == nil then return end
-      for i=2,#appMenus do
-        local title = delocalizedMenuItem(appMenus[i].AXTitle, appObject:bundleID(), params)
-        if message[1] == title then
-          str = appMenus[i].AXTitle
-          break
-        end
-      end
-      if str == nil then
-        str = localizedString(message[1], bundleID, params)
-      end
+      local str = localizedMenuItem(message[1], bundleID, params)
       for i=2,#message do
         str = str .. sep .. localizedString(message[i], bundleID, params)
       end
