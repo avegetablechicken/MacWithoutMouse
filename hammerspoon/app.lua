@@ -2786,7 +2786,7 @@ function delocalizeMenuBarItems(itemTitles, bundleID, localeFile)
           goto L_CONTINUE
         end
       end
-      local newTitle = delocalizedMenuBarItemString(title, bundleID, localeFile)
+      local newTitle = delocalizedMenuItemString(title, bundleID, localeFile)
       if newTitle ~= nil then
         table.insert(result, { title, newTitle })
       end

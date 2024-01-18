@@ -1003,16 +1003,16 @@ local function delocalizeMATLABFigureMenu(str, appLocale)
   return nil
 end
 
-local menuBarItemLocaleMap = {}
-local menuBarItemLocaleDir = {}
-local menuBarItemLocaleInversedMap = {}
-local menuBarItemTmpFile = localeTmpDir .. 'menubar-items.json'
-if hs.fs.attributes(menuBarItemTmpFile) ~= nil then
-  local json = hs.json.read(menuBarItemTmpFile)
-  menuBarItemLocaleDir = json.locale
-  menuBarItemLocaleMap = json.map
+local menuItemLocaleMap = {}
+local menuItemLocaleDir = {}
+local menuItemLocaleInversedMap = {}
+local menuItemTmpFile = localeTmpDir .. 'menuitems.json'
+if hs.fs.attributes(menuItemTmpFile) ~= nil then
+  local json = hs.json.read(menuItemTmpFile)
+  menuItemLocaleDir = json.locale
+  menuItemLocaleMap = json.map
 end
-function delocalizedMenuBarItemString(str, bundleID, params)
+function delocalizedMenuItemString(str, bundleID, params)
   if hs.fs.attributes(localeTmpDir) == nil then
     hs.execute(string.format("mkdir -p '%s'", localeTmpDir))
   end
@@ -1045,45 +1045,45 @@ function delocalizedMenuBarItemString(str, bundleID, params)
     end
   end
 
-  if menuBarItemLocaleMap[bundleID] == nil then
-    menuBarItemLocaleMap[bundleID] = {}
-    menuBarItemLocaleDir[bundleID] = {}
+  if menuItemLocaleMap[bundleID] == nil then
+    menuItemLocaleMap[bundleID] = {}
+    menuItemLocaleDir[bundleID] = {}
   end
-  if menuBarItemLocaleInversedMap[bundleID] == nil then
-    menuBarItemLocaleInversedMap[bundleID] = {}
+  if menuItemLocaleInversedMap[bundleID] == nil then
+    menuItemLocaleInversedMap[bundleID] = {}
   end
-  if menuBarItemLocaleDir[bundleID][appLocale] == nil then
-    menuBarItemLocaleMap[bundleID] = {}
-    menuBarItemLocaleInversedMap[bundleID] = {}
+  if menuItemLocaleDir[bundleID][appLocale] == nil then
+    menuItemLocaleMap[bundleID] = {}
+    menuItemLocaleInversedMap[bundleID] = {}
   end
 
-  if menuBarItemLocaleMap[bundleID][str] == false then
+  if menuItemLocaleMap[bundleID][str] == false then
     return nil
-  elseif menuBarItemLocaleMap[bundleID][str] ~= nil then
-    return menuBarItemLocaleMap[bundleID][str]
+  elseif menuItemLocaleMap[bundleID][str] ~= nil then
+    return menuItemLocaleMap[bundleID][str]
   end
 
   local locale, localeDir, mode, result, searchFunc
 
   if bundleID == "org.zotero.zotero" then
     result, locale = delocalizeZoteroMenu(str, appLocale)
-    if menuBarItemLocaleDir[bundleID][appLocale] ~= nil
-        and menuBarItemLocaleDir[bundleID][appLocale] ~= locale then
-      menuBarItemLocaleMap[bundleID] = {}
+    if menuItemLocaleDir[bundleID][appLocale] ~= nil
+        and menuItemLocaleDir[bundleID][appLocale] ~= locale then
+      menuItemLocaleMap[bundleID] = {}
     end
     goto L_END_DELOCALIZED
   elseif bundleID == "com.mathworks.matlab" then
     result, locale = delocalizeMATLABFigureMenu(str, appLocale)
-    if menuBarItemLocaleDir[bundleID][appLocale] ~= nil
-        and menuBarItemLocaleDir[bundleID][appLocale] ~= locale then
-      menuBarItemLocaleMap[bundleID] = {}
+    if menuItemLocaleDir[bundleID][appLocale] ~= nil
+        and menuItemLocaleDir[bundleID][appLocale] ~= locale then
+      menuItemLocaleMap[bundleID] = {}
     end
     goto L_END_DELOCALIZED
   end
 
   if not framework.mono then mode = 'lproj' end
   if locale == nil then
-    locale = menuBarItemLocaleDir[bundleID][appLocale]
+    locale = menuItemLocaleDir[bundleID][appLocale]
   end
   if locale == nil then
     locale = getMatchedLocale(appLocale, resourceDir, mode)
@@ -1091,7 +1091,7 @@ function delocalizedMenuBarItemString(str, bundleID, params)
       locale, localeDir = getQtMatchedLocale(appLocale, resourceDir)
     end
     if locale == nil then
-      menuBarItemLocaleMap[bundleID][str] = false
+      menuItemLocaleMap[bundleID][str] = false
       return nil
     end
   end
@@ -1172,15 +1172,15 @@ function delocalizedMenuBarItemString(str, bundleID, params)
   end
 
   if localeFile ~= nil then
-    if menuBarItemLocaleInversedMap[bundleID][str] == nil then
+    if menuItemLocaleInversedMap[bundleID][str] == nil then
       local fullPath = localeDir .. '/' .. localeFile .. '.strings'
       if hs.fs.attributes(fullPath) ~= nil then
-        menuBarItemLocaleInversedMap[bundleID] = parseStringsFile(fullPath, false, true)
+        menuItemLocaleInversedMap[bundleID] = parseStringsFile(fullPath, false, true)
       end
     end
-    if menuBarItemLocaleInversedMap[bundleID] ~= nil
-        and menuBarItemLocaleInversedMap[bundleID][str] ~= nil then
-      local keys = menuBarItemLocaleInversedMap[bundleID][str]
+    if menuItemLocaleInversedMap[bundleID] ~= nil
+        and menuItemLocaleInversedMap[bundleID][str] ~= nil then
+      local keys = menuItemLocaleInversedMap[bundleID][str]
       if type(keys) == 'string' then keys = {keys} end
       for _, k in ipairs(keys) do
         result = searchFunc(k)
@@ -1215,12 +1215,12 @@ function delocalizedMenuBarItemString(str, bundleID, params)
       end)
     end
     for _, file in ipairs(stringsFiles) do
-      if menuBarItemLocaleInversedMap[bundleID][str] == nil then
+      if menuItemLocaleInversedMap[bundleID][str] == nil then
         local fullPath = localeDir .. '/' .. file
-        menuBarItemLocaleInversedMap[bundleID] = parseStringsFile(fullPath, false, true)
+        menuItemLocaleInversedMap[bundleID] = parseStringsFile(fullPath, false, true)
       end
-      if menuBarItemLocaleInversedMap[bundleID][str] ~= nil then
-        local keys = menuBarItemLocaleInversedMap[bundleID][str]
+      if menuItemLocaleInversedMap[bundleID][str] ~= nil then
+        local keys = menuItemLocaleInversedMap[bundleID][str]
         if type(keys) == 'string' then keys = {keys} end
         for _, k in ipairs(keys) do
           localeFile = file:sub(1, -9)
@@ -1243,19 +1243,19 @@ function delocalizedMenuBarItemString(str, bundleID, params)
   end
 
   if bundleID:match("^com%.charliemonroe%..*$") and localeFramework == nil then
-    result = delocalizedMenuBarItemString(str, bundleID,
+    result = delocalizedMenuItemString(str, bundleID,
                                        { framework = "XUCore.framework" })
     if result ~= nil then return result end
   end
 
   ::L_END_DELOCALIZED::
   if result ~= nil then
-    menuBarItemLocaleMap[bundleID][str] = result
-    menuBarItemLocaleDir[bundleID][appLocale] = locale
-    hs.json.write({ locale = menuBarItemLocaleDir, map = menuBarItemLocaleMap },
-        menuBarItemTmpFile, false, true)
+    menuItemLocaleMap[bundleID][str] = result
+    menuItemLocaleDir[bundleID][appLocale] = locale
+    hs.json.write({ locale = menuItemLocaleDir, map = menuItemLocaleMap },
+        menuItemTmpFile, false, true)
   else
-    menuBarItemLocaleMap[bundleID][str] = false
+    menuItemLocaleMap[bundleID][str] = false
   end
   return result
 end
@@ -1277,7 +1277,7 @@ function delocalizedMenuBarItem(title, bundleID, params)
       return title
     end
   end
-  local newTitle = delocalizedMenuBarItemString(title, bundleID, params)
+  local newTitle = delocalizedMenuItemString(title, bundleID, params)
   return newTitle
 end
 
@@ -1295,7 +1295,7 @@ if finderObject ~= nil then
   local finderMenuItems = finderObject:getMenuItems()
   for i=2,#finderMenuItems do
     local title = finderMenuItems[i].AXTitle
-    local enTitle = delocalizedMenuBarItemString(title, "com.apple.finder")
+    local enTitle = delocalizedMenuItemString(title, "com.apple.finder")
     if enTitle ~= nil then
       menuBarTitleLocalizationMap.common[title] = enTitle
     end
@@ -1316,7 +1316,7 @@ end
 
 function localizedMenuBarItem(title, bundleID, params)
   for _, dict in ipairs{
-    menuBarItemLocaleMap[bundleID] or {},
+    menuItemLocaleMap[bundleID] or {},
     menuBarTitleLocalizationMap[bundleID] or {},
   } do
     local locTitle = hs.fnutils.indexOf(dict, title)
