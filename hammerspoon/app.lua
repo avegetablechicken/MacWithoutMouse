@@ -748,7 +748,6 @@ appHotKeyCallbacks = {
   {
     ["view:toggleOutline"] = {
       message = "View: Toggle Outline",
-      repeatable = false,  -- fixme: otherwise unexpected repeating
       condition = function(appObject)
         if appObject:focusedWindow() == nil then
           return false
