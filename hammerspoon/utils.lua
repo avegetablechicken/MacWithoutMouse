@@ -750,6 +750,18 @@ function localizedString(str, bundleID, params)
     end
   end
 
+  local resourceDir, framework = getResourceDir(bundleID, localeFramework)
+  if framework.chromium then
+    if findApplication(bundleID) then
+      local menuItems = getMenuItems(findApplication(bundleID))
+      for _, title in ipairs{ 'File', 'Edit', 'Window', 'Help' } do
+        if hs.fnutils.find(menuItems, function(item) return item.AXTitle == title end) ~= nil then
+          return str
+        end
+      end
+    end
+  end
+
   if appLocaleMap[bundleID] == nil then
     appLocaleMap[bundleID] = {}
     appLocaleDir[bundleID] = {}
@@ -768,8 +780,6 @@ function localizedString(str, bundleID, params)
     return appLocaleMap[bundleID][appLocale][str]
   end
   local localesDict = appLocaleAssetBuffer[bundleID][appLocale]
-
-  local resourceDir, framework = getResourceDir(bundleID, localeFramework)
 
   local locale
   if localeDir == nil or localeDir == false then
@@ -1023,6 +1033,18 @@ function delocalizedMenuBarItemString(str, bundleID, params)
     if localeDetails.languageCode == 'en' then return end
   end
 
+  local resourceDir, framework = getResourceDir(bundleID, localeFramework)
+  if framework.chromium then
+    if findApplication(bundleID) then
+      local menuItems = getMenuItems(findApplication(bundleID))
+      for _, title in ipairs{ 'File', 'Edit', 'Window', 'Help' } do
+        if hs.fnutils.find(menuItems, function(item) return item.AXTitle == title end) ~= nil then
+          return str
+        end
+      end
+    end
+  end
+
   if menuBarItemLocaleMap[bundleID] == nil then
     menuBarItemLocaleMap[bundleID] = {}
     menuBarItemLocaleDir[bundleID] = {}
@@ -1041,7 +1063,7 @@ function delocalizedMenuBarItemString(str, bundleID, params)
     return menuBarItemLocaleMap[bundleID][str]
   end
 
-  local locale, resourceDir, framework, localeDir, mode, result, searchFunc
+  local locale, localeDir, mode, result, searchFunc
 
   if bundleID == "org.zotero.zotero" then
     result, locale = delocalizeZoteroMenu(str, appLocale)
@@ -1058,8 +1080,6 @@ function delocalizedMenuBarItemString(str, bundleID, params)
     end
     goto L_END_DELOCALIZED
   end
-
-  resourceDir, framework = getResourceDir(bundleID, localeFramework)
 
   if not framework.mono then mode = 'lproj' end
   if locale == nil then
@@ -1298,11 +1318,18 @@ function localizedMenuBarItem(title, bundleID, params)
   for _, dict in ipairs{
     menuBarItemLocaleMap[bundleID] or {},
     menuBarTitleLocalizationMap[bundleID] or {},
-    menuBarTitleLocalizationMap.common,
   } do
     local locTitle = hs.fnutils.indexOf(dict, title)
     if locTitle ~= nil then return locTitle end
   end
+  if findApplication(bundleID) then
+    local menuItems = getMenuItems(findApplication(bundleID))
+    if hs.fnutils.find(menuItems, function(item) return item.AXTitle == title end) ~= nil then
+      return title
+    end
+  end
+  local locTitle = hs.fnutils.indexOf(menuBarTitleLocalizationMap.common, title)
+  if locTitle ~= nil then return locTitle end
   return localizedString(title, bundleID, params)
 end
 
