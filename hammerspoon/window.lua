@@ -1049,13 +1049,14 @@ end
 
 local function PDFChooser()
   local choices = {}
-  local allWindows
-  local winTabTitles = {}
+  local allWindowsPDFExpert, winTabTitlesPDFExpert
 
   -- `PDF Expert`
-  local appObject = findApplication("com.readdle.PDFExpert-Mac")
-  if appObject ~= nil then
-    allWindows = hs.window.filter.new(false):allowApp(appObject:name()):getWindows()
+  local appObjectPDFExpert = findApplication("com.readdle.PDFExpert-Mac")
+  if appObjectPDFExpert ~= nil then
+    local allWindows
+    local winTabTitles = {}
+    allWindows = hs.window.filter.new(false):allowApp(appObjectPDFExpert:name()):getWindows()
     local winTitles = {}
     local winPaths = {}
     for _, win in ipairs(allWindows) do
@@ -1087,7 +1088,7 @@ local function PDFChooser()
         local choice =
             {
               text = tabTitle,
-              image = hs.image.imageFromAppBundle(appObject:bundleID()),
+              image = hs.image.imageFromAppBundle(appObjectPDFExpert:bundleID()),
               id = tabID,
               winID = winID,
               app = "com.readdle.PDFExpert-Mac"
@@ -1098,6 +1099,51 @@ local function PDFChooser()
           choice.subText = 'INACTIVE in WINDOW: "' .. winTitle .. '"'
         end
         table.insert(choices, choice)
+      end
+    end
+  end
+
+  -- `UPDF`
+  local allWindowsUPDF
+  local appObjectUPDF = findApplication("com.superace.updf.mac")
+  if appObjectUPDF ~= nil then
+    allWindowsUPDF = hs.window.filter.new(false):allowApp(appObjectUPDF:name()):getWindows()
+    local winTabTitles = {}
+    local menuItems = getMenuItems(appObjectUPDF)
+    for _, menuItem in ipairs(menuItems or {}) do
+      if menuItem.AXTitle == localizedMenuBarItem('Tab', "com.superace.updf.mac") then
+        local subMenuItems = menuItem.AXChildren[1]
+        local winTitles = {}
+        local tabTitles = {}
+        for i=5,#subMenuItems do
+          local subMenuItem = subMenuItems[i]
+          if subMenuItem.AXTitle ~= "" then
+            if subMenuItem.AXMenuItemMarkChar == "✓" then
+              table.insert(winTitles, subMenuItem.AXTitle)
+            end
+            table.insert(tabTitles, subMenuItem.AXTitle)
+          else
+            table.insert(winTabTitles, tabTitles)
+            tabTitles = {}
+          end
+        end
+        table.insert(winTabTitles, tabTitles)
+        for i, winTitle in ipairs(winTitles) do
+        tabTitles = winTabTitles[i]
+        for _, tabTitle in ipairs(tabTitles) do
+          local choice =
+              {
+                text = tabTitle,
+                image = hs.image.imageFromAppBundle(appObjectUPDF:bundleID()),
+                winTitle = winTitle,
+                app = "com.superace.updf.mac"
+              }
+          if winTitle ~= tabTitle then
+            choice.subText = 'INACTIVE in WINDOW: "' .. winTitle .. '"'
+          end
+          table.insert(choices, choice)
+        end
+      end
       end
     end
   end
@@ -1178,16 +1224,16 @@ local function PDFChooser()
   local chooser = hs.chooser.new(function(choice)
     if not choice then return end
     if choice.app == "com.readdle.PDFExpert-Mac" then
-      local frontmostAppWin = appObject:focusedWindow():title()
-      local fullScreen = allWindows[choice.winID]:isFullScreen()
-      if frontmostAppWin ~= allWindows[choice.winID]:title() then
-        allWindows[choice.winID]:focus()
+      local frontmostAppWin = appObjectPDFExpert:focusedWindow():title()
+      local fullScreen = allWindowsPDFExpert[choice.winID]:isFullScreen()
+      if frontmostAppWin ~= allWindowsPDFExpert[choice.winID]:title() then
+        allWindowsPDFExpert[choice.winID]:focus()
       end
       if not hs.fnutils.contains(hs.spaces.activeSpaces(),
-          hs.spaces.windowSpaces(allWindows[choice.winID])[1]) then
+          hs.spaces.windowSpaces(allWindowsPDFExpert[choice.winID])[1]) then
         hs.timer.usleep(0.5 * 1000000)
       end
-      if allWindows[choice.winID]:title() ~= winTabTitles[choice.winID][choice.id] then
+      if allWindowsPDFExpert[choice.winID]:title() ~= winTabTitlesPDFExpert[choice.winID][choice.id] then
         if not fullScreen then
           local ok, result = hs.osascript.applescript([[
             tell application "System Events"
@@ -1203,8 +1249,8 @@ local function PDFChooser()
           end
         else
           local appObject = findApplication("com.readdle.PDFExpert-Mac")
-          local activeIdx = hs.fnutils.indexOf(winTabTitles[choice.winID],
-              allWindows[choice.winID]:title()) or 0
+          local activeIdx = hs.fnutils.indexOf(winTabTitlesPDFExpert[choice.winID],
+              allWindowsPDFExpert[choice.winID]:title()) or 0
           if activeIdx < choice.id then
             for i=1,choice.id-activeIdx do
               selectMenuItem(appObject, { "Window", "Go to Previous Tab" })
@@ -1216,6 +1262,19 @@ local function PDFChooser()
           end
         end
       end
+    elseif choice.app == "com.superace.updf.mac" then
+      for _, window in ipairs(allWindowsUPDF) do
+        if window:title() == choice.winTitle then
+          window:focus()
+          selectMenuItem(appObjectUPDF, { 'Tab', choice.text })
+          return
+        end
+      end
+      appObjectUPDF:activate()
+      hs.timer.doAfter(0.1, function()
+        hs.eventtap.keyStroke('fn⌃', 'F2')
+        selectMenuItem(appObjectUPDF, { 'Tab', choice.text })
+      end)
     elseif choice.app == "com.apple.Preview" then
       local ok, result = hs.osascript.applescript([[
         tell application id "com.apple.Preview"
@@ -1275,7 +1334,8 @@ end
 -- use it to switch to a tab
 bindWindowMisc(misc["searchTab"], 'Switch to Tab',
 function()
-  if hs.application.frontmostApplication():bundleID() == "com.readdle.PDFExpert-Mac" then
+  if hs.fnutils.contains({ "com.readdle.PDFExpert-Mac", "com.superace.updf.mac" },
+      hs.application.frontmostApplication():bundleID()) then
     PDFChooser()
     return
   end
