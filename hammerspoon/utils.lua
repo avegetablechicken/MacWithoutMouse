@@ -795,7 +795,8 @@ function localizedString(str, bundleID, params)
     elseif localeDir == nil then
       localeDir = resourceDir .. "/" .. locale .. ".lproj"
     end
-    if framework.qt and hs.fs.attributes(localeDir) == nil then
+    if framework.qt and type(localeDir) == 'string'
+        and hs.fs.attributes(localeDir) == nil then
       _, localeDir = getQtMatchedLocale(appLocale, resourceDir)
     end
   end
@@ -1080,7 +1081,8 @@ function delocalizedMenuBarItemString(str, bundleID, params)
     else
       localeDir = resourceDir .. "/" .. locale
     end
-    if framework.qt and hs.fs.attributes(localeDir) == nil then
+    if framework.qt and type(localeDir) == 'string'
+        and hs.fs.attributes(localeDir) == nil then
       _, localeDir = getQtMatchedLocale(appLocale, resourceDir)
     end
   end
