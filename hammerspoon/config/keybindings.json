@@ -663,10 +663,6 @@
       "recentFolders": {
         "mods": "control",
         "key": "R"
-      },
-      "QLControlOpen": {
-        "mods": ["shift", "command"],
-        "key": "O"
       }
     },
     "com.apple.Terminal": {
