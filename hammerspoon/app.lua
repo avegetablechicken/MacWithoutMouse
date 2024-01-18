@@ -2641,6 +2641,12 @@ function registerForOpenSavePanel(appObject)
 
   if appObject:bundleID() == bundleID then return end
 
+  local appUIObj = hs.axuielement.applicationElement(appObject)
+  if not appUIObj:isValid() then
+    hs.timer.doAfter(0.1, function() registerForOpenSavePanel(appObject) end)
+    return
+  end
+
   local getUIObj = function(winUIObj)
     if winUIObj:attributeValue("AXIdentifier") ~= "open-panel"
         and winUIObj:attributeValue("AXIdentifier") ~= "save-panel" then
