@@ -257,10 +257,10 @@ local function deleteSelectedMessage(appObject, menuItem, force)
 end
 
 local function deleteAllMessages(appObject)
-  local menuItemTitle = getOSVersion() < OS.Ventura and "File" or "Conversations"
+  local menuBarItemTitle = getOSVersion() < OS.Ventura and "File" or "Conversations"
   local appLocale = applicationLocales(appObject:bundleID())[1]
-  local subMenuItem = appLocale:sub(1, 2) == "zh" and "删除对话…" or "Delete Conversation…"
-  local menuItem, menuItemPath = findMenuItem(appObject, { menuItemTitle, subMenuItem })
+  local menuItemTitle = appLocale:sub(1, 2) == "zh" and "删除对话…" or "Delete Conversation…"
+  local menuItem, menuItemPath = findMenuItem(appObject, { menuBarItemTitle, menuItemTitle })
   if menuItem == nil then return end
   appUIObj = hs.axuielement.applicationElement(appObject)
   appUIObj:elementSearch(
@@ -490,7 +490,7 @@ local function localizedMessage(message, params, sep)
       return localizedString(message, bundleID, params)
     else
       if sep == nil then sep = ' > ' end
-      local str = localizedMenuItem(message[1], bundleID, params)
+      local str = localizedMenuBarItem(message[1], bundleID, params)
       for i=2,#message do
         str = str .. sep .. localizedString(message[i], bundleID, params)
       end
@@ -537,12 +537,12 @@ local function receiveMenuItem(menuItemTitle, appObject)
   appObject:selectMenuItem(menuItemTitle)
 end
 
-local function noSelectedMenuItem(fn)
+local function noSelectedMenuBarItem(fn)
   return function(appObject)
     local appUIObj = hs.axuielement.applicationElement(appObject)
     local menuBar = appUIObj:childrenWithRole("AXMenuBar")[1]
-    for i, menuItem in ipairs(menuBar:childrenWithRole("AXMenuBarItem")) do
-      if i > 1 and menuItem.AXSelected then return false end
+    for i, menuBarItem in ipairs(menuBar:childrenWithRole("AXMenuBarItem")) do
+      if i > 1 and menuBarItem.AXSelected then return false end
     end
     return fn(appObject)
   end
@@ -632,10 +632,10 @@ appHotKeyCallbacks = {
         return appLocale:sub(1, 2) == "zh" and "删除对话…" or "Delete Conversation…"
       end,
       condition = function(appObject)
-        local menuItemTitle = getOSVersion() < OS.Ventura and "File" or "Conversations"
+        local menuBarItemTitle = getOSVersion() < OS.Ventura and "File" or "Conversations"
         local appLocale = applicationLocales(appObject:bundleID())[1]
-        local subItemTitle = appLocale:sub(1, 2) == "zh" and "删除对话…" or "Delete Conversation…"
-        return checkMenuItem({ menuItemTitle, subItemTitle })(appObject)
+        local menuItemTitle = appLocale:sub(1, 2) == "zh" and "删除对话…" or "Delete Conversation…"
+        return checkMenuItem({ menuBarItemTitle, menuItemTitle })(appObject)
       end,
       fn = function(menuItemTitle, appObject) deleteSelectedMessage(appObject, menuItemTitle) end
     },
@@ -645,12 +645,12 @@ appHotKeyCallbacks = {
     },
     ["goToPreviousConversation"] = {
       message = menuItemMessage('⇧⌃', "⇥", 2),
-      condition = noSelectedMenuItem(checkMenuItemByKeybinding('⇧⌃', "⇥")),
+      condition = noSelectedMenuBarItem(checkMenuItemByKeybinding('⇧⌃', "⇥")),
       fn = receiveMenuItem
     },
     ["goToNextConversation"] = {
       message = menuItemMessage('⌃', "⇥", 2),
-      condition = noSelectedMenuItem(checkMenuItemByKeybinding('⌃', "⇥")),
+      condition = noSelectedMenuBarItem(checkMenuItemByKeybinding('⌃', "⇥")),
       fn = receiveMenuItem
     }
   },
@@ -2747,7 +2747,7 @@ registerForOpenSavePanel(frontmostApplication)
 
 -- bind `alt+?` hotkeys to menu bar 1 functions
 -- to be registered in application callback
-altMenuItemHotkeys = {}
+altMenuBarItemHotkeys = {}
 
 local function bindAltMenu(appObject, mods, key, message, fn)
   fn = showMenuItemWrapper(fn)
@@ -2780,7 +2780,7 @@ local function searchHotkeyByNth(itemTitles, alreadySetHotkeys, index)
   return notSetItems, alreadySetHotkeys
 end
 
-function delocalizeMenuItems(itemTitles, bundleID, localeFile)
+function delocalizeMenuBarItems(itemTitles, bundleID, localeFile)
   local defaultTitleMap, titleMap
   if menuBarTitleLocalizationMap ~= nil then
     defaultTitleMap = menuBarTitleLocalizationMap.common
@@ -2808,7 +2808,7 @@ function delocalizeMenuItems(itemTitles, bundleID, localeFile)
           goto L_CONTINUE
         end
       end
-      local newTitle = delocalizedMenuItemString(title, bundleID, localeFile)
+      local newTitle = delocalizedMenuBarItemString(title, bundleID, localeFile)
       if newTitle ~= nil then
         table.insert(result, { title, newTitle })
       end
@@ -2818,23 +2818,23 @@ function delocalizeMenuItems(itemTitles, bundleID, localeFile)
   return result
 end
 
-function altMenuItem(appObject)
+function altMenuBarItem(appObject)
   -- check whether called by window filter (possibly with delay)
   if appObject:bundleID() ~= hs.application.frontmostApplication():bundleID() then
     return
   end
 
   -- delete previous hotkeys
-  for _, hotkeyObject in ipairs(altMenuItemHotkeys) do
+  for _, hotkeyObject in ipairs(altMenuBarItemHotkeys) do
     hotkeyObject:delete()
   end
-  altMenuItemHotkeys = {}
+  altMenuBarItemHotkeys = {}
 
-  local enableIndex = get(keybindingConfigs.hotkeys.menuItems, "enableIndex")
-  local enableLetter = get(keybindingConfigs.hotkeys.menuItems, "enableLetter")
+  local enableIndex = get(keybindingConfigs.hotkeys.menuBarItems, "enableIndex")
+  local enableLetter = get(keybindingConfigs.hotkeys.menuBarItems, "enableLetter")
   if enableIndex == nil then enableIndex = false end
   if enableLetter == nil then enableLetter = true end
-  local excludedForLetter = get(keybindingConfigs.hotkeys.menuItems, 'excludedForLetter')
+  local excludedForLetter = get(keybindingConfigs.hotkeys.menuBarItems, 'excludedForLetter')
   if excludedForLetter ~= nil and hs.fnutils.contains(excludedForLetter,
                                                       appObject:bundleID()) then
     enableLetter = false
@@ -2845,44 +2845,44 @@ function altMenuItem(appObject)
       or appObject:bundleID() == "com.google.Chrome" then
     hs.timer.usleep(0.5 * 100000)
   end
-  local menuItemTitles
+  local menuBarItemTitles
   if appObject:bundleID() == "com.mathworks.matlab" and appObject:focusedWindow() ~= nil then
     local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
     if #winUIObj:childrenWithRole("AXMenuBar") > 0 then
       local menuObj = winUIObj:childrenWithRole("AXMenuBar")[1]:childrenWithRole("AXMenu")
-      menuItemTitles = hs.fnutils.map(menuObj, function(item)
+      menuBarItemTitles = hs.fnutils.map(menuObj, function(item)
         return item:attributeValue("AXTitle"):match("(.-)%s")
       end)
-      table.insert(menuItemTitles, 1, "MATLAB")
+      table.insert(menuBarItemTitles, 1, "MATLAB")
     end
   end
-  if menuItemTitles == nil then
+  if menuBarItemTitles == nil then
     local menuItems = getMenuItems(appObject)
     if menuItems == nil then return end
-    menuItemTitles = hs.fnutils.map(menuItems, function(item)
+    menuBarItemTitles = hs.fnutils.map(menuItems, function(item)
       return item.AXTitle
     end)
-    menuItemTitles = hs.fnutils.filter(menuItemTitles, function(item)
+    menuBarItemTitles = hs.fnutils.filter(menuBarItemTitles, function(item)
       return item ~= nil and item ~= ""
     end)
   end
-  if menuItemTitles == nil or #menuItemTitles == 0 then return end
+  if menuBarItemTitles == nil or #menuBarItemTitles == 0 then return end
 
   -- by initial or otherwise second letter in title
   local alreadySetHotkeys = {}
   if enableLetter == true then
     local itemTitles = {}
-    for i=2,#menuItemTitles do
-      local title, letter = menuItemTitles[i]:match("(.-)%s*%((.-)%)")
+    for i=2,#menuBarItemTitles do
+      local title, letter = menuBarItemTitles[i]:match("(.-)%s*%((.-)%)")
       if letter then
-        alreadySetHotkeys[letter] = {menuItemTitles[i], title}
+        alreadySetHotkeys[letter] = {menuBarItemTitles[i], title}
       else
-        table.insert(itemTitles, menuItemTitles[i])
+        table.insert(itemTitles, menuBarItemTitles[i])
       end
     end
 
     -- process localized titles
-    itemTitles = delocalizeMenuItems(itemTitles, appObject:bundleID())
+    itemTitles = delocalizeMenuBarItems(itemTitles, appObject:bundleID())
 
     local notSetItems = {}
     for i, title in ipairs(itemTitles) do
@@ -2902,15 +2902,15 @@ function altMenuItem(appObject)
     searchHotkeyByNth(notSetItems, alreadySetHotkeys, 3)
     local invMap = {}
     for key, title in pairs(alreadySetHotkeys) do
-      local menuItem = type(title) == 'table' and title[1] or title
+      local menuBarItem = type(title) == 'table' and title[1] or title
       local msg = type(title) == 'table' and title[2] or title
-      invMap[menuItem] = {key, msg}
+      invMap[menuBarItem] = {key, msg}
     end
-    for i=2,#menuItemTitles do
-      local spec = invMap[menuItemTitles[i]]
+    for i=2,#menuBarItemTitles do
+      local spec = invMap[menuBarItemTitles[i]]
       if spec ~= nil then
         local fn
-        if appObject:bundleID() == "com.mathworks.matlab" and #menuItemTitles > 3 then
+        if appObject:bundleID() == "com.mathworks.matlab" and #menuBarItemTitles > 3 then
           fn = function()
             local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
             local menuObj = winUIObj:childrenWithRole("AXMenuBar")[1]:childrenWithRole("AXMenu")
@@ -2920,109 +2920,109 @@ function altMenuItem(appObject)
             targetMenuObj:performAction("AXPick")
           end
         else
-          fn = function() appObject:selectMenuItem({ menuItemTitles[i] }) end
+          fn = function() appObject:selectMenuItem({ menuBarItemTitles[i] }) end
         end
         local hotkeyObject = bindAltMenu(appObject, "⌥", spec[1], spec[2], fn)
-        table.insert(altMenuItemHotkeys, hotkeyObject)
+        table.insert(altMenuBarItemHotkeys, hotkeyObject)
       end
     end
   end
 
   -- by index
   if enableIndex == true then
-    local itemTitles = hs.fnutils.copy(menuItemTitles)
+    local itemTitles = hs.fnutils.copy(menuBarItemTitles)
 
     local hotkeyObject = bindAltMenu(appObject, "⌥", "`", itemTitles[1] .. " Menu",
         function() appObject:selectMenuItem({itemTitles[1]}) end)
     hotkeyObject.subkind = 0
-    table.insert(altMenuItemHotkeys, hotkeyObject)
-    local maxMenuItemHotkey = #itemTitles > 11 and 10 or (#itemTitles - 1)
-    for i=1,maxMenuItemHotkey do
+    table.insert(altMenuBarItemHotkeys, hotkeyObject)
+    local maxMenuBarItemHotkey = #itemTitles > 11 and 10 or (#itemTitles - 1)
+    for i=1,maxMenuBarItemHotkey do
       hotkeyObject = bindAltMenu(appObject, "⌥", tostring(i % 10), itemTitles[i+1] .. " Menu",
           function() appObject:selectMenuItem({itemTitles[i+1]}) end)
-      table.insert(altMenuItemHotkeys, hotkeyObject)
+      table.insert(altMenuBarItemHotkeys, hotkeyObject)
     end
   end
 end
-altMenuItem(frontmostApplication)
+altMenuBarItem(frontmostApplication)
 
-local appsWatchMenuItems = get(applicationConfigs.menuItemsMayChange, 'basic') or {}
-appsMenuItemsWatchers = {}
+local appswatchMenuBarItems = get(applicationConfigs.menuBarItemsMayChange, 'basic') or {}
+appsMenuBarItemsWatchers = {}
 
-local getMenuItemTitlesString = function(appObject)
+local getMenuBarItemTitlesString = function(appObject)
   local menuItems = getMenuItems(appObject)
   if menuItems == nil or #menuItems == 0 then return "" end
-  local menuItemTitles = {}
+  local menuBarItemTitles = {}
   for _, item in ipairs(menuItems) do
-    table.insert(menuItemTitles, item.AXTitle)
+    table.insert(menuBarItemTitles, item.AXTitle)
   end
-  return table.concat(menuItemTitles, "|")
+  return table.concat(menuBarItemTitles, "|")
 end
 
-local function watchMenuItems(appObject)
-  local menuItemTitlesString = getMenuItemTitlesString(appObject)
-  if appsMenuItemsWatchers[appObject:bundleID()] == nil then
+local function watchMenuBarItems(appObject)
+  local menuBarItemTitlesString = getMenuBarItemTitlesString(appObject)
+  if appsMenuBarItemsWatchers[appObject:bundleID()] == nil then
     local watcher = hs.timer.new(1, function()
-      local newMenuItemTitlesString = getMenuItemTitlesString(appObject)
-      if newMenuItemTitlesString ~= appsMenuItemsWatchers[appObject:bundleID()][2] then
-        appsMenuItemsWatchers[appObject:bundleID()][2] = newMenuItemTitlesString
-        altMenuItem(appObject)
+      local newMenuBarItemTitlesString = getMenuBarItemTitlesString(appObject)
+      if newMenuBarItemTitlesString ~= appsMenuBarItemsWatchers[appObject:bundleID()][2] then
+        appsMenuBarItemsWatchers[appObject:bundleID()][2] = newMenuBarItemTitlesString
+        altMenuBarItem(appObject)
       end
     end)
-    appsMenuItemsWatchers[appObject:bundleID()] = { watcher, menuItemTitlesString }
+    appsMenuBarItemsWatchers[appObject:bundleID()] = { watcher, menuBarItemTitlesString }
   else
-    appsMenuItemsWatchers[appObject:bundleID()][2] = menuItemTitlesString
+    appsMenuBarItemsWatchers[appObject:bundleID()][2] = menuBarItemTitlesString
   end
-  appsMenuItemsWatchers[appObject:bundleID()][1]:start()
+  appsMenuBarItemsWatchers[appObject:bundleID()][1]:start()
 end
 
-local appsMayChangeMenu = get(applicationConfigs.menuItemsMayChange, 'window') or {}
+local appsMayChangeMenuBar = get(applicationConfigs.menuBarItemsMayChange, 'window') or {}
 
-local function appMenuChangeCallback(appObject)
-  altMenuItem(appObject)
-  local menuItemStr = getMenuItemTitlesString(appObject)
-  curAppMenuItemWatcher = hs.timer.doAfter(1, function()
+local function appMenuBarChangeCallback(appObject)
+  altMenuBarItem(appObject)
+  local menuBarItemStr = getMenuBarItemTitlesString(appObject)
+  curAppMenuBarItemWatcher = hs.timer.doAfter(1, function()
     if hs.application.frontmostApplication():bundleID() ~= appObject:bundleID() then
       return
     end
-    local newMenuItemTitlesString = getMenuItemTitlesString(appObject)
-    if newMenuItemTitlesString ~= menuItemStr then
-      altMenuItem(appObject)
+    local newMenuBarItemTitlesString = getMenuBarItemTitlesString(appObject)
+    if newMenuBarItemTitlesString ~= menuBarItemStr then
+      altMenuBarItem(appObject)
     end
   end)
 end
 
-function registerObserverForMenuChange(appObject)
-  if appMenuChangeObserver ~= nil then
-    appMenuChangeObserver:stop()
-    appMenuChangeObserver = nil
+function registerObserverForMenuBarChange(appObject)
+  if appMenuBarChangeObserver ~= nil then
+    appMenuBarChangeObserver:stop()
+    appMenuBarChangeObserver = nil
   end
-  if curAppMenuItemWatcher ~= nil then
-    curAppMenuItemWatcher:stop()
-    curAppMenuItemWatcher = nil
-  end
-
-  if hs.fnutils.contains(appsWatchMenuItems, appObject:bundleID()) then
-    watchMenuItems(appObject)
+  if curAppMenuBarItemWatcher ~= nil then
+    curAppMenuBarItemWatcher:stop()
+    curAppMenuBarItemWatcher = nil
   end
 
-  if not hs.fnutils.contains(appsMayChangeMenu, appObject:bundleID()) then
+  if hs.fnutils.contains(appswatchMenuBarItems, appObject:bundleID()) then
+    watchMenuBarItems(appObject)
+  end
+
+  if not hs.fnutils.contains(appsMayChangeMenuBar, appObject:bundleID()) then
     return
   end
 
-  appMenuChangeObserver = hs.axuielement.observer.new(appObject:pid())
-  appMenuChangeObserver:addWatcher(
+  appMenuBarChangeObserver = hs.axuielement.observer.new(appObject:pid())
+  appMenuBarChangeObserver:addWatcher(
     hs.axuielement.applicationElement(appObject),
     hs.axuielement.observer.notifications.focusedWindowChanged
   )
-  appMenuChangeObserver:callback(hs.fnutils.partial(appMenuChangeCallback, appObject))
-  appMenuChangeObserver:start()
+  appMenuBarChangeObserver:callback(hs.fnutils.partial(appMenuBarChangeCallback, appObject))
+  appMenuBarChangeObserver:start()
 end
-registerObserverForMenuChange(frontmostApplication)
-appMenuChangeFilter = hs.window.filter.new():subscribe(hs.window.filter.windowDestroyed,
+registerObserverForMenuBarChange(frontmostApplication)
+appMenuBarChangeFilter = hs.window.filter.new():subscribe(hs.window.filter.windowDestroyed,
 function(winObj)
   if winObj == nil or winObj:application() == nil then return end
-  appMenuChangeCallback(winObj:application())
+  appMenuBarChangeCallback(winObj:application())
 end)
 
 local function processAppWithNoWindows(appObject, quit)
@@ -3225,7 +3225,7 @@ local tryTimes = {}
 local tryInterval = 1
 local maxTryTimes = 15
 
-function altMenuItemAfterLaunch(appObject)
+function altMenuBarItemAfterLaunch(appObject)
   local app = hs.fnutils.find(appsLaunchSlow, function(app)
     return appObject:bundleID() == app.bundleID
   end)
@@ -3249,7 +3249,7 @@ function altMenuItemAfterLaunch(appObject)
 
     if app.criterion(appObject) then
       tryTimes[bid] = nil
-      altMenuItem(appObject)
+      altMenuBarItem(appObject)
     else
       -- try until fully launched
       tryTimes[bid] = tryTimes[bid] + 1
@@ -3257,12 +3257,12 @@ function altMenuItemAfterLaunch(appObject)
         tryTimes[bid] = nil
       else
         hs.timer.doAfter(tryInterval, function()
-          altMenuItemAfterLaunch(appObject)
+          altMenuBarItemAfterLaunch(appObject)
         end)
       end
     end
   else
-    altMenuItem(appObject)
+    altMenuBarItem(appObject)
   end
 end
 
@@ -3273,7 +3273,7 @@ function app_applicationCallback(appName, eventType, appObject)
     if bundleID == "com.apple.finder" then
       selectMenuItem(appObject, { "File", "New Finder Window" })
     end
-    altMenuItemAfterLaunch(appObject)
+    altMenuBarItemAfterLaunch(appObject)
     if appHotKeyCallbacks[bundleID] ~= nil then
       registerWinFiltersForDaemonApp(appObject, appHotKeyCallbacks[bundleID])
     end
@@ -3297,11 +3297,11 @@ function app_applicationCallback(appName, eventType, appObject)
       registerInAppHotKeys(appName, eventType, appObject)
       registerInWinHotKeys(appObject)
       hs.timer.doAfter(0, function()
-        altMenuItem(appObject)
+        altMenuBarItem(appObject)
         hs.timer.doAfter(0, function()
           remapPreviousTab(bundleID)
           registerOpenRecent(bundleID)
-          registerObserverForMenuChange(appObject)
+          registerObserverForMenuBarChange(appObject)
           registerForOpenSavePanel(appObject)
         end)
       end)
@@ -3315,8 +3315,8 @@ function app_applicationCallback(appName, eventType, appObject)
     if appName ~= nil then
       unregisterInAppHotKeys(bundleID, eventType)
       unregisterInWinHotKeys(bundleID)
-      if appsMenuItemsWatchers[bundleID] ~= nil then
-        appsMenuItemsWatchers[bundleID][1]:stop()
+      if appsMenuBarItemsWatchers[bundleID] ~= nil then
+        appsMenuBarItemsWatchers[bundleID][1]:stop()
       end
     else
       for bid, _ in pairs(runningAppHotKeys) do
@@ -3334,10 +3334,10 @@ function app_applicationCallback(appName, eventType, appObject)
           unregisterInWinHotKeys(bid, true)
         end
       end
-      for bid, _ in pairs(appsMenuItemsWatchers) do
+      for bid, _ in pairs(appsMenuBarItemsWatchers) do
         if findApplication(bid) == nil then
-          appsMenuItemsWatchers[bid][1]:stop()
-          appsMenuItemsWatchers[bid] = nil
+          appsMenuBarItemsWatchers[bid][1]:stop()
+          appsMenuBarItemsWatchers[bid] = nil
         end
       end
     end

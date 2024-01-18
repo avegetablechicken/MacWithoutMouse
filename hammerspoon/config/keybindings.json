@@ -629,7 +629,7 @@
       }
     },
 
-    "menuItems": {
+    "menuBarItems": {
       "enableIndex": false,
       "enableLetter": true,
       "excludedForLetter": [

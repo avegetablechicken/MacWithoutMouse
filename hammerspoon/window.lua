@@ -1035,7 +1035,7 @@ local function browserChooser()
     -- fixme: when a full screen space is focused, then switching fails
     -- has to try twice to make it work
     appObject:activate()
-    local windowMenuItem = localizedMenuItem('Window', appObject:bundleID())
+    local windowMenuItem = localizedMenuBarItem('Window', appObject:bundleID())
     if windowMenuItem == nil then return end
     appObject:selectMenuItem({windowMenuItem, result})
     hs.timer.usleep(0.5 * 1000000)
@@ -1260,7 +1260,7 @@ local function PDFChooser()
       -- fixme: when a full screen space is focused, then switching fails
       -- has to try twice to make it work
       appObject:activate()
-      local windowMenuItem = localizedMenuItem('Window', appObject:bundleID())
+      local windowMenuItem = localizedMenuBarItem('Window', appObject:bundleID())
       if windowMenuItem == nil then return end
       appObject:selectMenuItem({windowMenuItem, result})
       hs.timer.usleep(0.5 * 1000000)

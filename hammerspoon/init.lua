@@ -41,7 +41,7 @@ local function loadKeybindings(filePath)
     keybindingConfigs.hotkeys = {}
   end
   for kind, cfg in pairs(keybindingConfigs.hotkeys) do
-    if kind ~= "menuItems" then
+    if kind ~= "menuBarItems" then
       for k, spec in pairs(cfg) do
         if type(spec.mods) == 'string' then
           spec.mods = string.gsub(spec.mods, "%${(.-)}", function(key)

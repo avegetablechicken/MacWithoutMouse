@@ -428,7 +428,7 @@ local function processHotkeys(validOnly, showHS, showKara, showApp, evFlags)
     for i, hotkey in ipairs(allKeys) do
       if hotkey.kind > HK.APP_MENU then insertIdx = i break end
     end
-    for i, hk in ipairs(altMenuItemHotkeys) do
+    for i, hk in ipairs(altMenuBarItemHotkeys) do
       local entry = hs.fnutils.find(enabledAltMenuHotkeys, function(menuHK)
         return menuHK.idx == hk.idx
       end)
@@ -1080,7 +1080,7 @@ local searchHotkey = bindSpecSuspend(misc["searchHotkeys"], "Search Hotkey", fun
     for i, hotkey in ipairs(allKeys) do
       if hotkey.kind > HK.APP_MENU then insertIdx = i break end
     end
-    for i, hk in ipairs(altMenuItemHotkeys) do
+    for i, hk in ipairs(altMenuBarItemHotkeys) do
       local entry = hs.fnutils.find(enabledAltMenuHotkeys, function(menuHK)
         return menuHK.idx == hk.idx
       end)
