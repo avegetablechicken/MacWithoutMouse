@@ -1277,7 +1277,7 @@ local searchHotkey = bindSpecSuspend(misc["searchHotkeys"], "Search Hotkey", fun
           end
         end
       else
-        hs.eventtap.keyStroke(choice.mods, choice.key)
+        hs.eventtap.keyStroke(choice.mods:gsub("🌐", 'fn'), choice.key)
       end
     elseif choice.modalType == 1 then
       local modal = hyperModalList[choice.hyperModalIdx]
