@@ -1116,14 +1116,23 @@ appHotKeyCallbacks = {
     ["back"] = {
       message = localizedMessage("Common.Navigation.Back", { localeFir = "Localizable", key = true }),
       condition = function(appObject)
+        if appObject:focusedWindow() == nil then return false end
         local ok, menuItem = checkMenuItemByKeybinding("⌘", "[")(appObject)
         if ok then return true, { 0, menuItem } end
         local bundleID = appObject:bundleID()
-        local params = { localeFir = "Localizable", key = true }
-        local back = localizedString("Common.Navigation.Back", bundleID, params)
-        local lastPage = localizedString("WebView.Previous.Item", bundleID, params)
-        local moments = localizedString("SNS_Feed_Window_Title", bundleID, params)
-        local detail = localizedString("SNS_Feed_Detail_Title", bundleID, params)
+        local album = localizedString("Album", bundleID, "Localizable")
+        local moments = localizedString("Moments", bundleID, "Localizable")
+        local detail = localizedString("SNS_Feed_Detail_Title", bundleID,
+                                       { localeFile = "Localizable", key = true })
+        if string.find(appObject:focusedWindow():title(), album .. '-') == 1
+            or appObject:focusedWindow():title() == moments .. '-' .. detail then
+          local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
+          return true, { 4, winUIObj:childrenWithRole("AXButton")[1].AXPosition }
+        end
+        local back = localizedString("Common.Navigation.Back", bundleID,
+                                     { localeFile = "Localizable", key = true })
+        local lastPage = localizedString("WebView.Previous.Item", bundleID
+                                         { localeFile = "Localizable", key = true })
         local ok, result = hs.osascript.applescript([[
           tell application "System Events"
             tell ]] .. aWinFor(appObject) .. [[
@@ -1149,19 +1158,6 @@ appHotKeyCallbacks = {
                 end if
               end repeat
 
-              -- Moments
-              if (exists image 1) and ((ui element 1) is (image 1)) ¬
-                  and (exists scroll area 1) and ((ui element 2) is (scroll area 1)) ¬
-                  and (exists image 2) and ((ui element 3) is (image 2)) ¬
-                  and (exists image 2) and ((ui element 4) is (button 1)) then
-                return position of button 1
-              end if
-
-              -- Moments Details
-              if name is "]] .. moments .. '-' .. detail .. [[" then
-                return position of button 1
-              end if
-
               return false
             end tell
           end tell
@@ -1173,8 +1169,6 @@ appHotKeyCallbacks = {
             return true, { 2 }
           elseif result == 3 then
             return true, { 3, lastPage }
-          else
-            return true, { 4, result }
           end
         else
           return false
