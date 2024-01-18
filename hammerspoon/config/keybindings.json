@@ -664,14 +664,6 @@
         "mods": "control",
         "key": "R"
       },
-      "showPrevTab": {
-        "mods": ["shift", "command"],
-        "key": "["
-      },
-      "showNextTab": {
-        "mods": ["shift", "command"],
-        "key": "]"
-      },
       "QLControlOpen": {
         "mods": ["shift", "command"],
         "key": "O"
@@ -962,14 +954,6 @@
         "mods": ["shift", "command"],
         "key": "W"
       },
-      "previousWindow": {
-        "mods": ["shift", "command"],
-        "key": "["
-      },
-      "nextWindow": {
-        "mods": ["shift", "command"],
-        "key": "]"
-      },
       "goToFileTop": {
         "mods": "",
         "key": "home"
@@ -1067,16 +1051,6 @@
       "insertEquation": {
         "mods": ["shift", "command"],
         "key": "E"
-      }
-    },
-    "cn.edu.idea.paper": {
-      "showPrevTab": {
-        "mods": ["shift", "command"],
-        "key": "["
-      },
-      "showNextTab": {
-        "mods": ["shift", "command"],
-        "key": "]"
       }
     },
     "com.tencent.xinWeChat": {

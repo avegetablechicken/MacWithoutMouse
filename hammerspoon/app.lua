@@ -586,11 +586,13 @@ appHotKeyCallbacks = {
     },
     ["showPrevTab"] = {
       message = menuItemMessage('⇧⌃', "⇥", 2),
+      mods = "⇧⌘", key = "[",
       condition = checkMenuItemByKeybinding('⇧⌃', "⇥"),
       fn = receiveMenuItem
     },
     ["showNextTab"] = {
       message = menuItemMessage('⌃', "⇥", 2),
+      mods = "⇧⌘", key = "]",
       condition = checkMenuItemByKeybinding('⌃', "⇥"),
       fn = receiveMenuItem
     },
@@ -883,11 +885,13 @@ appHotKeyCallbacks = {
     },
     ["previousWindow"] = {
       message = menuItemMessage('⇧⌃', "⇥", 2),
+      mods = "⇧⌘", key = "[",
       condition = checkMenuItemByKeybinding('⇧⌃', "⇥"),
       fn = receiveMenuItem
     },
     ["nextWindow"] = {
       message = menuItemMessage('⌃', "⇥", 2),
+      mods = "⇧⌘", key = "]",
       condition = checkMenuItemByKeybinding('⌃', "⇥"),
       fn = receiveMenuItem
     },
@@ -1120,11 +1124,13 @@ appHotKeyCallbacks = {
   {
     ["showPrevTab"] = {
       message = "Show Previous Tab",
+      mods = "⌘⌥", key = "[",
       repeatable = true,
       fn = function(appObject) hs.eventtap.keyStroke("⌘", "Left", nil, appObject) end
     },
     ["showNextTab"] = {
       message = "Show Next Tab",
+      mods = "⌘⌥", key = "]",
       repeatable = true,
       fn = function(appObject) hs.eventtap.keyStroke("⌘", "Right", nil, appObject) end
     },
