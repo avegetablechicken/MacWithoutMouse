@@ -1031,16 +1031,15 @@ local function browserChooser()
     ]]
     local ok, result = hs.osascript.applescript(script)
 
+    if not ok then return end
     local appObject = findApplication(choice.browser)
-    -- fixme: when a full screen space is focused, then switching fails
-    -- has to try twice to make it work
     appObject:activate()
     local windowMenuItem = localizedMenuBarItem('Window', appObject:bundleID())
     if windowMenuItem == nil then return end
-    appObject:selectMenuItem({windowMenuItem, result})
-    hs.timer.usleep(0.5 * 1000000)
-    appObject:selectMenuItem({windowMenuItem, result})
-
+    hs.timer.doAfter(0.1, function()
+      hs.eventtap.keyStroke('fn⌃', 'F2')
+      appObject:selectMenuItem({ windowMenuItem, result })
+    end)
   end)
   chooser:searchSubText(true)
   chooser:choices(choices)
@@ -1315,15 +1314,15 @@ local function PDFChooser()
       ]]
       local ok, result = hs.osascript.applescript(script)
 
+      if not ok then return end
       local appObject = findApplication(choice.app)
-      -- fixme: when a full screen space is focused, then switching fails
-      -- has to try twice to make it work
       appObject:activate()
       local windowMenuItem = localizedMenuBarItem('Window', appObject:bundleID())
       if windowMenuItem == nil then return end
-      appObject:selectMenuItem({windowMenuItem, result})
-      hs.timer.usleep(0.5 * 1000000)
-      appObject:selectMenuItem({windowMenuItem, result})
+      hs.timer.doAfter(0.1, function()
+        hs.eventtap.keyStroke('fn⌃', 'F2')
+        appObject:selectMenuItem({ windowMenuItem, result })
+      end)
     end
   end)
   chooser:choices(choices)
