@@ -2689,21 +2689,16 @@ function registerForOpenSavePanel(appObject)
     local params = {
       locale = applicationLocales(appObject:bundleID())[1],
     }
-    local enParams = {
-      locale = "en",
-    }
     local goString = localizedString("Go", bundleID, params)
-    local enGoString = localizedString("Go", bundleID, enParams)
     local downloadsString = localizedString("Downloads", bundleID, params)
-    local enDownloadsString = localizedString("Downloads", bundleID, enParams)
     local msg = string.format("%s > %s", goString, downloadsString)
-    local enMsg = string.format("%s > %s", enGoString, enDownloadsString)
+    local enMsg = string.format("Go > Downloads")
     for _, rowUIObj in ipairs(outlineUIObj:childrenWithRole("AXRow")) do
       if rowUIObj.AXChildren == nil then hs.timer.usleep(0.3 * 1000000) end
       if rowUIObj.AXChildren[1]:childrenWithRole("AXStaticText")[1].AXValue == downloadsString then
         return rowUIObj.AXChildren[1], msg
       end
-      if rowUIObj.AXChildren[1]:childrenWithRole("AXStaticText")[1].AXValue == enDownloadsString then
+      if rowUIObj.AXChildren[1]:childrenWithRole("AXStaticText")[1].AXValue == "Downloads" then
         return rowUIObj.AXChildren[1], enMsg
       end
     end
