@@ -1296,9 +1296,9 @@ end
 
 function localizedMenuBarItem(title, bundleID, params)
   for _, dict in ipairs{
-    menuBarTitleLocalizationMap.common,
+    menuBarItemLocaleMap[bundleID] or {},
     menuBarTitleLocalizationMap[bundleID] or {},
-    menuBarItemLocaleMap[bundleID] or {}
+    menuBarTitleLocalizationMap.common,
   } do
     local locTitle = hs.fnutils.indexOf(dict, title)
     if locTitle ~= nil then return locTitle end
