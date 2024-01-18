@@ -573,16 +573,15 @@ appHotKeyCallbacks = {
   ["com.apple.finder"] =
   {
     ["goToDownloads"] = {
-      message = localizedMessage({ "Go", "Downloads" }, "MenuBar"),
+      message = localizedMessage({ "Go", "Downloads" }),
       fn = function(appObject)
-        selectMenuItem(appObject, { "Go", "Downloads" }, { localeFile = "MenuBar" })
+        selectMenuItem(appObject, { "Go", "Downloads" })
       end
     },
     ["recentFolders"] = {
-      message = localizedMessage("Recent Folders", "MenuBar"),
+      message = localizedMessage("Recent Folders"),
       fn = function(appObject)
-        selectMenuItem(appObject, { "Go", "Recent Folders" },
-                       { localeFile = "MenuBar" }, true)
+        selectMenuItem(appObject, { "Go", "Recent Folders" }, true)
       end
     },
     ["showPrevTab"] = {
@@ -597,8 +596,8 @@ appHotKeyCallbacks = {
     },
     ["QLControlOpen"] = {
       message = function(appObject)
-        return localizedString("QuickLook", appObject:bundleID(), "MenuBar")
-            .. ' > ' .. localizedString("Open", appObject:bundleID(), "MenuBar")
+        return localizedString("QuickLook", appObject:bundleID())
+            .. ' > ' .. localizedString("Open", appObject:bundleID())
       end,
       condition = function(appObject)
         local status, btnName = hs.osascript.applescript([[
@@ -681,10 +680,9 @@ appHotKeyCallbacks = {
   {
     ["back"] = {
       mods = "⌘", key = "[",
-      message = localizedMessage("Back", "Localizable"),
+      message = localizedMessage("Back"),
       condition = function(appObject)
-        local menuItem, menuItemTitle = findMenuItem(appObject, { "Store", "Back" },
-                                                     { localeFile = "Localizable" })
+        local menuItem, menuItemTitle = findMenuItem(appObject, { "Store", "Back" })
         if menuItem ~= nil and menuItem.enabled then
           return true, menuItemTitle
         else
@@ -840,8 +838,8 @@ appHotKeyCallbacks = {
   ["com.readdle.PDFExpert-Mac"] =
   {
     ["showInFinder"] = {
-      message = localizedMessage("Show in Finder", "MainMenu"),
-      condition = checkMenuItem({ "File", "Show in Finder" }, { localeFile = "MainMenu" }),
+      message = localizedMessage("Show in Finder"),
+      condition = checkMenuItem({ "File", "Show in Finder" }),
       fn = receiveMenuItem
     }
   },
@@ -849,16 +847,15 @@ appHotKeyCallbacks = {
   ["abnerworks.Typora"] =
   {
     ["openFileLocation"] = {
-      message = localizedMessage("Open File Location","Menu"),
-      condition = checkMenuItem({ "File", "Open File Location" }, { localeFile = "Menu" }),
+      message = localizedMessage("Open File Location"),
+      condition = checkMenuItem({ "File", "Open File Location" }),
       fn = receiveMenuItem
     },
     ["pasteAsPlainText"] = {
-      message = localizedMessage("Paste as Plain Text", "Menu"),
+      message = localizedMessage("Paste as Plain Text"),
       repeatable = true,
       fn = function(appObject)
-        selectMenuItem(appObject, { "Edit", "Paste as Plain Text" },
-                       { localeFile = "Menu" })
+        selectMenuItem(appObject, { "Edit", "Paste as Plain Text" })
       end
     },
   },
@@ -866,8 +863,8 @@ appHotKeyCallbacks = {
   ["com.superace.updf.mac"] =
   {
     ["showInFinder"] = {
-      message = localizedMessage("Show in Finder", "Localizable"),
-      condition = checkMenuItem({ "File", "Show in Finder" }, { localeFile = "Localizable" }),
+      message = localizedMessage("Show in Finder"),
+      condition = checkMenuItem({ "File", "Show in Finder" }),
       fn = receiveMenuItem
     }
   },
@@ -975,44 +972,44 @@ appHotKeyCallbacks = {
   ["com.apple.iWork.Keynote"] =
   {
     ["exportToPDF"] = {  -- File > Export To > PDF…
-      message = localizedMessage({ "Export To", "PDF…" }, "MainMenu"),
-      condition = checkMenuItem({ "File", "Export To", "PDF…" }, { localeFile = "MainMenu" }),
+      message = localizedMessage({ "Export To", "PDF…" }),
+      condition = checkMenuItem({ "File", "Export To", "PDF…" }),
       fn = function(menuItemTitle, appObject)
         appObject:selectMenuItem({ menuItemTitle[1], menuItemTitle[2] })
         appObject:selectMenuItem(menuItemTitle)
       end
     },
     ["exportToPPT"] = {  -- File > Export To > PowerPoint…
-      message = localizedMessage({ "Export To", "PowerPoint…" }, "MainMenu"),
-      condition = checkMenuItem({ "File", "Export To", "PowerPoint…" }, { localeFile = "MainMenu" }),
+      message = localizedMessage({ "Export To", "PowerPoint…" }),
+      condition = checkMenuItem({ "File", "Export To", "PowerPoint…" }),
       fn = function(menuItemTitle, appObject)
         appObject:selectMenuItem({ menuItemTitle[1], menuItemTitle[2] })
         appObject:selectMenuItem(menuItemTitle)
       end
     },
     ["pasteAndMatchStyle"] = {  -- Edit > Paste and Match Style
-      message = localizedMessage("Paste and Match Style", "MainMenu"),
-      condition = checkMenuItem({ "Edit", "Paste and Match Style" }, { localeFile = "MainMenu" }),
+      message = localizedMessage("Paste and Match Style"),
+      condition = checkMenuItem({ "Edit", "Paste and Match Style" }),
       fn = receiveMenuItem
     },
     ["paste"] = {  -- Edit > Paste
-      message = localizedMessage("Paste", "MainMenu"),
-      condition = checkMenuItem({ "Edit", "Paste" }, { localeFile = "MainMenu" }),
+      message = localizedMessage("Paste"),
+      condition = checkMenuItem({ "Edit", "Paste" }),
       fn = receiveMenuItem
     },
     ["showBuildOrder"] = {  -- View > Show Build Order
-      message = localizedMessage("Show Build Order", "MainMenu"),
-      condition = checkMenuItem({ "View", "Show Build Order" }, { localeFile = "MainMenu" }),
+      message = localizedMessage("Show Build Order"),
+      condition = checkMenuItem({ "View", "Show Build Order" }),
       fn = receiveMenuItem
     },
     ["play"] = {  -- Play > Play Slideshow
-      message = localizedMessage("Play Slideshow", "MainMenu"),
-      condition = checkMenuItem({ "Play", "Play Slideshow" }, { localeFile = "MainMenu" }),
+      message = localizedMessage("Play Slideshow"),
+      condition = checkMenuItem({ "Play", "Play Slideshow" }),
       fn = receiveMenuItem
     },
     ["insertEquation"] = {  -- Insert > Equation…
-      message = localizedMessage({ "Insert", "Equation..." }, "MainMenu"),
-      condition = checkMenuItem({ "Insert", "Equation..." }, { localeFile = "MainMenu" }),
+      message = localizedMessage({ "Insert", "Equation..." }),
+      condition = checkMenuItem({ "Insert", "Equation..." }),
       fn = receiveMenuItem
     },
     ["revealInFinder"] = {
@@ -1037,34 +1034,34 @@ appHotKeyCallbacks = {
   ["com.apple.iWork.Pages"] =
   {
     ["exportToPDF"] = {  -- File > Export To > PDF…
-      message = localizedMessage({ "Export To", "PDF…" }, "MainMenu"),
-      condition = checkMenuItem({ "File", "Export To", "PDF…" }, { localeFile = "MainMenu" }),
+      message = localizedMessage({ "Export To", "PDF…" }),
+      condition = checkMenuItem({ "File", "Export To", "PDF…" }),
       fn = function(menuItemTitle, appObject)
         appObject:selectMenuItem({ menuItemTitle[1], menuItemTitle[2] })
         appObject:selectMenuItem(menuItemTitle)
       end
     },
     ["exportToWord"] = {  -- File > Export To > Word…
-      message = localizedMessage({ "Export To", "Word…" }, "MainMenu"),
-      condition = checkMenuItem({ "File", "Export To", "Word…" }, { localeFile = "MainMenu" }),
+      message = localizedMessage({ "Export To", "Word…" }),
+      condition = checkMenuItem({ "File", "Export To", "Word…" }),
       fn = function(menuItemTitle, appObject)
         appObject:selectMenuItem({ menuItemTitle[1], menuItemTitle[2] })
         appObject:selectMenuItem(menuItemTitle)
       end
     },
     ["pasteAndMatchStyle"] = {  -- Edit > Paste and Match Style
-      message = localizedMessage("Paste and Match Style", "MainMenu"),
-      condition = checkMenuItem({ "Edit", "Paste and Match Style" }, { localeFile = "MainMenu" }),
+      message = localizedMessage("Paste and Match Style"),
+      condition = checkMenuItem({ "Edit", "Paste and Match Style" }),
       fn = receiveMenuItem
     },
     ["paste"] = {  -- Edit > Paste
-      message = localizedMessage("Paste", "MainMenu"),
-      condition = checkMenuItem({ "Edit", "Paste" }, { localeFile = "MainMenu" }),
+      message = localizedMessage("Paste"),
+      condition = checkMenuItem({ "Edit", "Paste" }),
       fn = receiveMenuItem
     },
     ["insertEquation"] = {  -- Insert > Equation…
-      message = localizedMessage({ "Insert", "Equation…" }, "MainMenu"),
-      condition = checkMenuItem({ "Insert", "Equation…" }, { localeFile = "MainMenu" }),
+      message = localizedMessage({ "Insert", "Equation…" }),
+      condition = checkMenuItem({ "Insert", "Equation…" }),
       fn = receiveMenuItem
     },
     ["revealInFinder"] = {
@@ -1137,25 +1134,22 @@ appHotKeyCallbacks = {
   ["com.tencent.xinWeChat"] =
   {
     ["back"] = {
-      message = localizedMessage("Common.Navigation.Back", { localeFir = "Localizable", key = true }),
+      message = localizedMessage("Common.Navigation.Back", { key = true }),
       condition = function(appObject)
         if appObject:focusedWindow() == nil then return false end
         local ok, menuItem = checkMenuItemByKeybinding("⌘", "[")(appObject)
         if ok then return true, { 0, menuItem } end
         local bundleID = appObject:bundleID()
-        local album = localizedString("Album", bundleID, "Localizable")
-        local moments = localizedString("Moments", bundleID, "Localizable")
-        local detail = localizedString("SNS_Feed_Detail_Title", bundleID,
-                                       { localeFile = "Localizable", key = true })
+        local album = localizedString("Album", bundleID)
+        local moments = localizedString("Moments", bundleID)
+        local detail = localizedString("SNS_Feed_Detail_Title", bundleID, { key = true })
         if string.find(appObject:focusedWindow():title(), album .. '-') == 1
             or appObject:focusedWindow():title() == moments .. '-' .. detail then
           local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
           return true, { 4, winUIObj:childrenWithRole("AXButton")[1].AXPosition }
         end
-        local back = localizedString("Common.Navigation.Back", bundleID,
-                                     { localeFile = "Localizable", key = true })
-        local lastPage = localizedString("WebView.Previous.Item", bundleID
-                                         { localeFile = "Localizable", key = true })
+        local back = localizedString("Common.Navigation.Back", bundleID, { key = true })
+        local lastPage = localizedString("WebView.Previous.Item", bundleID, { key = true })
         local ok, result = hs.osascript.applescript([[
           tell application "System Events"
             tell ]] .. aWinFor(appObject) .. [[
@@ -1235,12 +1229,12 @@ appHotKeyCallbacks = {
       end
     },
     ["forward"] = {
-      message = localizedMessage("WebView.Next.Item", { localeFir = "Localizable", key = true }),
+      message = localizedMessage("WebView.Next.Item", {  key = true }),
       condition = function(appObject)
         local ok, menuItem = checkMenuItemByKeybinding("⌘", "]")(appObject)
         if ok then return true, { 0, menuItem } end
         local bundleID = appObject:bundleID()
-        local nextPage = localizedString("WebView.Next.Item", bundleID, { localeFir = "Localizable", key = true })
+        local nextPage = localizedString("WebView.Next.Item", bundleID, { key = true })
         local ok, valid = hs.osascript.applescript([[
           tell application "System Events"
             -- Push Notifications
@@ -2700,11 +2694,9 @@ function registerForOpenSavePanel(appObject)
     if outlineUIObj == nil then return end
     local params = {
       locale = applicationLocales(appObject:bundleID())[1],
-      localeFile = "MenuBar"
     }
     local enParams = {
       locale = "en",
-      localeFile = "MenuBar"
     }
     local goString = localizedString("Go", bundleID, params)
     local enGoString = localizedString("Go", bundleID, enParams)
@@ -3290,8 +3282,7 @@ function app_applicationCallback(appName, eventType, appObject)
   local bundleID = appObject:bundleID()
   if eventType == hs.application.watcher.launched then
     if bundleID == "com.apple.finder" then
-      selectMenuItem(appObject, { "File", "New Finder Window" },
-                     { localeFile = "MenuBar" })
+      selectMenuItem(appObject, { "File", "New Finder Window" })
     end
     altMenuItemAfterLaunch(appObject)
     if appHotKeyCallbacks[bundleID] ~= nil then

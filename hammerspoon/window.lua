@@ -1035,7 +1035,7 @@ local function browserChooser()
     -- fixme: when a full screen space is focused, then switching fails
     -- has to try twice to make it work
     appObject:activate()
-    local windowMenuItem = localizedString('Window', "com.apple.finder", "MenuBar")
+    local windowMenuItem = localizedString('Window', "com.apple.finder")
     appObject:selectMenuItem({windowMenuItem, result})
     hs.timer.usleep(0.5 * 1000000)
     appObject:selectMenuItem({windowMenuItem, result})
@@ -1206,13 +1206,11 @@ local function PDFChooser()
               allWindows[choice.winID]:title()) or 0
           if activeIdx < choice.id then
             for i=1,choice.id-activeIdx do
-              selectMenuItem(appObject, { "Window", "Go to Previous Tab" },
-                             { localeFile = "MainMenu" })
+              selectMenuItem(appObject, { "Window", "Go to Previous Tab" })
             end
           else
             for i=1,activeIdx-choice.id do
-              selectMenuItem(appObject, { "Window", "Go to Next Tab" },
-                             { localeFile = "MainMenu" })
+              selectMenuItem(appObject, { "Window", "Go to Next Tab" })
             end
           end
         end
@@ -1261,7 +1259,7 @@ local function PDFChooser()
       -- fixme: when a full screen space is focused, then switching fails
       -- has to try twice to make it work
       appObject:activate()
-      local windowMenuItem = localizedString('Window', "com.apple.finder", "MenuBar")
+      local windowMenuItem = localizedString('Window', "com.apple.finder")
       appObject:selectMenuItem({windowMenuItem, result})
       hs.timer.usleep(0.5 * 1000000)
       appObject:selectMenuItem({windowMenuItem, result})

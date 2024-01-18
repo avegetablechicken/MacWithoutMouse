@@ -1293,7 +1293,7 @@ if finderObject ~= nil then
   local finderMenuItems = finderObject:getMenuItems()
   for i=2,#finderMenuItems do
     local title = finderMenuItems[i].AXTitle
-    local enTitle = delocalizedMenuItemString(title, "com.apple.finder", "MenuBar")
+    local enTitle = delocalizedMenuItemString(title, "com.apple.finder")
     if enTitle ~= nil then
       menuBarTitleLocalizationMap.common[title] = enTitle
     end
@@ -1301,13 +1301,13 @@ if finderObject ~= nil then
 end
 for _, title in ipairs{ 'File', 'Edit', 'View', 'Window', 'Help' } do
   if not hs.fnutils.contains(menuBarTitleLocalizationMap.common, title) then
-    local localizedTitle = localizedString(title, "com.apple.finder", "MenuBar")
+    local localizedTitle = localizedString(title, "com.apple.finder")
     if localizedTitle ~= nil then
       menuBarTitleLocalizationMap.common[localizedTitle] = title
     end
   end
 end
-local localizedTitle = localizedString('Format', "com.apple.Notes", "MainMenu")
+local localizedTitle = localizedString('Format', "com.apple.Notes")
 if localizedTitle ~= nil then
   menuBarTitleLocalizationMap.common[localizedTitle] = 'Format'
 end
