@@ -1064,7 +1064,7 @@
       }
     },
     "com.tencent.QQMusicMac": {
-      "back": {
+      "backFromSongDetails": {
         "mods": "",
         "key": "escape"
       }

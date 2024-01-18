@@ -1247,7 +1247,7 @@ appHotKeyCallbacks = {
 
   ["com.tencent.QQMusicMac"] =
   {
-    ["back"] = {
+    ["backFromSongDetails"] = {
       message = "Back",
       condition = function(appObject)
         local bundleID = appObject:bundleID()
