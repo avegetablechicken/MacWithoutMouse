@@ -2161,6 +2161,17 @@ local function registerInAppHotKeys(appName, eventType, appObject)
               selectMenuItemOrKeyStroke(appObject, keyBinding.mods, keyBinding.key)
             end
           end
+          if cfg.repeatable ~= false then
+            local oldFn = fn
+            fn = function(appObject, appName, eventType)
+              if callBackExecuting then return end
+              hs.timer.doAfter(0, function()
+                callBackExecuting = true
+                oldFn(appObject, appName, eventType)
+                callBackExecuting = false
+              end)
+            end
+          end
         end
         fn = inAppHotKeysWrapper(appObject, keyBinding,
                                  hs.fnutils.partial(fn, appObject, appName, eventType))
