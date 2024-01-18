@@ -206,17 +206,18 @@ local function getSubMenuHotkeys(t, menuItem, titleAsEntry, titlePrefix)
     if subItem.AXMenuItemCmdChar ~= "" or subItem.AXMenuItemCmdGlyph ~= "" then
       local idx
       if subItem.AXMenuItemCmdChar ~= "" then
+        local bundleID = hs.application.frontmostApplication():bundleID()
         if subItem.AXTitle == "Emoji & Symbols"
-            or ((menuBarTitleLocalizationMap.common[menuItem.AXTitle] == 'Edit' or menuItem.AXTitle == "Edit")
-                and subItem.AXMenuItemCmdChar == 'E' and subItem.AXMenuItemCmdGlyph == ""
+            or (subItem.AXMenuItemCmdChar == 'E' and subItem.AXMenuItemCmdGlyph == ""
                 and #subItem.AXMenuItemCmdModifiers == 0 and subItem.AXMenuItemMarkChar == ""
-                and subItem.AXChildren == nil) then
+                and subItem.AXChildren == nil
+                and delocalizedMenuBarItem(menuItem.AXTitle, bundleID) == 'Edit') then
           idx = "🌐" .. subItem.AXMenuItemCmdChar
         elseif subItem.AXTitle == "Enter Full Screen"
-            or ((menuBarTitleLocalizationMap.common[menuItem.AXTitle] == 'View' or menuItem.AXTitle == "View")
-                and subItem.AXMenuItemCmdChar == 'F' and subItem.AXMenuItemCmdGlyph == ""
+            or (subItem.AXMenuItemCmdChar == 'F' and subItem.AXMenuItemCmdGlyph == ""
                 and #subItem.AXMenuItemCmdModifiers == 0 and subItem.AXMenuItemMarkChar == ""
-                and subItem.AXChildren == nil) then
+                and subItem.AXChildren == nil
+                and delocalizedMenuBarItem(menuItem.AXTitle, bundleID) == 'View') then
           idx = "🌐" .. subItem.AXMenuItemCmdChar
         else
           idx = menuItemHotkeyIdx(subItem.AXMenuItemCmdModifiers or {}, subItem.AXMenuItemCmdChar)
