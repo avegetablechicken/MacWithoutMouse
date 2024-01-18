@@ -1320,7 +1320,16 @@ function localizedMenuBarItem(title, bundleID, params)
     menuBarTitleLocalizationMap[bundleID] or {},
   } do
     local locTitle = hs.fnutils.indexOf(dict, title)
-    if locTitle ~= nil then return locTitle end
+    if locTitle ~= nil then
+      if title == 'View' and findApplication(bundleID) then
+        local menuItems = getMenuItems(findApplication(bundleID))
+        if hs.fnutils.find(menuItems, function(item) return item.AXTitle == locTitle end) ~= nil then
+          return locTitle
+        end
+      else
+        return locTitle
+      end
+    end
   end
   if findApplication(bundleID) then
     local menuItems = getMenuItems(findApplication(bundleID))
