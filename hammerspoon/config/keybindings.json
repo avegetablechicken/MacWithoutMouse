@@ -1045,7 +1045,7 @@
         "key": "E"
       },
       "insertEquation": {
-        "mods": ["shift", "command"],
+        "mods": ["option", "command"],
         "key": "E"
       }
     },
