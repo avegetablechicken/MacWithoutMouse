@@ -760,7 +760,6 @@ appHotKeyCallbacks = {
       fn = function() VSCodeToggleSideBarSection("EXPLORER", "OUTLINE") end
     },
     ["toggleSearchEditorWholeWord"] = {
-      mods = "⇧⌘⌥", key = "W",
       message = "Search Editor: Toggle Match Whole Word",
       condition = function(appObject)
         if appObject:focusedWindow() == nil then
@@ -773,7 +772,6 @@ appHotKeyCallbacks = {
       fn = function(appObject) hs.eventtap.keyStroke("⌘⌥", "W", nil, appObject) end
     },
     ["toggleSearchEditorRegex"] = {
-      mods = "⇧⌘⌥", key = "R",
       message = "Search Editor: Toggle Use Regular Expression",
       condition = function(appObject)
         if appObject:focusedWindow() == nil then

@@ -905,6 +905,14 @@
       "view:toggleOutline": {
         "mods": "command",
         "key": "7"
+      },
+      "toggleSearchEditorWholeWord": {
+        "mods": ["shift", "option", "command"],
+        "key": "W"
+      },
+      "toggleSearchEditorRegex": {
+        "mods": ["shift", "option", "command"],
+        "key": "R"
       }
     },
     "com.readdle.PDFExpert-Mac": {
