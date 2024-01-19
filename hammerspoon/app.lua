@@ -1102,9 +1102,25 @@ appHotKeyCallbacks = {
     ["back"] = {
       message = localizedMessage("Common.Navigation.Back", { key = true }),
       condition = function(appObject)
+        local exBundleID = "com.tencent.xinWeChat.WeChatAppEx"
+        local exAppObject = findApplication(exBundleID)
+        if exAppObject ~= nil then
+          local menuItemPath = {
+            localizedMenuBarItem('File', exBundleID),
+            localizedString('Back', exBundleID)
+          }
+          local appUIObj = hs.axuielement.applicationElement(appObject)
+          for _, menuBarItem in ipairs(getAXChildren(appUIObj, "AXMenuBar", 1).AXChildren) do
+            if menuBarItem.AXTitle == menuItemPath[1] then
+              for _, menuItem in ipairs(getAXChildren(menuBarItem, "AXMenu", 1).AXChildren) do
+                if menuItem.AXTitle == menuItemPath[2] then
+                  if menuItem.AXEnabled then return true, { 0, menuItemPath } end
+                end
+              end
+            end
+          end
+        end
         if appObject:focusedWindow() == nil then return false end
-        local ok, menuItem = checkMenuItemByKeybinding("⌘", "[")(appObject)
-        if ok then return true, { 0, menuItem } end
         local bundleID = appObject:bundleID()
         local album = localizedString("Album", bundleID)
         local moments = localizedString("Moments", bundleID)
@@ -1197,8 +1213,25 @@ appHotKeyCallbacks = {
     ["forward"] = {
       message = localizedMessage("WebView.Next.Item", {  key = true }),
       condition = function(appObject)
-        local ok, menuItem = checkMenuItemByKeybinding("⌘", "]")(appObject)
-        if ok then return true, { 0, menuItem } end
+        local exBundleID = "com.tencent.xinWeChat.WeChatAppEx"
+        local exAppObject = findApplication(exBundleID)
+        if exAppObject ~= nil then
+          local menuItemPath = {
+            localizedMenuBarItem('File', exBundleID),
+            localizedString('Forward', exBundleID)
+          }
+          local appUIObj = hs.axuielement.applicationElement(appObject)
+          for _, menuBarItem in ipairs(getAXChildren(appUIObj, "AXMenuBar", 1).AXChildren) do
+            if menuBarItem.AXTitle == menuItemPath[1] then
+              for _, menuItem in ipairs(getAXChildren(menuBarItem, "AXMenu", 1).AXChildren) do
+                if menuItem.AXTitle == menuItemPath[2] then
+                  if menuItem.AXEnabled then return true, { 0, menuItemPath } end
+                end
+              end
+            end
+          end
+        end
+        if appObject:focusedWindow() == nil then return false end
         local bundleID = appObject:bundleID()
         local nextPage = localizedString("WebView.Next.Item", bundleID, { key = true })
         local ok, valid = hs.osascript.applescript([[
