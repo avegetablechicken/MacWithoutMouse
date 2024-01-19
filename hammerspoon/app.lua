@@ -1087,13 +1087,13 @@ appHotKeyCallbacks = {
   {
     ["showPrevTab"] = {
       message = "Show Previous Tab",
-      mods = "⌘⌥", key = "[",
+      mods = "⇧⌘", key = "[",
       repeatable = true,
       fn = function(appObject) hs.eventtap.keyStroke("⌘", "Left", nil, appObject) end
     },
     ["showNextTab"] = {
       message = "Show Next Tab",
-      mods = "⌘⌥", key = "]",
+      mods = "⇧⌘", key = "]",
       repeatable = true,
       fn = function(appObject) hs.eventtap.keyStroke("⌘", "Right", nil, appObject) end
     },
