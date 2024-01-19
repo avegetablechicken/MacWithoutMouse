@@ -1374,18 +1374,48 @@ function hiddenByBartender(id)
   end
 end
 
-function leftClickAndRestore(position)
+function leftClick(position, appName)
   if position.x == nil then position = hs.geometry.point(position) end
-  local mousePosition = hs.mouse.absolutePosition()
+  if appName ~= nil then
+    local appHere = hs.axuielement.systemElementAtPosition(position)
+    while appHere.AXParent ~= nil do
+      appHere = appHere.AXParent
+    end
+    if appHere.AXTitle ~= appName then return false end
+  end
   hs.eventtap.leftClick(hs.geometry.point(position))
-  hs.mouse.absolutePosition(mousePosition)
+  return true
 end
 
-function rightClickAndRestore(position)
-  if position.x == nil then position = hs.geometry.point(position) end
+function leftClickAndRestore(position, appName)
   local mousePosition = hs.mouse.absolutePosition()
+  if leftClick(position, appName) then
+    hs.mouse.absolutePosition(mousePosition)
+    return true
+  end
+  return false
+end
+
+function rightClick(position, appName)
+  if position.x == nil then position = hs.geometry.point(position) end
+  if appName ~= nil then
+    local appHere = hs.axuielement.systemElementAtPosition(position)
+    while appHere.AXParent ~= nil do
+      appHere = appHere.AXParent
+    end
+    if appHere.AXTitle ~= appName then return false end
+  end
   hs.eventtap.rightClick(hs.geometry.point(position))
-  hs.mouse.absolutePosition(mousePosition)
+  return true
+end
+
+function rightClickAndRestore(position, appName)
+  local mousePosition = hs.mouse.absolutePosition()
+  if rightClick(position, appName) then
+    hs.mouse.absolutePosition(mousePosition)
+    return true
+  end
+  return false
 end
 
 function clickAppRightMenuBarItem(bundleID, menuItem, subMenuItem)

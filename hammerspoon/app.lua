@@ -299,7 +299,7 @@ local function deleteMousePositionCall(appObject)
       if #sectionList == 0 then return end
 
       local section = sectionList[1]
-      hs.eventtap.rightClick(hs.mouse.absolutePosition())
+      if not rightClick(hs.mouse.absolutePosition(), appObject:name()) then return end
       local popups = section:childrenWithRole("AXMenu")
       for _, popup in ipairs(popups) do
         for _, menuItem in ipairs(popup:childrenWithRole("AXMenuItem")) do
@@ -330,7 +330,9 @@ local function deleteAllCalls(appObject)
       if #sectionList == 0 then return end
 
       local section = sectionList[1]
-      rightClickAndRestore(section.AXPosition)
+      if not rightClickAndRestore(section.AXPosition, appObject:name()) then
+        return
+      end
       local popups = section:childrenWithRole("AXMenu")
       for _, popup in ipairs(popups) do
         for _, menuItem in ipairs(popup:childrenWithRole("AXMenuItem")) do
@@ -910,7 +912,7 @@ appHotKeyCallbacks = {
           end tell
         ]])
         if not ok then return end
-        hs.eventtap.rightClick(hs.geometry(position))
+        if not rightClick(position, appObject:name()) then return end
         hs.osascript.applescript([[
           tell application "System Events"
             tell first application process whose bundle identifier is "]] .. appObject:bundleID() .. [["
@@ -1162,7 +1164,7 @@ appHotKeyCallbacks = {
         if result[1] == 0 then
           appObject:selectMenuItem(result[2])
         elseif result[1] == 4 then
-          leftClickAndRestore(result[2])
+          leftClickAndRestore(result[2], appObject:name())
         else
           local script = [[
             tell application "System Events"
@@ -1252,7 +1254,7 @@ appHotKeyCallbacks = {
       fn = function(appObject)
         local frame = appObject:focusedWindow():frame()
         local position = { frame.x + frame.w - 60, frame.y + 23 }
-        leftClickAndRestore(position)
+        leftClickAndRestore(position, appObject:name())
       end
     }
   },
@@ -1778,7 +1780,7 @@ appHotKeyCallbacks = {
             end tell
           end tell
         ]])
-        leftClickAndRestore(pos)
+        leftClickAndRestore(pos, winObj:application():name())
       end
     },
     ["open..."] = {
@@ -1805,7 +1807,7 @@ appHotKeyCallbacks = {
             end tell
           end tell
         ]])
-        leftClickAndRestore(pos)
+        leftClickAndRestore(pos, winObj:application():name())
       end
     },
     ["open..."] = {
@@ -1829,7 +1831,7 @@ appHotKeyCallbacks = {
               end tell
             end tell
           ]])
-          leftClickAndRestore(pos)
+          leftClickAndRestore(pos, winObj:application():name())
         end
       },
       ["open..."] = {
@@ -1853,7 +1855,7 @@ appHotKeyCallbacks = {
             end tell
           end tell
         ]])
-        leftClickAndRestore(pos)
+        leftClickAndRestore(pos, winObj:application():name())
       end
     },
     ["open..."] = {

@@ -1246,12 +1246,7 @@ local function PDFChooser()
             end tell
           ]])
           if ok then
-            local appHere = hs.axuielement.systemElementAtPosition(result[1], result[2])
-            while appHere.AXParent ~= nil do
-              appHere = appHere.AXParent
-            end
-            if appHere.AXTitle == hs.application.nameForBundleID(choice.app) then
-              leftClickAndRestore(result)
+            if leftClickAndRestore(result, appObject:name()) then
               return
             end
           end
