@@ -217,7 +217,8 @@ local function getSubMenuHotkeys(t, menuItem, titleAsEntry, titlePrefix)
             or (subItem.AXMenuItemCmdChar == 'F' and subItem.AXMenuItemCmdGlyph == ""
                 and #subItem.AXMenuItemCmdModifiers == 0 and subItem.AXMenuItemMarkChar == ""
                 and subItem.AXChildren == nil
-                and delocalizedMenuBarItem(menuItem.AXTitle, bundleID) == 'View') then
+                and hs.fnutils.contains({ 'View', 'Window' },
+                    delocalizedMenuBarItem(menuItem.AXTitle, bundleID))) then
           idx = "🌐" .. subItem.AXMenuItemCmdChar
         else
           idx = menuItemHotkeyIdx(subItem.AXMenuItemCmdModifiers or {}, subItem.AXMenuItemCmdChar)
