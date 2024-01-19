@@ -1048,12 +1048,11 @@ end
 
 local function PDFChooser()
   local choices = {}
-  local appObject
 
   -- `PDF Expert`
-  local appObjectPDFExpert, allWindowsPDFExpert, winTabTitlesPDFExpert
-  appObject = findApplication("com.readdle.PDFExpert-Mac")
-  if appObject ~= nil then
+  local allWindowsPDFExpert, winTabTitlesPDFExpert
+  if findApplication("com.readdle.PDFExpert-Mac") ~= nil then
+    local appObject = findApplication("com.readdle.PDFExpert-Mac")
     local allWindows = hs.window.filter.new(false):allowApp(appObject:name()):getWindows()
     local winTabTitles = {}
     local winTitles = {}
@@ -1100,15 +1099,14 @@ local function PDFChooser()
         table.insert(choices, choice)
       end
     end
-    appObjectPDFExpert = appObject
     allWindowsPDFExpert = allWindows
     winTabTitlesPDFExpert = winTabTitles
   end
 
   -- `UPDF`
-  local appObjectUPDF, allWindowsUPDF
-  appObject = findApplication("com.superace.updf.mac")
-  if appObject ~= nil then
+  local allWindowsUPDF
+  if findApplication("com.superace.updf.mac") ~= nil then
+    local appObject = findApplication("com.superace.updf.mac")
     local allWindows = hs.window.filter.new(false):allowApp(appObject:name()):getWindows()
     local winTabTitles = {}
     local menuItems = getMenuItems(appObject)
@@ -1148,7 +1146,6 @@ local function PDFChooser()
       end
       end
     end
-    appObjectUPDF = appObject
     allWindowsUPDF = allWindows
   end
 
@@ -1173,7 +1170,7 @@ local function PDFChooser()
   -- browsers
   for _, browser in ipairs({"com.apple.Safari", "com.google.Chrome",
                             "com.microsoft.edgemac", "com.microsoft.edgemac.Dev"}) do
-    appObject = findApplication(browser)
+    local appObject = findApplication(browser)
     if appObject ~= nil then
       if browser == "com.apple.Safari" then
         title = 'name'
@@ -1263,17 +1260,18 @@ local function PDFChooser()
         end
       end
     elseif choice.app == "com.superace.updf.mac" then
+      local appObject = findApplication("com.superace.updf.mac")
       for _, window in ipairs(allWindowsUPDF) do
         if window:title() == choice.winTitle then
           window:focus()
-          selectMenuItem(appObjectUPDF, { 'Tab', choice.text })
+          selectMenuItem(appObject, { 'Tab', choice.text })
           return
         end
       end
-      appObjectUPDF:activate()
+      appObject:activate()
       hs.timer.doAfter(0.1, function()
         hs.eventtap.keyStroke('fn⌃', 'F2')
-        selectMenuItem(appObjectUPDF, { 'Tab', choice.text })
+        selectMenuItem(appObject, { 'Tab', choice.text })
       end)
     elseif choice.app == "com.apple.Preview" then
       local ok, result = hs.osascript.applescript([[
