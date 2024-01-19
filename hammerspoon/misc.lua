@@ -214,11 +214,7 @@ local function getSubMenuHotkeys(t, menuItem, titleAsEntry, titlePrefix)
                 and delocalizedMenuBarItem(menuItem.AXTitle, bundleID) == 'Edit') then
           idx = "🌐" .. subItem.AXMenuItemCmdChar
         elseif subItem.AXTitle == "Enter Full Screen"
-            or (subItem.AXMenuItemCmdChar == 'F' and subItem.AXMenuItemCmdGlyph == ""
-                and #subItem.AXMenuItemCmdModifiers == 0 and subItem.AXMenuItemMarkChar == ""
-                and subItem.AXChildren == nil
-                and hs.fnutils.contains({ 'View', 'Window' },
-                    delocalizedMenuBarItem(menuItem.AXTitle, bundleID))) then
+            or subItem.AXTitle == localizedEnterFullScreen then
           idx = "🌐" .. subItem.AXMenuItemCmdChar
         else
           idx = menuItemHotkeyIdx(subItem.AXMenuItemCmdModifiers or {}, subItem.AXMenuItemCmdChar)
@@ -238,7 +234,11 @@ end
 local function loadAppHotkeys(t)
   HSKeybindings.appHotkeysLoaded = true
   local appHotkeys = {}
-  local menuItems = hs.application.frontmostApplication():getMenuItems() or {}
+  local appObject = hs.application.frontmostApplication()
+  local menuItems = getMenuItems(appObject)
+  localizedEnterFullScreen = localizedString(
+      "Enter Full Screen", "com.apple.finder",
+      { locale = applicationLocales(appObject:bundleID())[1] })
   for _, menuItem in ipairs(menuItems) do
     getSubMenuHotkeys(appHotkeys, menuItem, true, true)
   end
@@ -1099,6 +1099,8 @@ local searchHotkey = bindSpecSuspend(misc["searchHotkeys"], "Search Hotkey", fun
 
   local appHotkeys = {}
   for _, menuItem in ipairs(hs.application.frontmostApplication():getMenuItems()) do
+    localizedEnterFullScreen = localizedString("Enter Full Screen", "com.apple.finder",
+        { locale = applicationLocales(hs.application.frontmostApplication():bundleID())[1] })
     getSubMenuHotkeys(appHotkeys, menuItem, false, true)
   end
   for _, hotkey in ipairs(appHotkeys) do
