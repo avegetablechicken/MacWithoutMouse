@@ -813,6 +813,18 @@ appHotKeyCallbacks = {
 
   ["com.superace.updf.mac"] =
   {
+    ["showPrevTab"] = {
+      message = menuItemMessage('⇧⌃', "⇥", 2),
+      mods = "⇧⌘", key = "[",
+      condition = checkMenuItemByKeybinding('⇧⌃', "⇥"),
+      fn = receiveMenuItem
+    },
+    ["showNextTab"] = {
+      message = menuItemMessage('⌃', "⇥", 2),
+      mods = "⇧⌘", key = "]",
+      condition = checkMenuItemByKeybinding('⌃', "⇥"),
+      fn = receiveMenuItem
+    },
     ["showInFinder"] = {
       message = localizedMessage("Show in Finder"),
       condition = checkMenuItem({ "File", "Show in Finder" }),
