@@ -95,19 +95,17 @@ function showMenuItemWrapper(fn)
 end
 
 function getMenuItems(appObject)
-  local menuItems = appObject:getMenuItems()
-  if menuItems == nil then
-    hs.timer.usleep(0.1 * 1000000)
+  local menuItems
+  local maxTryTime = 3
+  local tryInterval = 0.05
+  local tryTimes = 1
+  while tryTimes <= maxTryTime / tryInterval do
     menuItems = appObject:getMenuItems()
-    if menuItems == nil then
-      hs.timer.usleep(0.1 * 1000000)
-      menuItems = appObject:getMenuItems()
-      if menuItems == nil then
-        return
-      end
-    end
+    if menuItems ~= nil then return menuItems end
+    hs.timer.usleep(tryInterval * 1000000)
+    tryTimes = tryTimes + 1
   end
-  return menuItems
+  return { { AXTitle = appObject:name() }}
 end
 
 function findMenuItem(appObject, menuItemTitle, params)
