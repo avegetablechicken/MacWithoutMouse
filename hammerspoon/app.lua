@@ -1333,9 +1333,6 @@ appHotKeyCallbacks = {
   {
     ["allowConnection"] = {
       message = "Allow Connection",
-      windowFilter = {
-        allowTitles = "^LuLu Alert$"
-      },
       fn = function(winObj)
         hs.osascript.applescript([[
           tell application "System Events"
@@ -1348,9 +1345,6 @@ appHotKeyCallbacks = {
     },
     ["blockConnection"] = {
       message = "Block Connection",
-      windowFilter = {
-        allowTitles = "^LuLu Alert$"
-      },
       fn = function(winObj)
         hs.osascript.applescript([[
           tell application "System Events"
