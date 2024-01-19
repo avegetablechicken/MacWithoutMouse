@@ -245,6 +245,11 @@ end
 
 local localeTmpDir = hs.fs.temporaryDirectory() .. 'org.hammerspoon.Hammerspoon/locale/'
 
+function systemLocales()
+  local locales, ok = hs.execute("defaults read -globalDomain AppleLanguages) | tr -d '()\" \\n'")
+  return hs.fnutils.split(locales, ',')
+end
+
 function applicationLocales(bundleID)
   local locales, ok = hs.execute(
       string.format("(defaults read %s AppleLanguages || defaults read -globalDomain AppleLanguages) | tr -d '()\" \\n'", bundleID))
@@ -1290,28 +1295,15 @@ if hs.fs.attributes("static/localization-keys.json") ~= nil then
   localizationMapByKey = hs.json.read("static/localization-keys.json")
 end
 menuBarTitleLocalizationMap.common = {}
-local finderObject = findApplication("com.apple.finder")
-if finderObject ~= nil then
-  local finderMenuItems = finderObject:getMenuItems()
-  for i=2,#finderMenuItems do
-    local title = finderMenuItems[i].AXTitle
-    local enTitle = delocalizedMenuItemString(title, "com.apple.finder")
-    if enTitle ~= nil then
-      menuBarTitleLocalizationMap.common[title] = enTitle
-    end
-  end
-end
-for _, title in ipairs{ 'File', 'Edit', 'View', 'Window', 'Help' } do
+local systemLocale = systemLocales()[1]
+for _, title in ipairs{ 'File', 'Edit', 'Format', 'View', 'Window', 'Help' } do
   if not hs.fnutils.contains(menuBarTitleLocalizationMap.common, title) then
-    local localizedTitle = localizedString(title, "com.apple.finder")
+    local localizedTitle = localizedString(title, "com.apple.Notes",
+                                           { locale = systemLocale })
     if localizedTitle ~= nil then
       menuBarTitleLocalizationMap.common[localizedTitle] = title
     end
   end
-end
-local localizedTitle = localizedString('Format', "com.apple.Notes")
-if localizedTitle ~= nil then
-  menuBarTitleLocalizationMap.common[localizedTitle] = 'Format'
 end
 
 function localizedMenuBarItem(title, bundleID, params)
@@ -1339,8 +1331,10 @@ function localizedMenuBarItem(title, bundleID, params)
       return title
     end
   end
-  local locTitle = hs.fnutils.indexOf(menuBarTitleLocalizationMap.common, title)
-  if locTitle ~= nil then return locTitle end
+  if applicationLocales(bundleID)[1] == systemLocale then
+    local locTitle = hs.fnutils.indexOf(menuBarTitleLocalizationMap.common, title)
+    if locTitle ~= nil then return locTitle end
+  end
   return localizedString(title, bundleID, params)
 end
 
