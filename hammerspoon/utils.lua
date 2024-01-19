@@ -752,6 +752,7 @@ function localizedString(str, bundleID, params)
   if framework.chromium then
     if findApplication(bundleID) then
       local menuItems = getMenuItems(findApplication(bundleID))
+      table.remove(menuItems, 1)
       for _, title in ipairs{ 'File', 'Edit', 'Window', 'Help' } do
         if hs.fnutils.find(menuItems, function(item) return item.AXTitle == title end) ~= nil then
           return str
@@ -1035,6 +1036,7 @@ function delocalizedMenuItemString(str, bundleID, params)
   if framework.chromium then
     if findApplication(bundleID) then
       local menuItems = getMenuItems(findApplication(bundleID))
+      table.remove(menuItems, 1)
       for _, title in ipairs{ 'File', 'Edit', 'Window', 'Help' } do
         if hs.fnutils.find(menuItems, function(item) return item.AXTitle == title end) ~= nil then
           return str
@@ -1321,6 +1323,7 @@ function localizedMenuBarItem(title, bundleID, params)
     if locTitle ~= nil then
       if title == 'View' and findApplication(bundleID) then
         local menuItems = getMenuItems(findApplication(bundleID))
+        table.remove(menuItems, 1)
         if hs.fnutils.find(menuItems, function(item) return item.AXTitle == locTitle end) ~= nil then
           return locTitle
         end
@@ -1331,6 +1334,7 @@ function localizedMenuBarItem(title, bundleID, params)
   end
   if findApplication(bundleID) then
     local menuItems = getMenuItems(findApplication(bundleID))
+    table.remove(menuItems, 1)
     if hs.fnutils.find(menuItems, function(item) return item.AXTitle == title end) ~= nil then
       return title
     end
