@@ -633,7 +633,6 @@ appHotKeyCallbacks = {
   ["com.apple.AppStore"] =
   {
     ["back"] = {
-      mods = "⌘", key = "[",
       message = localizedMessage("Back"),
       condition = function(appObject)
         local menuItem, menuItemTitle = findMenuItem(appObject, { "Store", "Back" })
@@ -1103,7 +1102,6 @@ appHotKeyCallbacks = {
   ["com.tencent.xinWeChat"] =
   {
     ["back"] = {
-      mods = "⌘", key = "[",
       message = localizedMessage("Common.Navigation.Back", { key = true }),
       condition = function(appObject)
         if appObject:focusedWindow() == nil then return false end
@@ -1199,7 +1197,6 @@ appHotKeyCallbacks = {
       end
     },
     ["forward"] = {
-      mods = "⌘", key = "]",
       message = localizedMessage("WebView.Next.Item", {  key = true }),
       condition = function(appObject)
         local ok, menuItem = checkMenuItemByKeybinding("⌘", "]")(appObject)
