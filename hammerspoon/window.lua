@@ -1231,13 +1231,13 @@ local function PDFChooser()
         hs.timer.usleep(0.5 * 1000000)
       end
       if allWindowsPDFExpert[choice.winID]:title() ~= winTabTitlesPDFExpert[choice.winID][choice.id] then
-        local appObject = findApplication("com.readdle.PDFExpert-Mac")
+        local appObject = findApplication(choice.app)
         local isFullScreen = allWindowsPDFExpert[choice.winID]:isFullScreen()
         if not isFullScreen or findMenuItem(appObject, { 'View', 'Always Show Toolbar' }).ticked then
           local locationExtra = isFullScreen and " of group 1\n" or "\n"
           local ok, result = hs.osascript.applescript([[
             tell application "System Events"
-              tell ]] .. aWinFor("com.readdle.PDFExpert-Mac") .. [[
+              tell ]] .. aWinFor(choice.app) .. [[
                 set tabList to the value of attribute "AXChildren" of ¬
                     scroll area 1 of tab group 1 of group 1 of toolbar 1]] .. locationExtra .. [[
                 set atab to item ]] .. choice.id .. [[ of tabList
@@ -1250,7 +1250,7 @@ local function PDFChooser()
             while appHere.AXParent ~= nil do
               appHere = appHere.AXParent
             end
-            if appHere.AXTitle == hs.application.nameForBundleID("com.readdle.PDFExpert-Mac") then
+            if appHere.AXTitle == hs.application.nameForBundleID(choice.app) then
               leftClickAndRestore(result)
               return
             end
@@ -1269,7 +1269,7 @@ local function PDFChooser()
         end
       end
     elseif choice.app == "com.superace.updf.mac" then
-      local appObject = findApplication("com.superace.updf.mac")
+      local appObject = findApplication(choice.app)
       for _, window in ipairs(allWindowsUPDF) do
         if window:title() == choice.winTitle then
           window:focus()
