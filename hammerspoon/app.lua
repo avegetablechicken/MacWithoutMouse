@@ -1309,7 +1309,7 @@ appHotKeyCallbacks = {
           return ok and valid
         end
       end,
-      fn = function(code, appObject)
+      fn = function(appObject)
         hs.osascript.applescript([[
           tell application "System Events"
             tell ]] .. aWinFor(appObject) .. [[
