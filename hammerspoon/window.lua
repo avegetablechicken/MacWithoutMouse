@@ -1228,17 +1228,13 @@ local function PDFChooser()
   local chooser = hs.chooser.new(function(choice)
     if not choice then return end
     if choice.app == "com.readdle.PDFExpert-Mac" then
-      local frontmostAppWin = appObjectPDFExpert:focusedWindow():title()
-      local fullScreen = allWindowsPDFExpert[choice.winID]:isFullScreen()
-      if frontmostAppWin ~= allWindowsPDFExpert[choice.winID]:title() then
-        allWindowsPDFExpert[choice.winID]:focus()
-      end
+      allWindowsPDFExpert[choice.winID]:focus()
       if not hs.fnutils.contains(hs.spaces.activeSpaces(),
           hs.spaces.windowSpaces(allWindowsPDFExpert[choice.winID])[1]) then
         hs.timer.usleep(0.5 * 1000000)
       end
       if allWindowsPDFExpert[choice.winID]:title() ~= winTabTitlesPDFExpert[choice.winID][choice.id] then
-        if not fullScreen then
+        if not allWindowsPDFExpert[choice.winID]:isFullScreen() then
           local ok, result = hs.osascript.applescript([[
             tell application "System Events"
               set aWindow to ]] .. aWinFor("com.readdle.PDFExpert-Mac") .. [[
