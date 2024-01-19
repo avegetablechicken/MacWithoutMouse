@@ -1048,14 +1048,14 @@ end
 
 local function PDFChooser()
   local choices = {}
-  local allWindowsPDFExpert, winTabTitlesPDFExpert
+  local appObject
 
   -- `PDF Expert`
-  local appObjectPDFExpert = findApplication("com.readdle.PDFExpert-Mac")
-  if appObjectPDFExpert ~= nil then
-    local allWindows
+  local appObjectPDFExpert, allWindowsPDFExpert, winTabTitlesPDFExpert
+  appObject = findApplication("com.readdle.PDFExpert-Mac")
+  if appObject ~= nil then
+    local allWindows = hs.window.filter.new(false):allowApp(appObject:name()):getWindows()
     local winTabTitles = {}
-    allWindows = hs.window.filter.new(false):allowApp(appObjectPDFExpert:name()):getWindows()
     local winTitles = {}
     local winPaths = {}
     for _, win in ipairs(allWindows) do
@@ -1087,7 +1087,7 @@ local function PDFChooser()
         local choice =
             {
               text = tabTitle,
-              image = hs.image.imageFromAppBundle(appObjectPDFExpert:bundleID()),
+              image = hs.image.imageFromAppBundle(appObject:bundleID()),
               id = tabID,
               winID = winID,
               app = "com.readdle.PDFExpert-Mac"
@@ -1100,15 +1100,18 @@ local function PDFChooser()
         table.insert(choices, choice)
       end
     end
+    appObjectPDFExpert = appObject
+    allWindowsPDFExpert = allWindows
+    winTabTitlesPDFExpert = winTabTitles
   end
 
   -- `UPDF`
-  local allWindowsUPDF
-  local appObjectUPDF = findApplication("com.superace.updf.mac")
-  if appObjectUPDF ~= nil then
-    allWindowsUPDF = hs.window.filter.new(false):allowApp(appObjectUPDF:name()):getWindows()
+  local appObjectUPDF, allWindowsUPDF
+  appObject = findApplication("com.superace.updf.mac")
+  if appObject ~= nil then
+    local allWindows = hs.window.filter.new(false):allowApp(appObject:name()):getWindows()
     local winTabTitles = {}
-    local menuItems = getMenuItems(appObjectUPDF)
+    local menuItems = getMenuItems(appObject)
     for _, menuItem in ipairs(menuItems or {}) do
       if menuItem.AXTitle == localizedMenuBarItem('Tab', "com.superace.updf.mac") then
         local subMenuItems = menuItem.AXChildren[1]
@@ -1133,7 +1136,7 @@ local function PDFChooser()
           local choice =
               {
                 text = tabTitle,
-                image = hs.image.imageFromAppBundle(appObjectUPDF:bundleID()),
+                image = hs.image.imageFromAppBundle(appObject:bundleID()),
                 winTitle = winTitle,
                 app = "com.superace.updf.mac"
               }
@@ -1145,6 +1148,8 @@ local function PDFChooser()
       end
       end
     end
+    appObjectUPDF = appObject
+    allWindowsUPDF = allWindows
   end
 
   -- `Preview`
@@ -1168,7 +1173,7 @@ local function PDFChooser()
   -- browsers
   for _, browser in ipairs({"com.apple.Safari", "com.google.Chrome",
                             "com.microsoft.edgemac", "com.microsoft.edgemac.Dev"}) do
-    local appObject = findApplication(browser)
+    appObject = findApplication(browser)
     if appObject ~= nil then
       if browser == "com.apple.Safari" then
         title = 'name'
