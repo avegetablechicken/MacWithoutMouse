@@ -1250,11 +1250,11 @@ local function PDFChooser()
               allWindowsPDFExpert[choice.winID]:title()) or 0
           if activeIdx < choice.id then
             for i=1,choice.id-activeIdx do
-              selectMenuItem(appObject, { "Window", "Go to Previous Tab" })
+              selectMenuItem(appObject, { "Window", "Go to Next Tab" })
             end
           else
             for i=1,activeIdx-choice.id do
-              selectMenuItem(appObject, { "Window", "Go to Next Tab" })
+              selectMenuItem(appObject, { "Window", "Go to Previous Tab" })
             end
           end
         end
