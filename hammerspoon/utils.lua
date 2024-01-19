@@ -747,10 +747,10 @@ function localizedString(str, bundleID, params)
   if appLocale == nil then
     local locales = applicationLocales(bundleID)
     appLocale = locales[1]
-    local localeDetails = hs.host.locale.details(appLocale)
-    if localeDetails.languageCode == 'en' and key ~= true then
-      return str
-    end
+  end
+  local localeDetails = hs.host.locale.details(appLocale)
+  if localeDetails.languageCode == 'en' and key ~= true then
+    return str
   end
 
   local resourceDir, framework = getResourceDir(bundleID, localeFramework)
@@ -1033,9 +1033,9 @@ function delocalizedMenuItemString(str, bundleID, params)
   if appLocale == nil then
     local locales = applicationLocales(bundleID)
     appLocale = locales[1]
-    local localeDetails = hs.host.locale.details(appLocale)
-    if localeDetails.languageCode == 'en' then return end
   end
+  local localeDetails = hs.host.locale.details(appLocale)
+  if localeDetails.languageCode == 'en' then return str end
 
   local resourceDir, framework = getResourceDir(bundleID, localeFramework)
   if framework.chromium then
