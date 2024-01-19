@@ -1231,31 +1231,40 @@ local function PDFChooser()
         hs.timer.usleep(0.5 * 1000000)
       end
       if allWindowsPDFExpert[choice.winID]:title() ~= winTabTitlesPDFExpert[choice.winID][choice.id] then
-        if not allWindowsPDFExpert[choice.winID]:isFullScreen() then
+        local appObject = findApplication("com.readdle.PDFExpert-Mac")
+        local isFullScreen = allWindowsPDFExpert[choice.winID]:isFullScreen()
+        if not isFullScreen or findMenuItem(appObject, { 'View', 'Always Show Toolbar' }).ticked then
+          local locationExtra = isFullScreen and " of group 1\n" or "\n"
           local ok, result = hs.osascript.applescript([[
             tell application "System Events"
-              set aWindow to ]] .. aWinFor("com.readdle.PDFExpert-Mac") .. [[
-              set tabList to the value of attribute "AXChildren" of ¬
-                  scroll area 1 of tab group 1 of group 1 of toolbar 1 of aWindow
-              set atab to item ]] .. choice.id .. [[ of tabList
-              return the value of attribute "AXPosition" of atab
+              tell ]] .. aWinFor("com.readdle.PDFExpert-Mac") .. [[
+                set tabList to the value of attribute "AXChildren" of ¬
+                    scroll area 1 of tab group 1 of group 1 of toolbar 1]] .. locationExtra .. [[
+                set atab to item ]] .. choice.id .. [[ of tabList
+                return the value of attribute "AXPosition" of atab
+              end tell
             end tell
           ]])
           if ok then
-            leftClickAndRestore(result)
+            local appHere = hs.axuielement.systemElementAtPosition(result[1], result[2])
+            while appHere.AXParent ~= nil do
+              appHere = appHere.AXParent
+            end
+            if appHere.AXTitle == hs.application.nameForBundleID("com.readdle.PDFExpert-Mac") then
+              leftClickAndRestore(result)
+              return
+            end
+          end
+        end
+        local activeIdx = hs.fnutils.indexOf(winTabTitlesPDFExpert[choice.winID],
+            allWindowsPDFExpert[choice.winID]:title()) or 0
+        if activeIdx < choice.id then
+          for i=1,choice.id-activeIdx do
+            selectMenuItem(appObject, { "Window", "Go to Next Tab" })
           end
         else
-          local appObject = findApplication("com.readdle.PDFExpert-Mac")
-          local activeIdx = hs.fnutils.indexOf(winTabTitlesPDFExpert[choice.winID],
-              allWindowsPDFExpert[choice.winID]:title()) or 0
-          if activeIdx < choice.id then
-            for i=1,choice.id-activeIdx do
-              selectMenuItem(appObject, { "Window", "Go to Next Tab" })
-            end
-          else
-            for i=1,activeIdx-choice.id do
-              selectMenuItem(appObject, { "Window", "Go to Previous Tab" })
-            end
+          for i=1,activeIdx-choice.id do
+            selectMenuItem(appObject, { "Window", "Go to Previous Tab" })
           end
         end
       end
