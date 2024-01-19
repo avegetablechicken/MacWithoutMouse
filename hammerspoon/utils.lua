@@ -278,6 +278,21 @@ local function getResourceDir(bundleID, frameworkName)
       end
     end
 
+    if hs.fs.attributes(appContentPath .. "/Frameworks") ~= nil then
+      local chromiumDirs, status = hs.execute(string.format(
+        "find '%s' -type f -path '*/Resources/*/locale.pak'" ..
+        " | awk -F'/Versions/C/Resources' '{print $1}' | uniq | tr -d '\\n'",
+        appContentPath .. "/Frameworks"))
+      if status and chromiumDirs ~= "" then
+        chromiumDirs = hs.fnutils.split(chromiumDirs, '\n')
+        if #chromiumDirs == 1 then
+          resourceDir = chromiumDirs[1] .. "/Resources"
+          framework.chromium = true
+          goto END_GET_RESOURCE_DIR
+        end
+      end
+    end
+
     if hs.fs.attributes(appContentPath .. "/Resources/qt.conf") ~= nil then
       resourceDir = appContentPath .. "/Resources"
       framework.qt = true
