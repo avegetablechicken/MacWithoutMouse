@@ -1155,6 +1155,17 @@ local searchHotkey = bindSpecSuspend(misc["searchHotkeys"], "Search Hotkey", fun
         local iconFile = hs.application.infoForBundlePath(entry.appPath).CFBundleIconFile
         if iconFile then
           image = hs.image.imageFromPath(entry.appPath .. "/Contents/Resources/" .. iconFile)
+        else
+          iconFile = get(hs.application.infoForBundlePath(entry.appPath).CFBundleIcons,
+              'CFBundlePrimaryIcon', 'CFBundleIconFiles', 1)
+          if iconFile then
+            for file in hs.fs.dir(entry.appPath .. "/WrappedBundle") do
+              if file:sub(1, #iconFile) == iconFile then
+                image = hs.image.imageFromPath(entry.appPath .. "/WrappedBundle/" .. file)
+                if image then break end
+              end
+            end
+          end
         end
       elseif entry.kind == HK.APP_MENU or entry.kind == HK.IN_APP or entry.kind == HK.IN_APPWIN then
         image = hs.image.imageFromAppBundle(hs.application.frontmostApplication():bundleID())

@@ -260,7 +260,9 @@ local function getResourceDir(bundleID, frameworkName)
   local resourceDir
   local framework = {}
   local appContentPath = hs.application.pathForBundleID(bundleID) .. "/Contents"
-  if frameworkName ~= nil and frameworkName:sub(-10) == ".framework" then
+  if hs.fs.attributes(appContentPath) == nil then
+    resourceDir = hs.application.pathForBundleID(bundleID) .. "/WrappedBundle/.."
+  elseif frameworkName ~= nil and frameworkName:sub(-10) == ".framework" then
     resourceDir = appContentPath .. "/Frameworks/" .. frameworkName .. "/Resources"
   elseif bundleID == "com.google.Chrome" then
     resourceDir = appContentPath .. "/Frameworks/Google Chrome Framework.framework/Resources"
