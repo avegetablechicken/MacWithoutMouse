@@ -246,7 +246,7 @@ end
 local localeTmpDir = hs.fs.temporaryDirectory() .. 'org.hammerspoon.Hammerspoon/locale/'
 
 function systemLocales()
-  local locales, ok = hs.execute("defaults read -globalDomain AppleLanguages) | tr -d '()\" \\n'")
+  local locales, ok = hs.execute("defaults read -globalDomain AppleLanguages | tr -d '()\" \\n'")
   return hs.fnutils.split(locales, ',')
 end
 
