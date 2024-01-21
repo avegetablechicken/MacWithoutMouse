@@ -523,31 +523,37 @@ local function checkMenuItem(menuItemTitle, params)
   end
 end
 
-local NO_MENU_ITEM_BY_KEYBINDING = 1
-local function checkMenuItemByKeybinding(mods, key)
-  return function(appObject)
-    local menuItem, enabled = findMenuItemByKeyBinding(appObject, mods, key)
-    if menuItem ~= nil and enabled then
-      return true, menuItem
-    else
-      return false, NO_MENU_ITEM_BY_KEYBINDING
-    end
-  end
-end
-
-local function receiveMenuItem(menuItemTitle, appObject)
-  appObject:selectMenuItem(menuItemTitle)
-end
+local COND_FAIL = {
+  MENU_ITEM_SELECTED = "MENU_ITEM_SELECTED",
+  NO_MENU_ITEM_BY_KEYBINDING = "NO_MENU_ITEM_BY_KEYBINDING",
+}
 
 local function noSelectedMenuBarItem(fn)
   return function(appObject)
     local appUIObj = hs.axuielement.applicationElement(appObject)
     local menuBar = appUIObj:childrenWithRole("AXMenuBar")[1]
     for i, menuBarItem in ipairs(menuBar:childrenWithRole("AXMenuBarItem")) do
-      if i > 1 and menuBarItem.AXSelected then return false end
+      if i > 1 and menuBarItem.AXSelected then
+        return false, COND_FAIL.MENU_ITEM_SELECTED
+      end
     end
     return fn(appObject)
   end
+end
+
+local function checkMenuItemByKeybinding(mods, key)
+  return function(appObject)
+    local menuItem, enabled = findMenuItemByKeyBinding(appObject, mods, key)
+    if menuItem ~= nil and enabled then
+      return true, menuItem
+    else
+      return false, COND_FAIL.NO_MENU_ITEM_BY_KEYBINDING
+    end
+  end
+end
+
+local function receiveMenuItem(menuItemTitle, appObject)
+  appObject:selectMenuItem(menuItemTitle)
 end
 
 function selectMenuItemOrKeyStroke(appObject, mods, key)
@@ -609,12 +615,12 @@ appHotKeyCallbacks = {
     },
     ["goToPreviousConversation"] = {
       message = menuItemMessage('⇧⌃', "⇥", 2),
-      condition = noSelectedMenuBarItem(checkMenuItemByKeybinding('⇧⌃', "⇥")),
+      condition = checkMenuItemByKeybinding('⇧⌃', "⇥"),
       fn = receiveMenuItem
     },
     ["goToNextConversation"] = {
       message = menuItemMessage('⌃', "⇥", 2),
-      condition = noSelectedMenuBarItem(checkMenuItemByKeybinding('⌃', "⇥")),
+      condition = checkMenuItemByKeybinding('⌃', "⇥"),
       fn = receiveMenuItem
     }
   },
@@ -2183,16 +2189,21 @@ local function registerInAppHotKeys(appName, eventType, appObject)
       end
       if (cfg.bindCondition == nil or cfg.bindCondition()) and keyBinding.background ~= true then
         local fn = cfg.fn
-        if cfg.condition ~= nil then
+        local cond = cfg.condition
+        if cond ~= nil then
+          if keyBinding.mods == nil or keyBinding.mods == "" or #keyBinding.mods == 0 then
+            cond = noSelectedMenuBarItem(cond)
+          end
           fn = function(appObject, appName, eventType)
-            local satisfied, result = cfg.condition(appObject)
+            local satisfied, result = cond(appObject)
             if satisfied then
               if result ~= nil then
                 cfg.fn(result, appObject, appName, eventType)
               else
                 cfg.fn(appObject, appName, eventType)
               end
-            elseif result == NO_MENU_ITEM_BY_KEYBINDING then
+            elseif result == COND_FAIL.NO_MENU_ITEM_BY_KEYBINDING
+                or result == COND_FAIL.MENU_ITEM_SELECTED then
               hs.eventtap.keyStroke(keyBinding.mods, keyBinding.key, nil, appObject)
             else
               selectMenuItemOrKeyStroke(appObject, keyBinding.mods, keyBinding.key)
@@ -2220,7 +2231,7 @@ local function registerInAppHotKeys(appName, eventType, appObject)
         if msg ~= nil then
           local hotkey = bindSpecSuspend(keyBinding, msg, fn, nil, repeatedFn)
           hotkey.kind = HK.IN_APP
-          hotkey.condition = cfg.condition
+          hotkey.condition = cond
           table.insert(inAppHotKeys[bid], hotkey)
         end
       end
@@ -2581,6 +2592,9 @@ function remapPreviousTab(bundleID)
       local menuItemCond = appObject:findMenuItem(menuItemPath)
       return menuItemCond ~= nil and menuItemCond.enabled
     end
+    if spec.mods == nil or spec.mods == "" or #spec.mods == 0 then
+      cond = noSelectedMenuBarItem(cond)
+    end
     local fn = inAppHotKeysWrapper(appObject, spec.mods, spec.key,
         function()
           if cond(appObject) then appObject:selectMenuItem(menuItemPath)
@@ -2612,6 +2626,9 @@ function registerOpenRecent(bundleID)
     local cond = function(appObject)
       local menuItemCond = appObject:findMenuItem(menuItemPath)
       return menuItemCond ~= nil and menuItemCond.enabled
+    end
+    if spec.mods == nil or spec.mods == "" or #spec.mods == 0 then
+      cond = noSelectedMenuBarItem(cond)
     end
     local fn = inAppHotKeysWrapper(appObject, spec.mods, spec.key,
         function()
