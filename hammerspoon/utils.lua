@@ -283,7 +283,7 @@ local function getResourceDir(bundleID, frameworkName)
     if hs.fs.attributes(appContentPath .. "/Frameworks") ~= nil then
       local chromiumDirs, status = hs.execute(string.format(
         "find '%s' -type f -path '*/Resources/*/locale.pak'" ..
-        " | awk -F'/Versions/C/Resources' '{print $1}' | uniq",
+        " | awk -F'/Versions/' '{print $1}' | uniq",
         appContentPath .. "/Frameworks"))
       if status and chromiumDirs:sub(1, -2) ~= "" then
         chromiumDirs = hs.fnutils.split(chromiumDirs:sub(1, -2), '\n')
