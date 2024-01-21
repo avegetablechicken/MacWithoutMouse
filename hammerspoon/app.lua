@@ -533,6 +533,7 @@ local function noSelectedMenuBarItem(fn)
     local appUIObj = hs.axuielement.applicationElement(appObject)
     local menuBar = appUIObj:childrenWithRole("AXMenuBar")[1]
     for i, menuBarItem in ipairs(menuBar:childrenWithRole("AXMenuBarItem")) do
+      -- fixme: on some version of macOS, the menu bar item "Apple" is always selected
       if i > 1 and menuBarItem.AXSelected then
         return false, COND_FAIL.MENU_ITEM_SELECTED
       end
