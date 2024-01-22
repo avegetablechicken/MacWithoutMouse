@@ -863,18 +863,22 @@ appHotKeyCallbacks = {
       fn = receiveMenuItem
     },
     ["goToFileTop"] = {
+      mods = "", key = "Home",
       message = "将光标移动到文档的开头",
       fn = function(appObject) hs.eventtap.keyStroke("⌘", "Home", nil, appObject) end
     },
     ["goToFileBottom"] = {
+      mods = "", key = "End",
       message = "将光标移动到文档的结尾",
       fn = function(appObject) hs.eventtap.keyStroke("⌘", "End", nil, appObject) end
     },
     ["selectToFileTop"] = {
+      mods = "⇧", key = "Home",
       message = "从当前位置选择到文档的开头",
       fn = function(appObject) hs.eventtap.keyStroke("⇧⌘", "Home", nil, appObject) end
     },
     ["selectToFileBottom"] = {
+      mods = "⇧", key = "End",
       message = "从当前位置选择到文档的结尾",
       fn = function(appObject) hs.eventtap.keyStroke("⇧⌘", "End", nil, appObject) end
     },

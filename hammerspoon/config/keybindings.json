@@ -958,22 +958,6 @@
         "mods": ["shift", "command"],
         "key": "W"
       },
-      "goToFileTop": {
-        "mods": "",
-        "key": "home"
-      },
-      "goToFileBottom": {
-        "mods": "",
-        "key": "end"
-      },
-      "selectToFileTop": {
-        "mods": "shift",
-        "key": "home"
-      },
-      "selectToFileBottom": {
-        "mods": "shift",
-        "key": "end"
-      },
       "exportToPDF": {
         "mods": ["shift", "option", "command"],
         "key": "E"
