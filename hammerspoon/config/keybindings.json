@@ -978,6 +978,18 @@
         "mods": ["shift", "option", "command"],
         "key": "E"
       },
+      "pdfHightlight": {
+        "mods": ["control", "command"],
+        "key": "H"
+      },
+      "pdfUnderline": {
+        "mods": ["control", "command"],
+        "key": "U"
+      },
+      "pdfStrikethrough": {
+        "mods": ["control", "command"],
+        "key": "S"
+      },
       "insertEquation": {
         "mods": ["option", "command"],
         "key": "E"

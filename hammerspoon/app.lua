@@ -895,6 +895,21 @@ appHotKeyCallbacks = {
       condition = checkMenuItem({ zh = { "插入", "LaTeX公式..." } }),
       fn = receiveMenuItem
     },
+    ["pdfHightlight"] = {
+      message = "高亮",
+      condition = checkMenuItem({ zh = { "批注", "高亮" } }),
+      fn = receiveMenuItem
+    },
+    ["pdfUnderline"] = {
+      message = "下划线",
+      condition = checkMenuItem({ zh = { "批注", "下划线" } }),
+      fn = receiveMenuItem
+    },
+    ["pdfStrikethrough"] = {
+      message = "删除线",
+      condition = checkMenuItem({ zh = { "批注", "删除线" } }),
+      fn = receiveMenuItem
+    },
     ["openFileLocation"] = {
       message = "打开文件位置",
       fn = function(appObject)
