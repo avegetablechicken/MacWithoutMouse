@@ -954,11 +954,11 @@ local function bindControlCenter(...)
 end
 
 -- toggle show `Widgets` panel
-local clockHotkey = bindControlCenter(menubarHK["showClock"], "Show " .. controlCenterLocalized("Clock"),
+local clockHotkey = bindControlCenter(menubarHK["showClock"], "Toggle " .. controlCenterLocalized("Clock"),
     function() hs.eventtap.keyStroke("fn", "N") end)
 
 -- toggle show `Control Center`
-local controlCenterHotkey = bindControlCenter(menubarHK["showControlCenter"], "Show " .. controlCenterLocalized("Control Center"),
+local controlCenterHotkey = bindControlCenter(menubarHK["showControlCenter"], controlCenterLocalized("Control Center"),
     function() clickRightMenuBarItem("Control Center") end)
 
 local controlCenterIdentifiers = hs.json.read("static/controlcenter-identifies.json")
@@ -1281,7 +1281,7 @@ function registerControlCenterHotKeys(panel)
 
   -- pandel with a switch-off button
   if hs.fnutils.contains({"WiFi", "Bluetooth", "AirDrop"}, panel) then
-    local hotkey = newControlCenter("", "Space", "Toggle " .. panel,
+    local hotkey = newControlCenter("", "Space", "Toggle " .. controlCenterLocalized(panel),
       function()
         hs.osascript.applescript([[
           tell application "System Events"
@@ -1424,13 +1424,14 @@ function registerControlCenterHotKeys(panel)
           end tell
         ]])
       end
+      local localizedOtherNetworks = controlCenterLocalized("Other Networks")
       if result == 0 then
-        hotkeyShow = newControlCenter("", "Right", "Show Other Networks",
+        hotkeyShow = newControlCenter("", "Right", "Show " .. localizedOtherNetworks,
           function()
             hotkeyShow:disable()
             actionFunc()
             if hotkeyHide == nil then
-              hotkeyHide = newControlCenter("", "Left", "Hide Other Networks",
+              hotkeyHide = newControlCenter("", "Left", "Hide " .. localizedOtherNetworks,
                 function()
                   hotkeyHide:disable()
                   hotkeyShow:enable()
@@ -1443,12 +1444,12 @@ function registerControlCenterHotKeys(panel)
           end)
         if not checkAndRegisterControlCenterHotKeys(hotkeyShow) then return end
       else
-        hotkeyHide = newControlCenter("", "Left", "Hide Other Networks",
+        hotkeyHide = newControlCenter("", "Left", "Hide " .. localizedOtherNetworks,
           function()
             hotkeyHide:disable()
             actionFunc()
             if hotkeyShow == nil then
-              hotkeyShow = newControlCenter("", "Right", "Show Other Networks",
+              hotkeyShow = newControlCenter("", "Right", "Show " .. localizedOtherNetworks,
                 function()
                   hotkeyShow:disable()
                   hotkeyHide:enable()
@@ -1871,9 +1872,10 @@ function registerControlCenterHotKeys(panel)
 end
 
 local controlCenterPanelConfigs = keybindingConfigs.hotkeys.ControlCenterAppKeys
+local localizedControlCenter = controlCenterLocalized("Control Center")
 for panel, spec in pairs(controlCenterPanelConfigs) do
   local localizedPanel = controlCenterLocalized(panel)
-  bindControlCenter(spec, "Show " .. localizedPanel .. " Panel",
+  bindControlCenter(spec, localizedControlCenter .. " > " .. localizedPanel,
       hs.fnutils.partial(popupControlCenterSubPanel, panel))
 end
 
@@ -1957,7 +1959,7 @@ function()
   for panel, spec in pairs(controlCenterPanelConfigs) do
     local localizedPanel = controlCenterLocalized(panel)
     local hotkey = bindControlCenter({ mods = "", key = spec.key },
-        "Show " .. localizedPanel .. " Panel",
+        localizedControlCenter .. " > " .. localizedPanel,
         hs.fnutils.partial(popupControlCenterSubPanel, panel))
     table.insert(controlCenterPanelHotKeys, hotkey)
     timeTapperForExtraInfo = os.time()
