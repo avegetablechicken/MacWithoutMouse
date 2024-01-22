@@ -582,14 +582,14 @@ appHotKeyCallbacks = {
       end
     },
     ["showPrevTab"] = {
-      message = menuItemMessage('⇧⌃', "⇥", 2),
       mods = "⇧⌘", key = "[",
+      message = menuItemMessage('⇧⌃', "⇥", 2),
       condition = checkMenuItemByKeybinding('⇧⌃', "⇥"),
       fn = receiveMenuItem
     },
     ["showNextTab"] = {
-      message = menuItemMessage('⌃', "⇥", 2),
       mods = "⇧⌘", key = "]",
+      message = menuItemMessage('⌃', "⇥", 2),
       condition = checkMenuItemByKeybinding('⌃', "⇥"),
       fn = receiveMenuItem
     },
@@ -820,14 +820,14 @@ appHotKeyCallbacks = {
   ["com.superace.updf.mac"] =
   {
     ["showPrevTab"] = {
-      message = menuItemMessage('⇧⌃', "⇥", 2),
       mods = "⇧⌘", key = "[",
+      message = menuItemMessage('⇧⌃', "⇥", 2),
       condition = checkMenuItemByKeybinding('⇧⌃', "⇥"),
       fn = receiveMenuItem
     },
     ["showNextTab"] = {
-      message = menuItemMessage('⌃', "⇥", 2),
       mods = "⇧⌘", key = "]",
+      message = menuItemMessage('⌃', "⇥", 2),
       condition = checkMenuItemByKeybinding('⌃', "⇥"),
       fn = receiveMenuItem
     },
@@ -851,14 +851,14 @@ appHotKeyCallbacks = {
       fn = receiveMenuItem
     },
     ["previousWindow"] = {
-      message = menuItemMessage('⇧⌃', "⇥", 2),
       mods = "⇧⌘", key = "[",
+      message = menuItemMessage('⇧⌃', "⇥", 2),
       condition = checkMenuItemByKeybinding('⇧⌃', "⇥"),
       fn = receiveMenuItem
     },
     ["nextWindow"] = {
-      message = menuItemMessage('⌃', "⇥", 2),
       mods = "⇧⌘", key = "]",
+      message = menuItemMessage('⌃', "⇥", 2),
       condition = checkMenuItemByKeybinding('⌃', "⇥"),
       fn = receiveMenuItem
     },
@@ -1109,14 +1109,14 @@ appHotKeyCallbacks = {
   ["cn.edu.idea.paper"] =
   {
     ["showPrevTab"] = {
-      message = "Show Previous Tab",
       mods = "⇧⌘", key = "[",
+      message = "Show Previous Tab",
       repeatable = true,
       fn = function(appObject) hs.eventtap.keyStroke("⌘", "Left", nil, appObject) end
     },
     ["showNextTab"] = {
-      message = "Show Next Tab",
       mods = "⇧⌘", key = "]",
+      message = "Show Next Tab",
       repeatable = true,
       fn = function(appObject) hs.eventtap.keyStroke("⌘", "Right", nil, appObject) end
     },
