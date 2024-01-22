@@ -25,7 +25,8 @@
     "cn.better365.iCopy",
     "com.tencent.xinWeChat",
     "com.tencent.qq",
-    "com.apple.finder"
+    "com.apple.finder",
+    "com.app.menubarx"
   ],
   "autoQuitWithNoWindow": [
     "com.apple.MobileSMS",

@@ -3112,6 +3112,51 @@ function(winObj)
   end
 end)
 
+local function watchForMenubarXPopoverWindow(appObject)
+  if not hs.fnutils.contains(appsAutoHideWithNoWindows, appObject:bundleID()) then
+    return
+  end
+  local appUIObj = hs.axuielement.applicationElement(appObject)
+  appUIObj:elementSearch(function (msg, results, count)
+    if count > 0 then
+      menubarXObserver = hs.axuielement.observer.new(appObject:pid())
+      menubarXObserver:addWatcher(
+        results[1],
+        hs.axuielement.observer.notifications.uIElementDestroyed
+      )
+      menubarXObserverCallback = function()
+        appUIObj:elementSearch(function (newMsg, newResults, newCount)
+          menubarXObserver:stop()
+          menubarXObserver = nil
+          if newCount == 0 then
+            appObject:hide()
+          elseif newCount == 1 then
+            menubarXObserver = hs.axuielement.observer.new(appObject:pid())
+            menubarXObserver:addWatcher(
+              newResults[1],
+              hs.axuielement.observer.notifications.uIElementDestroyed
+            )
+            menubarXObserver:callback(menubarXObserverCallback)
+            menubarXObserver:start()
+          end
+        end,
+        function(element)
+          return element.AXRole == "AXPopover"
+              or (element.AXRole == "AXWindow" and element.AXTitle ~= "")
+        end,
+        { count = 1, depth = 2 })
+      end
+      menubarXObserver:callback(menubarXObserverCallback)
+      menubarXObserver:start()
+    end
+  end,
+  function(element)
+    return element.AXRole == "AXPopover"
+        or (element.AXRole == "AXWindow" and element.AXTitle ~= "")
+  end,
+  { count = 1, depth = 2 })
+end
+
 barrierWindowFilter = hs.window.filter.new(false):allowApp("Barrier"):subscribe(
   hs.window.filter.windowCreated, function(winObj) winObj:focus() end
 )
@@ -3335,6 +3380,9 @@ function app_applicationCallback(appName, eventType, appObject)
     if bundleID == "cn.better365.iShotProHelper" then
       unregisterInWinHotKeys("cn.better365.iShotPro")
       return
+    end
+    if bundleID == "com.app.menubarx" then
+      watchForMenubarXPopoverWindow(appObject)
     end
     selectInputSourceInApp(bundleID)
     hs.timer.doAfter(0, function()
