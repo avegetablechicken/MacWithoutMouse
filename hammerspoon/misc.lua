@@ -471,15 +471,18 @@ local function processHotkeys(validOnly, showHS, showKara, showApp, evFlags)
       local canShow = false
       local j = i + 1
       while j <= #HSKeybindings.buffer and type(HSKeybindings.buffer[j]) ~= 'string' do
-        if (HSKeybindings.buffer[j].kind ~= nil and HSKeybindings.buffer[j].kind <= kind)
-            and (HSKeybindings.buffer[j].valid or not validOnly) then
-          canShow = true
-          if HSKeybindings.buffer[j].kind < kind then
-            kind = HSKeybindings.buffer[j].kind
+        if HSKeybindings.buffer[j].kind == HK.IN_APP then
+          if HSKeybindings.buffer[j].valid or not validOnly then
+            canShow = true
+            if HSKeybindings.buffer[j].kind < kind then
+              kind = HSKeybindings.buffer[j].kind
+            end
+            break
+          else
+            j = j + 1
           end
-          break
         else
-          j = j + 1
+          break
         end
       end
       if canShow then
