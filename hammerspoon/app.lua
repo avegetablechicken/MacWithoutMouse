@@ -1123,6 +1123,21 @@ appHotKeyCallbacks = {
     ["minimize"] = specialCommonHotkeyConfigs["minimize"]
   },
 
+  ["com.apple.iMovieApp"] =
+  {
+    ["export"] = {
+      message = "Export",
+      bindCondition = function(appObject)
+        local appLocale = applicationLocales(appObject:bundleID())[1]
+        return appLocale:sub(1, 2) == "en" or appLocale == "zh-Hans-CN"
+      end,
+      fn = function(appObject)
+        selectMenuItem(appObject, { en = { "File", "Share", "File…" },
+                                    zh = { "文件", "共享", "文件…" } })
+      end
+    }
+  },
+
   ["com.tencent.xinWeChat"] =
   {
     ["back"] = {

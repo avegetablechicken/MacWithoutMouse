@@ -1053,6 +1053,12 @@
         "key": "E"
       }
     },
+    "com.apple.iMovieApp": {
+      "export": {
+        "mods": "command",
+        "key": "E"
+      }
+    },
     "com.tencent.xinWeChat": {
       "back": {
         "mods": "command",
