@@ -259,7 +259,7 @@ end
 local function deleteAllMessages(appObject)
   local menuBarItemTitle = getOSVersion() < OS.Ventura and "File" or "Conversations"
   local appLocale = applicationLocales(appObject:bundleID())[1]
-  local menuItemTitle = appLocale:sub(1, 2) == "zh" and "删除对话…" or "Delete Conversation…"
+  local menuItemTitle = appLocale:sub(1, 2) == "en" and "Delete Conversation…" or "删除对话…"
   local menuItem, menuItemPath = findMenuItem(appObject, { menuBarItemTitle, menuItemTitle })
   if menuItem == nil then return end
   appUIObj = hs.axuielement.applicationElement(appObject)
@@ -600,18 +600,26 @@ appHotKeyCallbacks = {
     ["deleteConversation"] = {
       message = function(appObject)
         local appLocale = applicationLocales(appObject:bundleID())[1]
-        return appLocale:sub(1, 2) == "zh" and "删除对话…" or "Delete Conversation…"
+        return appLocale:sub(1, 2) == "en" and "Delete Conversation…" or "删除对话…"
+      end,
+      bindCondition = function(appObject)
+        local appLocale = applicationLocales(appObject:bundleID())[1]
+        return appLocale:sub(1, 2) == "en" or appLocale == "zh-Hans-CN"
       end,
       condition = function(appObject)
         local menuBarItemTitle = getOSVersion() < OS.Ventura and "File" or "Conversations"
         local appLocale = applicationLocales(appObject:bundleID())[1]
-        local menuItemTitle = appLocale:sub(1, 2) == "zh" and "删除对话…" or "Delete Conversation…"
+        local menuItemTitle = appLocale:sub(1, 2) == "en" and "Delete Conversation…" or "删除对话…"
         return checkMenuItem({ menuBarItemTitle, menuItemTitle })(appObject)
       end,
       fn = function(menuItemTitle, appObject) deleteSelectedMessage(appObject, menuItemTitle) end
     },
     ["deleteAllConversations"] = {
       message = "Delete All Conversations",
+      bindCondition = function(appObject)
+        local appLocale = applicationLocales(appObject:bundleID())[1]
+        return appLocale:sub(1, 2) == "en" or appLocale == "zh-Hans-CN"
+      end,
       fn = deleteAllMessages
     },
     ["goToPreviousConversation"] = {
