@@ -2074,7 +2074,8 @@ local function registerRunningAppHotKeys(bid, appObject)
         key = cfg.key,
       }
     end
-    if (cfg.bindCondition == nil or cfg.bindCondition()) and keyBinding.background == true
+    if keyBinding.background == true
+        and (cfg.bindCondition == nil or (appObject ~= nil and cfg.bindCondition(appObject)))
         and (appObject ~= nil or (keyBinding.persist == true
         and (hs.application.pathForBundleID(bid) ~= nil
              and hs.application.pathForBundleID(bid) ~= ""))) then
@@ -2207,7 +2208,7 @@ local function registerInAppHotKeys(appName, eventType, appObject)
           key = cfg.key,
         }
       end
-      if (cfg.bindCondition == nil or cfg.bindCondition()) and keyBinding.background ~= true then
+      if (cfg.bindCondition == nil or cfg.bindCondition(appObject)) and keyBinding.background ~= true then
         local fn = cfg.fn
         local cond = cfg.condition
         if cond ~= nil then
@@ -2352,7 +2353,7 @@ local function registerInWinHotKeys(appObject)
         end
       end
       if type(hkID) ~= 'number' then
-        if keyBinding.windowFilter ~= nil and (spec.bindCondition == nil or spec.bindCondition())
+        if keyBinding.windowFilter ~= nil and (spec.bindCondition == nil or spec.bindCondition(appObject))
             and not spec.notActivateApp then
           local msg = type(spec.message) == 'string' and spec.message or spec.message(appObject)
           if msg ~= nil then
@@ -2366,7 +2367,7 @@ local function registerInWinHotKeys(appObject)
       else
         local cfg = spec
         for _, spec in ipairs(cfg.hotkeys) do
-          if (spec.bindCondition == nil or spec.bindCondition()) and not spec.notActivateApp then
+          if (spec.bindCondition == nil or spec.bindCondition(appObject)) and not spec.notActivateApp then
             local msg = type(spec.message) == 'string' and spec.message or spec.message(appObject)
             if msg ~= nil then
               local fn = inWinHotKeysWrapper(appObject, cfg.filter, spec, msg, spec.fn)
@@ -2472,7 +2473,7 @@ local function inWinOfUnactivatedAppWatcherEnableCallback(bid, filter, winObj, a
   for hkID, spec in pairs(appHotKeyCallbacks[bid]) do
     if type(hkID) ~= 'number' then
       local filterCfg = get(keybindingConfigs.hotkeys[bid], hkID) or spec
-      if (spec.bindCondition == nil or spec.bindCondition()) and sameFilter(filterCfg.windowFilter, filter) then
+      if (spec.bindCondition == nil or spec.bindCondition(winObj:application())) and sameFilter(filterCfg.windowFilter, filter) then
         local msg = type(spec.message) == 'string' and spec.message or spec.message(winObj:application())
         if msg ~= nil then
           local keyBinding = get(keybindingConfigs.hotkeys[bid], hkID) or spec
@@ -2487,7 +2488,7 @@ local function inWinOfUnactivatedAppWatcherEnableCallback(bid, filter, winObj, a
       local cfg = spec[1]
       if sameFilter(cfg.filter, filter) then
         for _, spec in ipairs(cfg) do
-          if (spec.bindCondition == nil or spec.bindCondition()) then
+          if (spec.bindCondition == nil or spec.bindCondition(winObj:application())) then
             local msg = type(spec.message) == 'string' and spec.message or spec.message(winObj:application())
             if msg ~= nil then
               local hotkey = bindSuspend(spec.mods, spec.key, msg,
