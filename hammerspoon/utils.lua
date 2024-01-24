@@ -1305,9 +1305,11 @@ function delocalizedMenuBarItem(title, bundleID, params)
   return newTitle
 end
 
+local menuBarTitleLocalizationMapLoaded = {}
 menuBarTitleLocalizationMap = {}
 if hs.fs.attributes("config/menuitem-localization.json") ~= nil then
-  menuBarTitleLocalizationMap = hs.json.read("config/menuitem-localization.json")
+  menuBarTitleLocalizationMapLoaded = hs.json.read("config/menuitem-localization.json")
+  menuBarTitleLocalizationMap = hs.fnutils.copy(menuBarTitleLocalizationMapLoaded)
 end
 localizationMapByKey = {}
 if hs.fs.attributes("static/localization-keys.json") ~= nil then
@@ -1326,21 +1328,21 @@ for _, title in ipairs{ 'File', 'Edit', 'Format', 'View', 'Window', 'Help' } do
 end
 
 function localizedMenuBarItem(title, bundleID, params)
-  for _, dict in ipairs{
-    menuItemLocaleMap[bundleID] or {},
-    menuBarTitleLocalizationMap[bundleID] or {},
-  } do
-    local locTitle = hs.fnutils.indexOf(dict, title)
-    if locTitle ~= nil then
-      if title == 'View' and findApplication(bundleID) then
-        local menuItems = getMenuItems(findApplication(bundleID))
-        table.remove(menuItems, 1)
-        if hs.fnutils.find(menuItems, function(item) return item.AXTitle == locTitle end) ~= nil then
-          return locTitle
-        end
-      else
+  local appLocale = applicationLocales(bundleID)[1]
+  if menuItemLocaleDir[bundleID] ~= nil
+      and menuItemLocaleDir[bundleID][appLocale] == nil then
+    menuBarTitleLocalizationMap[bundleID] = menuBarTitleLocalizationMapLoaded[bundleID]
+  end
+  local locTitle = hs.fnutils.indexOf(menuBarTitleLocalizationMap[bundleID] or {}, title)
+  if locTitle ~= nil then
+    if title == 'View' and findApplication(bundleID) then
+      local menuItems = getMenuItems(findApplication(bundleID))
+      table.remove(menuItems, 1)
+      if hs.fnutils.find(menuItems, function(item) return item.AXTitle == locTitle end) ~= nil then
         return locTitle
       end
+    else
+      return locTitle
     end
   end
   if findApplication(bundleID) then
@@ -1350,11 +1352,18 @@ function localizedMenuBarItem(title, bundleID, params)
       return title
     end
   end
-  if applicationLocales(bundleID)[1] == systemLocale then
-    local locTitle = hs.fnutils.indexOf(menuBarTitleLocalizationMap.common, title)
+  if appLocale == systemLocale then
+    locTitle = hs.fnutils.indexOf(menuBarTitleLocalizationMap.common, title)
     if locTitle ~= nil then return locTitle end
   end
-  return localizedString(title, bundleID, params)
+  locTitle = localizedString(title, bundleID, params)
+  if locTitle ~= nil then
+    if menuBarTitleLocalizationMap[bundleID] == nil then
+      menuBarTitleLocalizationMap[bundleID] = {}
+    end
+    menuBarTitleLocalizationMap[bundleID][locTitle] = title
+    return locTitle
+  end
 end
 
 

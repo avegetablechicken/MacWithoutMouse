@@ -2858,6 +2858,9 @@ local function searchHotkeyByNth(itemTitles, alreadySetHotkeys, index)
 end
 
 function delocalizeMenuBarItems(itemTitles, bundleID, localeFile)
+  if menuBarTitleLocalizationMap[bundleID] == nil then
+    menuBarTitleLocalizationMap[bundleID] = {}
+  end
   local defaultTitleMap, titleMap
   if menuBarTitleLocalizationMap ~= nil then
     defaultTitleMap = menuBarTitleLocalizationMap.common
@@ -2873,21 +2876,21 @@ function delocalizeMenuBarItems(itemTitles, bundleID, localeFile)
         and (#splits == 1 or string.byte(splits[2], 1) <= 127) then
       table.insert(result, { title, title })
     else
-      if titleMap ~= nil then
-        if titleMap[title] ~= nil then
-          table.insert(result, { title, titleMap[title] })
-          goto L_CONTINUE
-        end
+      if titleMap[title] ~= nil then
+        table.insert(result, { title, titleMap[title] })
+        goto L_CONTINUE
       end
       if defaultTitleMap ~= nil then
         if defaultTitleMap[title] ~= nil then
           table.insert(result, { title, defaultTitleMap[title] })
+          titleMap[title] = defaultTitleMap[title]
           goto L_CONTINUE
         end
       end
       local newTitle = delocalizedMenuItemString(title, bundleID, localeFile)
       if newTitle ~= nil then
         table.insert(result, { title, newTitle })
+        titleMap[title] = newTitle
       end
       ::L_CONTINUE::
     end
