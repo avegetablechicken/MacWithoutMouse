@@ -833,7 +833,7 @@ function()
     hkKeybindingsWatcher = nil
   end
   hkHideKeybindings = hs.hotkey.bind("", "Escape", cancelFunc)
-  hkKeybindingsAll = hs.hotkey.bind("⌘", "0",
+  hkKeybindingsAll = hs.hotkey.bind("", "0",
   function()
     hkKeybindingsAll:disable()
     hkKeybindingsHS:enable()
@@ -841,7 +841,7 @@ function()
     hkKeybindingsApp:enable()
     HSKeybindings:update(true, true, true, true)
   end)
-  hkKeybindingsHS = hs.hotkey.new("⌘", "1",
+  hkKeybindingsHS = hs.hotkey.new("", "1",
   function()
     hkKeybindingsAll:enable()
     hkKeybindingsHS:disable()
@@ -849,7 +849,7 @@ function()
     hkKeybindingsApp:enable()
     HSKeybindings:update(true, true, false, false)
   end)
-  hkKeybindingsKara = hs.hotkey.bind("⌘", "2",
+  hkKeybindingsKara = hs.hotkey.bind("", "2",
   function()
     hkKeybindingsAll:enable()
     hkKeybindingsHS:enable()
@@ -857,7 +857,7 @@ function()
     hkKeybindingsApp:enable()
     HSKeybindings:update(true, false, true, false)
   end)
-  hkKeybindingsApp = hs.hotkey.bind("⌘", "3",
+  hkKeybindingsApp = hs.hotkey.bind("", "3",
   function()
     hkKeybindingsAll:enable()
     hkKeybindingsHS:enable()
