@@ -819,53 +819,13 @@ function()
   local cancelFunc = function()
     HSKeybindings:hide()
     HSKeybindings:reset()
-    hkHideKeybindings:delete()
-    hkKeybindingsAll:delete()
-    hkKeybindingsHS:delete()
-    hkKeybindingsKara:delete()
-    hkKeybindingsApp:delete()
-    hkShowInvalid:delete()
     hkKeybindingsWatcher:stop()
     hkKeybindingsLastModifier = {}
     hkHideKeybindingsWatcher:stop()
     doubleTapModal.enable()
-    hkHideKeybindings = nil
     hkKeybindingsWatcher = nil
   end
-  hkHideKeybindings = hs.hotkey.bind("", "Escape", cancelFunc)
-  hkKeybindingsAll = hs.hotkey.bind("", "0",
-  function()
-    hkKeybindingsAll:disable()
-    hkKeybindingsHS:enable()
-    hkKeybindingsKara:enable()
-    hkKeybindingsApp:enable()
-    HSKeybindings:update(true, true, true, true)
-  end)
-  hkKeybindingsHS = hs.hotkey.new("", "1",
-  function()
-    hkKeybindingsAll:enable()
-    hkKeybindingsHS:disable()
-    hkKeybindingsKara:enable()
-    hkKeybindingsApp:enable()
-    HSKeybindings:update(true, true, false, false)
-  end)
-  hkKeybindingsKara = hs.hotkey.bind("", "2",
-  function()
-    hkKeybindingsAll:enable()
-    hkKeybindingsHS:enable()
-    hkKeybindingsKara:disable()
-    hkKeybindingsApp:enable()
-    HSKeybindings:update(true, false, true, false)
-  end)
-  hkKeybindingsApp = hs.hotkey.bind("", "3",
-  function()
-    hkKeybindingsAll:enable()
-    hkKeybindingsHS:enable()
-    hkKeybindingsKara:enable()
-    hkKeybindingsApp:disable()
-    HSKeybindings:update(true, false, false, true)
-  end)
-  
+
   -- disable all modals activated by this modal
   doubleTapModal.disable()
   local enteredModal = hs.fnutils.find(hyperModalList,
@@ -905,10 +865,33 @@ function()
     elseif ev:getType() == hs.eventtap.event.types.keyDown then
       if ev:getKeyCode() == hs.keycodes.map[hyper] then
         evFlags.hyper = true
+      elseif ev:getKeyCode() == hs.keycodes.map["Space"] then
+        HSKeybindings:update(false, HSKeybindings.showHS,
+                             HSKeybindings.showKara, HSKeybindings.showApp)
+        return true
+      elseif ev:getKeyCode() == hs.keycodes.map["Escape"] then
+        cancelFunc()
+        return true
+      elseif ev:getKeyCode() == hs.keycodes.map["0"] then
+        HSKeybindings:update(true, true, true, true)
+        return true
+      elseif ev:getKeyCode() == hs.keycodes.map["1"] then
+        HSKeybindings:update(true, true, false, false)
+        return true
+      elseif ev:getKeyCode() == hs.keycodes.map["2"] then
+        HSKeybindings:update(true, false, true, false)
+        return true
+      elseif ev:getKeyCode() == hs.keycodes.map["3"] then
+        HSKeybindings:update(true, false, false, true)
+        return true
       end
     elseif ev:getType() == hs.eventtap.event.types.keyUp then
       if ev:getKeyCode() == hs.keycodes.map[hyper] then
         evFlags.hyper = nil
+      elseif ev:getKeyCode() == hs.keycodes.map["Space"] then
+        HSKeybindings:update(true, HSKeybindings.showHS,
+                            HSKeybindings.showKara, HSKeybindings.showApp)
+        return true
       end
     end
     local sameFlags = true
@@ -930,15 +913,6 @@ function()
     end
     return false
   end):start()
-  hkShowInvalid = hs.hotkey.bind("", "Space",
-      function()
-        HSKeybindings:update(false, HSKeybindings.showHS,
-                             HSKeybindings.showKara, HSKeybindings.showApp)
-      end,
-      function()
-        HSKeybindings:update(true, HSKeybindings.showHS,
-                             HSKeybindings.showKara, HSKeybindings.showApp)
-      end)
   hkHideKeybindingsWatcher = hs.eventtap.new({hs.eventtap.event.types.leftMouseDown},
       function(ev) cancelFunc() return false end)
   hs.timer.doAfter(0.3, function() hkHideKeybindingsWatcher:start() end)
