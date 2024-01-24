@@ -3431,6 +3431,14 @@ function app_applicationCallback(appName, eventType, appObject)
           registerOpenRecent(bundleID)
           registerObserverForMenuBarChange(appObject)
           registerForOpenSavePanel(appObject)
+          if HSKeybindings ~= nil and HSKeybindings.isShowing then
+            local validOnly = HSKeybindings.validOnly
+            local showHS = HSKeybindings.showHS
+            local showKara = HSKeybindings.showKara
+            local showApp = HSKeybindings.showApp
+            HSKeybindings:reset()
+            HSKeybindings:update(validOnly, showHS, showKara, showApp, true)
+          end
         end)
       end)
     end)
@@ -3474,14 +3482,6 @@ function app_applicationCallback(appName, eventType, appObject)
         remoteDesktopModifierTapper:stop()
       end
     end
-  end
-  if HSKeybindings ~= nil and HSKeybindings.isShowing then
-    local validOnly = HSKeybindings.validOnly
-    local showHS = HSKeybindings.showHS
-    local showKara = HSKeybindings.showKara
-    local showApp = HSKeybindings.showApp
-    HSKeybindings:reset()
-    HSKeybindings:update(validOnly, showHS, showKara, showApp, true)
   end
 end
 
