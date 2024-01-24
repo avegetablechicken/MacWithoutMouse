@@ -10,17 +10,17 @@ function enterHyperMode()
 
   -- hyper key up may be captured by `Parallels Desktop`
   -- we need to check if hyper key is still pressed
-  hyperPressed = true
-  hyperTapper = hs.eventtap.new({hs.eventtap.event.types.keyDown}, function(e)
+  This.hyperPressed = true
+  This.hyperTapper = hs.eventtap.new({hs.eventtap.event.types.keyDown}, function(e)
     if e:getKeyCode() == hs.keycodes.map[This.hyper] then
-      hyperPressed = true
+      This.hyperPressed = true
     end
   end):start()
-  hyperTimer = hs.timer.doEvery(1, function()
-    if not hyperPressed then
+  This.hyperTimer = hs.timer.doEvery(1, function()
+    if not This.hyperPressed then
       exitHyperMode()
     end
-    hyperPressed = false
+    This.hyperPressed = false
   end):start()
 end
 
@@ -28,10 +28,10 @@ end
 function exitHyperMode()
   This.hyperMode:exit()
   This.hyperMode.Entered = false
-  hyperTapper:stop()
-  hyperTapper = nil
-  hyperTimer:stop()
-  hyperTimer = nil
+  This.hyperTapper:stop()
+  This.hyperTapper = nil
+  This.hyperTimer:stop()
+  This.hyperTimer = nil
 end
 
 -- Utility to bind handler to Hyper+modifiers+key
