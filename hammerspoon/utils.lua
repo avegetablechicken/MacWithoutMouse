@@ -741,15 +741,6 @@ if hs.fs.attributes(localeTmpFile) ~= nil then
 end
 
 function localizedString(str, bundleID, params)
-  if hs.fs.attributes(localeTmpDir) == nil then
-    hs.execute(string.format("mkdir -p '%s'", localeTmpDir))
-  end
-
-  if hs.application.pathForBundleID(bundleID) == nil
-      or hs.application.pathForBundleID(bundleID) == "" then
-    return nil
-  end
-
   local appLocale, localeFile, localeDir, localeFramework, key
   if type(params) == "table" then
     appLocale = params.locale
@@ -770,6 +761,15 @@ function localizedString(str, bundleID, params)
     return str
   end
 
+  local result = get(appLocaleMap, bundleID, appLocale, str)
+  if result == false then return nil
+  elseif result ~= nil then return result end
+
+  if hs.application.pathForBundleID(bundleID) == nil
+      or hs.application.pathForBundleID(bundleID) == "" then
+    return nil
+  end
+
   local resourceDir, framework = getResourceDir(bundleID, localeFramework)
   if framework.chromium then
     if findApplication(bundleID) then
@@ -787,18 +787,14 @@ function localizedString(str, bundleID, params)
     appLocaleMap[bundleID] = {}
     appLocaleDir[bundleID] = {}
   end
+  if appLocaleMap[bundleID][appLocale] == nil then
+    appLocaleMap[bundleID][appLocale] = {}
+  end
   if appLocaleAssetBuffer[bundleID] == nil then
     appLocaleAssetBuffer[bundleID] = {}
   end
   if appLocaleAssetBuffer[bundleID][appLocale] == nil then
     appLocaleAssetBuffer[bundleID][appLocale] = {}
-  end
-  if appLocaleMap[bundleID][appLocale] == nil then
-    appLocaleMap[bundleID][appLocale] = {}
-  elseif appLocaleMap[bundleID][appLocale][str] == false then
-    return nil
-  elseif appLocaleMap[bundleID][appLocale][str] ~= nil then
-    return appLocaleMap[bundleID][appLocale][str]
   end
   local localesDict = appLocaleAssetBuffer[bundleID][appLocale]
 
@@ -832,8 +828,6 @@ function localizedString(str, bundleID, params)
     end
   end
 
-  local result
-
   if framework.chromium then
     result = localizeByChromium(str, localeDir, localesDict, bundleID)
     goto L_END_LOCALIZED
@@ -866,6 +860,9 @@ function localizedString(str, bundleID, params)
 
   ::L_END_LOCALIZED::
   if result ~= nil then
+    if hs.fs.attributes(localeTmpDir) == nil then
+      hs.execute(string.format("mkdir -p '%s'", localeTmpDir))
+    end
     appLocaleMap[bundleID][appLocale][str] = result
     hs.json.write({ locale = appLocaleDir, map = appLocaleMap },
                   localeTmpFile, false, true)
@@ -1034,10 +1031,6 @@ if hs.fs.attributes(menuItemTmpFile) ~= nil then
   menuItemLocaleMap = json.map
 end
 function delocalizedMenuItemString(str, bundleID, params)
-  if hs.fs.attributes(localeTmpDir) == nil then
-    hs.execute(string.format("mkdir -p '%s'", localeTmpDir))
-  end
-
   local appLocale, localeFile, localeFramework
   if type(params) == "table" then
     appLocale = params.locale
@@ -1053,6 +1046,10 @@ function delocalizedMenuItemString(str, bundleID, params)
   end
   local localeDetails = hs.host.locale.details(appLocale)
   if localeDetails.languageCode == 'en' then return str end
+
+  local result = get(menuItemLocaleMap, bundleID, str)
+  if result == false then return nil
+  elseif result ~= nil then return result end
 
   local resourceDir, framework = getResourceDir(bundleID, localeFramework)
   if framework.chromium then
@@ -1079,13 +1076,7 @@ function delocalizedMenuItemString(str, bundleID, params)
     menuItemLocaleInversedMap[bundleID] = {}
   end
 
-  if menuItemLocaleMap[bundleID][str] == false then
-    return nil
-  elseif menuItemLocaleMap[bundleID][str] ~= nil then
-    return menuItemLocaleMap[bundleID][str]
-  end
-
-  local locale, localeDir, mode, result, searchFunc
+  local locale, localeDir, mode, searchFunc
 
   if bundleID == "org.zotero.zotero" then
     result, locale = delocalizeZoteroMenu(str, appLocale)
@@ -1272,6 +1263,9 @@ function delocalizedMenuItemString(str, bundleID, params)
 
   ::L_END_DELOCALIZED::
   if result ~= nil then
+    if hs.fs.attributes(localeTmpDir) == nil then
+      hs.execute(string.format("mkdir -p '%s'", localeTmpDir))
+    end
     menuItemLocaleMap[bundleID][str] = result
     menuItemLocaleDir[bundleID][appLocale] = locale
     hs.json.write({ locale = menuItemLocaleDir, map = menuItemLocaleMap },
