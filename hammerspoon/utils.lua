@@ -785,10 +785,12 @@ function localizedString(str, bundleID, params)
 
   if appLocaleMap[bundleID] == nil then
     appLocaleMap[bundleID] = {}
-    appLocaleDir[bundleID] = {}
   end
   if appLocaleMap[bundleID][appLocale] == nil then
     appLocaleMap[bundleID][appLocale] = {}
+  end
+  if appLocaleDir[bundleID] == nil then
+    appLocaleDir[bundleID] = {}
   end
   if appLocaleAssetBuffer[bundleID] == nil then
     appLocaleAssetBuffer[bundleID] = {}
@@ -803,19 +805,19 @@ function localizedString(str, bundleID, params)
     local mode = localeDir == nil and 'lproj' or 'strings'
     if locale == nil then
       locale = appLocaleDir[bundleID][appLocale]
+      if locale == false then return nil end
     end
     if locale == nil then
       locale = getMatchedLocale(appLocale, resourceDir, mode)
       if locale == nil and framework.qt then
         locale, localeDir = getQtMatchedLocale(appLocale, resourceDir)
       end
-      if locale ~= nil then
-        appLocaleDir[bundleID][appLocale] = locale
-      else
-        appLocaleMap[bundleID][appLocale][str] = false
+      if locale == nil then
+        appLocaleDir[bundleID][appLocale] = false
         return nil
       end
     end
+    appLocaleDir[bundleID][appLocale] = locale
     if mode == 'strings' then
       localeDir = resourceDir
       if localeFile == nil then localeFile = locale end
@@ -1066,12 +1068,15 @@ function delocalizedMenuItemString(str, bundleID, params)
 
   if menuItemLocaleMap[bundleID] == nil then
     menuItemLocaleMap[bundleID] = {}
-    menuItemLocaleDir[bundleID] = {}
   end
   if menuItemLocaleInversedMap[bundleID] == nil then
     menuItemLocaleInversedMap[bundleID] = {}
   end
+  if menuItemLocaleDir[bundleID] == nil then
+    menuItemLocaleDir[bundleID] = {}
+  end
   if menuItemLocaleDir[bundleID][appLocale] == nil then
+    menuItemLocaleDir[bundleID] = {}
     menuItemLocaleMap[bundleID] = {}
     menuItemLocaleInversedMap[bundleID] = {}
   end
@@ -1084,6 +1089,7 @@ function delocalizedMenuItemString(str, bundleID, params)
         and menuItemLocaleDir[bundleID][appLocale] ~= locale then
       menuItemLocaleMap[bundleID] = {}
     end
+    menuItemLocaleDir[bundleID][appLocale] = locale
     goto L_END_DELOCALIZED
   elseif bundleID == "com.mathworks.matlab" then
     result, locale = delocalizeMATLABFigureMenu(str, appLocale)
@@ -1091,12 +1097,14 @@ function delocalizedMenuItemString(str, bundleID, params)
         and menuItemLocaleDir[bundleID][appLocale] ~= locale then
       menuItemLocaleMap[bundleID] = {}
     end
+    menuItemLocaleDir[bundleID][appLocale] = locale
     goto L_END_DELOCALIZED
   end
 
   if not framework.mono then mode = 'lproj' end
   if locale == nil then
     locale = menuItemLocaleDir[bundleID][appLocale]
+    if locale == false then return nil end
   end
   if locale == nil then
     locale = getMatchedLocale(appLocale, resourceDir, mode)
@@ -1104,10 +1112,11 @@ function delocalizedMenuItemString(str, bundleID, params)
       locale, localeDir = getQtMatchedLocale(appLocale, resourceDir)
     end
     if locale == nil then
-      menuItemLocaleMap[bundleID][str] = false
+      menuItemLocaleDir[bundleID][appLocale] = false
       return nil
     end
   end
+  menuItemLocaleDir[bundleID][appLocale] = locale
   if localeDir == nil then
     if mode == 'lproj' then
       localeDir = resourceDir .. "/" .. locale .. ".lproj"
@@ -1267,7 +1276,6 @@ function delocalizedMenuItemString(str, bundleID, params)
       hs.execute(string.format("mkdir -p '%s'", localeTmpDir))
     end
     menuItemLocaleMap[bundleID][str] = result
-    menuItemLocaleDir[bundleID][appLocale] = locale
     hs.json.write({ locale = menuItemLocaleDir, map = menuItemLocaleMap },
         menuItemTmpFile, false, true)
   else
