@@ -309,11 +309,11 @@ local function testValid(entry)
   end
 end
 
-local function processHotkeys(validOnly, showHS, showKara, showApp, evFlags)
+local function processHotkeys(validOnly, showHS, showKara, showApp, evFlags, reload)
   local allKeys = {}
   local enabledAltMenuHotkeys = {}
 
-  if HSKeybindings.buffer ~= nil then
+  if reload ~= true and HSKeybindings.buffer ~= nil then
     goto L_endCollect
   end
 
@@ -445,7 +445,7 @@ local function processHotkeys(validOnly, showHS, showKara, showApp, evFlags)
 
   ::L_endCollect::
 
-  if showApp and not HSKeybindings.appHotkeysLoaded then
+  if (showApp and not HSKeybindings.appHotkeysLoaded) or reload == true then
     loadAppHotkeys(HSKeybindings.buffer)
   end
 
@@ -599,7 +599,7 @@ if jsFile then
     js = jsFile:read("*all")
     jsFile:close()
 end
-local function generateHtml(validOnly, showHS, showKara, showApp, evFlags)
+local function generateHtml(validOnly, showHS, showKara, showApp, evFlags, reload)
   local title
   if showHS == true and showKara == false and showApp == false then
     title = "Keybindings of Hammerspoon"
@@ -610,7 +610,7 @@ local function generateHtml(validOnly, showHS, showKara, showApp, evFlags)
   else
     title = "Keybindings of Hammerspoon, Karabiner-Elements and Activated Application"
   end
-  local allmenuitems = processHotkeys(validOnly, showHS, showKara, showApp, evFlags)
+  local allmenuitems = processHotkeys(validOnly, showHS, showKara, showApp, evFlags, reload)
 
   local html = [[
       <!DOCTYPE html>
@@ -786,12 +786,12 @@ function HSKeybindings:show()
   loadAppHotkeys(self.buffer)
 end
 
-function HSKeybindings:update(validOnly, showHS, showKara, showApp)
+function HSKeybindings:update(validOnly, showHS, showKara, showApp, reload)
   if validOnly ~= nil then self.validOnly = validOnly end
   if showHS ~= nil then self.showHS = showHS end
   if showKara ~= nil then self.showKara = showKara end
   if showApp ~= nil then self.showApp = showApp end
-  local webcontent = generateHtml(self.validOnly, self.showHS, self.showKara, self.showApp, self.evFlags)
+  local webcontent = generateHtml(self.validOnly, self.showHS, self.showKara, self.showApp, self.evFlags, reload)
   self.sheetView:html(webcontent)
   self.sheetView:show()
   self.isShowing = true

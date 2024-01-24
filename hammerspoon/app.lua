@@ -3481,7 +3481,7 @@ function app_applicationCallback(appName, eventType, appObject)
     local showKara = HSKeybindings.showKara
     local showApp = HSKeybindings.showApp
     HSKeybindings:reset()
-    HSKeybindings:update(validOnly, showHS, showKara, showApp)
+    HSKeybindings:update(validOnly, showHS, showKara, showApp, true)
   end
 end
 
