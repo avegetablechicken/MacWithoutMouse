@@ -3475,7 +3475,7 @@ function app_applicationCallback(appName, eventType, appObject)
       end
     end
   end
-  if hkHideKeybindings ~= nil and HSKeybindings ~= nil then
+  if HSKeybindings ~= nil and HSKeybindings.isShowing then
     local validOnly = HSKeybindings.validOnly
     local showHS = HSKeybindings.showHS
     local showKara = HSKeybindings.showKara

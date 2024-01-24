@@ -214,7 +214,6 @@ local misc = keybindingConfigs.hotkeys.global
 -- toggle hotkeys
 hotkeySuspended = false
 HSKeybindings = nil
-hkHideKeybindings = nil
 local toggleHotkey = bindHotkeySpec(misc["toggleHotkeys"], function()
   hotkeySuspended = not hotkeySuspended
   if hotkeySuspended then
@@ -222,7 +221,7 @@ local toggleHotkey = bindHotkeySpec(misc["toggleHotkeys"], function()
   else
     hs.alert.show("Hammerspoon Hotkeys Resumed")
   end
-  if hkHideKeybindings ~= nil and HSKeybindings ~= nil then
+  if HSKeybindings ~= nil and HSKeybindings.isShowing then
     local validOnly = HSKeybindings.validOnly
     local showHS = HSKeybindings.showHS
     local showKara = HSKeybindings.showKara

@@ -794,6 +794,7 @@ function HSKeybindings:update(validOnly, showHS, showKara, showApp)
   local webcontent = generateHtml(self.validOnly, self.showHS, self.showKara, self.showApp, self.evFlags)
   self.sheetView:html(webcontent)
   self.sheetView:show()
+  self.isShowing = true
 end
 
 function HSKeybindings:highlight(evFlags)
@@ -809,12 +810,13 @@ end
 function HSKeybindings:hide()
     self.sheetView:hide()
     self.sheetView:delete()
+  self.isShowing = false
 end
 
 doubleTapModal = require('modal/doubletap')
 doubleTapModal.install(hyper)
 table.insert(doubleTapModalList, doubleTapModal)
-local hkKeybindingsWatcher, hkHideKeybindingsWatcher, hkKeybindingsLastModifier
+local hkKeybindingsLastModifier
 doubleTapModal.bindSuspend("Show Keybindings",
 function()
   local cancelFunc = function()
