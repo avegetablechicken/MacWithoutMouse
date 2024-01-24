@@ -814,16 +814,16 @@ end
 doubleTapModal = require('modal/doubletap')
 doubleTapModal.install(hyper)
 table.insert(doubleTapModalList, doubleTapModal)
+local hkKeybindingsWatcher, hkHideKeybindingsWatcher, hkKeybindingsLastModifier
 doubleTapModal.bindSuspend("Show Keybindings",
 function()
   local cancelFunc = function()
     HSKeybindings:hide()
     HSKeybindings:reset()
     hkKeybindingsWatcher:stop()
-    hkKeybindingsLastModifier = {}
+    hkKeybindingsLastModifier = nil
     hkHideKeybindingsWatcher:stop()
     doubleTapModal.enable()
-    hkKeybindingsWatcher = nil
   end
 
   -- disable all modals activated by this modal
@@ -838,10 +838,7 @@ function()
   HSKeybindings:show()
   hkKeybindingsOptionDown = false
   hkKeybindingsLastModifier = {}
-  hkKeybindingsWatcher = hs.eventtap.new({hs.eventtap.event.types.flagsChanged,
-      hs.eventtap.event.types.keyDown, hs.eventtap.event.types.keyUp,
-      hs.eventtap.event.types.gesture},
-  function(ev)
+  local callback = function(ev)
     local evFlags = ev:getFlags()
     if ev:getType() == hs.eventtap.event.types.gesture then
       if hkKeybindingsLastModifier.hyper then
@@ -890,7 +887,7 @@ function()
         evFlags.hyper = nil
       elseif ev:getKeyCode() == hs.keycodes.map["Space"] then
         HSKeybindings:update(true, HSKeybindings.showHS,
-                            HSKeybindings.showKara, HSKeybindings.showApp)
+                             HSKeybindings.showKara, HSKeybindings.showApp)
         return true
       end
     end
@@ -912,9 +909,18 @@ function()
       hkKeybindingsLastModifier = evFlags
     end
     return false
-  end):start()
-  hkHideKeybindingsWatcher = hs.eventtap.new({hs.eventtap.event.types.leftMouseDown},
-      function(ev) cancelFunc() return false end)
+  end
+  if hkKeybindingsWatcher == nil then
+    hkKeybindingsWatcher = hs.eventtap.new({hs.eventtap.event.types.flagsChanged,
+        hs.eventtap.event.types.keyDown, hs.eventtap.event.types.keyUp,
+        hs.eventtap.event.types.gesture},
+        callback)
+  end
+  hkKeybindingsWatcher:start()
+  if hkHideKeybindingsWatcher == nil then
+    hkHideKeybindingsWatcher = hs.eventtap.new({hs.eventtap.event.types.leftMouseDown},
+        function() cancelFunc() return false end)
+  end
   hs.timer.doAfter(0.3, function() hkHideKeybindingsWatcher:start() end)
 end)
 doubleTapModal.kind = HK.PRIVELLEGE
