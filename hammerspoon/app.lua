@@ -3416,7 +3416,9 @@ function app_applicationCallback(appName, eventType, appObject)
     hs.timer.doAfter(3, function()
       doNotReloadShowingKeybings = false
     end)
-    hs.timer.doAfter(0, function()
+    local timer
+    timer = hs.timer.doAfter(0, function()
+      timer = nil
       local locales = applicationLocales(bundleID)
       local appLocale = locales[1]
       if appLocales[bundleID] ~= nil and appLocales[bundleID] ~= appLocale then
@@ -3428,9 +3430,11 @@ function app_applicationCallback(appName, eventType, appObject)
       registerRunningAppHotKeys(bundleID, appObject)
       registerInAppHotKeys(appName, eventType, appObject)
       registerInWinHotKeys(appObject)
-      hs.timer.doAfter(0, function()
+      local timer = hs.timer.doAfter(0, function()
+        timer = nil
         altMenuBarItem(appObject)
-        hs.timer.doAfter(0, function()
+        local timer = hs.timer.doAfter(0, function()
+          timer = nil
           remapPreviousTab(bundleID)
           registerOpenRecent(bundleID)
           registerObserverForMenuBarChange(appObject)
