@@ -841,6 +841,7 @@ function()
   hkKeybindingsOptionDown = false
   hkKeybindingsLastModifier = {}
   local callback = function(ev)
+    if doNotReloadShowingKeybings then return end
     local evFlags = ev:getFlags()
     if ev:getType() == hs.eventtap.event.types.gesture then
       if hkKeybindingsLastModifier.hyper then

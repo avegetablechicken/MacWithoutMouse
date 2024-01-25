@@ -3412,6 +3412,10 @@ function app_applicationCallback(appName, eventType, appObject)
       watchForMenubarXPopoverWindow(appObject)
     end
     selectInputSourceInApp(bundleID)
+    doNotReloadShowingKeybings = true
+    hs.timer.doAfter(3, function()
+      doNotReloadShowingKeybings = false
+    end)
     hs.timer.doAfter(0, function()
       local locales = applicationLocales(bundleID)
       local appLocale = locales[1]
@@ -3439,6 +3443,7 @@ function app_applicationCallback(appName, eventType, appObject)
             HSKeybindings:reset()
             HSKeybindings:update(validOnly, showHS, showKara, showApp, true)
           end
+          doNotReloadShowingKeybings = false
         end)
       end)
     end)
