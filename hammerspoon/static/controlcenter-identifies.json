@@ -18,6 +18,8 @@
     "Hearing": "hearing"
   },
   "subpanel" : {
+    "Video Effects": "video-effects",
+    "Mic Modes": "mic-modes",
     "WiFi": "wifi",
     "Bluetooth": "bluetooth",
     "Focus": "focus-modes",
