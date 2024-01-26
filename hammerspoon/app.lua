@@ -1550,7 +1550,8 @@ appHotKeyCallbacks = {
           action()
         end
       end
-    }
+    },
+    ["closeWindow"] = specialCommonHotkeyConfigs["closeWindow"],
   },
 
   ["com.macosgame.iwallpaper"] =
@@ -3186,6 +3187,59 @@ local function watchForMenubarXPopoverWindow(appObject)
   { count = 1, depth = 2 })
 end
 
+local function watchForMathpixPopoverWindow(appObject)
+  local spec = get(keybindingConfigs.hotkeys,
+      "com.mathpix.snipping-tool-noappstore", "hidePopover")
+  if spec == nil then return end
+  local appUIObj = hs.axuielement.applicationElement(appObject)
+  mathpixObserver = hs.axuielement.observer.new(appObject:pid())
+  mathpixObserver:addWatcher(
+    appUIObj,
+    hs.axuielement.observer.notifications.focusedUIElementChanged
+  )
+  mathpixObserverCallback = function()
+    appUIObj:elementSearch(function (msg, results, count)
+      if count > 0 then
+        if mathpixPopoverHide ~= nil then
+          mathpixPopoverHide:delete()
+          mathpixPopoverHide = nil
+        end
+        mathpixPopoverHide = bindSpecSuspend(spec, "Hide Popover", function()
+          clickRightMenuBarItem(appObject:bundleID())
+          mathpixPopoverHide:delete()
+          mathpixPopoverHide = nil
+        end)
+        if mathpixObserver ~= nil
+            and mathpixObserver:isRunning() then return end
+        mathpixPopoverObserver = hs.axuielement.observer.new(appObject:pid())
+        mathpixPopoverObserver:addWatcher(
+          results[1],
+          hs.axuielement.observer.notifications.uIElementDestroyed
+        )
+        mathpixPopoverObserverCallback = function()
+          mathpixPopoverObserver:stop()
+          mathpixPopoverObserver = nil
+          if #appObject:visibleWindows() == 0 then
+            appObject:hide()
+          end
+        end
+        mathpixPopoverObserver:callback(mathpixPopoverObserverCallback)
+        mathpixPopoverObserver:start()
+      end
+    end,
+    function(element)
+      return element.AXRole == "AXPopover"
+    end,
+    { count = 1, depth = 2 })
+  end
+  mathpixObserver:callback(mathpixObserverCallback)
+  mathpixObserver:start()
+end
+local mathpixApp = findApplication("com.mathpix.snipping-tool-noappstore")
+if mathpixApp ~= nil then
+  watchForMathpixPopoverWindow(mathpixApp)
+end
+
 barrierWindowFilter = hs.window.filter.new(false):allowApp("Barrier"):subscribe(
   hs.window.filter.windowCreated, function(winObj) winObj:focus() end
 )
@@ -3399,6 +3453,8 @@ function app_applicationCallback(appName, eventType, appObject)
   if eventType == hs.application.watcher.launched then
     if bundleID == "com.apple.finder" then
       selectMenuItem(appObject, { "File", "New Finder Window" })
+    elseif bundleID == "com.mathpix.snipping-tool-noappstore" then
+      watchForMathpixPopoverWindow(appObject)
     end
     altMenuBarItemAfterLaunch(appObject)
     if appHotKeyCallbacks[bundleID] ~= nil then
@@ -3466,6 +3522,16 @@ function app_applicationCallback(appName, eventType, appObject)
         appsMenuBarItemsWatchers[bundleID][1]:stop()
       end
     else
+      if bundleID == "com.mathpix.snipping-tool-noappstore" then
+        if mathpixObserver ~= nil then
+          mathpixObserver:stop()
+          mathpixObserver = nil
+        end
+        if mathpixPopoverObserver ~= nil then
+          mathpixPopoverObserver:stop()
+          mathpixPopoverObserver = nil
+        end
+      end
       for bid, _ in pairs(runningAppHotKeys) do
         if findApplication(bid) == nil then
           unregisterRunningAppHotKeys(bid)
