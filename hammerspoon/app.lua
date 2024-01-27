@@ -3522,7 +3522,12 @@ function app_applicationCallback(appName, eventType, appObject)
         appsMenuBarItemsWatchers[bundleID][1]:stop()
       end
     else
-      if bundleID == "com.mathpix.snipping-tool-noappstore" then
+      if bundleID == "com.app.menubarx" then
+        if menubarXObserver ~= nil then
+          menubarXObserver:stop()
+          menubarXObserver = nil
+        end
+      elseif bundleID == "com.mathpix.snipping-tool-noappstore" then
         if mathpixObserver ~= nil then
           mathpixObserver:stop()
           mathpixObserver = nil
