@@ -3150,44 +3150,54 @@ local function watchForMenubarXPopoverWindow(appObject)
     return
   end
   local appUIObj = hs.axuielement.applicationElement(appObject)
-  appUIObj:elementSearch(function (msg, results, count)
-    if count > 0 then
-      menubarXObserver = hs.axuielement.observer.new(appObject:pid())
-      menubarXObserver:addWatcher(
-        results[1],
-        hs.axuielement.observer.notifications.uIElementDestroyed
-      )
-      menubarXObserverCallback = function()
-        appUIObj:elementSearch(function (newMsg, newResults, newCount)
-          menubarXObserver:stop()
-          menubarXObserver = nil
-          if newCount == 0 then
-            appObject:hide()
-          elseif newCount == 1 then
-            menubarXObserver = hs.axuielement.observer.new(appObject:pid())
-            menubarXObserver:addWatcher(
-              newResults[1],
-              hs.axuielement.observer.notifications.uIElementDestroyed
-            )
-            menubarXObserver:callback(menubarXObserverCallback)
-            menubarXObserver:start()
-          end
-        end,
-        function(element)
-          return element.AXRole == "AXPopover"
-              or (element.AXRole == "AXWindow" and element.AXTitle ~= "")
-        end,
-        { count = 1, depth = 2 })
+  menubarXObserver = hs.axuielement.observer.new(appObject:pid())
+  menubarXObserver:addWatcher(
+    appUIObj,
+    hs.axuielement.observer.notifications.focusedUIElementChanged
+  )
+  menubarXObserverCallback = function()
+    appUIObj:elementSearch(function(msg, results, count)
+      if count > 0 then
+        if menubarXPopoverObserver ~= nil
+            and menubarXPopoverObserver:isRunning() then return end
+        menubarXPopoverObserver = hs.axuielement.observer.new(appObject:pid())
+        menubarXPopoverObserver:addWatcher(
+          results[1],
+          hs.axuielement.observer.notifications.uIElementDestroyed
+        )
+        menubarXPopoverObserverCallback = function()
+          menubarXPopoverObserver:stop()
+          menubarXPopoverObserver = nil
+          appUIObj:elementSearch(function (newMsg, newResults, newCount)
+            if newCount == 0 then
+              local windows = hs.fnutils.filter(appObject:visibleWindows(), function(win)
+                return win:title() ~= ""
+              end)
+              if #windows == 0 then
+                appObject:hide()
+              end
+            end
+          end,
+          function(element)
+            return element.AXRole == "AXPopover"
+          end,
+          { count = 1, depth = 2 })
+        end
+        menubarXPopoverObserver:callback(menubarXPopoverObserverCallback)
+        menubarXPopoverObserver:start()
       end
-      menubarXObserver:callback(menubarXObserverCallback)
-      menubarXObserver:start()
-    end
-  end,
-  function(element)
-    return element.AXRole == "AXPopover"
-        or (element.AXRole == "AXWindow" and element.AXTitle ~= "")
-  end,
-  { count = 1, depth = 2 })
+    end,
+    function(element)
+      return element.AXRole == "AXPopover"
+    end,
+    { count = 1, depth = 2 })
+  end
+  menubarXObserver:callback(menubarXObserverCallback)
+  menubarXObserver:start()
+end
+local menubarXApp = findApplication("com.app.menubarx")
+if menubarXApp ~= nil then
+  watchForMenubarXPopoverWindow(menubarXApp)
 end
 
 local function watchForMathpixPopoverWindow(appObject)
@@ -3456,6 +3466,8 @@ function app_applicationCallback(appName, eventType, appObject)
   if eventType == hs.application.watcher.launched then
     if bundleID == "com.apple.finder" then
       selectMenuItem(appObject, { "File", "New Finder Window" })
+    elseif bundleID == "com.app.menubarx" then
+      watchForMenubarXPopoverWindow(appObject)
     elseif bundleID == "com.mathpix.snipping-tool-noappstore" then
       watchForMathpixPopoverWindow(appObject)
     end
@@ -3468,9 +3480,6 @@ function app_applicationCallback(appName, eventType, appObject)
     if bundleID == "cn.better365.iShotProHelper" then
       unregisterInWinHotKeys("cn.better365.iShotPro")
       return
-    end
-    if bundleID == "com.app.menubarx" then
-      watchForMenubarXPopoverWindow(appObject)
     end
     selectInputSourceInApp(bundleID)
     doNotReloadShowingKeybings = true
@@ -3529,6 +3538,10 @@ function app_applicationCallback(appName, eventType, appObject)
         if menubarXObserver ~= nil then
           menubarXObserver:stop()
           menubarXObserver = nil
+        end
+        if menubarXPopoverObserver ~= nil then
+          menubarXPopoverObserver:stop()
+          menubarXPopoverObserver = nil
         end
       elseif bundleID == "com.mathpix.snipping-tool-noappstore" then
         if mathpixObserver ~= nil then
