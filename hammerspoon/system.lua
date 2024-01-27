@@ -1424,7 +1424,7 @@ function registerControlCenterHotKeys(panel)
           end tell
         ]])
       end
-      local localizedOtherNetworks = controlCenterLocalized("Other Networks")
+      local localizedOtherNetworks = controlCenterLocalized("WiFi", "Other Networks")
       if result == 0 then
         hotkeyShow = newControlCenter("", "Right", "Show " .. localizedOtherNetworks,
           function()
