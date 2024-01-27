@@ -3107,7 +3107,10 @@ function(winObj)
 end)
 
 local function processAppWithNoWindows(appObject, quit)
-  if #appObject:visibleWindows() == 0 then
+  if #appObject:visibleWindows() == 0
+    or (appObject:bundleID() == "com.app.menubarx"
+        and #hs.fnutils.filter(appObject:visibleWindows(),
+            function(win) return win:title() ~= "" end) == 0) then
     if quit == true then
       local wFilter = hs.window.filter.new(appObject:name())
       if #wFilter:getWindows() == 0 then
