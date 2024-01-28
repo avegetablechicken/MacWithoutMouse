@@ -26,8 +26,15 @@
     "com.tencent.xinWeChat",
     "com.tencent.qq",
     "com.apple.finder",
-    "com.mathpix.snipping-tool-noappstore",
-    "com.app.menubarx"
+    {
+      "com.app.menubarx": {
+        "allowPopover": true,
+        "rejectTitles": "^$"
+      },
+      "com.mathpix.snipping-tool-noappstore": {
+        "allowPopover": true
+      }
+    }
   ],
   "autoQuitWithNoWindow": [
     "com.apple.MobileSMS",

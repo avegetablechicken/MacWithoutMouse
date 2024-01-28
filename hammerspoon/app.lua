@@ -3129,52 +3129,52 @@ local function processAppWithNoWindows(appObject, quit)
   end
 end
 
-local appsAutoHideWithNoWindows = applicationConfigs.autoHideWithNoWindow or {}
-local appsAutoQuitWithNoWindows = applicationConfigs.autoQuitWithNoWindow or {}
-local windowFilterAutoHideQuit = hs.window.filter.new()
-    :setAppFilter("Hammerspoon", true)
-    :subscribe(hs.window.filter.windowDestroyed,
-function(winObj)
-  if winObj == nil or winObj:application() == nil then return end
-  local bundleID = winObj:application():bundleID()
-  if hs.fnutils.contains(appsAutoHideWithNoWindows, bundleID) then
-    processAppWithNoWindows(winObj:application(), false)
-  end
-  if hs.fnutils.contains(appsAutoQuitWithNoWindows, bundleID) then
-    processAppWithNoWindows(winObj:application(), true)
-  end
-end)
-
-local function watchForMenubarXPopoverWindow(appObject)
-  if not hs.fnutils.contains(appsAutoHideWithNoWindows, appObject:bundleID()) then
-    return
-  end
+local appPopoverObservers = {}
+local popoverObserver
+local function registerPopoverDestroyWatcher(appObject, windowFilter, quit)
+  local observer = appPopoverObservers[appObject:bundleID()]
   local appUIObj = hs.axuielement.applicationElement(appObject)
-  menubarXObserver = hs.axuielement.observer.new(appObject:pid())
-  menubarXObserver:addWatcher(
+  if observer ~= nil then observer:start() return end
+  observer = hs.axuielement.observer.new(appObject:pid())
+  observer:addWatcher(
     appUIObj,
     hs.axuielement.observer.notifications.focusedUIElementChanged
   )
-  menubarXObserverCallback = function()
+  if windowFilter ~= nil then
+    windowFilter = hs.window.filter.new(false):allowApp(appObject:name(), windowFilter)
+  end
+  local observerCallback = function()
     appUIObj:elementSearch(function(msg, results, count)
       if count > 0 then
-        if menubarXPopoverObserver ~= nil
-            and menubarXPopoverObserver:isRunning() then return end
-        menubarXPopoverObserver = hs.axuielement.observer.new(appObject:pid())
-        menubarXPopoverObserver:addWatcher(
+        if popoverObserver ~= nil then
+          popoverObserver:stop()
+          popoverObserver = nil
+        end
+        popoverObserver = hs.axuielement.observer.new(appObject:pid())
+        popoverObserver:addWatcher(
           results[1],
           hs.axuielement.observer.notifications.uIElementDestroyed
         )
-        menubarXPopoverObserverCallback = function()
-          menubarXPopoverObserver:stop()
-          menubarXPopoverObserver = nil
+        local popoverObserverCallback = function()
           appUIObj:elementSearch(function (newMsg, newResults, newCount)
             if newCount == 0 then
-              local windows = hs.fnutils.filter(appObject:visibleWindows(), function(win)
-                return win:title() ~= ""
-              end)
+              local windows = appObject:visibleWindows()
+              if windowFilter ~= nil then
+                windows = hs.fnutils.filter(windows, function(win)
+                  return windowFilter:isWindowAllowed(win)
+                end)
+              end
               if #windows == 0 then
-                appObject:hide()
+                if quit == true then
+                  local wFilter = hs.window.filter.new(appObject:name())
+                  if #wFilter:getWindows() == 0 then
+                    appObject:kill()
+                  end
+                else
+                  appObject:hide()
+                end
+                popoverObserver:stop()
+                popoverObserver = nil
               end
             end
           end,
@@ -3183,8 +3183,8 @@ local function watchForMenubarXPopoverWindow(appObject)
           end,
           { count = 1, depth = 2 })
         end
-        menubarXPopoverObserver:callback(menubarXPopoverObserverCallback)
-        menubarXPopoverObserver:start()
+        popoverObserver:callback(popoverObserverCallback)
+        popoverObserver:start()
       end
     end,
     function(element)
@@ -3192,12 +3192,89 @@ local function watchForMenubarXPopoverWindow(appObject)
     end,
     { count = 1, depth = 2 })
   end
-  menubarXObserver:callback(menubarXObserverCallback)
-  menubarXObserver:start()
+  observer:callback(observerCallback)
+  observer:start()
+  appPopoverObservers[appObject:bundleID()] = observer
 end
-local menubarXApp = findApplication("com.app.menubarx")
-if menubarXApp ~= nil then
-  watchForMenubarXPopoverWindow(menubarXApp)
+
+local function unregisterPopoverDestroyWatcher(bundleID)
+  if appPopoverObservers[bundleID] then
+    appPopoverObservers[bundleID]:stop()
+    appPopoverObservers[bundleID] = nil
+  end
+end
+
+local appsAutoHideWithNoWindowsLoaded = applicationConfigs.autoHideWithNoWindow
+local appsAutoQuitWithNoWindowsLoaded = applicationConfigs.autoQuitWithNoWindow
+local appsAutoHideWithNoWindows = {}
+local appsAutoQuitWithNoWindows = {}
+local appsAutoHideWithNoPopovers = {}
+local appsAutoQuitWithNoPopovers = {}
+for _, item in ipairs(appsAutoHideWithNoWindowsLoaded or {}) do
+  if type(item) == 'string' then
+    appsAutoHideWithNoWindows[item] = true
+  else
+    for k, v in pairs(item) do
+      appsAutoHideWithNoWindows[k] = v
+      if v.allowPopover then
+        table.insert(appsAutoHideWithNoPopovers, k)
+        appsAutoHideWithNoWindows[k].allowPopover = nil
+      end
+    end
+  end
+end
+for _, item in ipairs(appsAutoQuitWithNoWindowsLoaded or {}) do
+  if type(item) == 'string' then
+    appsAutoQuitWithNoWindows[item] = true
+  else
+    for k, v in pairs(item) do
+      appsAutoQuitWithNoWindows[k] = v
+      if v.allowPopover then
+        table.insert(appsAutoQuitWithNoPopovers, k)
+        appsAutoQuitWithNoWindows[k].allowPopover = nil
+      end
+    end
+  end
+end
+
+local windowFilterAutoHide = hs.window.filter.new(false)
+    :setAppFilter("Hammerspoon", true)
+for bundleID, cfg in pairs(appsAutoHideWithNoWindows) do
+  local appObject = findApplication(bundleID)
+  if appObject ~= nil then
+    windowFilterAutoHide:setAppFilter(appObject:name(), cfg)
+  end
+end
+windowFilterAutoHide:subscribe(hs.window.filter.windowDestroyed,
+  function(winObj)
+    if winObj == nil or winObj:application() == nil then return end
+    processAppWithNoWindows(winObj:application(), false)
+  end)
+
+local windowFilterAutoQuit = hs.window.filter.new(false)
+for bundleID, cfg in pairs(appsAutoQuitWithNoWindows) do
+  local appObject = findApplication(bundleID)
+  if appObject ~= nil then
+    windowFilterAutoQuit:setAppFilter(appObject:name(), cfg)
+  end
+end
+windowFilterAutoQuit:subscribe(hs.window.filter.windowDestroyed,
+  function(winObj)
+    if winObj == nil or winObj:application() == nil then return end
+      processAppWithNoWindows(winObj:application(), true)
+  end)
+
+for _, bundleID in ipairs(appsAutoHideWithNoPopovers) do
+  if findApplication(bundleID) then
+    registerPopoverDestroyWatcher(findApplication(
+        bundleID), appsAutoHideWithNoWindows[bundleID], false)
+  end
+end
+for _, bundleID in ipairs(appsAutoQuitWithNoPopovers) do
+  if findApplication(bundleID) then
+    registerPopoverDestroyWatcher(
+          findApplication(bundleID), appsAutoQuitWithNoWindows[bundleID], true)
+  end
 end
 
 local function watchForMathpixPopoverWindow(appObject)
@@ -3222,21 +3299,19 @@ local function watchForMathpixPopoverWindow(appObject)
           mathpixPopoverHide:delete()
           mathpixPopoverHide = nil
         end)
-        if mathpixObserver ~= nil
-            and mathpixObserver:isRunning() then return end
         mathpixPopoverObserver = hs.axuielement.observer.new(appObject:pid())
         mathpixPopoverObserver:addWatcher(
           results[1],
           hs.axuielement.observer.notifications.uIElementDestroyed
         )
-        mathpixPopoverObserverCallback = function()
+        mathpixPopoverObserver:callback(function()
+          if mathpixPopoverHide ~= nil then
+            mathpixPopoverHide:delete()
+            mathpixPopoverHide = nil
+          end
           mathpixPopoverObserver:stop()
           mathpixPopoverObserver = nil
-          if #appObject:visibleWindows() == 0 then
-            appObject:hide()
-          end
-        end
-        mathpixPopoverObserver:callback(mathpixPopoverObserverCallback)
+        end)
         mathpixPopoverObserver:start()
       end
     end,
@@ -3466,10 +3541,22 @@ function app_applicationCallback(appName, eventType, appObject)
   if eventType == hs.application.watcher.launched then
     if bundleID == "com.apple.finder" then
       selectMenuItem(appObject, { "File", "New Finder Window" })
-    elseif bundleID == "com.app.menubarx" then
-      watchForMenubarXPopoverWindow(appObject)
     elseif bundleID == "com.mathpix.snipping-tool-noappstore" then
       watchForMathpixPopoverWindow(appObject)
+    end
+    if appsAutoHideWithNoWindows[bundleID] then
+      local cfg = appsAutoHideWithNoWindows[bundleID]
+      windowFilterAutoHide:setAppFilter(appName, cfg)
+      if hs.fnutils.contains(appsAutoHideWithNoPopovers, bundleID) then
+        registerPopoverDestroyWatcher(appObject, cfg, false)
+      end
+    elseif appsAutoQuitWithNoWindows[bundleID] then
+      local cfg = appsAutoQuitWithNoWindows[bundleID]
+      windowFilterAutoQuit:setAppFilter(appName, cfg)
+      if hs.fnutils.contains(appsAutoQuitWithNoPopovers, bundleID) then
+        registerPopoverDestroyWatcher(appObject, cfg, true)
+      end
+    else
     end
     altMenuBarItemAfterLaunch(appObject)
     if appHotKeyCallbacks[bundleID] ~= nil then
@@ -3480,6 +3567,10 @@ function app_applicationCallback(appName, eventType, appObject)
     if bundleID == "cn.better365.iShotProHelper" then
       unregisterInWinHotKeys("cn.better365.iShotPro")
       return
+    end
+    if popoverObserver ~= nil then
+      popoverObserver:stop()
+      popoverObserver = nil
     end
     selectInputSourceInApp(bundleID)
     doNotReloadShowingKeybings = true
@@ -3534,25 +3625,13 @@ function app_applicationCallback(appName, eventType, appObject)
         appsMenuBarItemsWatchers[bundleID][1]:stop()
       end
     else
-      if bundleID == "com.app.menubarx" then
-        if menubarXObserver ~= nil then
-          menubarXObserver:stop()
-          menubarXObserver = nil
-        end
-        if menubarXPopoverObserver ~= nil then
-          menubarXPopoverObserver:stop()
-          menubarXPopoverObserver = nil
-        end
-      elseif bundleID == "com.mathpix.snipping-tool-noappstore" then
+      if bundleID == "com.mathpix.snipping-tool-noappstore" then
         if mathpixObserver ~= nil then
           mathpixObserver:stop()
           mathpixObserver = nil
         end
-        if mathpixPopoverObserver ~= nil then
-          mathpixPopoverObserver:stop()
-          mathpixPopoverObserver = nil
-        end
       end
+      unregisterPopoverDestroyWatcher(bundleID)
       for bid, _ in pairs(runningAppHotKeys) do
         if findApplication(bid) == nil then
           unregisterRunningAppHotKeys(bid)
