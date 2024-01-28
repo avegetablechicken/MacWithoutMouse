@@ -814,6 +814,7 @@ function localizedString(str, bundleID, params)
       end
       if locale == nil then
         appLocaleDir[bundleID][appLocale] = false
+        appLocaleMap[bundleID][appLocale] = nil
         return nil
       end
     end
@@ -1113,6 +1114,7 @@ function delocalizedMenuItemString(str, bundleID, params)
     end
     if locale == nil then
       menuItemLocaleDir[bundleID][appLocale] = false
+      menuItemLocaleMap[bundleID][appLocale] = nil
       return nil
     end
   end
