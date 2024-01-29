@@ -3129,10 +3129,10 @@ local function processAppWithNoWindows(appObject, quit)
   end
 end
 
-local appPopoverObservers = {}
-local popoverObserver
-local function registerPopoverDestroyWatcher(appObject, windowFilter, quit)
-  local observer = appPopoverObservers[appObject:bundleID()]
+local appPseudoWindowObservers = {}
+local pseudoWindowObserver
+local function registerPseudoWindowDestroyWatcher(appObject, roles, windowFilter, quit)
+  local observer = appPseudoWindowObservers[appObject:bundleID()]
   local appUIObj = hs.axuielement.applicationElement(appObject)
   if observer ~= nil then observer:start() return end
   observer = hs.axuielement.observer.new(appObject:pid())
@@ -3143,19 +3143,21 @@ local function registerPopoverDestroyWatcher(appObject, windowFilter, quit)
   if windowFilter ~= nil then
     windowFilter = hs.window.filter.new(false):allowApp(appObject:name(), windowFilter)
   end
+  local criterion = function(element) return hs.fnutils.contains(roles, element.AXRole) end
+  local params = { count = 1, depth = 2 }
   local observerCallback = function()
     appUIObj:elementSearch(function(msg, results, count)
       if count > 0 then
-        if popoverObserver ~= nil then
-          popoverObserver:stop()
-          popoverObserver = nil
+        if pseudoWindowObserver ~= nil then
+          pseudoWindowObserver:stop()
+          pseudoWindowObserver = nil
         end
-        popoverObserver = hs.axuielement.observer.new(appObject:pid())
-        popoverObserver:addWatcher(
+        pseudoWindowObserver = hs.axuielement.observer.new(appObject:pid())
+        pseudoWindowObserver:addWatcher(
           results[1],
           hs.axuielement.observer.notifications.uIElementDestroyed
         )
-        local popoverObserverCallback = function()
+        local pseudoWindowObserverCallback = function()
           appUIObj:elementSearch(function (newMsg, newResults, newCount)
             if newCount == 0 then
               local windows = appObject:visibleWindows()
@@ -3173,34 +3175,28 @@ local function registerPopoverDestroyWatcher(appObject, windowFilter, quit)
                 else
                   appObject:hide()
                 end
-                popoverObserver:stop()
-                popoverObserver = nil
+                pseudoWindowObserver:stop()
+                pseudoWindowObserver = nil
               end
             end
           end,
-          function(element)
-            return element.AXRole == "AXPopover"
-          end,
-          { count = 1, depth = 2 })
+          criterion, params)
         end
-        popoverObserver:callback(popoverObserverCallback)
-        popoverObserver:start()
+        pseudoWindowObserver:callback(pseudoWindowObserverCallback)
+        pseudoWindowObserver:start()
       end
     end,
-    function(element)
-      return element.AXRole == "AXPopover"
-    end,
-    { count = 1, depth = 2 })
+    criterion, params)
   end
   observer:callback(observerCallback)
   observer:start()
-  appPopoverObservers[appObject:bundleID()] = observer
+  appPseudoWindowObservers[appObject:bundleID()] = observer
 end
 
-local function unregisterPopoverDestroyWatcher(bundleID)
-  if appPopoverObservers[bundleID] then
-    appPopoverObservers[bundleID]:stop()
-    appPopoverObservers[bundleID] = nil
+local function unregisterPseudoWindowDestroyWatcher(bundleID)
+  if appPseudoWindowObservers[bundleID] then
+    appPseudoWindowObservers[bundleID]:stop()
+    appPseudoWindowObservers[bundleID] = nil
   end
 end
 
@@ -3208,17 +3204,24 @@ local appsAutoHideWithNoWindowsLoaded = applicationConfigs.autoHideWithNoWindow
 local appsAutoQuitWithNoWindowsLoaded = applicationConfigs.autoQuitWithNoWindow
 local appsAutoHideWithNoWindows = {}
 local appsAutoQuitWithNoWindows = {}
-local appsAutoHideWithNoPopovers = {}
-local appsAutoQuitWithNoPopovers = {}
+local appsAutoHideWithNoPseudoWindows = {}
+local appsAutoQuitWithNoPseudoWindows = {}
 for _, item in ipairs(appsAutoHideWithNoWindowsLoaded or {}) do
   if type(item) == 'string' then
     appsAutoHideWithNoWindows[item] = true
   else
     for k, v in pairs(item) do
       appsAutoHideWithNoWindows[k] = v
-      if v.allowPopover then
-        table.insert(appsAutoHideWithNoPopovers, k)
-        appsAutoHideWithNoWindows[k].allowPopover = nil
+      if v.allowPopover or v.allowSheet then
+        appsAutoHideWithNoPseudoWindows[k] = {}
+        if v.allowPopover then
+          table.insert(appsAutoHideWithNoPseudoWindows[k], "AXPopover")
+          appsAutoHideWithNoWindows[k].allowPopover = nil
+        end
+        if v.allowSheet then
+          table.insert(appsAutoHideWithNoPseudoWindows[k], "AXSheet")
+          appsAutoHideWithNoWindows[k].allowSheet = nil
+        end
       end
     end
   end
@@ -3229,9 +3232,16 @@ for _, item in ipairs(appsAutoQuitWithNoWindowsLoaded or {}) do
   else
     for k, v in pairs(item) do
       appsAutoQuitWithNoWindows[k] = v
-      if v.allowPopover then
-        table.insert(appsAutoQuitWithNoPopovers, k)
-        appsAutoQuitWithNoWindows[k].allowPopover = nil
+      if v.allowPopover or v.allowSheet then
+        appsAutoQuitWithNoPseudoWindows[k] = {}
+        if v.allowPopover then
+          table.insert(appsAutoQuitWithNoPseudoWindows[k], "AXPopover")
+          appsAutoQuitWithNoWindows[k].allowPopover = nil
+        end
+        if v.allowSheet then
+          table.insert(appsAutoQuitWithNoPseudoWindows[k], "AXSheet")
+          appsAutoQuitWithNoWindows[k].allowSheet = nil
+        end
       end
     end
   end
@@ -3264,16 +3274,16 @@ windowFilterAutoQuit:subscribe(hs.window.filter.windowDestroyed,
       processAppWithNoWindows(winObj:application(), true)
   end)
 
-for _, bundleID in ipairs(appsAutoHideWithNoPopovers) do
+for bundleID, rules in pairs(appsAutoHideWithNoPseudoWindows) do
   if findApplication(bundleID) then
-    registerPopoverDestroyWatcher(findApplication(
-        bundleID), appsAutoHideWithNoWindows[bundleID], false)
+    registerPseudoWindowDestroyWatcher(findApplication(
+        bundleID), rules, appsAutoHideWithNoWindows[bundleID], false)
   end
 end
-for _, bundleID in ipairs(appsAutoQuitWithNoPopovers) do
+for bundleID, rules in pairs(appsAutoQuitWithNoPseudoWindows) do
   if findApplication(bundleID) then
-    registerPopoverDestroyWatcher(
-          findApplication(bundleID), appsAutoQuitWithNoWindows[bundleID], true)
+    registerPseudoWindowDestroyWatcher(
+          findApplication(bundleID), rules, appsAutoQuitWithNoWindows[bundleID], true)
   end
 end
 
@@ -3547,14 +3557,16 @@ function app_applicationCallback(appName, eventType, appObject)
     if appsAutoHideWithNoWindows[bundleID] then
       local cfg = appsAutoHideWithNoWindows[bundleID]
       windowFilterAutoHide:setAppFilter(appName, cfg)
-      if hs.fnutils.contains(appsAutoHideWithNoPopovers, bundleID) then
-        registerPopoverDestroyWatcher(appObject, cfg, false)
+      local rules = appsAutoHideWithNoPseudoWindows[bundleID]
+      if rules then
+        registerPseudoWindowDestroyWatcher(appObject, rules, cfg, false)
       end
     elseif appsAutoQuitWithNoWindows[bundleID] then
       local cfg = appsAutoQuitWithNoWindows[bundleID]
       windowFilterAutoQuit:setAppFilter(appName, cfg)
-      if hs.fnutils.contains(appsAutoQuitWithNoPopovers, bundleID) then
-        registerPopoverDestroyWatcher(appObject, cfg, true)
+      local rules = appsAutoQuitWithNoPseudoWindows[bundleID]
+      if rules then
+        registerPseudoWindowDestroyWatcher(appObject, rules, cfg, true)
       end
     else
     end
@@ -3568,9 +3580,9 @@ function app_applicationCallback(appName, eventType, appObject)
       unregisterInWinHotKeys("cn.better365.iShotPro")
       return
     end
-    if popoverObserver ~= nil then
-      popoverObserver:stop()
-      popoverObserver = nil
+    if pseudoWindowObserver ~= nil then
+      pseudoWindowObserver:stop()
+      pseudoWindowObserver = nil
     end
     selectInputSourceInApp(bundleID)
     doNotReloadShowingKeybings = true
@@ -3631,7 +3643,7 @@ function app_applicationCallback(appName, eventType, appObject)
           mathpixObserver = nil
         end
       end
-      unregisterPopoverDestroyWatcher(bundleID)
+      unregisterPseudoWindowDestroyWatcher(bundleID)
       for bid, _ in pairs(runningAppHotKeys) do
         if findApplication(bid) == nil then
           unregisterRunningAppHotKeys(bid)
