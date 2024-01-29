@@ -3398,17 +3398,17 @@ remoteDesktopModifierTapper = hs.eventtap.new({hs.eventtap.event.types.flagsChan
 function(ev)
   local evFlags =	ev:getFlags()
   local appObject = hs.application.frontmostApplication()
-  local winObj = appObject:focusedWindow()
   local rules = remoteDesktopsMappingModifiers[appObject:bundleID()]
   if rules == nil then return false end
+  local winObj = appObject:focusedWindow()
   for _, r in ipairs(rules) do
     local valid = false
     if r.condition == nil then
       valid = true
     else
-      if appObject:focusedWindow() == nil then
+      if winObj == nil then
         valid = r.condition.noWindow == true
-      elseif appObject:focusedWindow():title() == "" then
+      elseif winObj:title() == "" then
         valid = r.condition.noTitle == true
       elseif r.condition.windowFilter ~= nil then
         local wFilter = hs.window.filter.new(false):setAppFilter(appObject:name(), r.condition.windowFilter)
