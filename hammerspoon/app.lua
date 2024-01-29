@@ -3397,9 +3397,8 @@ end
 local function remoteDesktopWindowFilter(appObject)
   local bundleID = appObject:bundleID()
   local rules = remoteDesktopsMappingModifiers[bundleID]
-  if rules == nil then return false end
   local winObj = appObject:focusedWindow()
-  for _, r in ipairs(rules) do
+  for _, r in ipairs(rules or {}) do
     local valid = false
     if r.condition == nil then
       valid = true
@@ -3466,6 +3465,9 @@ function(ev)
     else
       justModifiedRemoteDesktopModifiers = false
     end
+  elseif hs.application.frontmostApplication():bundleID() == "com.microsoft.rdc.macos" then
+    hotkeySuspended = true
+    hotkeySuspendedByRemoteDesktop = true
   end
   return false
 end)
@@ -3661,6 +3663,10 @@ function app_applicationCallback(appName, eventType, appObject)
     end
   elseif eventType == hs.application.watcher.deactivated then
     if appName ~= nil then
+      if bundleID == "com.microsoft.rdc.macos" and hotkeySuspendedByRemoteDesktop then
+        hotkeySuspended = false
+        hotkeySuspendedByRemoteDesktop = false
+      end
       unregisterInAppHotKeys(bundleID, eventType)
       unregisterInWinHotKeys(bundleID)
       if appsMenuBarItemsWatchers[bundleID] ~= nil then
