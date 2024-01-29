@@ -1177,6 +1177,12 @@
         "notActivateApp": true
       }
     },
+    "com.tencent.LemonMonitor": {
+      "closeWindow": {
+        "mods": "",
+        "key": "Escape"
+      }
+    },
     "com.jetbrains.CLion": {
       "newProject": {
         "mods": "command",

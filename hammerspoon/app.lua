@@ -3338,6 +3338,52 @@ if mathpixApp ~= nil then
   watchForMathpixPopoverWindow(mathpixApp)
 end
 
+local function watchForLemonMonitorWindow(appObject)
+  local spec = get(keybindingConfigs.hotkeys, "com.tencent.LemonMonitor", "closeWindow")
+      or get(appHotKeyCallbacks, "com.tencent.LemonMonitor", "closeWindow")
+  if spec == nil then return end
+  local appUIObj = hs.axuielement.applicationElement(appObject)
+  lemonMonitorObserver = hs.axuielement.observer.new(appObject:pid())
+  lemonMonitorObserver:addWatcher(
+    appUIObj,
+    hs.axuielement.observer.notifications.focusedWindowChanged
+  )
+  lemonMonitorObserverCallback = function(observer, element)
+    if element.AXRole == "AXWindow" then
+      if lemonMonitorClose ~= nil then
+        lemonMonitorClose:delete()
+        lemonMonitorClose = nil
+      end
+      lemonMonitorClose = bindSpecSuspend(spec, "Close Window", function()
+        leftClickAndRestore({ x = element.AXPosition.x + element.AXSize.w/2,
+                              y = element.AXPosition.y })
+        lemonMonitorClose:delete()
+        lemonMonitorClose = nil
+      end)
+      lemonMonitorWindowObserver = hs.axuielement.observer.new(appObject:pid())
+      lemonMonitorWindowObserver:addWatcher(
+        element,
+        hs.axuielement.observer.notifications.uIElementDestroyed
+      )
+      lemonMonitorWindowObserver:callback(function()
+        if lemonMonitorClose ~= nil then
+          lemonMonitorClose:delete()
+          lemonMonitorClose = nil
+        end
+        lemonMonitorWindowObserver:stop()
+        lemonMonitorWindowObserver = nil
+      end)
+      lemonMonitorWindowObserver:start()
+    end
+  end
+  lemonMonitorObserver:callback(lemonMonitorObserverCallback)
+  lemonMonitorObserver:start()
+end
+local lemonMonitorApp = findApplication("com.tencent.LemonMonitor")
+if lemonMonitorApp ~= nil then
+  watchForLemonMonitorWindow(lemonMonitorApp)
+end
+
 barrierWindowFilter = hs.window.filter.new(false):allowApp("Barrier"):subscribe(
   hs.window.filter.windowCreated, function(winObj) winObj:focus() end
 )
@@ -3585,6 +3631,8 @@ function app_applicationCallback(appName, eventType, appObject)
       selectMenuItem(appObject, { "File", "New Finder Window" })
     elseif bundleID == "com.mathpix.snipping-tool-noappstore" then
       watchForMathpixPopoverWindow(appObject)
+    elseif bundleID == "com.tencent.LemonMonitor" then
+      watchForLemonMonitorWindow(appObject)
     end
     if appsAutoHideWithNoWindows[bundleID] then
       local cfg = appsAutoHideWithNoWindows[bundleID]
@@ -3677,6 +3725,11 @@ function app_applicationCallback(appName, eventType, appObject)
         if mathpixObserver ~= nil then
           mathpixObserver:stop()
           mathpixObserver = nil
+        end
+      elseif bundleID == "com.tencent.LemonMonitor" then
+        if lemonMonitorObserver ~= nil then
+          lemonMonitorObserver:stop()
+          lemonMonitorObserver = nil
         end
       end
       unregisterPseudoWindowDestroyWatcher(bundleID)
