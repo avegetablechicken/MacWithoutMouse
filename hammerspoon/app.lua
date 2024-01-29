@@ -3393,12 +3393,10 @@ for bid, rules in pairs(remoteDesktopsMappingModifiers) do
     r.map = newMap
   end
 end
-local justModifiedRemoteDesktopModifiers = false
-remoteDesktopModifierTapper = hs.eventtap.new({hs.eventtap.event.types.flagsChanged, hs.eventtap.event.types.keyDown, hs.eventtap.event.types.keyUp},
-function(ev)
-  local evFlags =	ev:getFlags()
-  local appObject = hs.application.frontmostApplication()
-  local rules = remoteDesktopsMappingModifiers[appObject:bundleID()]
+
+local function remoteDesktopWindowFilter(appObject)
+  local bundleID = appObject:bundleID()
+  local rules = remoteDesktopsMappingModifiers[bundleID]
   if rules == nil then return false end
   local winObj = appObject:focusedWindow()
   for _, r in ipairs(rules) do
@@ -3410,21 +3408,28 @@ function(ev)
         valid = r.condition.noWindow == true
       elseif r.condition.windowFilter ~= nil then
         local filterRules = r.condition.windowFilter
-        if filterRules.allowSheet and appObject:focusedWindow():role() == "AXSheet" then
+        if filterRules.allowSheet and winObj:role() == "AXSheet" then
           valid = true
-        elseif filterRules.allowPopover and appObject:focusedWindow():role() == "AXPopover" then
+        elseif filterRules.allowPopover and winObj:role() == "AXPopover" then
           valid = true
         else
           filterRules = hs.fnutils.copy(filterRules)
           filterRules.allowSheet = nil
           filterRules.allowPopover = nil
           local wFilter = hs.window.filter.new(false):setAppFilter(appObject:name(), filterRules)
-          if wFilter:isWindowAllowed(appObject:focusedWindow()) then
+          if wFilter:isWindowAllowed(winObj) then
             valid = true
-          elseif appObject:bundleID() == "com.realvnc.vncviewer" then
-            local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
+          elseif bundleID == "com.realvnc.vncviewer" then
+            local winUIObj = hs.axuielement.windowElement(winObj)
             for _, bt in ipairs(winUIObj:childrenWithRole("AXButton")) do
               if bt.AXTitle == "Stop" then
+                valid = true
+              end
+            end
+          elseif bundleID == "com.microsoft.rdc.macos" then
+            local winUIObj = hs.axuielement.windowElement(winObj)
+            for _, bt in ipairs(winUIObj:childrenWithRole("AXButton")) do
+              if bt.AXTitle == "Cancel" then
                 valid = true
               end
             end
@@ -3433,23 +3438,33 @@ function(ev)
       end
     end
     if valid then
-      if not justModifiedRemoteDesktopModifiers then
-        justModifiedRemoteDesktopModifiers = true
-        local newEvFlags = {}
-        for k, v in pairs(evFlags) do
-          if r.map[k] == nil then
-            newEvFlags[k] = true
-          else
-            newEvFlags[r.map[k]] = true
-          end
+      return r
+    end
+  end
+  return nil
+end
+local justModifiedRemoteDesktopModifiers = false
+remoteDesktopModifierTapper = hs.eventtap.new({
+  hs.eventtap.event.types.flagsChanged, hs.eventtap.event.types.keyDown, hs.eventtap.event.types.keyUp},
+function(ev)
+  local rule = remoteDesktopWindowFilter(hs.application.frontmostApplication())
+  if rule ~= nil then
+    if not justModifiedRemoteDesktopModifiers then
+      justModifiedRemoteDesktopModifiers = true
+      local evFlags =	ev:getFlags()
+      local newEvFlags = {}
+      for k, v in pairs(evFlags) do
+        if rule.map[k] == nil then
+          newEvFlags[k] = true
+        else
+          newEvFlags[rule.map[k]] = true
         end
-        ev:setFlags(newEvFlags)
-        ev:post()
-        return true
-      else
-        justModifiedRemoteDesktopModifiers = false
       end
-      break
+      ev:setFlags(newEvFlags)
+      ev:post()
+      return true
+    else
+      justModifiedRemoteDesktopModifiers = false
     end
   end
   return false
