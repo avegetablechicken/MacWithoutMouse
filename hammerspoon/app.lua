@@ -3409,9 +3409,19 @@ function(ev)
       if winObj == nil then
         valid = r.condition.noWindow == true
       elseif r.condition.windowFilter ~= nil then
-        local wFilter = hs.window.filter.new(false):setAppFilter(appObject:name(), r.condition.windowFilter)
-        if wFilter:isWindowAllowed(appObject:focusedWindow()) then
+        local filterRules = r.condition.windowFilter
+        if filterRules.allowSheet and appObject:focusedWindow():role() == "AXSheet" then
           valid = true
+        elseif filterRules.allowPopover and appObject:focusedWindow():role() == "AXPopover" then
+          valid = true
+        else
+          filterRules = hs.fnutils.copy(filterRules)
+          filterRules.allowSheet = nil
+          filterRules.allowPopover = nil
+          local wFilter = hs.window.filter.new(false):setAppFilter(appObject:name(), filterRules)
+          if wFilter:isWindowAllowed(appObject:focusedWindow()) then
+            valid = true
+          end
         end
       end
     end
