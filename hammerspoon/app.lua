@@ -3290,6 +3290,8 @@ end
 local function watchForMathpixPopoverWindow(appObject)
   local spec = get(keybindingConfigs.hotkeys,
       "com.mathpix.snipping-tool-noappstore", "hidePopover")
+      or get(appHotKeyCallbacks,
+      "com.mathpix.snipping-tool-noappstore", "hidePopover")
   if spec == nil then return end
   local appUIObj = hs.axuielement.applicationElement(appObject)
   mathpixObserver = hs.axuielement.observer.new(appObject:pid())
@@ -3304,7 +3306,7 @@ local function watchForMathpixPopoverWindow(appObject)
           mathpixPopoverHide:delete()
           mathpixPopoverHide = nil
         end
-        mathpixPopoverHide = bindSpecSuspend(spec, "Hide Popover", function()
+        mathpixPopoverHide = bindSpecSuspend(spec, spec.message or "Hide Popover", function()
           clickRightMenuBarItem(appObject:bundleID())
           mathpixPopoverHide:delete()
           mathpixPopoverHide = nil
@@ -3354,7 +3356,7 @@ local function watchForLemonMonitorWindow(appObject)
         lemonMonitorClose:delete()
         lemonMonitorClose = nil
       end
-      lemonMonitorClose = bindSpecSuspend(spec, "Close Window", function()
+      lemonMonitorClose = bindSpecSuspend(spec, spec.message or "Close Window", function()
         leftClickAndRestore({ x = element.AXPosition.x + element.AXSize.w/2,
                               y = element.AXPosition.y })
         lemonMonitorClose:delete()
