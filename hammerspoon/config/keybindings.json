@@ -1252,9 +1252,9 @@
         },
         "condition": {
           "noWindow": true,
-          "noTitle": true,
           "windowFilter": {
             "allowTitles": [
+              "^$",
               "^VNC Viewer$",
               "^RealVNC Viewer$",
               "^Application Preferences$",
@@ -1272,9 +1272,9 @@
         },
         "condition": {
           "noWindow": true,
-          "noTitle": true,
           "windowFilter": {
             "allowTitles":  [
+              "^$",
               "^Microsoft Remote Desktop$",
               "^Preferences$"
             ]

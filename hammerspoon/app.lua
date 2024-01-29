@@ -3408,8 +3408,6 @@ function(ev)
     else
       if winObj == nil then
         valid = r.condition.noWindow == true
-      elseif winObj:title() == "" then
-        valid = r.condition.noTitle == true
       elseif r.condition.windowFilter ~= nil then
         local wFilter = hs.window.filter.new(false):setAppFilter(appObject:name(), r.condition.windowFilter)
         if wFilter:isWindowAllowed(appObject:focusedWindow()) then
