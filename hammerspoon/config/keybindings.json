@@ -1271,6 +1271,7 @@
         "condition": {
           "noWindow": true,
           "windowFilter": {
+            "allowSheet": true,
             "allowTitles":  [
               "^$",
               "^Microsoft Remote Desktop$",
