@@ -3421,6 +3421,13 @@ function(ev)
           local wFilter = hs.window.filter.new(false):setAppFilter(appObject:name(), filterRules)
           if wFilter:isWindowAllowed(appObject:focusedWindow()) then
             valid = true
+          elseif appObject:bundleID() == "com.realvnc.vncviewer" then
+            local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
+            for _, bt in ipairs(winUIObj:childrenWithRole("AXButton")) do
+              if bt.AXTitle == "Stop" then
+                valid = true
+              end
+            end
           end
         end
       end

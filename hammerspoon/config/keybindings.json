@@ -1253,12 +1253,10 @@
         "condition": {
           "noWindow": true,
           "windowFilter": {
-            "allowTitles": [
-              "^$",
-              "^VNC Viewer$",
-              "^RealVNC Viewer$",
-              "^Application Preferences$",
-              "Properties$"
+            "allowSheet": true,
+            "rejectTitles": [
+              "%) %- VNC Viewer$",
+              "%) %- RealVNC Viewer$"
             ]
           }
         }
