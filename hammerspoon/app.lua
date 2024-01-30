@@ -3466,18 +3466,25 @@ local function remoteDesktopWindowFilter(appObject)
           local wFilter = hs.window.filter.new(false):setAppFilter(appObject:name(), filterRules)
           if wFilter:isWindowAllowed(winObj) then
             valid = true
-          elseif bundleID == "com.realvnc.vncviewer" then
-            local winUIObj = hs.axuielement.windowElement(winObj)
-            for _, bt in ipairs(winUIObj:childrenWithRole("AXButton")) do
-              if bt.AXTitle == "Stop" then
-                valid = true
+          end
+          if bundleID == "com.realvnc.vncviewer" then
+            if (r.type == 'restore' and not valid) or (r.type ~= 'restore' and valid) then
+              local winUIObj = hs.axuielement.windowElement(winObj)
+              for _, bt in ipairs(winUIObj:childrenWithRole("AXButton")) do
+                if bt.AXTitle == "Stop" then
+                  valid = not valid
+                  break
+                end
               end
             end
           elseif bundleID == "com.microsoft.rdc.macos" then
-            local winUIObj = hs.axuielement.windowElement(winObj)
-            for _, bt in ipairs(winUIObj:childrenWithRole("AXButton")) do
-              if bt.AXTitle == "Cancel" then
-                valid = true
+            if (r.type == 'restore' and not valid) or (r.type ~= 'restore' and valid) then
+              local winUIObj = hs.axuielement.windowElement(winObj)
+              for _, bt in ipairs(winUIObj:childrenWithRole("AXButton")) do
+                if bt.AXTitle == "Cancel" then
+                  valid = not valid
+                  break
+                end
               end
             end
           end

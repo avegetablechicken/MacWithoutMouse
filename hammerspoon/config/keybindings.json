@@ -1252,6 +1252,7 @@
   "remap": {
     "com.realvnc.vncviewer": [
       {
+        "type": "restore",
         "map": {
           "command": "control",
           "control": "command"
@@ -1275,10 +1276,8 @@
           "control":  "command"
         },
         "condition": {
-          "noWindow": true,
           "windowFilter": {
-            "allowSheet": true,
-            "allowTitles":  [
+            "rejectTitles":  [
               "^$",
               "^Microsoft Remote Desktop$",
               "^Preferences$"
