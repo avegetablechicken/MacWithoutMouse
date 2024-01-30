@@ -3520,9 +3520,6 @@ function(ev)
     else
       justModifiedRemoteDesktopModifiers = false
     end
-  elseif hs.application.frontmostApplication():bundleID() == "com.microsoft.rdc.macos" then
-    hotkeySuspended = true
-    hotkeySuspendedByRemoteDesktop = true
   end
   return false
 end)
@@ -3531,6 +3528,50 @@ if remoteDesktopsMappingModifiers[hs.application.frontmostApplication():bundleID
   remoteDesktopModifierTapper:start()
 end
 
+function microsoftRemoteDesktopCallback(appObject)
+  local filterRules = {
+    rejectTitles = {
+      "^$",
+      "^Microsoft Remote Desktop$",
+      "^Preferences$"
+    }
+  }
+  local winObj = appObject:focusedWindow()
+  if winObj ~= nil then
+    local windowFilter = hs.window.filter.new(false):setAppFilter(appObject:name(), filterRules)
+    if windowFilter:isWindowAllowed(winObj) then
+      local winUIObj = hs.axuielement.windowElement(winObj)
+      local cancel = hs.fnutils.filter(winUIObj:childrenWithRole("AXButton"), function(child)
+        return child.AXTitle == "Cancel"
+      end)
+      if #cancel == 0 then
+        hotkeySuspendedByRemoteDesktop = not hotkeySuspended
+        hotkeySuspended = true
+        return
+      end
+    end
+  end
+  if hotkeySuspendedByRemoteDesktop ~= nil then
+    hotkeySuspended = not hotkeySuspendedByRemoteDesktop
+    hotkeySuspendedByRemoteDesktop = nil
+  end
+end
+
+local function watchForMicrosoftRemoteDesktopWindow(appObject)
+  local appUIObj = hs.axuielement.applicationElement(appObject)
+  microsoftRemoteDesktopObserver = hs.axuielement.observer.new(appObject:pid())
+  microsoftRemoteDesktopObserver:addWatcher(
+    appUIObj,
+    hs.axuielement.observer.notifications.focusedWindowChanged
+  )
+  microsoftRemoteDesktopObserver:callback(
+      hs.fnutils.partial(microsoftRemoteDesktopCallback, appObject))
+  microsoftRemoteDesktopObserver:start()
+end
+microsoftRemoteDesktopApp = findApplication("com.microsoft.rdc.macos")
+if microsoftRemoteDesktopApp ~= nil then
+  watchForMicrosoftRemoteDesktopWindow(microsoftRemoteDesktopApp)
+end
 
 -- # callbacks
 
@@ -3668,6 +3709,9 @@ function app_applicationCallback(appName, eventType, appObject)
     if bundleID == "cn.better365.iShotProHelper" then
       unregisterInWinHotKeys("cn.better365.iShotPro")
       return
+    elseif bundleID == "com.microsoft.rdc.macos" then
+      microsoftRemoteDesktopCallback(appObject)
+      watchForMicrosoftRemoteDesktopWindow(appObject)
     end
     if pseudoWindowObserver ~= nil then
       pseudoWindowObserver:stop()
@@ -3720,9 +3764,15 @@ function app_applicationCallback(appName, eventType, appObject)
     end
   elseif eventType == hs.application.watcher.deactivated then
     if appName ~= nil then
-      if bundleID == "com.microsoft.rdc.macos" and hotkeySuspendedByRemoteDesktop then
-        hotkeySuspended = false
-        hotkeySuspendedByRemoteDesktop = false
+      if bundleID == "com.microsoft.rdc.macos" then
+        if microsoftRemoteDesktopObserver ~= nil then
+          microsoftRemoteDesktopObserver:stop()
+          microsoftRemoteDesktopObserver = nil
+        end
+        if hotkeySuspendedByRemoteDesktop ~= nil then
+          hotkeySuspended = not hotkeySuspendedByRemoteDesktop
+          hotkeySuspendedByRemoteDesktop = nil
+        end
       end
       unregisterInAppHotKeys(bundleID, eventType)
       unregisterInWinHotKeys(bundleID)
