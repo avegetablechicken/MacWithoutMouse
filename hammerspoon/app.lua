@@ -3763,30 +3763,31 @@ function app_applicationCallback(appName, eventType, appObject)
       end
     end
   elseif eventType == hs.application.watcher.deactivated then
-    if appName ~= nil then
-      if bundleID == "com.microsoft.rdc.macos" then
-        if microsoftRemoteDesktopObserver ~= nil then
-          microsoftRemoteDesktopObserver:stop()
-          microsoftRemoteDesktopObserver = nil
-        end
-        if hotkeySuspendedByRemoteDesktop ~= nil then
-          hotkeySuspended = not hotkeySuspendedByRemoteDesktop
-          hotkeySuspendedByRemoteDesktop = nil
-        end
+    if microsoftRemoteDesktopObserver ~= nil then
+      if bundleID == "com.microsoft.rdc.macos"
+          or findApplication("com.microsoft.rdc.macos") == nil then
+        microsoftRemoteDesktopObserver:stop()
+        microsoftRemoteDesktopObserver = nil
       end
+      if hotkeySuspendedByRemoteDesktop ~= nil then
+        hotkeySuspended = not hotkeySuspendedByRemoteDesktop
+        hotkeySuspendedByRemoteDesktop = nil
+      end
+    end
+    if appName ~= nil then
       unregisterInAppHotKeys(bundleID, eventType)
       unregisterInWinHotKeys(bundleID)
       if appsMenuBarItemsWatchers[bundleID] ~= nil then
         appsMenuBarItemsWatchers[bundleID][1]:stop()
       end
     else
-      if bundleID == "com.mathpix.snipping-tool-noappstore" then
-        if mathpixObserver ~= nil then
+      if mathpixObserver ~= nil then
+        if findApplication("com.mathpix.snipping-tool-noappstore") == nil then
           mathpixObserver:stop()
           mathpixObserver = nil
         end
-      elseif bundleID == "com.tencent.LemonMonitor" then
-        if lemonMonitorObserver ~= nil then
+      elseif lemonMonitorObserver ~= nil then
+        if findApplication("com.tencent.LemonMonitor") then
           lemonMonitorObserver:stop()
           lemonMonitorObserver = nil
         end
