@@ -3200,13 +3200,6 @@ local function registerPseudoWindowDestroyWatcher(appObject, roles, windowFilter
   appPseudoWindowObservers[appObject:bundleID()] = observer
 end
 
-local function unregisterPseudoWindowDestroyWatcher(bundleID)
-  if appPseudoWindowObservers[bundleID] then
-    appPseudoWindowObservers[bundleID]:stop()
-    appPseudoWindowObservers[bundleID] = nil
-  end
-end
-
 local appsAutoHideWithNoWindowsLoaded = applicationConfigs.autoHideWithNoWindow
 local appsAutoQuitWithNoWindowsLoaded = applicationConfigs.autoQuitWithNoWindow
 local appsAutoHideWithNoWindows = {}
@@ -3803,7 +3796,12 @@ function app_applicationCallback(appName, eventType, appObject)
           lemonMonitorObserver = nil
         end
       end
-      unregisterPseudoWindowDestroyWatcher(bundleID)
+      for bid, observer in pairs(appPseudoWindowObservers) do
+        if findApplication(bid) == nil then
+          observer:stop()
+          appPseudoWindowObservers[bid] = nil
+        end
+      end
       for bid, _ in pairs(runningAppHotKeys) do
         if findApplication(bid) == nil then
           unregisterRunningAppHotKeys(bid)
