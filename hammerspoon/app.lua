@@ -2622,13 +2622,14 @@ end
 
 -- simplify switching to previous tab
 function remapPreviousTab(bundleID)
-  local spec = get(keybindingConfigs.hotkeys.appCommon, "remapPreviousTab")
-  if spec == nil or hs.fnutils.contains(spec.excluded or {}, bundleID) then
-    return
-  end
   if remapPreviousTabHotkey then
     remapPreviousTabHotkey:delete()
     remapPreviousTabHotkey = nil
+  end
+  if bundleID == nil then return end
+  local spec = get(keybindingConfigs.hotkeys.appCommon, "remapPreviousTab")
+  if spec == nil or hs.fnutils.contains(spec.excluded or {}, bundleID) then
+    return
   end
   local appObject = hs.application.frontmostApplication()
   local menuItemPath = findMenuItemByKeyBinding(appObject, '⇧⌃', '⇥')
@@ -2656,14 +2657,15 @@ local frontmostApplication = hs.application.frontmostApplication()
 remapPreviousTab(frontmostApplication:bundleID())
 
 function registerOpenRecent(bundleID)
+  if openRecentHotkey then
+    openRecentHotkey:delete()
+    openRecentHotkey = nil
+  end
+  if bundleID == nil then return end
   local spec = get(keybindingConfigs.hotkeys.appCommon, "openRecent")
   if (get(appHotKeyCallbacks[bundleID], "openRecent") ~= nil)
       or spec == nil or hs.fnutils.contains(spec.excluded or {}, bundleID) then
     return
-  end
-  if openRecentHotkey then
-    openRecentHotkey:delete()
-    openRecentHotkey = nil
   end
   local appObject = hs.application.frontmostApplication()
   local menuItem, menuItemPath = findMenuItem(appObject, { "File",  "Open Recent" })
@@ -2724,12 +2726,6 @@ local function WPSCloseDialog(winUIObj)
 end
 
 function registerForOpenSavePanel(appObject)
-  local bundleID = "com.apple.finder"
-  if get(keybindingConfigs.hotkeys.appCommon, "confirmDelete") == nil
-      and get(keybindingConfigs.hotkeys[bundleID], "goToDownloads") == nil then
-    return
-  end
-
   if openSavePanelObserver ~= nil then
     openSavePanelObserver:stop()
     openSavePanelObserver = nil
@@ -2737,6 +2733,14 @@ function registerForOpenSavePanel(appObject)
   if openSavePanelHotkey ~= nil then
     openSavePanelHotkey:delete()
     openSavePanelHotkey = nil
+  end
+
+  if appObject:bundleID() == nil then return end
+
+  local bundleID = "com.apple.finder"
+  if get(keybindingConfigs.hotkeys.appCommon, "confirmDelete") == nil
+      and get(keybindingConfigs.hotkeys[bundleID], "goToDownloads") == nil then
+    return
   end
 
   if appObject:bundleID() == bundleID then return end
@@ -2900,16 +2904,17 @@ function delocalizeMenuBarItems(itemTitles, bundleID, localeFile)
 end
 
 function altMenuBarItem(appObject)
-  -- check whether called by window filter (possibly with delay)
-  if appObject:bundleID() ~= hs.application.frontmostApplication():bundleID() then
-    return
-  end
-
   -- delete previous hotkeys
   for _, hotkeyObject in ipairs(altMenuBarItemHotkeys) do
     hotkeyObject:delete()
   end
   altMenuBarItemHotkeys = {}
+
+  if appObject:bundleID() == nil then return end
+  -- check whether called by window filter (possibly with delay)
+  if appObject:bundleID() ~= hs.application.frontmostApplication():bundleID() then
+    return
+  end
 
   local enableIndex = get(keybindingConfigs.hotkeys.menuBarItems, "enableIndex")
   local enableLetter = get(keybindingConfigs.hotkeys.menuBarItems, "enableLetter")
@@ -3082,6 +3087,8 @@ function registerObserverForMenuBarChange(appObject)
     curAppMenuBarItemWatcher:stop()
     curAppMenuBarItemWatcher = nil
   end
+
+  if appObject:bundleID() == nil then return end
 
   if hs.fnutils.contains(appswatchMenuBarItems, appObject:bundleID()) then
     watchMenuBarItems(appObject)
@@ -3684,14 +3691,14 @@ function app_applicationCallback(appName, eventType, appObject)
     elseif bundleID == "com.tencent.LemonMonitor" then
       watchForLemonMonitorWindow(appObject)
     end
-    if appsAutoHideWithNoWindows[bundleID] then
+    if bundleID and appsAutoHideWithNoWindows[bundleID] then
       local cfg = appsAutoHideWithNoWindows[bundleID]
       windowFilterAutoHide:setAppFilter(appName, cfg)
       local rules = appsAutoHideWithNoPseudoWindows[bundleID]
       if rules then
         registerPseudoWindowDestroyWatcher(appObject, rules, cfg, false)
       end
-    elseif appsAutoQuitWithNoWindows[bundleID] then
+    elseif bundleID and appsAutoQuitWithNoWindows[bundleID] then
       local cfg = appsAutoQuitWithNoWindows[bundleID]
       windowFilterAutoQuit:setAppFilter(appName, cfg)
       local rules = appsAutoQuitWithNoPseudoWindows[bundleID]
@@ -3701,7 +3708,7 @@ function app_applicationCallback(appName, eventType, appObject)
     else
     end
     altMenuBarItemAfterLaunch(appObject)
-    if appHotKeyCallbacks[bundleID] ~= nil then
+    if bundleID and appHotKeyCallbacks[bundleID] ~= nil then
       registerWinFiltersForDaemonApp(appObject, appHotKeyCallbacks[bundleID])
     end
   elseif eventType == hs.application.watcher.activated then
@@ -3717,7 +3724,7 @@ function app_applicationCallback(appName, eventType, appObject)
       pseudoWindowObserver:stop()
       pseudoWindowObserver = nil
     end
-    selectInputSourceInApp(bundleID)
+    if bundleID then selectInputSourceInApp(bundleID) end
     doNotReloadShowingKeybings = true
     hs.timer.doAfter(3, function()
       doNotReloadShowingKeybings = false
@@ -3725,17 +3732,19 @@ function app_applicationCallback(appName, eventType, appObject)
     local timer
     timer = hs.timer.doAfter(0, function()
       timer = nil
-      local locales = applicationLocales(bundleID)
-      local appLocale = locales[1]
-      if appLocales[bundleID] ~= nil and appLocales[bundleID] ~= appLocale then
-        unregisterRunningAppHotKeys(bundleID, true)
-        unregisterInAppHotKeys(bundleID, eventType, true)
-        unregisterInWinHotKeys(bundleID, true)
+      if bundleID then
+        local locales = applicationLocales(bundleID)
+        local appLocale = locales[1]
+        if appLocales[bundleID] ~= nil and appLocales[bundleID] ~= appLocale then
+          unregisterRunningAppHotKeys(bundleID, true)
+          unregisterInAppHotKeys(bundleID, eventType, true)
+          unregisterInWinHotKeys(bundleID, true)
+        end
+        appLocales[bundleID] = appLocale
+        registerRunningAppHotKeys(bundleID, appObject)
+        registerInAppHotKeys(appName, eventType, appObject)
+        registerInWinHotKeys(appObject)
       end
-      appLocales[bundleID] = appLocale
-      registerRunningAppHotKeys(bundleID, appObject)
-      registerInAppHotKeys(appName, eventType, appObject)
-      registerInWinHotKeys(appObject)
       local timer = hs.timer.doAfter(0, function()
         timer = nil
         altMenuBarItem(appObject)
@@ -3775,10 +3784,12 @@ function app_applicationCallback(appName, eventType, appObject)
       end
     end
     if appName ~= nil then
-      unregisterInAppHotKeys(bundleID, eventType)
-      unregisterInWinHotKeys(bundleID)
-      if appsMenuBarItemsWatchers[bundleID] ~= nil then
-        appsMenuBarItemsWatchers[bundleID][1]:stop()
+      if bundleID then
+        unregisterInAppHotKeys(bundleID, eventType)
+        unregisterInWinHotKeys(bundleID)
+        if appsMenuBarItemsWatchers[bundleID] ~= nil then
+          appsMenuBarItemsWatchers[bundleID][1]:stop()
+        end
       end
     else
       if mathpixObserver ~= nil then
