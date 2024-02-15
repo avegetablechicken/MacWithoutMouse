@@ -3083,6 +3083,10 @@ function registerObserverForMenuBarChange(appObject)
     appMenuBarChangeObserver:stop()
     appMenuBarChangeObserver = nil
   end
+  if appMenuBarChangeFilter ~= nil then
+    appMenuBarChangeFilter:unsubscribeAll()
+    appMenuBarChangeFilter = nil
+  end
   if curAppMenuBarItemWatcher ~= nil then
     curAppMenuBarItemWatcher:stop()
     curAppMenuBarItemWatcher = nil
@@ -3105,13 +3109,15 @@ function registerObserverForMenuBarChange(appObject)
   )
   appMenuBarChangeObserver:callback(hs.fnutils.partial(appMenuBarChangeCallback, appObject))
   appMenuBarChangeObserver:start()
+
+  appMenuBarChangeFilter = hs.window.filter.new(frontmostApplication:name())
+      :subscribe(hs.window.filter.windowDestroyed,
+        function(winObj)
+          if winObj == nil or winObj:application() == nil then return end
+          appMenuBarChangeCallback(winObj:application())
+        end)
 end
 registerObserverForMenuBarChange(frontmostApplication)
-appMenuBarChangeFilter = hs.window.filter.new():subscribe(hs.window.filter.windowDestroyed,
-function(winObj)
-  if winObj == nil or winObj:application() == nil then return end
-  appMenuBarChangeCallback(winObj:application())
-end)
 
 local function processAppWithNoWindows(appObject, quit)
   if #appObject:visibleWindows() == 0
