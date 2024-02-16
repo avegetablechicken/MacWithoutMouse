@@ -2201,12 +2201,14 @@ local function inAppHotKeysWrapper(appObject, mods, key, func)
     func = key key = mods.key mods = mods.mods
   end
   return function()
-    if hs.window.frontmostWindow() ~= nil and appObject:focusedWindow() ~= nil
-        and hs.window.frontmostWindow():application():bundleID() ~= appObject:bundleID() then
-      selectMenuItemOrKeyStroke(hs.window.frontmostWindow():application(), mods, key)
-    elseif hs.window.frontmostWindow() ~= nil and appObject:focusedWindow() == nil
-        and windowCreatedSince[hs.window.frontmostWindow():id()] then
-      selectMenuItemOrKeyStroke(hs.window.frontmostWindow():application(), mods, key)
+    local frontWin = hs.window.frontmostWindow()
+    local frontWinApp = frontWin:application()
+    if frontWin ~= nil and appObject:focusedWindow() ~= nil
+        and frontWinApp:bundleID() ~= appObject:bundleID() then
+      hs.eventtap.keyStroke(mods, key, nil, frontWinApp)
+    elseif frontWin ~= nil and appObject:focusedWindow() == nil
+        and windowCreatedSince[frontWin:id()] then
+      hs.eventtap.keyStroke(mods, key, nil, frontWinApp)
     else
       func()
     end
