@@ -964,6 +964,11 @@ appHotKeyCallbacks = {
         ]])
         hs.mouse.absolutePosition(mousePosition)
       end
+    },
+    ["openRecent"] = {
+      message = "最近文档管理",
+      condition = checkMenuItem({ zh = { "文件", "更多历史记录..." } }),
+      fn = receiveMenuItem
     }
   },
 
