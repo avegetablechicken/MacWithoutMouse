@@ -1132,8 +1132,7 @@ appHotKeyCallbacks = {
       message = "Show Next Tab",
       repeatable = true,
       fn = function(appObject) hs.eventtap.keyStroke("⌘", "Right", nil, appObject) end
-    },
-    ["minimize"] = specialCommonHotkeyConfigs["minimize"]
+    }
   },
 
   ["com.apple.iMovieApp"] =
