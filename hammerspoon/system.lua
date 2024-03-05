@@ -1872,6 +1872,9 @@ function registerControlCenterHotKeys(panel)
 end
 
 local controlCenterPanelConfigs = keybindingConfigs.hotkeys.ControlCenterAppKeys
+if getOSVersion() > OS.Monterey then
+  controlCenterPanelConfigs["Keyboard Brightness"] = nil
+end
 local localizedControlCenter = controlCenterLocalized("Control Center")
 for panel, spec in pairs(controlCenterPanelConfigs) do
   local localizedPanel = controlCenterLocalized(panel)
