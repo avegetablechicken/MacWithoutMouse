@@ -804,21 +804,21 @@ local function registerProxyMenuImpl()
               delay 0.1
             end repeat
             reveal anchor "General_Details" of current pane
-            tell application "System Events"
-              set ntry to 0 -- resolve weird bug that the anchor cannot be activated
-              repeat until sheet 1 of ]] .. aWinFor("com.apple.systempreferences") .. [[ exists
-                if ntry = 50 then
-                  return
-                end if
-                set ntry to ntry + 1
-                delay 0.1
-              end repeat
-              key code 125
-              key code 125
-              key code 125
-              key code 125
-              key code 125
-            end tell
+          end tell
+          tell application "System Events"
+            set ntry to 0 -- resolve weird bug that the anchor cannot be activated
+            repeat until sheet 1 of ]] .. aWinFor("com.apple.systempreferences") .. [[ exists
+              if ntry = 50 then
+                return
+              end if
+              set ntry to ntry + 1
+              delay 0.1
+            end repeat
+            key code 125
+            key code 125
+            key code 125
+            key code 125
+            key code 125
           end tell
         ]])
       end
