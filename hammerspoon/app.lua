@@ -3585,6 +3585,20 @@ if microsoftRemoteDesktopApp ~= nil then
   watchForMicrosoftRemoteDesktopWindow(microsoftRemoteDesktopApp)
 end
 
+local function deactivateCloseWindowForIOSApps(appObject)
+  if hs.fs.attributes(hs.application.pathForBundleID(
+      appObject:bundleID()) .. '/WrappedBundle') ~= nil then
+    if iOSAppHotkey == nil then
+      iOSAppHotkey = newSuspend("⌘", "w", "Cancel ⌘W", function() end)
+      iOSAppHotkey.kind = HK.IN_APP
+    end
+    iOSAppHotkey:enable()
+  elseif iOSAppHotkey ~= nil then
+    iOSAppHotkey:disable()
+  end
+end
+deactivateCloseWindowForIOSApps(frontmostApplication)
+
 -- # callbacks
 
 -- application callbacks
@@ -3725,6 +3739,7 @@ function app_applicationCallback(appName, eventType, appObject)
       microsoftRemoteDesktopCallback(appObject)
       watchForMicrosoftRemoteDesktopWindow(appObject)
     end
+    deactivateCloseWindowForIOSApps(appObject)
     if pseudoWindowObserver ~= nil then
       pseudoWindowObserver:stop()
       pseudoWindowObserver = nil
