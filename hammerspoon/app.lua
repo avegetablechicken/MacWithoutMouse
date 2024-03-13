@@ -809,6 +809,25 @@ appHotKeyCallbacks = {
     }
   },
 
+  ["com.vallettaventures.Texpad"] =
+  {
+    ["recentDocuments"] = {
+      message = localizedMessage("Recent Documents"),
+      condition = checkMenuItem({ "File", "Recent Documents" }),
+      fn = function(menuItemPath, appObject)
+        showMenuItemWrapper(function()
+          appObject:selectMenuItem({menuItemPath[1]})
+          appObject:selectMenuItem(menuItemPath)
+        end)()
+      end
+    },
+    ["revealPDFInFinder"] = {
+      message = localizedMessage("Reveal PDF in Finder..."),
+      condition = checkMenuItem({ "File", "Reveal PDF in Finder..." }),
+      fn = receiveMenuItem
+    }
+  },
+
   ["abnerworks.Typora"] =
   {
     ["openFileLocation"] = {

@@ -921,6 +921,16 @@
         "key": "F"
       }
     },
+    "com.vallettaventures.Texpad": {
+      "recentDocuments": {
+        "mods": "control",
+        "key": "R"
+      },
+      "revealPDFInFinder": {
+        "mods": ["shift", "option", "command"],
+        "key": "F"
+      }
+    },
     "abnerworks.Typora": {
       "openFileLocation": {
         "mods": ["shift", "option", "command"],
