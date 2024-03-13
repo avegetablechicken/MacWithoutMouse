@@ -861,6 +861,14 @@ function localizedString(str, bundleID, params)
     if result ~= nil then goto L_END_LOCALIZED end
   end
 
+  if result == nil and
+      (string.sub(str, -3) == "..." or string.sub(str, -3) == "…") then
+    result = localizedString(string.sub(str, 1, -4), bundleID, params)
+    if result ~= nil then
+      result = result .. string.sub(str, -3)
+    end
+  end
+
   ::L_END_LOCALIZED::
   if result ~= nil then
     if hs.fs.attributes(localeTmpDir) == nil then
