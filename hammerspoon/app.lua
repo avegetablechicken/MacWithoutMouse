@@ -577,8 +577,12 @@ appHotKeyCallbacks = {
     },
     ["recentFolders"] = {
       message = localizedMessage("Recent Folders"),
-      fn = function(appObject)
-        selectMenuItem(appObject, { "Go", "Recent Folders" }, true)
+      condition = checkMenuItem({ "Go", "Recent Folders" }),
+      fn = function(menuItemPath, appObject)
+        showMenuItemWrapper(function()
+          appObject:selectMenuItem({ menuItemPath[1] })
+          appObject:selectMenuItem(menuItemPath)
+        end)()
       end
     },
     ["showPrevTab"] = {
