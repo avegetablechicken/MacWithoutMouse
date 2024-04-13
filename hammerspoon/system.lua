@@ -1285,7 +1285,16 @@ function registerControlCenterHotKeys(panel)
       function()
         hs.osascript.applescript([[
           tell application "System Events"
-            repeat with cb in checkboxes of window 1 of application process "ControlCenter"
+            if exists checkboxes of window 1 of application process "ControlCenter" then
+              repeat with cb in checkboxes of window 1 of application process "ControlCenter"
+                if (attribute "AXIdentifier" of cb exists) ¬
+                    and (value of attribute "AXIdentifier" of cb contains "-header") then
+                  perform action 1 of cb
+                end if
+              end repeat
+              return
+            end if
+            repeat with cb in checkboxes of ]] .. pane .. [[ of application process "ControlCenter"
               if (attribute "AXIdentifier" of cb exists) ¬
                   and (value of attribute "AXIdentifier" of cb contains "-header") then
                 perform action 1 of cb
