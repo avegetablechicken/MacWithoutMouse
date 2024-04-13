@@ -1407,6 +1407,9 @@ function registerControlCenterHotKeys(panel)
         repeat until cnt >= 10
           if exists scroll area 1 of ]] .. pane .. [[ of application process "ControlCenter" then
             set sa to scroll area 1 of ]] .. pane .. [[ of application process "ControlCenter"
+            if value of attribute "AXRole" of ui element 1 of sa is "AXOpaqueProviderGroup" then
+              set sa to ui element 1 of sa
+            end if
             set uiitems to the value of attribute "AXChildren" of sa
             repeat with ele in (UI elements of sa)
               if value of attribute "AXRole" of ele is "AXDisclosureTriangle" then
@@ -1424,9 +1427,12 @@ function registerControlCenterHotKeys(panel)
         hs.osascript.applescript([[
           tell application "System Events"
             set sa to scroll area 1 of ]] .. pane .. [[ of application process "ControlCenter"
+            if value of attribute "AXRole" of ui element 1 of sa is "AXOpaqueProviderGroup" then
+              set sa to ui element 1 of sa
+            end if
             repeat with ele in (UI elements of sa)
               if value of attribute "AXRole" of ele is "AXDisclosureTriangle" then
-                perform action 1 of ele
+                perform last action of ele
                 exit repeat
               end if
             end repeat
@@ -1486,6 +1492,9 @@ function registerControlCenterHotKeys(panel)
       local ok, result = hs.osascript.applescript([[
         tell application "System Events"
           set sa to scroll area 1 of ]] .. pane .. [[ of application process "ControlCenter"
+          if value of attribute "AXRole" of ui element 1 of sa is "AXOpaqueProviderGroup" then
+            set sa to ui element 1 of sa
+          end if
           return ]] .. cbField .. [[ of (every checkbox of sa)
         end tell
       ]])
@@ -1512,6 +1521,9 @@ function registerControlCenterHotKeys(panel)
             local ok, selected = hs.osascript.applescript([[
               tell application "System Events"
                 set sa to scroll area 1 of ]] .. pane .. [[ of application process "ControlCenter"
+                if value of attribute "AXRole" of ui element 1 of sa is "AXOpaqueProviderGroup" then
+                  set sa to ui element 1 of sa
+                end if
                 set ret to value of checkbox ]] .. tostring(idx) .. [[ of sa
               end tell
             ]])
@@ -1524,8 +1536,11 @@ function registerControlCenterHotKeys(panel)
                 hs.osascript.applescript([[
                   tell application "System Events"
                     set sa to scroll area 1 of ]] .. pane .. [[ of application process "ControlCenter"
+                    if value of attribute "AXRole" of ui element 1 of sa is "AXOpaqueProviderGroup" then
+                      set sa to ui element 1 of sa
+                    end if
                     set cb to checkbox ]] .. tostring(idx) .. [[ of sa
-                    perform action 1 of cb
+                    perform last action of cb
                   end tell
                 ]])
               end)
