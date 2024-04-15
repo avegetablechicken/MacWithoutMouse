@@ -960,14 +960,6 @@
         "mods": "option",
         "key": "S"
       },
-      "newWorkspace": {
-        "mods": ["shift", "command"],
-        "key": "N"
-      },
-      "closeWorkspace": {
-        "mods": ["shift", "command"],
-        "key": "W"
-      },
       "exportToPDF": {
         "mods": ["shift", "option", "command"],
         "key": "E"

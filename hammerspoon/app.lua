@@ -871,16 +871,6 @@ appHotKeyCallbacks = {
 
   ["com.kingsoft.wpsoffice.mac"] =
   {
-    ["newWorkspace"] = {
-      message = "新建工作区",
-      condition = checkMenuItem({ zh = { "工作区", "新建工作区" } }),
-      fn = receiveMenuItem
-    },
-    ["closeWorkspace"] = {
-      message = "关闭工作区",
-      condition = checkMenuItem({ zh = { "工作区", "关闭工作区" }}),
-      fn = receiveMenuItem
-    },
     ["previousWindow"] = {
       mods = "⇧⌘", key = "[",
       message = menuItemMessage('⇧⌃', "⇥", 2),
