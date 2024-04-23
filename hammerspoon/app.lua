@@ -352,30 +352,6 @@ local function deleteAllCalls(appObject)
   )
 end
 
-local specialCommonHotkeyConfigs = {
-  ["closeWindow"] = {
-    mods = "⌘", key = "W",
-    message = "Close Window",
-    condition = function(appObject)
-      return appObject:focusedWindow() ~= nil, appObject:focusedWindow()
-    end,
-    fn = function(winObj) winObj:close() end
-  },
-  ["minimize"] = {
-    mods = "⌘", key = "M",
-    message = "Minimize",
-    condition = function(appObject)
-      return appObject:focusedWindow() ~= nil, appObject:focusedWindow()
-    end,
-    fn = function(winObj) winObj:minimize() end
-  },
-  ["hide"] = {
-    mods = "⌘", key = "H",
-    message = "Hide",
-    fn = function(appObject) appObject:hide() end
-  },
-}
-
 local function VSCodeToggleSideBarSection(sidebar, section)
   local focusedWindow = hs.application.frontmostApplication():focusedWindow()
   if focusedWindow == nil then return end
@@ -566,6 +542,42 @@ function selectMenuItemOrKeyStroke(appObject, mods, key)
   end
 end
 
+local specialCommonHotkeyConfigs = {
+  ["closeWindow"] = {
+    mods = "⌘", key = "W",
+    message = "Close Window",
+    condition = function(appObject)
+      return appObject:focusedWindow() ~= nil, appObject:focusedWindow()
+    end,
+    fn = function(winObj) winObj:close() end
+  },
+  ["minimize"] = {
+    mods = "⌘", key = "M",
+    message = "Minimize",
+    condition = function(appObject)
+      return appObject:focusedWindow() ~= nil, appObject:focusedWindow()
+    end,
+    fn = function(winObj) winObj:minimize() end
+  },
+  ["hide"] = {
+    mods = "⌘", key = "H",
+    message = "Hide",
+    fn = function(appObject) appObject:hide() end
+  },
+  ["showPrevTab"] = {
+    mods = "⇧⌘", key = "[",
+    message = menuItemMessage('⇧⌃', "⇥", 2),
+    condition = checkMenuItemByKeybinding('⇧⌃', "⇥"),
+    fn = receiveMenuItem
+  },
+  ["showNextTab"] = {
+    mods = "⇧⌘", key = "]",
+    message = menuItemMessage('⌃', "⇥", 2),
+    condition = checkMenuItemByKeybinding('⌃', "⇥"),
+    fn = receiveMenuItem
+  },
+}
+
 appHotKeyCallbacks = {
   ["com.apple.finder"] =
   {
@@ -585,18 +597,8 @@ appHotKeyCallbacks = {
         end)()
       end
     },
-    ["showPrevTab"] = {
-      mods = "⇧⌘", key = "[",
-      message = menuItemMessage('⇧⌃', "⇥", 2),
-      condition = checkMenuItemByKeybinding('⇧⌃', "⇥"),
-      fn = receiveMenuItem
-    },
-    ["showNextTab"] = {
-      mods = "⇧⌘", key = "]",
-      message = menuItemMessage('⌃', "⇥", 2),
-      condition = checkMenuItemByKeybinding('⌃', "⇥"),
-      fn = receiveMenuItem
-    },
+    ["showPrevTab"] = specialCommonHotkeyConfigs["showPrevTab"],
+    ["showNextTab"] = specialCommonHotkeyConfigs["showNextTab"],
   },
 
   ["com.apple.MobileSMS"] =
@@ -850,18 +852,8 @@ appHotKeyCallbacks = {
 
   ["com.superace.updf.mac"] =
   {
-    ["showPrevTab"] = {
-      mods = "⇧⌘", key = "[",
-      message = menuItemMessage('⇧⌃', "⇥", 2),
-      condition = checkMenuItemByKeybinding('⇧⌃', "⇥"),
-      fn = receiveMenuItem
-    },
-    ["showNextTab"] = {
-      mods = "⇧⌘", key = "]",
-      message = menuItemMessage('⌃', "⇥", 2),
-      condition = checkMenuItemByKeybinding('⌃', "⇥"),
-      fn = receiveMenuItem
-    },
+    ["showPrevTab"] = specialCommonHotkeyConfigs["showPrevTab"],
+    ["showNextTab"] = specialCommonHotkeyConfigs["showNextTab"],
     ["showInFinder"] = {
       message = localizedMessage("Show in Finder"),
       condition = checkMenuItem({ "File", "Show in Finder" }),
@@ -871,18 +863,8 @@ appHotKeyCallbacks = {
 
   ["com.kingsoft.wpsoffice.mac"] =
   {
-    ["previousWindow"] = {
-      mods = "⇧⌘", key = "[",
-      message = menuItemMessage('⇧⌃', "⇥", 2),
-      condition = checkMenuItemByKeybinding('⇧⌃', "⇥"),
-      fn = receiveMenuItem
-    },
-    ["nextWindow"] = {
-      mods = "⇧⌘", key = "]",
-      message = menuItemMessage('⌃', "⇥", 2),
-      condition = checkMenuItemByKeybinding('⌃', "⇥"),
-      fn = receiveMenuItem
-    },
+    ["previousWindow"] = specialCommonHotkeyConfigs["showPrevTab"],
+    ["nextWindow"] = specialCommonHotkeyConfigs["showNextTab"],
     ["goToFileTop"] = {
       mods = "", key = "Home",
       message = "将光标移动到文档的开头",
