@@ -504,17 +504,36 @@ local COND_FAIL = {
   NO_MENU_ITEM_BY_KEYBINDING = "NO_MENU_ITEM_BY_KEYBINDING",
 }
 
-local function noSelectedMenuBarItem(fn)
-  return function(appObject)
-    local appUIObj = hs.axuielement.applicationElement(appObject)
-    local menuBar = appUIObj:childrenWithRole("AXMenuBar")[1]
-    for i, menuBarItem in ipairs(menuBar:childrenWithRole("AXMenuBarItem")) do
-      -- fixme: on some version of macOS, the menu bar item "Apple" is always selected
-      if i > 1 and menuBarItem.AXSelected then
-        return false, COND_FAIL.MENU_ITEM_SELECTED
-      end
+local function noSelectedMenuBarItem(appObject)
+  local appUIObj = hs.axuielement.applicationElement(appObject)
+  local menuBar = appUIObj:childrenWithRole("AXMenuBar")[1]
+  for i, menuBarItem in ipairs(menuBar:childrenWithRole("AXMenuBarItem")) do
+    if i > 1 and menuBarItem.AXSelected then
+      return false
     end
-    return fn(appObject)
+  end
+  return true
+end
+
+local function hasSelectedMenuBarItemFunc(fn, appObject)
+  return function(...)
+    local result = noSelectedMenuBarItem(appObject)
+    if result == false then
+      hs.eventtap.keyStroke("", "Escape", nil, appObject)
+      hs.timer.usleep(0.05 * 1000000)
+    end
+    return fn(...)
+  end
+end
+
+local function noSelectedMenuBarItemFunc(fn)
+  return function(appObject)
+    local result = noSelectedMenuBarItem(appObject)
+    if result then
+      return fn(appObject)
+    else
+      return false, COND_FAIL.MENU_ITEM_SELECTED
+    end
   end
 end
 
@@ -2239,7 +2258,7 @@ local function registerInAppHotKeys(appName, eventType, appObject)
         local cond = cfg.condition
         if cond ~= nil then
           if keyBinding.mods == nil or keyBinding.mods == "" or #keyBinding.mods == 0 then
-            cond = noSelectedMenuBarItem(cond)
+            cond = noSelectedMenuBarItemFunc(cond)
           end
           fn = function(appObject, appName, eventType)
             local satisfied, result = cond(appObject)
@@ -2641,7 +2660,7 @@ function remapPreviousTab(bundleID)
       return menuItemCond ~= nil and menuItemCond.enabled
     end
     if spec.mods == nil or spec.mods == "" or #spec.mods == 0 then
-      cond = noSelectedMenuBarItem(cond)
+      cond = noSelectedMenuBarItemFunc(cond)
     end
     local fn = inAppHotKeysWrapper(appObject, spec.mods, spec.key,
         function()
@@ -2677,7 +2696,7 @@ function registerOpenRecent(bundleID)
       return menuItemCond ~= nil and menuItemCond.enabled
     end
     if spec.mods == nil or spec.mods == "" or #spec.mods == 0 then
-      cond = noSelectedMenuBarItem(cond)
+      cond = noSelectedMenuBarItemFunc(cond)
     end
     local fn = inAppHotKeysWrapper(appObject, spec.mods, spec.key,
         function()
@@ -2834,6 +2853,9 @@ registerForOpenSavePanel(frontmostApplication)
 altMenuBarItemHotkeys = {}
 
 local function bindAltMenu(appObject, mods, key, message, fn)
+  if getOSVersion() >= OS.Sonoma then
+    fn = hasSelectedMenuBarItemFunc(fn, appObject)
+  end
   fn = showMenuItemWrapper(fn)
   fn = inAppHotKeysWrapper(appObject, mods, key, fn)
   local hotkey = bindSuspend(mods, key, message, fn)
