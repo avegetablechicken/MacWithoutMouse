@@ -2825,7 +2825,7 @@ function registerForOpenSavePanel(appObject)
       local action = openSavePanelActor:actionNames()[1]
       openSavePanelActor:performAction(action)
     end)
-    openSavePanelHotkey.kind = HK.IN_APP
+    openSavePanelHotkey.kind = HK.IN_APPWIN
   end
   if appObject:focusedWindow() ~= nil then
     actionFunc(hs.axuielement.windowElement(appObject:focusedWindow()))
