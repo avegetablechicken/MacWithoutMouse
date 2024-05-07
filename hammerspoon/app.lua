@@ -246,6 +246,29 @@ local function klatexformulaRender()
   ]])
 end
 
+local function getFinderSidebarItem(idx, appObject)
+  if appObject:focusedWindow() == nil then return false end
+  local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
+  local outlineUIObj = getAXChildren(winUIObj,
+    "AXSplitGroup", 1, "AXScrollArea", 1, "AXOutline", 1)
+  if outlineUIObj == nil then return false end
+  local cnt = 0
+  for _, rowUIObj in ipairs(outlineUIObj:childrenWithRole("AXRow")) do
+    if rowUIObj.AXChildren == nil then hs.timer.usleep(0.3 * 1000000) end
+    if rowUIObj.AXChildren[1]:childrenWithRole("AXStaticText")[1].AXIdentifier == nil then
+      cnt = cnt + 1
+    end
+    if cnt == idx then
+      return true, rowUIObj.AXChildren[1]
+    end
+  end
+  return false
+end
+
+local function openFinderSidebarItem(cellUIObj)
+  cellUIObj:performAction("AXOpen")
+end
+
 local function deleteSelectedMessage(appObject, menuItem, force)
   appObject:selectMenuItem(menuItem)
   if force ~= nil then
@@ -618,6 +641,56 @@ appHotKeyCallbacks = {
     },
     ["showPrevTab"] = specialCommonHotkeyConfigs["showPrevTab"],
     ["showNextTab"] = specialCommonHotkeyConfigs["showNextTab"],
+    ["open1stSidebarItem"] = {
+      message = "Open 1st Sidebar Item",
+      condition = hs.fnutils.partial(getFinderSidebarItem, 1),
+      fn = openFinderSidebarItem
+    },
+    ["open2ndSidebarItem"] = {
+      message = "Open 2nd Sidebar Item",
+      condition = hs.fnutils.partial(getFinderSidebarItem, 2),
+      fn = openFinderSidebarItem
+    },
+    ["open3rdSidebarItem"] = {
+      message = "Open 3rd Sidebar Item",
+      condition = hs.fnutils.partial(getFinderSidebarItem, 3),
+      fn = openFinderSidebarItem
+    },
+    ["open4thSidebarItem"] = {
+      message = "Open 4th Sidebar Item",
+      condition = hs.fnutils.partial(getFinderSidebarItem, 4),
+      fn = openFinderSidebarItem
+    },
+    ["open5thSidebarItem"] = {
+      message = "Open 5th Sidebar Item",
+      condition = hs.fnutils.partial(getFinderSidebarItem, 5),
+      fn = openFinderSidebarItem
+    },
+    ["open6thSidebarItem"] = {
+      message = "Open 6th Sidebar Item",
+      condition = hs.fnutils.partial(getFinderSidebarItem, 6),
+      fn = openFinderSidebarItem
+    },
+    ["open7thSidebarItem"] = {
+      message = "Open 7th Sidebar Item",
+      condition = hs.fnutils.partial(getFinderSidebarItem, 7),
+      fn = openFinderSidebarItem
+    },
+    ["open8thSidebarItem"] = {
+      message = "Open 8th Sidebar Item",
+      condition = hs.fnutils.partial(getFinderSidebarItem, 8),
+      fn = openFinderSidebarItem
+    },
+    ["open9thSidebarItem"] = {
+      message = "Open 9th Sidebar Item",
+      condition = hs.fnutils.partial(getFinderSidebarItem, 9),
+      fn = openFinderSidebarItem
+    },
+    ["open10thSidebarItem"] = {
+      message = "Open 10th Sidebar Item",
+      condition = hs.fnutils.partial(getFinderSidebarItem, 10),
+      fn = openFinderSidebarItem
+    }
   },
 
   ["com.apple.MobileSMS"] =
@@ -2746,6 +2819,7 @@ local function WPSCloseDialog(winUIObj)
   end
 end
 
+local finderSibebarHotkeys = {}
 function registerForOpenSavePanel(appObject)
   if openSavePanelObserver ~= nil then
     openSavePanelObserver:stop()
@@ -2754,6 +2828,12 @@ function registerForOpenSavePanel(appObject)
   if openSavePanelHotkey ~= nil then
     openSavePanelHotkey:delete()
     openSavePanelHotkey = nil
+  end
+  if #finderSibebarHotkeys > 0 then
+    for _, hotkey in ipairs(finderSibebarHotkeys) do
+      hotkey:delete()
+    end
+    finderSibebarHotkeys = {}
   end
 
   if appObject:bundleID() == nil then return end
@@ -2781,7 +2861,7 @@ function registerForOpenSavePanel(appObject)
     if winUIObj:attributeValue("AXIdentifier") == "save-panel" then
       for _, button in ipairs(winUIObj:childrenWithRole("AXButton")) do
         if button.AXIdentifier == "DontSaveButton" then
-          return button, button.AXTitle
+          return {}, button, button.AXTitle
         end
       end
     end
@@ -2796,13 +2876,19 @@ function registerForOpenSavePanel(appObject)
     local downloadsString = localizedString("Downloads", bundleID, params)
     local msg = string.format("%s > %s", goString, downloadsString)
     local enMsg = string.format("Go > Downloads")
+    local cellUIObj = {}
     for _, rowUIObj in ipairs(outlineUIObj:childrenWithRole("AXRow")) do
       if rowUIObj.AXChildren == nil then hs.timer.usleep(0.3 * 1000000) end
+      if rowUIObj.AXChildren[1]:childrenWithRole("AXStaticText")[1].AXIdentifier == nil then
+        table.insert(cellUIObj, rowUIObj.AXChildren[1])
+      end
+    end
+    for _, rowUIObj in ipairs(outlineUIObj:childrenWithRole("AXRow")) do
       if rowUIObj.AXChildren[1]:childrenWithRole("AXStaticText")[1].AXValue == downloadsString then
-        return rowUIObj.AXChildren[1], msg
+        return cellUIObj, rowUIObj.AXChildren[1], msg
       end
       if rowUIObj.AXChildren[1]:childrenWithRole("AXStaticText")[1].AXValue == "Downloads" then
-        return rowUIObj.AXChildren[1], enMsg
+        return cellUIObj, rowUIObj.AXChildren[1], enMsg
       end
     end
   end
@@ -2812,8 +2898,27 @@ function registerForOpenSavePanel(appObject)
       openSavePanelHotkey:delete()
       openSavePanelHotkey = nil
     end
+    for _, hotkey in ipairs(finderSibebarHotkeys) do
+      hotkey:delete()
+      finderSibebarHotkeys = {}
+    end
 
-    local openSavePanelActor, message = getUIObj(winUIObj)
+    local cellUIObj, openSavePanelActor, message = getUIObj(winUIObj)
+    for i, cell in ipairs(cellUIObj or {}) do
+      if i > 10 then break end
+      local suffix
+      if i == 1 then suffix = "st"
+      elseif i == 2 then suffix = "nd"
+      elseif i == 3 then suffix = "rd"
+      else suffix = "th" end
+      local hkID = "open" .. tostring(i) .. suffix .. "SidebarItem"
+      local spec = get(keybindingConfigs.hotkeys[bundleID], hkID)
+      local hotkey = bindSpecSuspend(spec, cell:childrenWithRole("AXStaticText")[1].AXValue, function()
+        cell:performAction("AXOpen")
+      end)
+      hotkey.kind = HK.IN_APPWIN
+      table.insert(finderSibebarHotkeys, hotkey)
+    end
     if openSavePanelActor == nil then return end
     local spec
     if openSavePanelActor.AXRole == "AXButton" then

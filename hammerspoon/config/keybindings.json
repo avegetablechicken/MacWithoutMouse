@@ -663,6 +663,46 @@
       "recentFolders": {
         "mods": "control",
         "key": "R"
+      },
+      "open1stSidebarItem": {
+        "mods": "option",
+        "key": "1"
+      },
+      "open2ndSidebarItem": {
+        "mods": "option",
+        "key": "2"
+      },
+      "open3rdSidebarItem": {
+        "mods": "option",
+        "key": "3"
+      },
+      "open4thSidebarItem": {
+        "mods": "option",
+        "key": "4"
+      },
+      "open5thSidebarItem": {
+        "mods": "option",
+        "key": "5"
+      },
+      "open6thSidebarItem": {
+        "mods": "option",
+        "key": "6"
+      },
+      "open7thSidebarItem": {
+        "mods": "option",
+        "key": "7"
+      },
+      "open8thSidebarItem": {
+        "mods": "option",
+        "key": "8"
+      },
+      "open9thSidebarItem": {
+        "mods": "option",
+        "key": "9"
+      },
+      "open10thSidebarItem": {
+        "mods": "option",
+        "key": "0"
       }
     },
     "com.apple.Terminal": {
