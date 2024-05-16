@@ -1336,13 +1336,16 @@ end
 menuBarTitleLocalizationMap.common = {}
 local systemLocale = systemLocales()[1]
 for _, title in ipairs{ 'File', 'Edit', 'Format', 'View', 'Window', 'Help' } do
-  if not hs.fnutils.contains(menuBarTitleLocalizationMap.common, title) then
-    local localizedTitle = localizedString(title, "com.apple.Notes",
-                                           { locale = systemLocale })
-    if localizedTitle ~= nil then
-      menuBarTitleLocalizationMap.common[localizedTitle] = title
-    end
+  local localizedTitle = localizedString(title, "com.apple.Notes",
+                                          { locale = systemLocale })
+  if localizedTitle ~= nil then
+    menuBarTitleLocalizationMap.common[localizedTitle] = title
   end
+end
+local localizedTitle = localizedString('View', "com.apple.finder",
+                                      { locale = systemLocale })
+if localizedTitle ~= nil then
+  menuBarTitleLocalizationMap.common[localizedTitle] = 'View'
 end
 
 function localizedMenuBarItem(title, bundleID, params)
