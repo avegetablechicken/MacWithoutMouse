@@ -533,7 +533,10 @@
       "ChatGPT": {
         "mods": "${hyper.hyper}",
         "key": "G",
-        "bundleID": "com.lencx.chatgpt"
+        "bundleID": [
+          "com.openai.chat",
+          "com.lencx.chatgpt"
+        ]
       },
       "Activity Monitor": {
         "mods": "${hyper.hyper}",
