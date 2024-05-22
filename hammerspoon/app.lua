@@ -1208,22 +1208,6 @@ appHotKeyCallbacks = {
     }
   },
 
-  ["cn.edu.idea.paper"] =
-  {
-    ["showPrevTab"] = {
-      mods = "⇧⌘", key = "[",
-      message = "Show Previous Tab",
-      repeatable = true,
-      fn = function(appObject) hs.eventtap.keyStroke("⌘", "Left", nil, appObject) end
-    },
-    ["showNextTab"] = {
-      mods = "⇧⌘", key = "]",
-      message = "Show Next Tab",
-      repeatable = true,
-      fn = function(appObject) hs.eventtap.keyStroke("⌘", "Right", nil, appObject) end
-    }
-  },
-
   ["com.apple.iMovieApp"] =
   {
     ["export"] = {
