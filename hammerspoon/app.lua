@@ -3523,13 +3523,20 @@ function parseVerificationCodeFromFirstMessage()
     end tell
   ]])
   if ok then
-    if string.find(content, '验证码')
-        or string.find(string.lower(content), 'verification')
-        or (string.find(content, 'Microsoft') and string.find(content, '安全代码'))
-        or (string.find(content, '【Facebook】') and string.find(content, '输入')) then
-      if string.find(content, '【12306】') then
-        return string.match(content, '%d%d%d%d%d%d')
+    for _, pattern in ipairs(verificationPatterns) do
+      if type(pattern.filter) == 'string' then
+        if string.find(content, pattern.filter) then
+          return string.match(content, pattern.extract)
+        end
+      elseif type(pattern.filter) == 'table' then
+        if hs.fnutils.every(pattern.filter,
+            function(f) return string.find(content, f) end) then
+          return string.match(content, pattern.extract)
+        end
       end
+    end
+    if string.find(content, '验证码')
+        or string.find(string.lower(content), 'verification') then
       return string.match(content, '%d%d%d%d+')
     end
   end

@@ -63,17 +63,16 @@ function(ev)
 end):start()
 
 -- detect clipboard change and remove suffix added by website
-local filterPattern = {
-  "(.*) 作者：.*https://www.bilibili.com/.*出处：bilibili$",
-  "(.*)\n\n作者：.*链接：https://.*zhihu.com.*来源：知乎.*$",
-  "^作者：.*链接：https://.*zhihu.com.*来源：知乎\n著作权.*注明出处。\n\n(.*)$",
-}
+local pasteboardfilterPatterns = {}
+if hs.fs.attributes("config/misc.json") ~= nil then
+  pasteboardPatterns = hs.json.read("config/misc.json").pasteboardFilter or {}
+end
 
 generalPBWatcher = hs.pasteboard.watcher.new(
 function(v)
   if v == nil then return end
   if hs.fnutils.contains(hs.pasteboard.contentTypes(), "public.utf8-plain-text") then
-    for _, pattern in ipairs(filterPattern) do
+    for _, pattern in ipairs(pasteboardPatterns) do
       local match = string.match(v, pattern)
       if match ~= nil then
         hs.pasteboard.setContents(match)

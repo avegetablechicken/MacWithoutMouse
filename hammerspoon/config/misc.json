@@ -1,4 +1,10 @@
 {
+    "pasteboardFilter": [
+        "(.*) 作者：.*https://www.bilibili.com/.*出处：bilibili$",
+        "(.*)\n\n作者：.*链接：https://.*zhihu.com.*来源：知乎.*$",
+        "^作者：.*链接：https://.*zhihu.com.*来源：知乎\n著作权.*注明出处。\n\n(.*)$"
+    ],
+
     "verificationFilter": [
         {
             "filter": ["Microsoft", "安全代码"],
