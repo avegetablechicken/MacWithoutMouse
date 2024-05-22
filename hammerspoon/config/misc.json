@@ -1,0 +1,16 @@
+{
+    "verificationFilter": [
+        {
+            "filter": ["Microsoft", "安全代码"],
+            "extract": "%d%d%d%d+"
+        },
+        {
+            "filter": ["【Facebook】", "输入"],
+            "extract": "%d%d%d%d+"
+        },
+        {
+            "filter": ["【12306】", "验证码"],
+            "extract": "%d%d%d%d%d%d"
+        }
+    ]
+}

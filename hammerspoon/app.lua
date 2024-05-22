@@ -3509,6 +3509,10 @@ barrierWindowFilter = hs.window.filter.new(false):allowApp("Barrier"):subscribe(
   hs.window.filter.windowCreated, function(winObj) winObj:focus() end
 )
 
+local verificationPatterns = {}
+if hs.fs.attributes("config/misc.json") ~= nil then
+  verificationPatterns = hs.json.read("config/misc.json").verificationFilter or {}
+end
 function parseVerificationCodeFromFirstMessage()
   local ok, content = hs.osascript.applescript([[
     tell application "System Events"
