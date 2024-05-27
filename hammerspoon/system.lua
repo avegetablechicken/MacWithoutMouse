@@ -346,24 +346,29 @@ function parseProxyConfigurations(configs)
       ProxyConfigs[name].condition = config.condition
       ProxyConfigs[name].locations = config.locations
       for i, loc in ipairs(config.locations) do
+        ProxyConfigs[name][loc] = {}
         local spec = config[loc]
-        local httpIp, httpPort = string.match(spec.global.http, "(.+):(%d+)")
-        local httpsIp, httpsPort = string.match(spec.global.https, "(.+):(%d+)")
-        local socksIp, socksPort = string.match(spec.global.socks5, "(.+):(%d+)")
-        ProxyConfigs[name][loc] = {
-          PAC = spec.pac,
-          global = { httpIp, httpPort, httpsIp, httpsPort, socksIp, socksPort }
-        }
+        ProxyConfigs[name][loc]["PAC"] = spec.pac
+        if spec.global ~= nil then
+          local httpIp, httpPort = string.match(spec.global.http, "(.+):(%d+)")
+          local httpsIp, httpsPort = string.match(spec.global.https, "(.+):(%d+)")
+          local socksIp, socksPort = string.match(spec.global.socks5, "(.+):(%d+)")
+          ProxyConfigs[name][loc]["global"] = {
+            httpIp, httpPort, httpsIp, httpsPort, socksIp, socksPort
+          }
+        end
       end
     else
       local spec = config
+      ProxyConfigs[name]["PAC"] = spec.pac
+      if spec.global ~= nil then
         local httpIp, httpPort = string.match(spec.global.http, "(.+):(%d+)")
         local httpsIp, httpsPort = string.match(spec.global.https, "(.+):(%d+)")
         local socksIp, socksPort = string.match(spec.global.socks5, "(.+):(%d+)")
-        ProxyConfigs[name] = {
-          PAC = spec.pac,
-          global = { httpIp, httpPort, httpsIp, httpsPort, socksIp, socksPort }
+        ProxyConfigs[name]["global"] = {
+          httpIp, httpPort, httpsIp, httpsPort, socksIp, socksPort
         }
+      end
     end
   end
 end
@@ -747,19 +752,24 @@ local function registerProxyMenuImpl()
           table.insert(proxyMenu, { title = "SOCKS5 Proxy: " .. addr[5] .. ":" .. addr[6], disabled = true })
         end
       end
-      table.insert(proxyMenu, updateProxyWrapper({
-        title = "    Global Mode",
-        fn = function() enable_proxy_global(name, nil, loc) end,
-        shortcut = tostring(proxyMenuIdx),
-        checked = enabledProxy == name and mode ~= nil and mode == "Global"
-      }, name))
-      proxyMenuIdx = proxyMenuIdx + 1
-      table.insert(proxyMenu, updateProxyWrapper({
-        title = "    PAC Mode",
-        fn = function() enable_proxy_PAC(name, nil, loc) end,
-        shortcut = tostring(proxyMenuIdx),
-        checked = enabledProxy == name and mode ~= nil and mode == "PAC"
-      }, name))
+      if config.global ~= nil then
+        table.insert(proxyMenu, updateProxyWrapper({
+          title = "    Global Mode",
+          fn = function() enable_proxy_global(name, nil, loc) end,
+          shortcut = tostring(proxyMenuIdx),
+          checked = enabledProxy == name and mode ~= nil and mode == "Global"
+        }, name))
+        proxyMenuIdx = proxyMenuIdx + 1
+      end
+      if config.PAC ~= nil then
+        table.insert(proxyMenu, updateProxyWrapper({
+          title = "    PAC Mode",
+          fn = function() enable_proxy_PAC(name, nil, loc) end,
+          shortcut = tostring(proxyMenuIdx),
+          checked = enabledProxy == name and mode ~= nil and mode == "PAC"
+        }, name))
+        proxyMenuIdx = proxyMenuIdx + 1
+      end
     end
   end
 
