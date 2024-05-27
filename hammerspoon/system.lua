@@ -671,10 +671,11 @@ local function registerProxyMenuImpl()
 
   local proxyMenuIdx = 1
   for _, candidate in ipairs(proxyMenuItemCandidates) do
+    local appname = candidate.appname == "MonoCloud" and "MonoProxyMac" or candidate.appname
     local bundleID = proxyAppBundleIDs[candidate.appname]
-    if hs.application.pathForBundleID(bundleID) ~= nil
+    if ProxyConfigs[candidate.appname] ~= nil
+        and hs.application.pathForBundleID(bundleID) ~= nil
         and hs.application.pathForBundleID(bundleID) ~= "" then
-      local appname = candidate.appname == "MonoCloud" and "MonoProxyMac" or candidate.appname
       table.insert(proxyMenu, { title = "-" })
       table.insert(proxyMenu, {
         title = candidate.appname,
