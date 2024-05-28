@@ -1190,6 +1190,20 @@ appHotKeyCallbacks = {
     }
   },
 
+  ["JabRef"] =
+  {
+    ["recentLibraries"] = {
+      message = "Recent Libraries",
+      condition = checkMenuItem({ "File", "Recent libraries" }),
+      fn = function(menuItemPath, appObject)
+        showMenuItemWrapper(function()
+          appObject:selectMenuItem({ menuItemPath[1] })
+          appObject:selectMenuItem(menuItemPath)
+        end)()
+      end
+    }
+  },
+
   ["org.klatexformula.klatexformula"] =
   {
     ["render"] = {

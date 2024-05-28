@@ -1102,6 +1102,12 @@
         "key": "E"
       }
     },
+    "JabRef": {
+      "recentLibraries": {
+        "mods": "control",
+        "key": "R"
+      }
+    },
     "com.apple.iMovieApp": {
       "export": {
         "mods": "command",
