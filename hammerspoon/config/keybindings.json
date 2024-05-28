@@ -1103,6 +1103,10 @@
       }
     },
     "JabRef": {
+      "newLibrary": {
+        "mods": "option",
+        "key": "N"
+      },
       "recentLibraries": {
         "mods": "control",
         "key": "R"

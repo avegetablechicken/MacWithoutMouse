@@ -1192,6 +1192,12 @@ appHotKeyCallbacks = {
 
   ["JabRef"] =
   {
+    ["newLibrary"] = {
+      message = "New Library",
+      fn = function(appObject)
+        selectMenuItem(appObject, { "File", "New library" })
+      end
+    },
     ["recentLibraries"] = {
       message = "Recent Libraries",
       condition = checkMenuItem({ "File", "Recent libraries" }),
