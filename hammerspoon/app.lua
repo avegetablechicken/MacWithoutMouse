@@ -1192,6 +1192,12 @@ appHotKeyCallbacks = {
 
   ["JabRef"] =
   {
+    ["preferences"] = {
+      message = "Preferences",
+      fn = function(appObject)
+        selectMenuItem(appObject, { "File", "Preferences" })
+      end
+    },
     ["newLibrary"] = {
       message = "New Library",
       fn = function(appObject)
