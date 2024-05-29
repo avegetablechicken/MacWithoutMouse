@@ -1,4 +1,7 @@
 {
+  "System": {
+    "pac": "http://localhost/proxy.pac"
+  },
   "V2RayX": {
     "pac": "http://127.0.0.1:8070/proxy.pac",
     "global": {

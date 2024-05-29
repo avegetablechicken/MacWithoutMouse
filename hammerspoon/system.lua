@@ -468,6 +468,51 @@ proxyMenuItemCandidates =
   },
 }
 
+function registerProxyMenuEntry(name, enabled, mode, proxyMenuIdx)
+  local config, loc
+  if ProxyConfigs[name].condition == nil then
+    config = ProxyConfigs[name]
+  else
+    local locations = ProxyConfigs[name].locations
+    local _, status_ok = hs.execute(ProxyConfigs[name].condition.shell_command)
+    loc = status_ok and locations[1] or locations[2]
+    config = ProxyConfigs[name][loc]
+  end
+  if config ~= nil then
+    table.insert(proxyMenu, { title = "-" })
+    table.insert(proxyMenu, { title = name, disabled = true })
+    if enabled and mode ~= nil then
+      if mode == "PAC" then
+        local PACFile = config.PAC
+        table.insert(proxyMenu, { title = "PAC File: " .. PACFile, disabled = true })
+      else
+        local addr = config.global
+        table.insert(proxyMenu, { title = "HTTP Proxy: " .. addr[1] .. ":" .. addr[2], disabled = true })
+        table.insert(proxyMenu, { title = "SOCKS5 Proxy: " .. addr[5] .. ":" .. addr[6], disabled = true })
+      end
+    end
+    if config.global ~= nil then
+      table.insert(proxyMenu, updateProxyWrapper({
+        title = "    Global Mode",
+        fn = function() enable_proxy_global(name, nil, loc) end,
+        shortcut = tostring(proxyMenuIdx),
+        checked = enabled and mode == "Global"
+      }, name))
+      proxyMenuIdx = proxyMenuIdx + 1
+    end
+    if config.PAC ~= nil then
+      table.insert(proxyMenu, updateProxyWrapper({
+        title = "    PAC Mode",
+        fn = function() enable_proxy_PAC(name, nil, loc) end,
+        shortcut = tostring(proxyMenuIdx),
+        checked = enabled and mode == "PAC"
+      }, name))
+      proxyMenuIdx = proxyMenuIdx + 1
+    end
+  end
+  return proxyMenuIdx
+end
+
 function updateProxyWrapper(wrapped, appname)
   local fn = function(mod, item)
     wrapped.fn(mod, item)
@@ -670,6 +715,17 @@ local function registerProxyMenuImpl()
   }
 
   local proxyMenuIdx = 1
+  local otherProxies = {}
+  for name, _ in pairs(ProxyConfigs) do
+    if hs.fnutils.find(proxyMenuItemCandidates, function(item) return item.appname == name end) == nil then
+      if name == "System" then
+        proxyMenuIdx = registerProxyMenuEntry('System', enabledProxy == "System", mode, proxyMenuIdx)
+      else
+        table.insert(otherProxies, name)
+      end
+    end
+  end
+
   for _, candidate in ipairs(proxyMenuItemCandidates) do
     local appname = candidate.appname == "MonoCloud" and "MonoProxyMac" or candidate.appname
     local bundleID = proxyAppBundleIDs[candidate.appname]
@@ -724,54 +780,8 @@ local function registerProxyMenuImpl()
     end
   end
 
-  local otherProxies = {}
-  for name, _ in pairs(ProxyConfigs) do
-    if hs.fnutils.find(proxyMenuItemCandidates, function(item) return item.appname == name end) == nil then
-      table.insert(otherProxies, name)
-    end
-  end
   for _, name in ipairs(otherProxies) do
-    local config, loc
-    if ProxyConfigs[name].condition == nil then
-      config = ProxyConfigs[name]
-    else
-      local locations = ProxyConfigs[name].locations
-      local _, status_ok = hs.execute(ProxyConfigs[name].condition.shell_command)
-      loc = status_ok and locations[1] or locations[2]
-      config = ProxyConfigs[name][loc]
-    end
-    if config ~= nil then
-      table.insert(proxyMenu, { title = "-" })
-      table.insert(proxyMenu, { title = name, disabled = true })
-      if enabledProxy == name and mode ~= nil then
-        if mode == "PAC" then
-          local PACFile = config.PAC
-          table.insert(proxyMenu, { title = "PAC File: " .. PACFile, disabled = true })
-        else
-          local addr = config.global
-          table.insert(proxyMenu, { title = "HTTP Proxy: " .. addr[1] .. ":" .. addr[2], disabled = true })
-          table.insert(proxyMenu, { title = "SOCKS5 Proxy: " .. addr[5] .. ":" .. addr[6], disabled = true })
-        end
-      end
-      if config.global ~= nil then
-        table.insert(proxyMenu, updateProxyWrapper({
-          title = "    Global Mode",
-          fn = function() enable_proxy_global(name, nil, loc) end,
-          shortcut = tostring(proxyMenuIdx),
-          checked = enabledProxy == name and mode ~= nil and mode == "Global"
-        }, name))
-        proxyMenuIdx = proxyMenuIdx + 1
-      end
-      if config.PAC ~= nil then
-        table.insert(proxyMenu, updateProxyWrapper({
-          title = "    PAC Mode",
-          fn = function() enable_proxy_PAC(name, nil, loc) end,
-          shortcut = tostring(proxyMenuIdx),
-          checked = enabledProxy == name and mode ~= nil and mode == "PAC"
-        }, name))
-        proxyMenuIdx = proxyMenuIdx + 1
-      end
-    end
+    proxyMenuIdx = registerProxyMenuEntry(name, enabledProxy == name, mode, proxyMenuIdx)
   end
 
   table.insert(proxyMenu, { title = "-" })
