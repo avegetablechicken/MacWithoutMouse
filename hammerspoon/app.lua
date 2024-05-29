@@ -1213,7 +1213,8 @@ appHotKeyCallbacks = {
           appObject:selectMenuItem(menuItemPath)
         end)()
       end
-    }
+    },
+    ["minimize"] = specialCommonHotkeyConfigs["minimize"]
   },
 
   ["org.klatexformula.klatexformula"] =
