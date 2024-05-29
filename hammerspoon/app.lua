@@ -3544,7 +3544,11 @@ function parseVerificationCodeFromFirstMessage()
     tell application "System Events"
       tell window 1 of (first application process ¬
           whose bundle identifier is "com.apple.notificationcenterui")
-        return value of static text 2 of group 1 of UI element 1 of scroll area 1
+        if exists scroll area 1 then
+          return value of static text 2 of group 1 of UI element 1 of scroll area 1
+        else -- since some version of Sonoma
+          return value of static text 2 of group 1 of UI element 1 of scroll area 1 of group 1
+        end if
       end tell
     end tell
   ]])
