@@ -63,16 +63,16 @@ function(ev)
 end):start()
 
 -- detect clipboard change and remove suffix added by website
-local pasteboardfilterPatterns = {}
+local pasteboardFilterPatterns = {}
 if hs.fs.attributes("config/misc.json") ~= nil then
-  pasteboardPatterns = hs.json.read("config/misc.json").pasteboardFilter or {}
+  pasteboardFilterPatterns = hs.json.read("config/misc.json").pasteboardFilter or {}
 end
 
 generalPBWatcher = hs.pasteboard.watcher.new(
 function(v)
   if v == nil then return end
   if hs.fnutils.contains(hs.pasteboard.contentTypes(), "public.utf8-plain-text") then
-    for _, pattern in ipairs(pasteboardPatterns) do
+    for _, pattern in ipairs(pasteboardFilterPatterns) do
       local match = string.match(v, pattern)
       if match ~= nil then
         hs.pasteboard.setContents(match)
