@@ -553,10 +553,10 @@
         "key": "K",
         "bundleID": "org.klatexformula.klatexformula"
       },
-      "DeepL": {
+      "Texpad": {
         "mods": "${hyper.hyper}",
         "key": "L",
-        "bundleID": "com.linguee.DeepLCopyTranslator"
+        "bundleID": "com.vallettaventures.Texpad"
       },
       "System Preferences": {
         "mods": "${hyper.hyper}",
