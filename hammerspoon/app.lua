@@ -3247,6 +3247,10 @@ function registerObserverForMenuBarChange(appObject)
     hs.axuielement.applicationElement(appObject),
     hs.axuielement.observer.notifications.focusedWindowChanged
   )
+  appMenuBarChangeObserver:addWatcher(
+    hs.axuielement.applicationElement(appObject),
+    hs.axuielement.observer.notifications.windowMiniaturized
+  )
   appMenuBarChangeObserver:callback(hs.fnutils.partial(appMenuBarChangeCallback, appObject))
   appMenuBarChangeObserver:start()
 
