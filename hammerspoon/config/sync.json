@@ -10,7 +10,7 @@
     "${HOMEBREW_PREFIX}/etc/frp/frpc.ini": [
       "${MACOS_CONFIG_DIR}/frp",
       {
-        "desensitize_command": "sed 's/token = \\(.*\\)/token = ******/'"
+        "post_process": "sed 's/token = \\(.*\\)/token = ******/'"
       }
     ],
     "~/.bab": "${MACOS_CONFIG_DIR}/bab",

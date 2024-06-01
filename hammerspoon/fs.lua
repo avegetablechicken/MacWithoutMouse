@@ -56,7 +56,7 @@ local function getFileName(path)
   return string.match(path, ".*/([^/]*)")
 end
 
-local function desensitizeAfterFunc(command, targetDir, watchedDir, path)
+local function postprocessAfterFunc(command, targetDir, watchedDir, path)
   local target = targetDir .. "/" .. getFileName(path)
   hs.execute(string.format([[
 mv "%s" "%s";
@@ -87,8 +87,8 @@ for k, v in pairs(config.file or {}) do
     nil, nil, nil
   }
   if type(v) == "table" then
-    if v[2].desensitize_command ~= nil then
-      spec[5] = hs.fnutils.partial(desensitizeAfterFunc, v[2].desensitize_command)
+    if v[2].post_process ~= nil then
+      spec[5] = hs.fnutils.partial(postprocessAfterFunc, v[2].post_process)
     end
   end
   table.insert(filesToSync, spec)
