@@ -1246,7 +1246,7 @@ local function PDFChooser()
             end tell
           ]])
           if ok then
-            if leftClickAndRestore(result, appObject:name()) then
+            if leftClickAndRestore({ x = result.x + 10, y = result.y }, appObject:name()) then
               return
             end
           end
