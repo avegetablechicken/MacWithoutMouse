@@ -356,8 +356,6 @@ local function processHotkeys(validOnly, showHS, showKara, showApp, evFlags, rel
       else
         table.insert(enabledAltMenuHotkeys, newEntry)
       end
-    else
-      
     end
   end
 
