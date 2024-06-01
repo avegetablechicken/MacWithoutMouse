@@ -582,7 +582,7 @@ local function processHotkeys(validOnly, showHS, showKara, showApp, evFlags, rel
         end
       end
     end
-    if entry.kind ~= nil then kind = entry.kind end
+    if entry.kind ~= nil and entry.valid then kind = entry.kind end
   end
 
   menu = menu .. "</ul>"
