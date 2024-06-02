@@ -136,6 +136,7 @@ local modifierSymbolMap = {
 local keySymbolMap = {
   ['\b'] = '⌫',
   ['\t'] = '⇥',
+  ['\n'] = '↵',
   ['\r'] = '↵',
   ['\x1b'] = '⎋',
   [' '] = '␣',
@@ -235,31 +236,31 @@ local function getSubMenuHotkeys(t, menuItem, titleAsEntry, titlePrefix)
         title = titlePrefix .. " > " .. title
       end
     end
-    if subItem.AXMenuItemCmdChar ~= "" or subItem.AXMenuItemCmdGlyph ~= "" then
-      local idx
-      if subItem.AXMenuItemCmdChar ~= "" then
-        local bundleID = hs.application.frontmostApplication():bundleID()
-        if subItem.AXMenuItemCmdChar == 'E' and subItem.AXMenuItemCmdGlyph == ""
-            and #subItem.AXMenuItemCmdModifiers == 0 and subItem.AXMenuItemMarkChar == ""
-            and subItem.AXChildren == nil
-            and delocalizedMenuBarItem(menuItem.AXTitle, bundleID) == 'Edit' then
-          idx = "Fn" .. subItem.AXMenuItemCmdChar
-        elseif (subItem.AXTitle == "Enter Full Screen"
-            or subItem.AXTitle == localizedEnterFullScreen)
-            and (subItem.AXMenuItemCmdGlyph == ""
-                and #subItem.AXMenuItemCmdModifiers == 0 and subItem.AXMenuItemMarkChar == ""
-                and subItem.AXChildren == nil) then
-          idx = "Fn" .. subItem.AXMenuItemCmdChar
-        else
-          idx = menuItemHotkeyIdx(subItem.AXMenuItemCmdModifiers or {}, subItem.AXMenuItemCmdChar)
-        end
-      elseif hs.application.menuGlyphs[subItem.AXMenuItemCmdGlyph] ~= nil then
-        idx = menuItemHotkeyIdx(subItem.AXMenuItemCmdModifiers or {}, hs.application.menuGlyphs[subItem.AXMenuItemCmdGlyph])
+    local idx
+    if subItem.AXMenuItemCmdChar ~= ""
+        and string.byte(subItem.AXMenuItemCmdChar, 1) ~= 3 then
+      local bundleID = hs.application.frontmostApplication():bundleID()
+      if subItem.AXMenuItemCmdChar == 'E' and subItem.AXMenuItemCmdGlyph == ""
+          and #subItem.AXMenuItemCmdModifiers == 0 and subItem.AXMenuItemMarkChar == ""
+          and subItem.AXChildren == nil
+          and delocalizedMenuBarItem(menuItem.AXTitle, bundleID) == 'Edit' then
+        idx = "Fn" .. subItem.AXMenuItemCmdChar
+      elseif (subItem.AXTitle == "Enter Full Screen"
+          or subItem.AXTitle == localizedEnterFullScreen)
+          and (subItem.AXMenuItemCmdGlyph == ""
+              and #subItem.AXMenuItemCmdModifiers == 0 and subItem.AXMenuItemMarkChar == ""
+              and subItem.AXChildren == nil) then
+        idx = "Fn" .. subItem.AXMenuItemCmdChar
+      else
+        idx = menuItemHotkeyIdx(subItem.AXMenuItemCmdModifiers or {}, subItem.AXMenuItemCmdChar)
       end
-      if idx ~= nil then
-        table.insert(t, { idx = idx, msg = idx .. ": " .. title,
-                          kind = HK.IN_APP, valid = subItem.AXEnabled })
-      end
+    elseif subItem.AXMenuItemCmdGlyph ~= ""
+        and hs.application.menuGlyphs[subItem.AXMenuItemCmdGlyph] ~= nil then
+      idx = menuItemHotkeyIdx(subItem.AXMenuItemCmdModifiers or {}, hs.application.menuGlyphs[subItem.AXMenuItemCmdGlyph])
+    end
+    if idx ~= nil then
+      table.insert(t, { idx = idx, msg = idx .. ": " .. title,
+                        kind = HK.IN_APP, valid = subItem.AXEnabled })
     end
     getSubMenuHotkeys(t, subItem, false, titlePrefix and title or nil)
   end
