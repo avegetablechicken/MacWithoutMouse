@@ -3739,6 +3739,7 @@ if microsoftRemoteDesktopApp ~= nil then
 end
 
 local function deactivateCloseWindowForIOSApps(appObject)
+  if appObject:bundleID() == nil then return end
   if hs.fs.attributes(hs.application.pathForBundleID(
       appObject:bundleID()) .. '/WrappedBundle') ~= nil then
     if iOSAppHotkey == nil then
