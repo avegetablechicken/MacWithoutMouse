@@ -133,6 +133,34 @@ local modifierSymbolMap = {
   ["touchbar:bottom-right"] = "⌟",
 }
 
+local keySymbolMap = {
+  ['\b'] = '⌫',
+  ['\t'] = '⇥',
+  ['\r'] = '↵',
+  ['\x1b'] = '⎋',
+  [' '] = '␣',
+  ['\xef\x9c\x80'] = '↑',
+  ['\xef\x9c\x81'] = '↓',
+  ['\xef\x9c\x82'] = '←',
+  ['\xef\x9c\x83'] = '→',
+  ['\xef\x9c\x84'] = 'F1',
+  ['\xef\x9c\x85'] = 'F2',
+  ['\xef\x9c\x86'] = 'F3',
+  ['\xef\x9c\x87'] = 'F4',
+  ['\xef\x9c\x88'] = 'F5',
+  ['\xef\x9c\x89'] = 'F6',
+  ['\xef\x9c\x8a'] = 'F7',
+  ['\xef\x9c\x8b'] = 'F8',
+  ['\xef\x9c\x8c'] = 'F9',
+  ['\xef\x9c\x8d'] = 'F10',
+  ['\xef\x9c\x8e'] = 'F11',
+  ['\xef\x9c\x8f'] = 'F12',
+  ['\xef\x9c\xa9'] = '↖',
+  ['\xef\x9c\xab'] = '↘',
+  ['\xef\x9c\xac'] = '⇞',
+  ['\xef\x9c\xad'] = '⇟',
+}
+
 local function loadKarabinerKeyBindings(filePath)
   local json = hs.json.read(filePath)
   local keyBindings = {}
@@ -186,7 +214,12 @@ local function menuItemHotkeyIdx(mods, key)
   for _, mod in ipairs{"cmd", "alt", "ctrl", "shift"} do
     if hs.fnutils.contains(mods, mod) then idx = idx .. modifierSymbolMap[mod] end
   end
-  idx = idx .. (string.byte(key, 1) < 127 and string.upper(key) or key)
+  if string.byte(key, 1) <= 32 or string.byte(key, 1) > 127 then
+    key = keySymbolMap[key] or key
+  else
+    key = string.upper(key)
+  end
+  idx = idx .. key
   return idx
 end
 
@@ -206,14 +239,16 @@ local function getSubMenuHotkeys(t, menuItem, titleAsEntry, titlePrefix)
       local idx
       if subItem.AXMenuItemCmdChar ~= "" then
         local bundleID = hs.application.frontmostApplication():bundleID()
-        if subItem.AXTitle == "Emoji & Symbols"
-            or (subItem.AXMenuItemCmdChar == 'E' and subItem.AXMenuItemCmdGlyph == ""
-                and #subItem.AXMenuItemCmdModifiers == 0 and subItem.AXMenuItemMarkChar == ""
-                and subItem.AXChildren == nil
-                and delocalizedMenuBarItem(menuItem.AXTitle, bundleID) == 'Edit') then
+        if subItem.AXMenuItemCmdChar == 'E' and subItem.AXMenuItemCmdGlyph == ""
+            and #subItem.AXMenuItemCmdModifiers == 0 and subItem.AXMenuItemMarkChar == ""
+            and subItem.AXChildren == nil
+            and delocalizedMenuBarItem(menuItem.AXTitle, bundleID) == 'Edit' then
           idx = "🌐" .. subItem.AXMenuItemCmdChar
-        elseif subItem.AXTitle == "Enter Full Screen"
-            or subItem.AXTitle == localizedEnterFullScreen then
+        elseif (subItem.AXTitle == "Enter Full Screen"
+            or subItem.AXTitle == localizedEnterFullScreen)
+            and (subItem.AXMenuItemCmdGlyph == ""
+                and #subItem.AXMenuItemCmdModifiers == 0 and subItem.AXMenuItemMarkChar == ""
+                and subItem.AXChildren == nil) then
           idx = "🌐" .. subItem.AXMenuItemCmdChar
         else
           idx = menuItemHotkeyIdx(subItem.AXMenuItemCmdModifiers or {}, subItem.AXMenuItemCmdChar)
