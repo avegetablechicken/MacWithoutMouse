@@ -272,8 +272,13 @@ local function loadAppHotkeys(t)
   local appObject = hs.application.frontmostApplication()
   local menuItems = getMenuItems(appObject)
   localizedEnterFullScreen = localizedString(
-      "Enter Full Screen", "com.apple.finder",
+      "Enter Full Screen", appObject:bundleID(),
       { locale = applicationLocales(appObject:bundleID())[1] })
+  if localizedEnterFullScreen == nil then
+    localizedEnterFullScreen = localizedString(
+      "Enter Full Screen", 'com.apple.finder',
+      { locale = applicationLocales(appObject:bundleID())[1] })
+  end
   for _, menuItem in ipairs(menuItems) do
     getSubMenuHotkeys(appHotkeys, menuItem, true, true)
   end
@@ -1117,9 +1122,16 @@ local searchHotkey = bindSpecSuspend(misc["searchHotkeys"], "Search Hotkey", fun
   end
 
   local appHotkeys = {}
+  local appObject = hs.application.frontmostApplication()
   for _, menuItem in ipairs(hs.application.frontmostApplication():getMenuItems()) do
-    localizedEnterFullScreen = localizedString("Enter Full Screen", "com.apple.finder",
-        { locale = applicationLocales(hs.application.frontmostApplication():bundleID())[1] })
+    localizedEnterFullScreen = localizedString(
+        "Enter Full Screen", appObject:bundleID(),
+        { locale = applicationLocales(appObject:bundleID())[1] })
+    if localizedEnterFullScreen == nil then
+      localizedEnterFullScreen = localizedString(
+          "Enter Full Screen", 'com.apple.finder',
+          { locale = applicationLocales(appObject:bundleID())[1] })
+    end
     getSubMenuHotkeys(appHotkeys, menuItem, false, true)
   end
   for _, hotkey in ipairs(appHotkeys) do
