@@ -525,6 +525,18 @@ local function processHotkeys(validOnly, showHS, showKara, showApp, evFlags, rel
         end
       end
       if canShow then
+        if kind < HK.APP_MENU and showHS then
+          ix = ix + 1
+          if ((ix - 1) % 15) == 0 then
+            if ix > 1 then
+              menu = menu .. "</ul>"
+            end
+            col = col + 1
+            menu = menu .. "<ul class='col col" .. col .. "'>"
+          end
+          local msg = hs.application.frontmostApplication():name()
+          menu = menu .. "<li><div class='typetext'>" .. " " .. msg .. "</div></li>"
+        end
         ix = ix + 1
         if ((ix - 1) % 15) == 0 then
           if ix > 1 then
@@ -534,6 +546,7 @@ local function processHotkeys(validOnly, showHS, showKara, showApp, evFlags, rel
           menu = menu .. "<ul class='col col" .. col .. "'>"
         end
         menu = menu .. "<li><div class='menutext'>" .. " " .. entry .. "</div></li>"
+        kind = HK.APP_MENU
       end
     elseif ((entry.source == 0 and showHS) or (entry.source == 1 and showKara) or (entry.source == 2 and showApp))
         and (entry.valid or (not validOnly and string.find(entry.msg, ": ") ~= nil)) then
