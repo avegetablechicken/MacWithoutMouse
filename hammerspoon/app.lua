@@ -2767,12 +2767,13 @@ function registerOpenRecent(bundleID)
     openRecentHotkey = nil
   end
   if bundleID == nil then return end
+  local appObject = hs.application.frontmostApplication()
   local spec = get(keybindingConfigs.hotkeys.appCommon, "openRecent")
-  if (get(appHotKeyCallbacks[bundleID], "openRecent") ~= nil)
+  local specApp = get(appHotKeyCallbacks[bundleID], "openRecent")
+  if (specApp ~= nil and (specApp.bindCondition == nil or specApp.bindCondition(appObject)))
       or spec == nil or hs.fnutils.contains(spec.excluded or {}, bundleID) then
     return
   end
-  local appObject = hs.application.frontmostApplication()
   local menuItem, menuItemPath = findMenuItem(appObject, { "File",  "Open Recent" })
   if menuItem ~= nil then
     local cond = function(appObject)
