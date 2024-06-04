@@ -784,8 +784,13 @@ local function registerProxyMenuImpl()
     proxyMenuIdx = registerProxyMenuEntry(name, enabledProxy == name, mode, proxyMenuIdx)
   end
 
-  table.insert(proxyMenu, { title = "-" })
-  table.insert(proxyMenu, {
+  registerProxySettingsEntry(proxyMenu)
+  proxy:setMenu(proxyMenu)
+end
+
+function registerProxySettingsEntry(menu)
+  table.insert(menu, { title = "-" })
+  table.insert(menu, {
     title = "Proxy Settings",
     fn = function()
       local osVersion = getOSVersion()
@@ -861,17 +866,22 @@ local function registerProxyMenuImpl()
     end,
     shortcut = 'p'
   })
-
-  proxy:setMenu(proxyMenu)
 end
 
 function registerProxyMenu(retry)
   getCurrentNetworkService()
   if not curNetworkService then
-    proxy:setMenu({{
+    local menu = {{
       title = "No Network Access",
       disabled = true
-    }})
+    },
+    {
+      title = "Disable",
+      fn = function() disable_proxy() end,
+      shortcut = '0',
+    }}
+    registerProxySettingsEntry(menu)
+    proxy:setMenu(menu)
     if not retry then
       return false
     else
