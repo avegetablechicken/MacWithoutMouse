@@ -1187,6 +1187,16 @@ appHotKeyCallbacks = {
       message = "Insert Equation",
       condition = checkMenuItem({ en = {"Insert", "Equation"}, zh = {"插入", "方程"} }),
       fn = receiveMenuItem
+    },
+    ["openRecent"] = {
+      message = "Open Recent",
+      bindCondition = checkMenuItem({ zh = {"文件", "最近打开"} }),
+      fn = function(appObject)
+        showMenuItemWrapper(function()
+          appObject:selectMenuItem({ "文件" })
+          appObject:selectMenuItem({ "文件", "最近打开" })
+        end)()
+      end
     }
   },
 
