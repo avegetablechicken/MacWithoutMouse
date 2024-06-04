@@ -115,7 +115,7 @@ local modifiersShowReverseOrder =
   "touchbar:top-left",
 }
 
-local modifierSymbols = { "Fn", "⌘", "⌥", "⌃", "⇧", "✧", "⌟", "⌞", "⌝", "⌜" }
+local modifierSymbols = { "🌐︎", "⌘", "⌥", "⌃", "⇧", "✧", "⌟", "⌞", "⌝", "⌜" }
 
 local modifierSymbolMap = {
   command = "⌘",
@@ -125,7 +125,7 @@ local modifierSymbolMap = {
   cmd = "⌘",
   ctrl = "⌃",
   alt = "⌥",
-  fn = "Fn",
+  fn = "🌐︎",
   hyper = "✧",
   ["touchbar:top-left"] = "⌜",
   ["touchbar:top-right"] = "⌝",
@@ -160,6 +160,7 @@ local keySymbolMap = {
   ['\xef\x9c\xab'] = '↘',
   ['\xef\x9c\xac'] = '⇞',
   ['\xef\x9c\xad'] = '⇟',
+  ['\xf0\x9f\x8e\xa4'] = '🎤︎',
 }
 
 local function loadKarabinerKeyBindings(filePath)
@@ -244,13 +245,13 @@ local function getSubMenuHotkeys(t, menuItem, titleAsEntry, titlePrefix)
           and #subItem.AXMenuItemCmdModifiers == 0 and subItem.AXMenuItemMarkChar == ""
           and subItem.AXChildren == nil
           and delocalizedMenuBarItem(menuItem.AXTitle, bundleID) == 'Edit' then
-        idx = "Fn" .. subItem.AXMenuItemCmdChar
+        idx = "🌐︎" .. subItem.AXMenuItemCmdChar
       elseif (subItem.AXTitle == "Enter Full Screen"
           or subItem.AXTitle == localizedEnterFullScreen)
           and (subItem.AXMenuItemCmdGlyph == ""
               and #subItem.AXMenuItemCmdModifiers == 0 and subItem.AXMenuItemMarkChar == ""
               and subItem.AXChildren == nil) then
-        idx = "Fn" .. subItem.AXMenuItemCmdChar
+        idx = "🌐︎" .. subItem.AXMenuItemCmdChar
       else
         idx = menuItemHotkeyIdx(subItem.AXMenuItemCmdModifiers or {}, subItem.AXMenuItemCmdChar)
       end
@@ -584,8 +585,8 @@ local function processHotkeys(validOnly, showHS, showKara, showApp, evFlags, rel
       for _, mod in ipairs(modifierSymbols) do
         if string.find(entry.idx, mod) then
           modsLen = modsLen + 1
-          if mod == "Fn" then
-            modsByteLen = modsByteLen + 2
+          if mod == "🌐︎" then
+            modsByteLen = modsByteLen + 7
           else
             modsByteLen = modsByteLen + 3
           end
@@ -1242,8 +1243,8 @@ local searchHotkey = bindSpecSuspend(misc["searchHotkeys"], "Search Hotkey", fun
     for _, mod in ipairs(modifierSymbols) do
       if string.find(entry.idx, mod) then
         modsLen = modsLen + 1
-        if mod == "Fn" then
-          modsByteLen = modsByteLen + 2
+        if mod == "🌐︎" then
+          modsByteLen = modsByteLen + 7
         else
           modsByteLen = modsByteLen + 3
         end
@@ -1326,7 +1327,7 @@ local searchHotkey = bindSpecSuspend(misc["searchHotkeys"], "Search Hotkey", fun
           end
         end
       else
-        hs.eventtap.keyStroke(choice.mods, choice.key)
+        hs.eventtap.keyStroke(choice.mods:gsub('🌐︎', 'fn'), choice.key)
       end
     elseif choice.modalType == 1 then
       local modal = hyperModalList[choice.hyperModalIdx]

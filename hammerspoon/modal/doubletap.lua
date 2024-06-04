@@ -33,7 +33,7 @@ local modifiers = {
   cmd = "⌘",
   ctrl = "⌃",
   alt = "⌥",
-  fn = "Fn",
+  fn = "🌐︎",
   hyper = "✧"
 }
 
