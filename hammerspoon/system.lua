@@ -814,34 +814,49 @@ local function registerProxyMenuImpl()
           end tell
         ]])
         if ok and type(position) == "table" then
-          leftClickAndRestore(position)
+          leftClickAndRestore(position,
+                              findApplication("com.apple.systempreferences"):name())
         end
       else
-        hs.osascript.applescript([[
+        local ok, position = hs.osascript.applescript([[
+          tell application id "com.apple.systempreferences" to activate
+          tell application "System Events"
+            tell ]] .. aWinFor("com.apple.systempreferences") .. [[
+              if sheet 1 exists then
+                key code 53
+                repeat until not (sheet 1 exists)
+                  delay 0.05
+                end repeat
+              end if
+            end tell
+          end tell
           tell application id "com.apple.systempreferences"
-            activate
             reveal pane id "com.apple.wifi-settings-extension"
             repeat until anchor "General_Details" of current pane exists
-              delay 0.1
+              delay 0.05
             end repeat
             reveal anchor "General_Details" of current pane
           end tell
           tell application "System Events"
-            set ntry to 0 -- resolve weird bug that the anchor cannot be activated
-            repeat until sheet 1 of ]] .. aWinFor("com.apple.systempreferences") .. [[ exists
-              if ntry = 50 then
-                return
-              end if
-              set ntry to ntry + 1
-              delay 0.1
-            end repeat
-            key code 125
-            key code 125
-            key code 125
-            key code 125
-            key code 125
+            tell ]] .. aWinFor("com.apple.systempreferences") .. [[
+              set ntry to 0 -- resolve weird bug that the anchor cannot be activated
+              repeat until sheet 1 exists
+                if ntry = 50 then
+                  return
+                end if
+                set ntry to ntry + 1
+                delay 0.05
+              end repeat
+              set r to UI element 1 of row 6 of outline 1 of scroll area 1 ¬
+                  of group 1 of splitter group 1 of group 1 of sheet 1
+              return position of r
+            end tell
           end tell
         ]])
+        if ok and type(position) == "table" then
+          leftClickAndRestore({ position[1], position[2] + 10 },
+                              findApplication("com.apple.systempreferences"):name())
+        end
       end
     end,
     shortcut = 'p'
