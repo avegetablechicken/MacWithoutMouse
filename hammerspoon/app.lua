@@ -1712,7 +1712,6 @@ appHotKeyCallbacks = {
         selectMenuItem(appObject, { "File", "Open..." })
       end
     },
-    ["hide"] = specialCommonHotkeyConfigs["hide"],
     ["minimize"] = {
       mods = "⌘", key = "M",
       message = localizedMessage("Minimize"),
