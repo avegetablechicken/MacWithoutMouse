@@ -992,15 +992,11 @@
     },
     "com.kingsoft.wpsoffice.mac": {
       "closeDoNotSave": {
-        "mods": "option",
-        "key": "D"
-      },
-      "closeCancel": {
-        "mods": "option",
-        "key": "C"
+        "mods": "",
+        "key": "N"
       },
       "closeSave": {
-        "mods": "option",
+        "mods": "",
         "key": "S"
       },
       "exportToPDF": {
