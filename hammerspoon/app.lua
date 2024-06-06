@@ -316,9 +316,7 @@ local function deleteMousePositionCall(appObject)
     function(msg, results, count)
       if count == 0 then return end
 
-      local collectionList = results[1].AXChildren
-      if collectionList == nil or #collectionList == 0 then return end
-      local sectionList = collectionList[1]:childrenWithRole("AXGroup")
+      local sectionList = results[1].AXChildren[1]:childrenWithRole("AXGroup")
       if #sectionList == 0 then return end
 
       local section = sectionList[1]
@@ -347,9 +345,7 @@ local function deleteAllCalls(appObject)
     function(msg, results, count)
       if count == 0 then return end
 
-      local collectionList = results[1].AXChildren
-      if collectionList == nil or #collectionList == 0 then return end
-      local sectionList = collectionList[1]:childrenWithRole("AXGroup")
+      local sectionList = results[1].AXChildren[1]:childrenWithRole("AXGroup")
       if #sectionList == 0 then return end
 
       local section = sectionList[1]
