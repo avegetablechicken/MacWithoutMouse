@@ -322,6 +322,12 @@ local function deleteMousePositionCall(appObject)
       local section = sectionList[1]
       if not rightClick(hs.mouse.absolutePosition(), appObject:name()) then return end
       local popups = section:childrenWithRole("AXMenu")
+      local maxTime, time = 0.5, 0
+      while #popups == 0 and time < maxTime do
+        hs.timer.usleep(0.01 * 1000000)
+        time = time + 0.01
+        popups = section:childrenWithRole("AXMenu")
+      end
       for _, popup in ipairs(popups) do
         for _, menuItem in ipairs(popup:childrenWithRole("AXMenuItem")) do
           if menuItem.AXIdentifier == "menuRemovePersonFromRecents:" then
@@ -335,7 +341,8 @@ local function deleteMousePositionCall(appObject)
       return element.AXSubrole == "AXCollectionList"
           and element.AXChildren ~= nil and #element.AXChildren > 0
           and element.AXChildren[1].AXSubrole == "AXSectionList"
-    end
+    end,
+    { count = 1 }
   )
 end
 
@@ -353,10 +360,17 @@ local function deleteAllCalls(appObject)
         return
       end
       local popups = section:childrenWithRole("AXMenu")
+      local maxTime, time = 0.5, 0
+      while #popups == 0 and time < maxTime do
+        hs.timer.usleep(0.01 * 1000000)
+        time = time + 0.01
+        popups = section:childrenWithRole("AXMenu")
+      end
       for _, popup in ipairs(popups) do
         for _, menuItem in ipairs(popup:childrenWithRole("AXMenuItem")) do
           if menuItem.AXIdentifier == "menuRemovePersonFromRecents:" then
             menuItem:performAction("AXPress")
+            hs.timer.usleep(0.1 * 1000000)
             break
           end
         end
@@ -367,7 +381,8 @@ local function deleteAllCalls(appObject)
       return element.AXSubrole == "AXCollectionList"
           and element.AXChildren ~= nil and #element.AXChildren > 0
           and element.AXChildren[1].AXSubrole == "AXSectionList"
-    end
+    end,
+    { count = 1 }
   )
 end
 
