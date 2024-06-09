@@ -1589,12 +1589,12 @@ appHotKeyCallbacks = {
           local maxCnt = math.min(#positions, 10)
           for i = 1, maxCnt do
             table.insert(bartenderBarHotkeys, bindSuspend("", i == 10 and "0" or tostring(i), "Click " .. appNames[i], function()
-              leftClickAndRestore(positions[i])
+              leftClickAndRestore({ positions[i][1] + 10, positions[i][2] + 10 })
             end))
           end
           for i = 1, maxCnt do
             table.insert(bartenderBarHotkeys, bindSuspend("⌥", i == 10 and "0" or tostring(i), "Right-click " .. appNames[i], function()
-              rightClickAndRestore(positions[i])
+              rightClickAndRestore({ positions[i][1] + 10, positions[i][2] + 10 })
             end))
           end
           if bartenderBarFilter == nil then
