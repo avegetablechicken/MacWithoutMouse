@@ -94,6 +94,36 @@ function showMenuItemWrapper(fn)
   end
 end
 
+keySymbolMap = {
+  ['\b'] = '⌫',
+  ['\t'] = '⇥',
+  ['\n'] = '↵',
+  ['\r'] = '↵',
+  ['\x1b'] = '⎋',
+  [' '] = '␣',
+  ['\xef\x9c\x80'] = '↑',
+  ['\xef\x9c\x81'] = '↓',
+  ['\xef\x9c\x82'] = '←',
+  ['\xef\x9c\x83'] = '→',
+  ['\xef\x9c\x84'] = 'F1',
+  ['\xef\x9c\x85'] = 'F2',
+  ['\xef\x9c\x86'] = 'F3',
+  ['\xef\x9c\x87'] = 'F4',
+  ['\xef\x9c\x88'] = 'F5',
+  ['\xef\x9c\x89'] = 'F6',
+  ['\xef\x9c\x8a'] = 'F7',
+  ['\xef\x9c\x8b'] = 'F8',
+  ['\xef\x9c\x8c'] = 'F9',
+  ['\xef\x9c\x8d'] = 'F10',
+  ['\xef\x9c\x8e'] = 'F11',
+  ['\xef\x9c\x8f'] = 'F12',
+  ['\xef\x9c\xa9'] = '↖',
+  ['\xef\x9c\xab'] = '↘',
+  ['\xef\x9c\xac'] = '⇞',
+  ['\xef\x9c\xad'] = '⇟',
+  ['\xf0\x9f\x8e\xa4'] = '🎤︎',
+}
+
 function getMenuItems(appObject)
   local menuItems
   local maxTryTime = 3
@@ -163,7 +193,11 @@ end
 local function findMenuItemByKeyBindingImpl(mods, key, menuItem)
   if menuItem.AXChildren == nil then return end
   for _, subItem in ipairs(menuItem.AXChildren[1]) do
-    if (subItem.AXMenuItemCmdChar == key
+    local cmdChar = subItem.AXMenuItemCmdChar
+    if cmdChar ~= "" and (string.byte(cmdChar, 1) <= 32 or string.byte(cmdChar, 1) > 127) then
+      cmdChar = keySymbolMap[key] or cmdChar
+    end
+    if (cmdChar == key
         or (subItem.AXMenuItemCmdGlyph ~= "" and hs.application.menuGlyphs[subItem.AXMenuItemCmdGlyph] == key))
         and #subItem.AXMenuItemCmdModifiers == #mods then
       local match = true
