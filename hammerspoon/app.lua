@@ -3461,11 +3461,6 @@ for bundleID, rules in pairs(appsAutoQuitWithNoPseudoWindows) do
 end
 
 local function watchForMathpixPopoverWindow(appObject)
-  local spec = get(keybindingConfigs.hotkeys,
-      "com.mathpix.snipping-tool-noappstore", "hidePopover")
-      or get(appHotKeyCallbacks,
-      "com.mathpix.snipping-tool-noappstore", "hidePopover")
-  if spec == nil then return end
   local appUIObj = hs.axuielement.applicationElement(appObject)
   mathpixObserver = hs.axuielement.observer.new(appObject:pid())
   mathpixObserver:addWatcher(
@@ -3479,7 +3474,7 @@ local function watchForMathpixPopoverWindow(appObject)
           mathpixPopoverHide:delete()
           mathpixPopoverHide = nil
         end
-        mathpixPopoverHide = bindSpecSuspend(spec, spec.message or "Hide Popover", function()
+        mathpixPopoverHide = bindSuspend("", "Escape", "Hide Popover", function()
           clickRightMenuBarItem(appObject:bundleID())
           mathpixPopoverHide:delete()
           mathpixPopoverHide = nil

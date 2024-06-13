@@ -1233,11 +1233,6 @@
         "key": "M",
         "background": true,
         "persist": true
-      },
-      "hidePopover": {
-        "mods": "",
-        "key": "escape",
-        "notActivateApp": true
       }
     },
     "com.tencent.LemonMonitor": {
