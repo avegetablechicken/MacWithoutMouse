@@ -19,6 +19,7 @@ OS = {
   Monterey = "12",
   Ventura = "13",
   Sonoma = "14",
+  Sequoia = "15",
 }
 
 function getOSVersion()
