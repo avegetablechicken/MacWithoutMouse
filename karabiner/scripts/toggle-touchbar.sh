@@ -4,4 +4,4 @@ if [[ $mode == "fullControlStrip" ]]; then
 else
   defaults write com.apple.touchbar.agent PresentationModeGlobal fullControlStrip
 fi
-pkill "Touch Bar agent"; killall "ControlStrip"
+killall "ControlStrip"
