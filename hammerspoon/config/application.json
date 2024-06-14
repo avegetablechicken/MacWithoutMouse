@@ -98,6 +98,14 @@
       "locations": ["inlab", "outoflab"],
       "inlab": ["dell"],
       "outoflab": []
+    },
+    {
+      "condition": {
+        "shell_command": "zsh ./scripts/check_proxy.sh"
+      },
+      "locations": ["proxySet", "proxyUnset"],
+      "proxySet": ["Google Drive"],
+      "proxyUnset": []
     }]
   }
 }
