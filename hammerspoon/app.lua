@@ -3018,23 +3018,30 @@ function connectMountainDuckEntriesByLocation(appObject, map)
   hs.osascript.applescript(script)
 end
 local mountainDuckConfig = applicationConfigs["io.mountainduck"]
-if mountainDuckConfig ~= nil then
-  local shell_command = get(mountainDuckConfig, "condition", "shell_command")
-  if shell_command ~= nil then
-    mountainDuckConfig.condition = function()
-      local _, _, _, rc = hs.execute(shell_command)
-      if rc == 0 then return true
-      elseif rc == 1 then return false
-      else return nil
+if mountainDuckConfig ~= nil and mountainDuckConfig.connections ~= nil then
+  for _, connection in ipairs(mountainDuckConfig.connections) do
+    local shell_command = get(connection, "condition", "shell_command")
+    if shell_command ~= nil then
+      connection.condition = function()
+        local _, _, _, rc = hs.execute(shell_command)
+        if rc == 0 then
+          return true
+        elseif rc == 1 then
+          return false
+        else
+          return nil
+        end
       end
+    else
+      connection.condition = nil
     end
-  else
-    mountainDuckConfig = nil
   end
 end
 local mountainDuckObject = findApplication("io.mountainduck")
 if mountainDuckConfig ~= nil and mountainDuckObject ~= nil then
-  connectMountainDuckEntriesByLocation(mountainDuckObject, mountainDuckConfig)
+  for _, connection in ipairs(mountainDuckConfig.connections) do
+    connectMountainDuckEntriesByLocation(mountainDuckObject, connection)
+  end
 end
 
 
@@ -3934,7 +3941,9 @@ function app_applicationCallback(appName, eventType, appObject)
       watchForLemonMonitorWindow(appObject)
     elseif bundleID == "io.mountainduck" then
       if mountainDuckConfig ~= nil then
-        connectMountainDuckEntriesByLocation(appObject, mountainDuckConfig)
+        for _, connection in ipairs(mountainDuckConfig.connections) do
+          connectMountainDuckEntriesByLocation(appObject, connection)
+        end
       end
     end
     if bundleID and appsAutoHideWithNoWindows[bundleID] then
