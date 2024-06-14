@@ -2111,11 +2111,9 @@ end
 -- wifi callbacks
 
 -- use lab proxy in lab
-local labProxyConfig = ProxyConfigs["Lab Proxy"]
 local lastWifi = hs.wifi.currentNetwork()
 
 function system_wifiChangedCallback()
-  if labProxyConfig == nil or labProxyConfig.condition == nil then return end
 
   local curWifi = hs.wifi.currentNetwork()
   if curWifi == nil then
@@ -2135,12 +2133,25 @@ function system_wifiChangedCallback()
         end,
         function()
           disable_proxy()
-          local locations = labProxyConfig.locations
-          local _, status_ok = hs.execute(labProxyConfig.condition.shell_command)
-          local loc = status_ok and locations[1] or locations[2]
-          if status_ok then
-            enable_proxy_PAC("Lab Proxy", nil, loc)
-          else
+          local proxySet = false
+          for name, config in pairs(ProxyConfigs) do
+            if config.condition ~= nil then
+              local fullfilled = config.condition()
+              if fullfilled then
+                local loc = config.locations[1]
+                if config[loc].PAC ~= nil then
+                  enable_proxy_PAC(name, nil, loc)
+                  proxySet = true
+                  break
+                elseif config[loc].global ~= nil then
+                  enable_proxy_global(name, nil, loc)
+                  proxySet = true
+                  break
+                end
+              end
+            end
+          end
+          if not proxySet then
             if findApplication(proxyAppBundleIDs.MonoCloud) then
               hs.application.launchOrFocusByBundleID(proxyAppBundleIDs.MonoCloud)
               clickRightMenuBarItem(proxyAppBundleIDs.MonoCloud, "Outbound Mode", 3)
