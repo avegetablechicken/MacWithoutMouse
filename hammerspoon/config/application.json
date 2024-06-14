@@ -99,6 +99,7 @@
       "inlab": ["dell"],
       "outoflab": []
     },
+    "OneDrive",
     {
       "condition": {
         "shell_command": "zsh ./scripts/check_proxy.sh"
