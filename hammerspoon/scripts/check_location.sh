@@ -30,13 +30,13 @@ done
 
 interface=$(route get default | grep interface | awk '{print $2}')
 if [[ $? -ne 0 ]]; then
-	return 1
+	return -1
 fi
 
 networkservice=$(networksetup -listallhardwareports | awk "/${interface}/ {print prev} {prev=\$0;}" | awk -F: '{print $2}' | awk '{$1=$1};1')
 
 if [[ "Wi-Fi" = "$networkservice" ]]; then
-  [[ -z "$ssids" ]] && return 1
+  [[ -z "$ssids" ]] && return -1
 	networksetup -getairportnetwork ${interface} | awk '{print $4}' | grep -q -E "^(${ssid_pattern})$"
 elif [[ "$networkservice" =~ "^USB (.*) LAN$" ]]; then
   [[ -z "$ips" ]] && return 1
@@ -44,6 +44,7 @@ elif [[ "$networkservice" =~ "^USB (.*) LAN$" ]]; then
 	for i in "${ips[@]}"; do
 		[[ "$ip" =~ "$i" ]] && return 0
 	done
-else
 	return 1
+else
+	return -1
 fi

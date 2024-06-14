@@ -343,20 +343,31 @@ function parseProxyConfigurations(configs)
   for name, config in pairs(configs) do
     ProxyConfigs[name] = {}
     if config.condition ~= nil then
-      ProxyConfigs[name].condition = config.condition
-      ProxyConfigs[name].locations = config.locations
-      for i, loc in ipairs(config.locations) do
-        ProxyConfigs[name][loc] = {}
-        local spec = config[loc]
-        ProxyConfigs[name][loc]["PAC"] = spec.pac
-        if spec.global ~= nil then
-          local httpIp, httpPort = string.match(spec.global.http, "(.+):(%d+)")
-          local httpsIp, httpsPort = string.match(spec.global.https, "(.+):(%d+)")
-          local socksIp, socksPort = string.match(spec.global.socks5, "(.+):(%d+)")
-          ProxyConfigs[name][loc]["global"] = {
-            httpIp, httpPort, httpsIp, httpsPort, socksIp, socksPort
-          }
+      local shell_command = config.condition.shell_command
+      if shell_command ~= nil then
+        ProxyConfigs[name].condition = function()
+          local _, _, _, rc = hs.execute(shell_command)
+          if rc == 0 then return true
+          elseif rc == 1 then return false
+          else return nil
+          end
         end
+        ProxyConfigs[name].locations = config.locations
+        for i, loc in ipairs(config.locations) do
+          ProxyConfigs[name][loc] = {}
+          local spec = config[loc]
+          ProxyConfigs[name][loc]["PAC"] = spec.pac
+          if spec.global ~= nil then
+            local httpIp, httpPort = string.match(spec.global.http, "(.+):(%d+)")
+            local httpsIp, httpsPort = string.match(spec.global.https, "(.+):(%d+)")
+            local socksIp, socksPort = string.match(spec.global.socks5, "(.+):(%d+)")
+            ProxyConfigs[name][loc]["global"] = {
+              httpIp, httpPort, httpsIp, httpsPort, socksIp, socksPort
+            }
+          end
+        end
+      else
+        ProxyConfigs[name] = nil
       end
     else
       local spec = config
@@ -474,8 +485,9 @@ function registerProxyMenuEntry(name, enabled, mode, proxyMenuIdx)
     config = ProxyConfigs[name]
   else
     local locations = ProxyConfigs[name].locations
-    local _, status_ok = hs.execute(ProxyConfigs[name].condition.shell_command)
-    loc = status_ok and locations[1] or locations[2]
+    local fullfilled = ProxyConfigs[name].condition()
+    if fullfilled == nil then return proxyMenuIdx end
+    loc = fullfilled and locations[1] or locations[2]
     config = ProxyConfigs[name][loc]
   end
   if config ~= nil then
