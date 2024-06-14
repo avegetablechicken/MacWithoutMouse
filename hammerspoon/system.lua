@@ -573,13 +573,14 @@ local function parseProxyInfo(info, require_mode)
   local mode = nil
   if string.match(info[2], "Enabled: Yes") then
     for appname, config in pairs(ProxyConfigs) do
-      if config.PAC ~= nil then
-        if string.match(info[2], config.PAC) then
+      if config.condition == nil then
+        if config.PAC ~= nil and string.match(info[2], config.PAC) then
           enabledProxy = appname
           mode = "PAC"
         end
       else
-        for loc, spec in pairs(config) do
+        for _, loc in ipairs(config.locations) do
+          local spec = config[loc]
           if spec.PAC ~= nil and string.match(info[2], spec.PAC) then
             enabledProxy = appname
             mode = "PAC"
@@ -591,13 +592,14 @@ local function parseProxyInfo(info, require_mode)
     end
   elseif string.match(info[3], "Enabled: Yes") then
     for appname, config in pairs(ProxyConfigs) do
-      if config.global ~= nil then
-        if string.match(info[3], config.global[1])
+      if config.condition == nil then
+        if config.global ~= nil and string.match(info[3], config.global[1])
             and string.match(info[3], tostring(config.global[2])) then
           enabledProxy = appname
         end
       else
-        for loc, spec in pairs(config) do
+        for _, loc in pairs(config.locations) do
+          local spec = config[loc]
           if spec.global ~= nil and string.match(info[3], spec.global[1])
               and string.match(info[3], tostring(spec.global[2])) then
             enabledProxy = appname
