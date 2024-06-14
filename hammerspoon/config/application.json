@@ -88,5 +88,14 @@
       "com.apple.inputmethod.SCIM.Shuangpin",
       "com.apple.inputmethod.SCIM.ITABC"
     ]
+  },
+
+  "io.mountainduck": {
+    "condition": {
+      "shell_command": "zsh ./scripts/checkinlab.sh"
+    },
+    "locations": ["inlab", "outoflab"],
+    "inlab": ["dell"],
+    "outoflab": []
   }
 }

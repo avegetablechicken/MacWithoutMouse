@@ -2986,6 +2986,57 @@ function registerForOpenSavePanel(appObject)
 end
 registerForOpenSavePanel(frontmostApplication)
 
+function connectMountainDuckEntriesByLocation(appObject, map)
+  local fullfilled = map.condition(appObject)
+  if fullfilled == nil then return end
+  local connects = map[map.locations[fullfilled and 1 or 2]]
+  local disconnects = map[map.locations[fullfilled and 2 or 1]]
+  clickAppRightMenuBarItem(appObject:bundleID())
+  local script = string.format([[
+    tell application "System Events"
+      tell first application process whose bundle identifier is "%s"
+        set li to menu 1 of menu bar 1
+  ]], appObject:bundleID(), appObject:bundleID())
+  for _, item in ipairs(connects) do
+    script = script .. string.format([[
+        if exists menu item "%s" of li then
+          click menu item 1 of menu 1 of menu item "%s" of li
+        end
+    ]], item, item)
+  end
+  for _, item in ipairs(disconnects) do
+    script = script .. string.format([[
+        if exists menu item "%s" of li then
+          click menu item "%s" of menu 1 of menu item "%s" of li
+        end
+    ]], item, localizedString('Disconnect', 'io.mountainduck'), item)
+  end
+  script = script .. [[
+      end tell
+    end tell
+  ]]
+  hs.osascript.applescript(script)
+end
+local mountainDuckConfig = applicationConfigs["io.mountainduck"]
+if mountainDuckConfig ~= nil then
+  local shell_command = get(mountainDuckConfig, "condition", "shell_command")
+  if shell_command ~= nil then
+    mountainDuckConfig.condition = function()
+      local _, _, _, rc = hs.execute(shell_command)
+      if rc == 0 then return true
+      elseif rc == 1 then return false
+      else return nil
+      end
+    end
+  else
+    mountainDuckConfig = nil
+  end
+end
+local mountainDuckObject = findApplication("io.mountainduck")
+if mountainDuckConfig ~= nil and mountainDuckObject ~= nil then
+  connectMountainDuckEntriesByLocation(mountainDuckObject, mountainDuckConfig)
+end
+
 
 -- bind `alt+?` hotkeys to menu bar 1 functions
 -- to be registered in application callback
@@ -3881,6 +3932,10 @@ function app_applicationCallback(appName, eventType, appObject)
       watchForMathpixPopoverWindow(appObject)
     elseif bundleID == "com.tencent.LemonMonitor" then
       watchForLemonMonitorWindow(appObject)
+    elseif bundleID == "io.mountainduck" then
+      if mountainDuckConfig ~= nil then
+        connectMountainDuckEntriesByLocation(appObject, mountainDuckConfig)
+      end
     end
     if bundleID and appsAutoHideWithNoWindows[bundleID] then
       local cfg = appsAutoHideWithNoWindows[bundleID]
