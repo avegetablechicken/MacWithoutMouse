@@ -305,6 +305,10 @@ local function getResourceDir(bundleID, frameworkName)
   elseif bundleID == "com.microsoft.edgemac" then
     resourceDir = appContentPath .. "/Frameworks/Microsoft Edge Framework.framework/Resources"
     framework.chromium = true
+  elseif bundleID == "com.tencent.meeting" then
+    resourceDir = appContentPath .. "/Frameworks/WeMeetFramework.framework/Versions/Current/Frameworks"
+        .. "/WeMeet.framework/Versions/A/Resources"
+        .. "/WeMeetResource.bundle/Contents/Resources"
   else
     local frameworkDir = appContentPath .. "/Frameworks"
     for _, fw in ipairs{"Electron Framework", "Chromium Embedded Framework"} do

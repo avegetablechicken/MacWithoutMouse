@@ -1142,6 +1142,12 @@
         "key": "escape"
       }
     },
+    "com.tencent.meeting": {
+      "preferences": {
+        "mods": "command",
+        "key": ","
+      }
+    },
     "com.objective-see.lulu.app": {
       "allowConnection": {
         "mods": "option",

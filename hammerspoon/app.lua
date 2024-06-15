@@ -1526,6 +1526,16 @@ appHotKeyCallbacks = {
     }
   },
 
+  ["com.tencent.meeting"] =
+  {
+    ["preferences"] = {
+      message = localizedMessage("Preferences"),
+      fn = function(appObject)
+        selectMenuItem(appObject, { appObject:name(), "Preferences" })
+      end
+    }
+  },
+
   ["barrier"] =
   {
     ["toggleBarrierConnect"] = {
