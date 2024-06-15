@@ -4103,6 +4103,11 @@ function app_applicationCallback(appName, eventType, appObject)
           unregisterInWinHotKeys(bid, true)
         end
       end
+      for bid, _ in pairs(appLocales) do
+        if findApplication(bid) == nil then
+          appLocales[bid] = nil
+        end
+      end
       for bid, _ in pairs(appsMenuBarItemsWatchers) do
         if findApplication(bid) == nil then
           appsMenuBarItemsWatchers[bid][1]:stop()
