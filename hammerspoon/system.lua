@@ -1071,7 +1071,7 @@ local function popupControlCenterSubPanel(panel, allowReentry)
       end if
     end repeat
   ]]
-  if hs.fnutils.contains({"WiFi", "Focus", "Bluetooth", "AirDrop"}, panel) then
+  if hs.fnutils.contains({ "WiFi", "Focus", "Bluetooth", "AirDrop", "Music Recognition" }, panel) then
     enter = string.format(enterTemplate, "checkbox", ident, 2)
   elseif panel == "Screen Mirroring" then
     if osVersion < OS.Ventura then
@@ -1083,7 +1083,7 @@ local function popupControlCenterSubPanel(panel, allowReentry)
     enter = string.format(enterTemplate, osVersion < OS.Ventura and "static text" or "group", ident, 1)
   elseif panel == "Sound" then
     enter = string.format(enterTemplate, "static text", ident, 1)
-  elseif panel == "Keyboard Brightness" then
+  elseif hs.fnutils.contains({ "Accessibility Shortcuts", "Battery", "Hearing", "Users & Group", "Keyboard Brightness" }, panel) then
     enter = string.format(enterTemplate, "button", ident, 1)
   elseif panel == "Now Playing" then
     enter = [[
@@ -1152,7 +1152,8 @@ local function popupControlCenterSubPanel(panel, allowReentry)
         end if
       end repeat
     ]]
-    if hs.fnutils.contains({"WiFi", "Focus", "Bluetooth", "AirDrop", "Keyboard Brightness", "Screen Mirroring"}, panel) then
+    if hs.fnutils.contains({ "WiFi", "Focus", "Bluetooth", "AirDrop", "Keyboard Brightness", "Screen Mirroring",
+                             "Accessibility Shortcuts", "Battery", "Hearing"}, panel) then
       already = string.format(alreadyTemplate, "static text", ident)
     elseif panel == "Display" then
       already = [[
@@ -1162,6 +1163,8 @@ local function popupControlCenterSubPanel(panel, allowReentry)
       ]]
     elseif panel == "Sound" then
       already = string.format(alreadyTemplate, "slider", ident)
+    elseif panel == "Music Recognition" then
+      already = string.format(alreadyTemplate, "group", ident)
     elseif panel == "Now Playing" then
       if osVersion < OS.Ventura then
         already = [[
@@ -1295,7 +1298,8 @@ function registerControlCenterHotKeys(panel)
   if not checkAndRegisterControlCenterHotKeys(hotkeyMainBack) then return end
 
   -- jump to related panel in `System Preferences`
-  if hs.fnutils.contains({"WiFi", "Bluetooth", "Focus", "Keyboard Brightness", "Screen Mirroring", "Display", "Sound"}, panel) then
+  if hs.fnutils.contains({ "WiFi", "Bluetooth", "Focus", "Keyboard Brightness", "Screen Mirroring", "Display", "Sound",
+                           "Accessibility Shortcuts", "Battery", "Hearing", "Users & Group", }, panel) then
     if osVersion < OS.Ventura then
       local ok, result = hs.osascript.applescript([[
         tell application "System Events"
@@ -1870,6 +1874,17 @@ function registerControlCenterHotKeys(panel)
         end)
       if not checkAndRegisterControlCenterHotKeys(hotkey) then return end
     end
+  elseif panel == "Music Recognition" then
+    local hotkey = newControlCenter("", "Space", "Toggle Listening",
+      function()
+        hs.osascript.applescript([[
+          tell application "System Events"
+            set cb to checkbox 1 of group 1 of ]] .. pane .. [[ of application process "ControlCenter"
+            perform action 1 of cb
+          end tell
+        ]])
+      end)
+    if not checkAndRegisterControlCenterHotKeys(hotkey) then return end
   elseif panel == "Now Playing" then
     local ok, result
     if osVersion < OS.Ventura then
@@ -1988,7 +2003,8 @@ local function getActiveControlCenterPanel()
   ]]
   for panel, ident in pairs(controlCenterSubPanelIdentifiers) do
     local already = nil
-    if hs.fnutils.contains({"WiFi", "Focus", "Bluetooth", "AirDrop", "Keyboard Brightness", "Screen Mirroring"}, panel) then
+    if hs.fnutils.contains({ "WiFi", "Focus", "Bluetooth", "AirDrop", "Keyboard Brightness", "Screen Mirroring",
+                             "Accessibility Shortcuts", "Battery", "Hearing"}, panel) then
       already = string.format(alreadyTemplate, "static text", ident, panel)
     elseif panel == "Display" then
       already = [[
@@ -1998,6 +2014,8 @@ local function getActiveControlCenterPanel()
       ]]
     elseif panel == "Sound" then
       already = string.format(alreadyTemplate, "slider", ident, panel)
+    elseif panel == "Music Recognition" then
+      already = string.format(alreadyTemplate, "group", ident, panel)
     end
     if already then
       script = script .. [[

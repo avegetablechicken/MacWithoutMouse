@@ -15,9 +15,12 @@
     "Sound": "sound",
     "Now Playing": "now-playing",
     "Accessibility Shortcuts": "accessibility-shortcuts",
-    "Hearing": "hearing-identifier"
+    "Hearing": "hearing-identifier",
+    "Music Recognition": "musicrecognition",
+    "Users & Group": "user"
   },
   "subpanel" : {
+    "Battery": "battery",
     "Video Effects": "video-effects",
     "Mic Modes": "mic-modes",
     "WiFi": "wifi",
@@ -30,7 +33,9 @@
     "Display": "display",
     "Sound": "volume",
     "Accessibility Shortcuts": "accessibility-identifier",
-    "Hearing": "hearing"
+    "Hearing": "hearing",
+    "Music Recognition": "musicrecognition",
+    "Users & Group": "user"
   },
   "accessibility": {
     "Focus": {
