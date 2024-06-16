@@ -15,7 +15,7 @@
     "Sound": "sound",
     "Now Playing": "now-playing",
     "Accessibility Shortcuts": "accessibility-shortcuts",
-    "Hearing": "hearing"
+    "Hearing": "hearing-identifier"
   },
   "subpanel" : {
     "Video Effects": "video-effects",
@@ -30,7 +30,7 @@
     "Display": "display",
     "Sound": "volume",
     "Accessibility Shortcuts": "accessibility-identifier",
-    "Hearing": "hearing-identifier"
+    "Hearing": "hearing"
   },
   "accessibility": {
     "Focus": {
