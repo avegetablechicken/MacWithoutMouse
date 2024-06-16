@@ -1080,7 +1080,7 @@ if hs.fs.attributes(menuItemTmpFile) ~= nil then
   menuItemLocaleDir = json.locale
   menuItemLocaleMap = json.map
 end
-function delocalizedMenuItemString(str, bundleID, params)
+function delocalizedString(str, bundleID, params)
   local appLocale, localeFile, localeFramework
   if type(params) == "table" then
     appLocale = params.locale
@@ -1314,14 +1314,14 @@ function delocalizedMenuItemString(str, bundleID, params)
   end
 
   if bundleID:match("^com%.charliemonroe%..*$") and localeFramework == nil then
-    result = delocalizedMenuItemString(str, bundleID,
+    result = delocalizedString(str, bundleID,
                                        { framework = "XUCore.framework" })
     if result ~= nil then return result end
   end
 
   if result == nil and
       (string.sub(str, -3) == "..." or string.sub(str, -3) == "…") then
-    result = delocalizedMenuItemString(string.sub(str, 1, -4), bundleID, params)
+    result = delocalizedString(string.sub(str, 1, -4), bundleID, params)
     if result ~= nil then
       result = result .. string.sub(str, -3)
     end
@@ -1358,7 +1358,7 @@ function delocalizedMenuBarItem(title, bundleID, params)
       return title
     end
   end
-  local newTitle = delocalizedMenuItemString(title, bundleID, params)
+  local newTitle = delocalizedString(title, bundleID, params)
   return newTitle
 end
 
