@@ -1358,7 +1358,24 @@ function registerControlCenterHotKeys(panel)
         if not checkAndRegisterControlCenterHotKeys(hotkey) then return end
       end
     else
-      local hotkey = newControlCenter("⌘", ",", "Settings",
+      local searchPanel = panel
+      local btnName
+      if panel == "Screen Mirroring" then
+        btnName = "Display Settings…"
+      elseif panel == "Keyboard Brightness" then
+        btnName = "Keyboard Settings…"
+      elseif panel == "Accessibility Shortcuts" then
+        btnName = "Accessibility Settings…"
+      elseif panel == "Hearing" then
+        searchPanel = "Accessibility Shortcuts"
+        btnName = "Accessibility Settings…"
+      elseif panel == "Users" then
+        btnName = "Users & Groups Settings…"
+      else
+        btnName = panel .. " Settings…"
+      end
+      btnName = controlCenterLocalized(searchPanel, btnName)
+      local hotkey = newControlCenter("⌘", ",", btnName,
         function()
           hs.osascript.applescript([[
             tell application "System Events"
