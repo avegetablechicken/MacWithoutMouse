@@ -1506,7 +1506,7 @@ function registerControlCenterHotKeys(panel)
           end
           hotkeyHide:enable()
         end)
-      if not checkAndRegisterControlCenterHotKeys(hotkeyShow) then return end
+      hotkeyShow:enable()
     else
       hotkeyHide = newControlCenter("", "Left", "Hide " .. msg,
         function()
@@ -1522,7 +1522,7 @@ function registerControlCenterHotKeys(panel)
           end
           hotkeyShow:enable()
         end)
-      if not checkAndRegisterControlCenterHotKeys(hotkeyHide) then return end
+      hotkeyHide:enable()
     end
   end
 
@@ -1917,6 +1917,38 @@ function registerControlCenterHotKeys(panel)
       local ok, result = hs.osascript.applescript([[
         tell application "System Events"
           delay 0.5
+          if exists ui element 1 of ]] .. pane .. [[ of application process "ControlCenter" ¬
+              whose value of attribute "AXRole" is "AXDisclosureTriangle" then
+            set ele to ui element 1 of ]] .. pane .. [[ of application process "ControlCenter" ¬
+                whose value of attribute "AXRole" is "AXDisclosureTriangle"
+              return value of ele
+          end if
+          return false
+        end tell
+      ]])
+      if ok and result ~= false then
+        local actionFunc = function()
+          hs.osascript.applescript([[
+          tell application "System Events"
+            set ele to ui element 1 of ]] .. pane .. [[ of application process "ControlCenter" ¬
+                whose value of attribute "AXRole" is "AXDisclosureTriangle"
+            perform action 1 of ele
+          end tell
+        ]])
+        end
+        registerHotkeyForTraingleDisclosure(actionFunc, "Sounds", result)
+      else
+        if hotkeyShow ~= nil then
+          hotkeyShow:delete()
+          hotkeyShow = nil
+        end
+        if hotkeyHide ~= nil then
+          hotkeyHide:delete()
+          hotkeyHide = nil
+        end
+      end
+      ok, result = hs.osascript.applescript([[
+        tell application "System Events"
           set enabledSliders to sliders of ]] .. pane .. [[ of application process "ControlCenter" ¬
               whose value of attribute "AXEnabled" is true
           return (count enabledSliders) is 1
@@ -1948,7 +1980,7 @@ function registerControlCenterHotKeys(panel)
           hotkey:enable()
         end
       end
-      local ok, result = hs.osascript.applescript([[
+      ok, result = hs.osascript.applescript([[
         tell application "System Events"
           set cbs to {}
           repeat with cb in checkboxes of ]] .. pane .. [[ of application process "ControlCenter"
@@ -1984,14 +2016,13 @@ function registerControlCenterHotKeys(panel)
 
     local hotkey = newControlCenter("", "Space", "Toggle " .. controlCenterLocalized("Hearing", "Background Sounds"),
       function()
-        local ok, result = hs.osascript.applescript([[
+        local ok = hs.osascript.applescript([[
           tell application "System Events"
             set cb to checkbox 1 of ]] .. pane .. [[ of application process "ControlCenter"
             perform action 1 of cb
-            return value of cb
           end tell
         ]])
-        if ok and result == 1 then
+        if ok then
           silderFunc()
         else
           for _, hotkey in ipairs(backgroundSoundsHotkeys or {}) do
