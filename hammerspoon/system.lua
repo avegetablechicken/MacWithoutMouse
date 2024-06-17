@@ -808,8 +808,9 @@ function registerProxySettingsEntry(menu)
     title = "Proxy Settings",
     fn = function()
       local osVersion = getOSVersion()
+      local script
       if osVersion < OS.Ventura then
-        local ok, position = hs.osascript.applescript([[
+        script = [[
           tell application id "com.apple.systempreferences"
             activate
             set current pane to pane "com.apple.preference.network"
@@ -831,13 +832,9 @@ function registerProxySettingsEntry(menu)
               return false
             end tell
           end tell
-        ]])
-        if ok and type(position) == "table" then
-          leftClickAndRestore(position,
-                              findApplication("com.apple.systempreferences"):name())
-        end
+        ]]
       else
-        local ok, position = hs.osascript.applescript([[
+        script = [[
           tell application id "com.apple.systempreferences" to activate
           tell application "System Events"
             tell ]] .. aWinFor("com.apple.systempreferences") .. [[
@@ -850,32 +847,26 @@ function registerProxySettingsEntry(menu)
             end tell
           end tell
           tell application id "com.apple.systempreferences"
-            reveal pane id "com.apple.wifi-settings-extension"
-            repeat until anchor "General_Details" of current pane exists
-              delay 0.05
-            end repeat
-            reveal anchor "General_Details" of current pane
+            reveal anchor "Proxies" of pane id "com.apple.Network-Settings.extension"
           end tell
+          delay 1
           tell application "System Events"
             tell ]] .. aWinFor("com.apple.systempreferences") .. [[
-              set ntry to 0 -- resolve weird bug that the anchor cannot be activated
-              repeat until sheet 1 exists
-                if ntry = 50 then
-                  return
+              set tb to scroll area 1 of group 2 of splitter group 1 of group 1 of sheet 1
+              repeat with r in every group of tb
+                if value of checkbox 1 of r is 1 then
+                  return position of text field 1 of r
                 end if
-                set ntry to ntry + 1
-                delay 0.05
               end repeat
-              set r to UI element 1 of row 6 of outline 1 of scroll area 1 ¬
-                  of group 1 of splitter group 1 of group 1 of sheet 1
-              return position of r
+              return false
             end tell
           end tell
-        ]])
-        if ok and type(position) == "table" then
-          leftClickAndRestore({ position[1], position[2] + 10 },
-                              findApplication("com.apple.systempreferences"):name())
-        end
+        ]]
+      end
+      local ok, position = hs.osascript.applescript(script)
+      if ok and type(position) == "table" then
+        leftClickAndRestore({ position[1], position[2] + 10 },
+                            findApplication("com.apple.systempreferences"):name())
       end
     end,
     shortcut = 'p'
