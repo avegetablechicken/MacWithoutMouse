@@ -15,7 +15,7 @@
     "Sound": "sound",
     "Now Playing": "now-playing",
     "Accessibility Shortcuts": "accessibility-shortcuts",
-    "Hearing": "hearing-identifier",
+    "Hearing": "hearing",
     "Music Recognition": "musicrecognition",
     "Users & Group": "user"
   },
@@ -33,7 +33,7 @@
     "Display": "display",
     "Sound": "volume",
     "Accessibility Shortcuts": "accessibility-identifier",
-    "Hearing": "hearing",
+    "Hearing": "hearing-identifier",
     "Music Recognition": "musicrecognition",
     "Users & Group": "user"
   },
