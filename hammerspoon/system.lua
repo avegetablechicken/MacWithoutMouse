@@ -999,8 +999,8 @@ local function bindControlCenter(...)
   return hotkey
 end
 
--- toggle show `Widgets` panel
-local clockHotkey = bindControlCenter(menubarHK["showClock"], "Toggle " .. controlCenterLocalized("Clock"),
+-- toggle show `Notification Center`
+bindControlCenter(menubarHK["showNotificationCenter"], findApplication("com.apple.notificationcenterui"):name(),
     function() hs.eventtap.keyStroke("fn", "N") end)
 
 -- toggle show `Control Center`

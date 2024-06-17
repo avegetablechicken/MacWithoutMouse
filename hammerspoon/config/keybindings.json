@@ -79,9 +79,9 @@
         "mods": ["control", "option"],
         "key": "space"
       },
-      "showClock": {
-        "mods": ["shift", "control", "option"],
-        "key": "C"
+      "showNotificationCenter": {
+        "mods": "${hyper.controlCenter}",
+        "key": "N"
       },
       "showControlCenter": {
         "mods": "${hyper.controlCenter}",
