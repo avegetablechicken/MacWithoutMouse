@@ -1486,6 +1486,7 @@ function registerControlCenterHotKeys(panel)
             end repeat
           end if
           set cnt to cnt + 1
+          delay 0.05
         end repeat
         return -1
       end tell
