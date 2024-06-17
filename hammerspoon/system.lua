@@ -879,11 +879,6 @@ function registerProxyMenu(retry)
     local menu = {{
       title = "No Network Access",
       disabled = true
-    },
-    {
-      title = "Disable",
-      fn = function() disable_proxy() end,
-      shortcut = '0',
     }}
     registerProxySettingsEntry(menu)
     proxy:setMenu(menu)
