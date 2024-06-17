@@ -1237,6 +1237,14 @@ function registerControlCenterHotKeys(panel)
     end
   end
   controlCenterHotKeys = {}
+  if hotkeyShow ~= nil then
+    hotkeyShow:delete()
+    hotkeyShow = nil
+  end
+  if hotkeyHide ~= nil then
+    hotkeyHide:delete()
+    hotkeyHide = nil
+  end
   if backgroundSoundsHotkeys ~= nil then
     for _, hotkey in ipairs(backgroundSoundsHotkeys) do
       hotkey:delete()
@@ -1258,8 +1266,14 @@ function registerControlCenterHotKeys(panel)
       end
       hotkeyMainBack = nil
       hotkeyMainForward = nil
-      hotkeyShow = nil
-      hotkeyHide = nil
+      if hotkeyShow ~= nil then
+        hotkeyShow:delete()
+        hotkeyShow = nil
+      end
+      if hotkeyHide ~= nil then
+        hotkeyHide:delete()
+        hotkeyHide = nil
+      end
       if backgroundSoundsHotkeys ~= nil then
         for _, hotkey in ipairs(backgroundSoundsHotkeys) do
           hotkey:delete()
@@ -1280,6 +1294,14 @@ function registerControlCenterHotKeys(panel)
         hotkey:delete()
       end
       controlCenterHotKeys = {}
+      if hotkeyShow ~= nil then
+        hotkeyShow:delete()
+        hotkeyShow = nil
+      end
+      if hotkeyHide ~= nil then
+        hotkeyHide:delete()
+        hotkeyHide = nil
+      end
       if backgroundSoundsHotkeys ~= nil then
         for _, hotkey in ipairs(backgroundSoundsHotkeys) do
           hotkey:delete()
@@ -1468,6 +1490,42 @@ function registerControlCenterHotKeys(panel)
     end
   end
 
+  local registerHotkeyForTraingleDisclosure = function(actionFunc, msg, enabled)
+    if enabled == 0 then
+      hotkeyShow = newControlCenter("", "Right", "Show " .. msg,
+        function()
+          hotkeyShow:disable()
+          actionFunc()
+          if hotkeyHide == nil then
+            hotkeyHide = newControlCenter("", "Left", "Hide " .. msg,
+              function()
+                hotkeyHide:disable()
+                hotkeyShow:enable()
+                actionFunc()
+              end)
+          end
+          hotkeyHide:enable()
+        end)
+      if not checkAndRegisterControlCenterHotKeys(hotkeyShow) then return end
+    else
+      hotkeyHide = newControlCenter("", "Left", "Hide " .. msg,
+        function()
+          hotkeyHide:disable()
+          actionFunc()
+          if hotkeyShow == nil then
+            hotkeyShow = newControlCenter("", "Right", "Show " .. msg,
+              function()
+                hotkeyShow:disable()
+                hotkeyHide:enable()
+                actionFunc()
+              end)
+          end
+          hotkeyShow:enable()
+        end)
+      if not checkAndRegisterControlCenterHotKeys(hotkeyHide) then return end
+    end
+  end
+
   if panel == "WiFi" then
     local ok, result = hs.osascript.applescript([[
       tell application "System Events"
@@ -1509,43 +1567,7 @@ function registerControlCenterHotKeys(panel)
         ]])
       end
       local localizedOtherNetworks = controlCenterLocalized("WiFi", "Other Networks")
-      if result == 0 then
-        hotkeyShow = newControlCenter("", "Right", "Show " .. localizedOtherNetworks,
-          function()
-            hotkeyShow:disable()
-            actionFunc()
-            if hotkeyHide == nil then
-              hotkeyHide = newControlCenter("", "Left", "Hide " .. localizedOtherNetworks,
-                function()
-                  hotkeyHide:disable()
-                  hotkeyShow:enable()
-                  actionFunc()
-                end)
-              if not checkAndRegisterControlCenterHotKeys(hotkeyHide) then return end
-            else
-              hotkeyHide:enable()
-            end
-          end)
-        if not checkAndRegisterControlCenterHotKeys(hotkeyShow) then return end
-      else
-        hotkeyHide = newControlCenter("", "Left", "Hide " .. localizedOtherNetworks,
-          function()
-            hotkeyHide:disable()
-            actionFunc()
-            if hotkeyShow == nil then
-              hotkeyShow = newControlCenter("", "Right", "Show " .. localizedOtherNetworks,
-                function()
-                  hotkeyShow:disable()
-                  hotkeyHide:enable()
-                  actionFunc()
-                end)
-              if not checkAndRegisterControlCenterHotKeys(hotkeyShow) then return end
-            else
-              hotkeyShow:enable()
-            end
-          end)
-        if not checkAndRegisterControlCenterHotKeys(hotkeyHide) then return end
-      end
+      registerHotkeyForTraingleDisclosure(actionFunc, localizedOtherNetworks, result)
     end
 
     -- select network
@@ -2184,8 +2206,20 @@ function()
   controlCenterPanelHotKeys = {}
   hotkeyMainBack = nil
   hotkeyMainForward = nil
-  hotkeyShow = nil
-  hotkeyHide = nil
+  if hotkeyShow ~= nil then
+    hotkeyShow:delete()
+    hotkeyShow = nil
+  end
+  if hotkeyHide ~= nil then
+    hotkeyHide:delete()
+    hotkeyHide = nil
+  end
+  if backgroundSoundsHotkeys ~= nil then
+    for _, hotkey in ipairs(backgroundSoundsHotkeys) do
+      hotkey:delete()
+    end
+    backgroundSoundsHotkeys = nil
+  end
 end)
 
 -- # callbacks
