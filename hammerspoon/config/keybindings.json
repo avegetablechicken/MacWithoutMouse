@@ -629,6 +629,14 @@
       "Now Playing": {
         "mods": "${hyper.controlCenter}",
         "key": "P"
+      },
+      "Music Recognition": {
+        "mods": "${hyper.controlCenter}",
+        "key": "R"
+      },
+      "Hearing": {
+        "mods": "${hyper.controlCenter}",
+        "key": "H"
       }
     },
 
