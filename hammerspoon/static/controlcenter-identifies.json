@@ -17,7 +17,7 @@
     "Accessibility Shortcuts": "accessibility-shortcuts",
     "Hearing": "hearing",
     "Music Recognition": "musicrecognition",
-    "Users & Group": "user"
+    "Users": "user"
   },
   "subpanel" : {
     "Battery": "battery",
@@ -35,7 +35,7 @@
     "Accessibility Shortcuts": "accessibility-identifier",
     "Hearing": "hearing-identifier",
     "Music Recognition": "musicrecognition",
-    "Users & Group": "user"
+    "Users": "user"
   },
   "accessibility": {
     "Focus": {

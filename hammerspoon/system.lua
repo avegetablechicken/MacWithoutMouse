@@ -1069,7 +1069,7 @@ local function popupControlCenterSubPanel(panel, allowReentry)
     enter = string.format(enterTemplate, osVersion < OS.Ventura and "static text" or "group", ident, 1)
   elseif panel == "Sound" then
     enter = string.format(enterTemplate, "static text", ident, 1)
-  elseif hs.fnutils.contains({ "Accessibility Shortcuts", "Battery", "Hearing", "Users & Group", "Keyboard Brightness" }, panel) then
+  elseif hs.fnutils.contains({ "Accessibility Shortcuts", "Battery", "Hearing", "Users", "Keyboard Brightness" }, panel) then
     enter = string.format(enterTemplate, "button", ident, 1)
   elseif panel == "Now Playing" then
     enter = [[
@@ -1327,7 +1327,7 @@ function registerControlCenterHotKeys(panel)
 
   -- jump to related panel in `System Preferences`
   if hs.fnutils.contains({ "Wi‑Fi", "Bluetooth", "Focus", "Keyboard Brightness", "Screen Mirroring", "Display", "Sound",
-                           "Accessibility Shortcuts", "Battery", "Hearing", "Users & Group", }, panel) then
+                           "Accessibility Shortcuts", "Battery", "Hearing", "Users", }, panel) then
     if osVersion < OS.Ventura then
       local ok, result = hs.osascript.applescript([[
         tell application "System Events"

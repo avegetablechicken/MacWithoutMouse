@@ -1718,6 +1718,9 @@ function controlCenterLocalized(panel, key)
   if panel == "Control Center" then
     return findApplication("com.apple.controlcenter"):name()
   end
+  if panel == "Users" and key == "Users" then
+    key = "User"
+  end
   panel = panel:gsub(" ", "")
   panel = panel:gsub("‑", "")
   return localizedString(key, "com.apple.controlcenter", panel)
