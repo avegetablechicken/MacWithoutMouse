@@ -594,7 +594,7 @@
     },
 
     "ControlCenterAppKeys": {
-      "WiFi": {
+      "Wi‑Fi": {
         "mods": "${hyper.controlCenter}",
         "key": "W"
       },

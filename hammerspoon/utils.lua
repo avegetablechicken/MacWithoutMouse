@@ -1713,12 +1713,13 @@ end
 
 function controlCenterLocalized(panel, key)
   if key == nil then
-    key = panel == "WiFi" and "Wi‑Fi" or panel
+    key = panel
   end
   if panel == "Control Center" then
     return findApplication("com.apple.controlcenter"):name()
   end
-  panel = panel:gsub("%s+", "")
+  panel = panel:gsub(" ", "")
+  panel = panel:gsub("‑", "")
   return localizedString(key, "com.apple.controlcenter", panel)
 end
 
@@ -1727,7 +1728,9 @@ function clickRightMenuBarItem(menuBarName, menuItem, subMenuItem)
     return clickControlCenterMenuBarItem(menuBarName)
   end
   local resourceDir = findApplication("com.apple.controlcenter"):path() .. "/Contents/Resources/en.lproj"
-  if hs.fs.attributes(resourceDir .. '/' .. menuBarName:gsub("%s+", "") .. '.strings') ~= nil then
+  local newName = menuBarName:gsub(" ", "")
+  newName = menuBarName:gsub("‑", "")
+  if hs.fs.attributes(resourceDir .. '/' .. newName .. '.strings') ~= nil then
     return clickControlCenterMenuBarItem(menuBarName)
   end
   return clickAppRightMenuBarItem(menuBarName, menuItem, subMenuItem)

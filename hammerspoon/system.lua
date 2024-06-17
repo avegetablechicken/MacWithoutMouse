@@ -1057,7 +1057,7 @@ local function popupControlCenterSubPanel(panel, allowReentry)
       end if
     end repeat
   ]]
-  if hs.fnutils.contains({ "WiFi", "Focus", "Bluetooth", "AirDrop", "Music Recognition" }, panel) then
+  if hs.fnutils.contains({ "Wi‑Fi", "Focus", "Bluetooth", "AirDrop", "Music Recognition" }, panel) then
     enter = string.format(enterTemplate, "checkbox", ident, 2)
   elseif panel == "Screen Mirroring" then
     if osVersion < OS.Ventura then
@@ -1097,7 +1097,7 @@ local function popupControlCenterSubPanel(panel, allowReentry)
           tell application id "com.surteesstudios.Bartender"
             activate "com.apple.controlcenter-%s"
           end tell
-        ]], string.gsub(panel, " ", "")))
+        ]], string.gsub(string.gsub(panel, " ", ""), "‑", "")))
       else
         ok, result = hs.osascript.applescript(string.format([[
           tell application "System Events"
@@ -1138,7 +1138,7 @@ local function popupControlCenterSubPanel(panel, allowReentry)
         end if
       end repeat
     ]]
-    if hs.fnutils.contains({ "WiFi", "Focus", "Bluetooth", "AirDrop", "Keyboard Brightness", "Screen Mirroring",
+    if hs.fnutils.contains({ "Wi‑Fi", "Focus", "Bluetooth", "AirDrop", "Keyboard Brightness", "Screen Mirroring",
                              "Accessibility Shortcuts", "Battery" }, panel) then
       already = string.format(alreadyTemplate, "static text", ident)
     elseif panel == "Display" then
@@ -1184,7 +1184,7 @@ local function popupControlCenterSubPanel(panel, allowReentry)
         repeat with ele in (every checkbox of pane)
           if (exists attribute "AXIdentifier" of ele) then
             if (the value of attribute "AXIdentifier" of ele contains ¬
-                "]] .. controlCenterSubPanelIdentifiers["WiFi"] .. [[") then
+                "]] .. controlCenterSubPanelIdentifiers["Wi‑Fi"] .. [[") then
               set wifi to true
             else if (the value of attribute "AXIdentifier" of ele contains ¬
                 "]] .. controlCenterSubPanelIdentifiers["Bluetooth"] .. [[") then
@@ -1326,7 +1326,7 @@ function registerControlCenterHotKeys(panel)
   if not checkAndRegisterControlCenterHotKeys(hotkeyMainBack) then return end
 
   -- jump to related panel in `System Preferences`
-  if hs.fnutils.contains({ "WiFi", "Bluetooth", "Focus", "Keyboard Brightness", "Screen Mirroring", "Display", "Sound",
+  if hs.fnutils.contains({ "Wi‑Fi", "Bluetooth", "Focus", "Keyboard Brightness", "Screen Mirroring", "Display", "Sound",
                            "Accessibility Shortcuts", "Battery", "Hearing", "Users & Group", }, panel) then
     if osVersion < OS.Ventura then
       local ok, result = hs.osascript.applescript([[
@@ -1372,7 +1372,7 @@ function registerControlCenterHotKeys(panel)
   end
 
   -- pandel with a switch-off button
-  if hs.fnutils.contains({"WiFi", "Bluetooth", "AirDrop"}, panel) then
+  if hs.fnutils.contains({"Wi‑Fi", "Bluetooth", "AirDrop"}, panel) then
     local hotkey = newControlCenter("", "Space", "Toggle " .. controlCenterLocalized(panel),
       function()
         hs.osascript.applescript([[
@@ -1528,7 +1528,7 @@ function registerControlCenterHotKeys(panel)
     end
   end
 
-  if panel == "WiFi" then
+  if panel == "Wi‑Fi" then
     local ok, result = hs.osascript.applescript([[
       tell application "System Events"
         set cnt to 0
@@ -1568,7 +1568,7 @@ function registerControlCenterHotKeys(panel)
           end tell
         ]])
       end
-      local localizedOtherNetworks = controlCenterLocalized("WiFi", "Other Networks")
+      local localizedOtherNetworks = controlCenterLocalized("Wi‑Fi", "Other Networks")
       registerHotkeyForTraingleDisclosure(actionFunc, localizedOtherNetworks, result)
     end
 
@@ -2151,7 +2151,7 @@ local function getActiveControlCenterPanel()
   ]]
   for panel, ident in pairs(controlCenterSubPanelIdentifiers) do
     local already = nil
-    if hs.fnutils.contains({ "WiFi", "Focus", "Bluetooth", "AirDrop", "Keyboard Brightness", "Screen Mirroring",
+    if hs.fnutils.contains({ "Wi‑Fi", "Focus", "Bluetooth", "AirDrop", "Keyboard Brightness", "Screen Mirroring",
                              "Accessibility Shortcuts", "Battery" }, panel) then
       already = string.format(alreadyTemplate, "static text", ident, panel)
     elseif panel == "Display" then
@@ -2223,7 +2223,7 @@ function()
         if event:getFlags():containExactly({"alt"}) and os.time() - timeTapperForExtraInfo > 2 then
           timeTapperForExtraInfo = os.time()
           local panel = getActiveControlCenterPanel()
-          if panel == "WiFi" or panel == "Bluetooth" then
+          if panel == "Wi‑Fi" or panel == "Bluetooth" then
             popupControlCenterSubPanel(panel, true)
           end
         end
