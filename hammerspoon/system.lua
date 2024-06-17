@@ -1139,7 +1139,7 @@ local function popupControlCenterSubPanel(panel, allowReentry)
       end repeat
     ]]
     if hs.fnutils.contains({ "WiFi", "Focus", "Bluetooth", "AirDrop", "Keyboard Brightness", "Screen Mirroring",
-                             "Accessibility Shortcuts", "Battery", "Hearing"}, panel) then
+                             "Accessibility Shortcuts", "Battery" }, panel) then
       already = string.format(alreadyTemplate, "static text", ident)
     elseif panel == "Display" then
       already = [[
@@ -1151,6 +1151,8 @@ local function popupControlCenterSubPanel(panel, allowReentry)
       already = string.format(alreadyTemplate, "slider", ident)
     elseif panel == "Music Recognition" then
       already = string.format(alreadyTemplate, "group", ident)
+    elseif panel == "Hearing" then
+      already = string.format(alreadyTemplate, "static text", controlCenterMenuBarItemIdentifiers[panel])
     elseif panel == "Now Playing" then
       if osVersion < OS.Ventura then
         already = [[
@@ -2150,7 +2152,7 @@ local function getActiveControlCenterPanel()
   for panel, ident in pairs(controlCenterSubPanelIdentifiers) do
     local already = nil
     if hs.fnutils.contains({ "WiFi", "Focus", "Bluetooth", "AirDrop", "Keyboard Brightness", "Screen Mirroring",
-                             "Accessibility Shortcuts", "Battery", "Hearing"}, panel) then
+                             "Accessibility Shortcuts", "Battery" }, panel) then
       already = string.format(alreadyTemplate, "static text", ident, panel)
     elseif panel == "Display" then
       already = [[
@@ -2162,6 +2164,8 @@ local function getActiveControlCenterPanel()
       already = string.format(alreadyTemplate, "slider", ident, panel)
     elseif panel == "Music Recognition" then
       already = string.format(alreadyTemplate, "group", ident, panel)
+    elseif panel == "Hearing" then
+      already = string.format(alreadyTemplate, "static text", controlCenterMenuBarItemIdentifiers[panel], panel)
     end
     if already then
       script = script .. [[
