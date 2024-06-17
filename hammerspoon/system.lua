@@ -1237,6 +1237,12 @@ function registerControlCenterHotKeys(panel)
     end
   end
   controlCenterHotKeys = {}
+  if backgroundSoundsHotkeys ~= nil then
+    for _, hotkey in ipairs(backgroundSoundsHotkeys) do
+      hotkey:delete()
+    end
+    backgroundSoundsHotkeys = nil
+  end
 
   controlCenterSubPanelWatcher = hs.window.filter.new(findApplication("com.apple.controlcenter"):name())
     :subscribe(hs.window.filter.windowDestroyed, function()
@@ -1254,6 +1260,12 @@ function registerControlCenterHotKeys(panel)
       hotkeyMainForward = nil
       hotkeyShow = nil
       hotkeyHide = nil
+      if backgroundSoundsHotkeys ~= nil then
+        for _, hotkey in ipairs(backgroundSoundsHotkeys) do
+          hotkey:delete()
+        end
+        backgroundSoundsHotkeys = nil
+      end
       if controlCenterSubPanelWatcher ~= nil then
         controlCenterSubPanelWatcher:unsubscribeAll()
         controlCenterSubPanelWatcher = nil
@@ -1268,6 +1280,12 @@ function registerControlCenterHotKeys(panel)
         hotkey:delete()
       end
       controlCenterHotKeys = {}
+      if backgroundSoundsHotkeys ~= nil then
+        for _, hotkey in ipairs(backgroundSoundsHotkeys) do
+          hotkey:delete()
+        end
+        backgroundSoundsHotkeys = nil
+      end
       if controlCenterSubPanelWatcher ~= nil then
         controlCenterSubPanelWatcher:unsubscribeAll()
         controlCenterSubPanelWatcher = nil
@@ -1871,6 +1889,97 @@ function registerControlCenterHotKeys(panel)
         ]])
       end)
     if not checkAndRegisterControlCenterHotKeys(hotkey) then return end
+  elseif panel == "Hearing" then
+    local silderFunc = function()
+      local ok, result = hs.osascript.applescript([[
+        tell application "System Events"
+          delay 0.5
+          set enabledSliders to sliders of ]] .. pane .. [[ of application process "ControlCenter" ¬
+              whose value of attribute "AXEnabled" is true
+          return (count enabledSliders) is 1
+        end tell
+      ]])
+      if ok and result then
+        backgroundSoundsHotkeys = {}
+        local specs = {
+          ["="] = { "Volume Up", "increment slid\n" },
+          ["-"] = { "Volume Down", "decrement slid\n" },
+          ["["] = { "Volume Min", "set value of slid to 0\n" },
+          ["]"] = { "Volume Max", "set value of slid to 100\n" }
+        }
+        for key, spec in pairs(specs) do
+          local hotkey = newControlCenter("", key, spec[1],
+            function()
+              hs.osascript.applescript([[
+                tell application "System Events"
+                  set enabledSliders to sliders of ]] .. pane .. [[ of application process "ControlCenter" ¬
+                      whose value of attribute "AXEnabled" is true
+                  if (count enabledSliders) is 1 then
+                    set slid to item 1 of enabledSliders
+                    ]] .. spec[2] .. [[
+                  end if
+                end tell
+              ]])
+            end)
+          table.insert(backgroundSoundsHotkeys, hotkey)
+          hotkey:enable()
+        end
+      end
+      local ok, result = hs.osascript.applescript([[
+        tell application "System Events"
+          set cbs to {}
+          repeat with cb in checkboxes of ]] .. pane .. [[ of application process "ControlCenter"
+            if (exists attribute "AXIdentifier" of cb) ¬
+                and (value of attribute "AXIdentifier" of cb contains "button-identifier") then
+              set cbs to cbs & value of attribute "AXIdentifier" of cb
+            end if
+          end repeat
+          return cbs
+        end tell
+      ]])
+      if ok and result ~= false then
+        if backgroundSoundsHotkeys == nil then
+          backgroundSoundsHotkeys = {}
+        end
+        for i, ident in ipairs(result) do
+          local name = string.match(ident, "hearing%-(.+)%-button%-identifier")
+          local hotkey = newControlCenter("", tostring(i % 10), "Play " .. name,
+            function()
+              hs.osascript.applescript([[
+                tell application "System Events"
+                  set cb to checkbox 1 of ]] .. pane .. [[ of application process "ControlCenter" ¬
+                      whose value of attribute "AXIdentifier" is "]] .. ident .. [["
+                  perform action 1 of cb
+                end tell
+              ]])
+            end)
+          table.insert(backgroundSoundsHotkeys, hotkey)
+          hotkey:enable()
+        end
+      end
+    end
+
+    local hotkey = newControlCenter("", "Space", "Toggle " .. controlCenterLocalized("Hearing", "Background Sounds"),
+      function()
+        local ok, result = hs.osascript.applescript([[
+          tell application "System Events"
+            set cb to checkbox 1 of ]] .. pane .. [[ of application process "ControlCenter"
+            perform action 1 of cb
+            return value of cb
+          end tell
+        ]])
+        if ok and result == 1 then
+          silderFunc()
+        else
+          for _, hotkey in ipairs(backgroundSoundsHotkeys or {}) do
+            hotkey:delete()
+          end
+          backgroundSoundsHotkeys = nil
+        end
+      end)
+    if not checkAndRegisterControlCenterHotKeys(hotkey) then return end
+
+    silderFunc()
   elseif panel == "Now Playing" then
     local ok, result
     if osVersion < OS.Ventura then
