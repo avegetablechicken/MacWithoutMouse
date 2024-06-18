@@ -140,20 +140,16 @@ local function toggleTopNotch()
 end
 
 local function getParallelsVMPath(osname)
-  osname = string.lower(osname)
-  local versions, pathTpl
-  if osname == "windows" then
-    versions = {"10", "11"}
-    pathTpl = os.getenv("HOME") .. "/Parallels/Windows %s.pvm/Windows %s.app"
-  elseif osname == "ubuntu" then
-    versions = {"16.04", "18.04", "20.04", "22.04", "22.04 ARM64"}
-    pathTpl = os.getenv("HOME") .. "/Parallels/Ubuntu %s.pvm/Ubuntu %s.app"
-  else
-    return nil
-  end
-  for _, version in ipairs(versions) do
-    local path = string.format(pathTpl, version, version)
-    if hs.fs.attributes(path) ~= nil then return path end
+  local PVMDir = os.getenv("HOME") .. "/Parallels"
+  local path = string.format(PVMDir .. "/%s.pvm/%s.app", osname, osname)
+  if hs.fs.attributes(path) ~= nil then return path end
+
+  for filename in hs.fs.dir(PVMDir) do
+    if filename:sub(-4) == '.pvm' and filename:sub(1, osname:len()) == osname then
+      local stem = filename:sub(1, -5)
+      path = string.format(PVMDir .. "/%s.pvm/%s.app", stem, stem)
+      if hs.fs.attributes(path) ~= nil then return path end
+    end
   end
 end
 
