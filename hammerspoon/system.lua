@@ -98,23 +98,7 @@ local function toggleV2RayX(enable, alert)
     ]]
   end
 
-  if hiddenByBartender(bundleID) and hasTopNotch(hs.screen.mainScreen()) then
-    script = script .. [[
-      tell application id "com.surteesstudios.Bartender" to activate "]] .. bundleID .. [[-Item-0"
-    ]]
-  end
-
   script = script .. [[
-    ignoring application responses
-      tell application "System Events"
-        click menu bar item 1 of menu bar 2 of ¬
-            (first application process whose bundle identifier is "]] .. bundleID .. [[")
-      end tell
-    end ignoring
-
-    delay 1
-    do shell script "killall System\\ Events"
-
     tell application "System Events"
       set popupMenu to menu 1 of menu bar item 1 of menu bar 2 of ¬
           (first application process whose bundle identifier is "]] .. bundleID .. [[")
@@ -179,23 +163,7 @@ local function toggleV2RayU(enable, alert)
     ]]
   end
 
-  if hiddenByBartender(bundleID) and hasTopNotch(hs.screen.mainScreen()) then
-    script = script .. [[
-      tell application id "com.surteesstudios.Bartender" to activate "]] .. bundleID .. [[-Item-0"
-    ]]
-  end
-
   script = script .. [[
-    ignoring application responses
-      tell application "System Events"
-        click menu bar item 1 of menu bar 2 of ¬
-            (first application process whose bundle identifier is "]] .. bundleID .. [[")
-      end tell
-    end ignoring
-
-    delay 1
-    do shell script "killall System\\ Events"
-
     tell application "System Events"
       set popupMenu to menu 1 of menu bar item 1 of menu bar 2 of ¬
           (first application process whose bundle identifier is "]] .. bundleID .. [[")
@@ -260,23 +228,7 @@ local function toggleMonoCloud(enable, alert)
     ]]
   end
 
-  if hiddenByBartender(bundleID) and hasTopNotch(hs.screen.mainScreen()) then
-    script = script .. [[
-      tell application id "com.surteesstudios.Bartender" to activate "]] .. bundleID .. [[-Item-0"
-    ]]
-  end
-
   script = script .. [[
-    ignoring application responses
-      tell application "System Events"
-        click menu bar item 1 of menu bar 1 of ¬
-            (first application process whose bundle identifier is "]] .. bundleID .. [[")
-      end tell
-    end ignoring
-
-    delay 1
-    do shell script "killall System\\ Events"
-
     tell application "System Events"
       set popupMenu to menu 1 of menu bar item 1 of menu bar 1 of ¬
           (first application process whose bundle identifier is "]] .. bundleID .. [[")
@@ -612,26 +564,7 @@ local function parseProxyInfo(info, require_mode)
           mode = "Global"
         elseif require_mode then
           local bundleID = proxyAppBundleIDs.MonoCloud
-          local script = ""
-          local appObject = findApplication(bundleID)
-          if hiddenByBartender(bundleID) and hasTopNotch(hs.screen.mainScreen()) then
-            script = [[
-              tell application id "com.surteesstudios.Bartender"
-                activate "]] .. bundleID .. [[-Item-0"
-              end tell
-            ]]
-          end
-          script = script .. [[
-            ignoring application responses
-              tell application "System Events"
-                click menu bar item 1 of menu bar 1 of ¬
-                    (first application process whose bundle identifier is  "]] .. bundleID .. [[")
-              end tell
-            end ignoring
-
-            delay 0.2
-            do shell script "killall System\\ Events"
-
+          local script = [[
             tell application "System Events"
               set menuitem to menu item "Outbound Mode" of menu 1 of menu bar item 1 of menu bar 1 of ¬
                   (first application process whose bundle identifier is  "]] .. bundleID .. [[")
@@ -751,15 +684,7 @@ local function registerProxyMenuImpl()
         title = candidate.appname,
         fn = function()
           local actionFunc = function()
-            if findApplication("com.surteesstudios.Bartender") ~= nil then
-              hs.osascript.applescript([[
-                tell application id "com.surteesstudios.Bartender"
-                  activate "]] .. findApplication(appname):bundleID() .. [[-Item-0"
-                end tell
-              ]])
-            else
-              clickRightMenuBarItem(appname)
-            end
+            clickRightMenuBarItem(bundleID)
           end
           if findApplication(bundleID) == nil then
             hs.application.launchOrFocusByBundleID(bundleID)

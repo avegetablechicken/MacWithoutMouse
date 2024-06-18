@@ -1500,42 +1500,43 @@ function rightClickAndRestore(position, appName)
   return false
 end
 
-function clickAppRightMenuBarItem(bundleID, menuItem, subMenuItem)
-  -- only menu bar item
-  if menuItem == nil then
-    local status_code = hs.osascript.applescript(string.format([[
+function clickAppRightMenuBarItem(bundleID, menuItem, subMenuItem, show)
+  if menuItem == nil and subMenuItem == nil and show == nil then
+    show = true
+  end
+
+  local initCmd = string.format([[
       tell application "System Events"
         set ap to first application process whose bundle identifier is "%s"
         set c to count of menu bar of ap
-        click menu bar item 1 of menu bar c of ap
       end tell
-    ]], bundleID))
-    return status_code
+    ]], bundleID)
+
+  -- firstly click menu bar item if necessary
+  local clickMenuBarItemCmd = ""
+  if show == true then
+    if hiddenByBartender(bundleID) and hasTopNotch(hs.screen.mainScreen()) then
+      clickMenuBarItemCmd = [[
+        tell application id "com.surteesstudios.Bartender" to activate "]] .. bundleID .. [[-Item-0"
+
+      ]]
+    else
+      clickMenuBarItemCmd = [[
+        ignoring application responses
+          tell application "System Events"
+            click menu bar item 1 of menu bar c of ap
+          end tell
+        end ignoring
+
+        delay 0.2
+        do shell script "killall System\\ Events"
+      ]]
+    end
   end
 
-  -- firstly click menu bar item
-  local clickMenuBarItemCmd = string.format([[
-    tell application "System Events"
-      set ap to first application process whose bundle identifier is "%s"
-      set c to count of menu bar of ap
-    end tell
-
-    ignoring application responses
-      tell application "System Events"
-        click menu bar item 1 of menu bar c of ap
-      end tell
-    end ignoring
-
-    delay 1
-    do shell script "killall System\\ Events"
-
-  ]], bundleID)
-
-  if hiddenByBartender(bundleID) and hasTopNotch(hs.screen.mainScreen()) then
-    clickMenuBarItemCmd = [[
-      tell application id "com.surteesstudios.Bartender" to activate "]] .. bundleID .. [[-Item-0"
-
-    ]] .. clickMenuBarItemCmd
+  if menuItem == nil then
+    local status_code = hs.osascript.applescript(initCmd .. clickMenuBarItemCmd)
+    return status_code
   end
 
   if type(menuItem) == "number" then
@@ -1619,11 +1620,13 @@ function clickAppRightMenuBarItem(bundleID, menuItem, subMenuItem)
 
     local status_code = hs.osascript.applescript(string.format([[
         %s
+        %s
         tell application "System Events"
           %s
           %s
         end tell
       ]],
+      initCmd,
       clickMenuBarItemCmd,
       clickMenuItemCmd,
       clickSubMenuItemCmd)
@@ -1678,10 +1681,12 @@ function clickAppRightMenuBarItem(bundleID, menuItem, subMenuItem)
 
     local status_code = hs.osascript.applescript(string.format([[
         %s
+        %s
         tell application "System Events"
           %s
         end tell
       ]],
+      initCmd,
       clickMenuBarItemCmd,
       clickMenuItemCmd)
     )
@@ -1726,7 +1731,7 @@ function controlCenterLocalized(panel, key)
   return localizedString(key, "com.apple.controlcenter", panel)
 end
 
-function clickRightMenuBarItem(menuBarName, menuItem, subMenuItem)
+function clickRightMenuBarItem(menuBarName, menuItem, subMenuItem, show)
   if menuBarName == "Control Center" then
     return clickControlCenterMenuBarItem(menuBarName)
   end
@@ -1736,7 +1741,7 @@ function clickRightMenuBarItem(menuBarName, menuItem, subMenuItem)
   if hs.fs.attributes(resourceDir .. '/' .. newName .. '.strings') ~= nil then
     return clickControlCenterMenuBarItem(menuBarName)
   end
-  return clickAppRightMenuBarItem(menuBarName, menuItem, subMenuItem)
+  return clickAppRightMenuBarItem(menuBarName, menuItem, subMenuItem, show)
 end
 
 

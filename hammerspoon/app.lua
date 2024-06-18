@@ -102,24 +102,6 @@ local function toggleBarrierConnect()
 
       return ret
     ]]
-    if hiddenByBartender("barrier") and hasTopNotch(hs.screen.mainScreen()) then
-      script = [[
-        tell application id "com.surteesstudios.Bartender" to activate "barrier-Item-0"
-        delay 0.2
-      ]] .. script
-    else
-      script = [[
-        ignoring application responses
-          tell application "System Events"
-            click menu bar item 1 of menu bar 2 of ¬
-                (first application process whose bundle identifier is "barrier")
-          end tell
-        end ignoring
-
-        delay 1
-        do shell script "killall System\\ Events"
-      ]] .. script
-    end
     local ok, ret = hs.osascript.applescript(script)
     if ok then
       if ret == 0 then
@@ -3037,7 +3019,6 @@ function connectMountainDuckEntries(appObject, connection)
     end tell
   ]]
 
-  clickAppRightMenuBarItem(appObject:bundleID())
   hs.osascript.applescript(script)
 end
 local mountainDuckConfig = applicationConfigs["io.mountainduck"]
