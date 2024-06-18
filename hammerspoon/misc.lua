@@ -7,7 +7,10 @@ if ok then
   local hotkey = bindSpecSuspend(misc["copyToPC"], "Copy to PC",
   function()
     hs.eventtap.keyStroke("⌘", "C")
-    hs.shortcuts.run("粘贴到PC")
+    local task = hs.task.new("/usr/bin/osascript", nil,
+        { '-e', 'tell application "Shortcuts" to run shortcut "粘贴到PC"' })
+    task:start()
+    hs.timer.doAfter(10, function() if task:isRunning() then task:terminate() end end)
   end)
   hotkey.icon = iconForShortcuts
 end
@@ -17,8 +20,11 @@ ok = hs.osascript.applescript([[tell application "Shortcuts" to get shortcut "�
 if ok then
   local hotkey = bindSpecSuspend(misc["pasteFromPC"], "Paste from PC",
   function()
-    hs.shortcuts.run("复制自PC")
-    hs.timer.doAfter(1, function() hs.eventtap.keyStroke("⌘", "V") end)
+    local task = hs.task.new("/usr/bin/osascript",
+        function(exitCode) print(exitCode) if exitCode == 0 then hs.eventtap.keyStroke("⌘", "V") end end,
+        { '-e', 'tell application "Shortcuts" to run shortcut "复制自PC"' })
+    task:start()
+    hs.timer.doAfter(10, function() if task:isRunning() then task:terminate() end end)
   end)
   hotkey.icon = iconForShortcuts
 end
