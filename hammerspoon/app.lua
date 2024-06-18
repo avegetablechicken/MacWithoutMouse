@@ -5,6 +5,8 @@ if hs.fs.attributes("config/application.json") ~= nil then
   applicationConfigs = hs.json.read("config/application.json")
 end
 
+hs.application.enableSpotlightForNameSearches(true)
+
 
 -- launch or hide applications
 local function focusOrHideFinder(appObject)
