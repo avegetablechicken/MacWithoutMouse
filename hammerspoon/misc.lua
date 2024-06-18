@@ -97,6 +97,55 @@ function(v)
   end
 end)
 
+-- parse verification code from new message
+local verificationPatterns = {}
+if hs.fs.attributes("config/misc.json") ~= nil then
+  verificationPatterns = hs.json.read("config/misc.json").verificationFilter or {}
+end
+function parseVerificationCodeFromFirstMessage()
+  local ok, content = hs.osascript.applescript([[
+    tell application "System Events"
+      tell window 1 of (first application process ¬
+          whose bundle identifier is "com.apple.notificationcenterui")
+        if exists scroll area 1 then
+          return value of static text 2 of group 1 of UI element 1 of scroll area 1
+        else -- since some version of Sonoma
+          return value of static text 2 of group 1 of UI element 1 of scroll area 1 of group 1
+        end if
+      end tell
+    end tell
+  ]])
+  if ok then
+    for _, pattern in ipairs(verificationPatterns) do
+      if type(pattern.filter) == 'string' then
+        if string.find(content, pattern.filter) then
+          return string.match(content, pattern.extract)
+        end
+      elseif type(pattern.filter) == 'table' then
+        if hs.fnutils.every(pattern.filter,
+              function(f) return string.find(content, f) end) then
+          return string.match(content, pattern.extract)
+        end
+      end
+    end
+    if string.find(content, '验证码')
+        or string.find(string.lower(content), 'verification') then
+      return string.match(content, '%d%d%d%d+')
+    end
+  end
+end
+
+newMessageWindowFilter = hs.window.filter.new(false):
+allowApp(findApplication("com.apple.notificationcenterui"):name()):
+subscribe(hs.window.filter.windowCreated,
+  function()
+    local code = parseVerificationCodeFromFirstMessage()
+    if code then
+      hs.alert(string.format('Copy verification code "%s" to pasteboard', code))
+      hs.pasteboard.writeObjects(code)
+    end
+  end)
+
 -- show all hammerspoon keybinds
 HSKeybindings = {}
 HSKeybindings.__index = HSKeybindings
