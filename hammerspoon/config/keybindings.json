@@ -530,14 +530,6 @@
         "key": "S",
         "bundleID": "com.torusknot.SourceTreeNotMAS"
       },
-      "ChatGPT": {
-        "mods": "${hyper.hyper}",
-        "key": "G",
-        "bundleID": [
-          "com.openai.chat",
-          "com.lencx.chatgpt"
-        ]
-      },
       "Activity Monitor": {
         "mods": "${hyper.hyper}",
         "key": "H",
