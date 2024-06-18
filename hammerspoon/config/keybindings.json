@@ -553,7 +553,7 @@
         "key": "K",
         "bundleID": "org.klatexformula.klatexformula"
       },
-      "Texpad": {
+      "Texifier": {
         "mods": "${hyper.hyper}",
         "key": "L",
         "bundleID": "com.vallettaventures.Texpad"
