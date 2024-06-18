@@ -1549,7 +1549,7 @@ function registerControlCenterHotKeys(panel)
         if newAvailableNetworksString ~= availableNetworksString then
           availableNetworksString = newAvailableNetworksString
           for _, hotkey in ipairs(selectNetworkHotkeys) do
-            hotkey:disable()
+            hotkey:delete()
           end
           selectNetworkHotkeys = {}
           for idx, title in ipairs(availableNetworks) do
@@ -1579,9 +1579,7 @@ function registerControlCenterHotKeys(panel)
                   end tell
                 ]])
               end)
-            if checkAndRegisterControlCenterHotKeys(hotkey) then
-              table.insert(selectNetworkHotkeys, hotkey)
-            else return end
+            table.insert(selectNetworkHotkeys, hotkey)
           end
         end
       end
