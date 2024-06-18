@@ -1508,7 +1508,6 @@ function clickAppRightMenuBarItem(bundleID, menuItem, subMenuItem, show)
   local initCmd = string.format([[
       tell application "System Events"
         set ap to first application process whose bundle identifier is "%s"
-        set c to count of menu bar of ap
       end tell
     ]], bundleID)
 
@@ -1524,7 +1523,7 @@ function clickAppRightMenuBarItem(bundleID, menuItem, subMenuItem, show)
       clickMenuBarItemCmd = [[
         ignoring application responses
           tell application "System Events"
-            click menu bar item 1 of menu bar c of ap
+            click menu bar item 1 of last menu bar of ap
           end tell
         end ignoring
 
@@ -1586,7 +1585,7 @@ function clickAppRightMenuBarItem(bundleID, menuItem, subMenuItem, show)
   -- secondly click menu item of popup menu
   if type(menuItem) ~= "table" then
     local clickMenuItemCmd = string.format([[
-      set menuitem to menu item %s of menu 1 of menu bar item 1 of menu bar c of ap
+      set menuitem to menu item %s of menu 1 of menu bar item 1 of last menu bar of ap
       click menuitem
     ]], menuItem)
 
@@ -1668,8 +1667,8 @@ function clickAppRightMenuBarItem(bundleID, menuItem, subMenuItem, show)
       end
 
       clickMenuItemCmd = clickMenuItemCmd .. string.format([[
-        %sif exists menu item %s of menu 1 of menu bar item 1 of menu bar c of ap
-            set menuitem to menu item %s of menu 1 of menu bar item 1 of menu bar c of ap
+        %sif exists menu item %s of menu 1 of menu bar item 1 of last menu bar of ap
+            set menuitem to menu item %s of menu 1 of menu bar item 1 of last menu bar of ap
             click menuitem
             %s
       ]],

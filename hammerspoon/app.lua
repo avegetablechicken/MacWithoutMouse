@@ -89,7 +89,7 @@ local function toggleBarrierConnect()
   else
     local script = [[
       tell application "System Events"
-        set popupMenu to menu 1 of menu bar item 1 of menu bar 2 of ¬
+        set popupMenu to menu 1 of menu bar item 1 of last menu bar of ¬
             (first application process whose bundle identifier is "barrier")
         if value of attribute "AXEnabled" of menu item "Start" of popupMenu is true then
           set ret to 0
@@ -2980,7 +2980,7 @@ function connectMountainDuckEntries(appObject, connection)
   local script = string.format([[
     tell application "System Events"
       tell first application process whose bundle identifier is "%s"
-        set li to menu 1 of menu bar 1
+        set li to menu 1 of last menu bar
   ]], appObject:bundleID(), appObject:bundleID())
 
   if type(connection) == 'string' then

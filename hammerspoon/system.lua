@@ -100,7 +100,7 @@ local function toggleV2RayX(enable, alert)
 
   script = script .. [[
     tell application "System Events"
-      set popupMenu to menu 1 of menu bar item 1 of menu bar 2 of ¬
+      set popupMenu to menu 1 of menu bar item 1 of last menu bar of ¬
           (first application process whose bundle identifier is "]] .. bundleID .. [[")
       %s
     end tell
@@ -165,7 +165,7 @@ local function toggleV2RayU(enable, alert)
 
   script = script .. [[
     tell application "System Events"
-      set popupMenu to menu 1 of menu bar item 1 of menu bar 2 of ¬
+      set popupMenu to menu 1 of menu bar item 1 of last menu bar of ¬
           (first application process whose bundle identifier is "]] .. bundleID .. [[")
       %s
     end tell
@@ -230,7 +230,7 @@ local function toggleMonoCloud(enable, alert)
 
   script = script .. [[
     tell application "System Events"
-      set popupMenu to menu 1 of menu bar item 1 of menu bar 1 of ¬
+      set popupMenu to menu 1 of menu bar item 1 of last menu bar of ¬
           (first application process whose bundle identifier is "]] .. bundleID .. [[")
       set menuitem to menu item "Set As System Proxy" of popupMenu
       set ticked to value of attribute "AXMenuItemMarkChar" of menuitem
@@ -566,7 +566,7 @@ local function parseProxyInfo(info, require_mode)
           local bundleID = proxyAppBundleIDs.MonoCloud
           local script = [[
             tell application "System Events"
-              set menuitem to menu item "Outbound Mode" of menu 1 of menu bar item 1 of menu bar 1 of ¬
+              set menuitem to menu item "Outbound Mode" of menu 1 of menu bar item 1 of last menu bar of ¬
                   (first application process whose bundle identifier is  "]] .. bundleID .. [[")
               click menuitem
 
@@ -872,7 +872,7 @@ function()
     hs.osascript.applescript([[
       ignoring application responses
         tell application "System Events"
-          click menu bar item "PROXY" of menu bar 2 of application process "Hammerspoon"
+          click menu bar item "PROXY" of last menu bar of application process "Hammerspoon"
         end tell
       end ignoring
 
