@@ -2,18 +2,26 @@ local misc = keybindingConfigs.hotkeys.global
 
 -- call `ShortCuts` to copy to PC
 local iconForShortcuts = hs.image.imageFromAppBundle("com.apple.shortcuts")
-bindSpecSuspend(misc["copyToPC"], "Copy to PC",
-function()
-  hs.eventtap.keyStroke("⌘", "C")
-  hs.shortcuts.run("粘贴到PC")
-end).icon = iconForShortcuts
+local ok = hs.osascript.applescript([[tell application "Shortcuts" to get shortcut "粘贴到PC"]])
+if ok then
+  local hotkey = bindSpecSuspend(misc["copyToPC"], "Copy to PC",
+  function()
+    hs.eventtap.keyStroke("⌘", "C")
+    hs.shortcuts.run("粘贴到PC")
+  end)
+  hotkey.icon = iconForShortcuts
+end
 
 -- call `ShortCuts` to paste from PC
-bindSpecSuspend(misc["pasteFromPC"], "Paste from PC",
-function()
-  hs.shortcuts.run("复制自PC")
-  hs.timer.doAfter(1, function() hs.eventtap.keyStroke("⌘", "V") end)
-end).icon = iconForShortcuts
+ok = hs.osascript.applescript([[tell application "Shortcuts" to get shortcut "复制自PC"]])
+if ok then
+  local hotkey = bindSpecSuspend(misc["pasteFromPC"], "Paste from PC",
+  function()
+    hs.shortcuts.run("复制自PC")
+    hs.timer.doAfter(1, function() hs.eventtap.keyStroke("⌘", "V") end)
+  end)
+  hotkey.icon = iconForShortcuts
+end
 
 -- hold command and double tap C to prepend to pasteboard
 pasteboardKeyDown = false
