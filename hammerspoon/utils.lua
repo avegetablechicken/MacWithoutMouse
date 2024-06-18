@@ -1515,7 +1515,7 @@ function clickAppRightMenuBarItem(bundleID, menuItem, subMenuItem, show)
   -- firstly click menu bar item if necessary
   local clickMenuBarItemCmd = ""
   if show == true then
-    if hiddenByBartender(bundleID) and hasTopNotch(hs.screen.mainScreen()) then
+    if hiddenByBartender(bundleID) then
       clickMenuBarItemCmd = [[
         tell application id "com.surteesstudios.Bartender" to activate "]] .. bundleID .. [[-Item-0"
 
