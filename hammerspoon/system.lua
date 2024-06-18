@@ -1579,9 +1579,15 @@ function registerControlCenterHotKeys(panel)
                   end tell
                 ]])
               end)
+            hotkey:enable()
             table.insert(selectNetworkHotkeys, hotkey)
           end
         end
+      else
+        for _, hotkey in ipairs(selectNetworkHotkeys) do
+          hotkey:delete()
+        end
+        selectNetworkHotkeys = {}
       end
     end
     selectNetworkActionFunc()
