@@ -1,18 +1,19 @@
 local misc = keybindingConfigs.hotkeys.global
 
 -- call `ShortCuts` to copy to PC
+local iconForShortcuts = hs.image.imageFromAppBundle("com.apple.shortcuts")
 bindSpecSuspend(misc["copyToPC"], "Copy to PC",
 function()
   hs.eventtap.keyStroke("⌘", "C")
   hs.shortcuts.run("粘贴到PC")
-end)
+end).icon = iconForShortcuts
 
 -- call `ShortCuts` to paste from PC
 bindSpecSuspend(misc["pasteFromPC"], "Paste from PC",
 function()
   hs.shortcuts.run("复制自PC")
   hs.timer.doAfter(1, function() hs.eventtap.keyStroke("⌘", "V") end)
-end)
+end).icon = iconForShortcuts
 
 -- hold command and double tap C to prepend to pasteboard
 pasteboardKeyDown = false
