@@ -2,6 +2,8 @@ local misc = keybindingConfigs.hotkeys.global
 
 -- call `ShortCuts` to copy to PC
 local iconForShortcuts = hs.image.imageFromAppBundle("com.apple.shortcuts")
+local shortcutsLaunched = findApplication("com.apple.shortcuts") ~= nil
+
 local ok = hs.osascript.applescript([[tell application "Shortcuts" to get shortcut "粘贴到PC"]])
 if ok then
   local hotkey = bindSpecSuspend(misc["copyToPC"], "Copy to PC",
@@ -9,8 +11,17 @@ if ok then
     hs.eventtap.keyStroke("⌘", "C")
     local task = hs.task.new("/usr/bin/osascript", nil,
         { '-e', 'tell application "Shortcuts" to run shortcut "粘贴到PC"' })
+    local _ShortcutsLaunched = findApplication("com.apple.shortcuts") ~= nil
     task:start()
-    hs.timer.doAfter(10, function() if task:isRunning() then task:terminate() end end)
+    hs.timer.doAfter(10, function()
+      if task:isRunning() then task:terminate() end
+      if not _ShortcutsLaunched then
+        local shortcutsObj = findApplication("com.apple.shortcuts")
+        if shortcutsObj then
+            shortcutsObj:kill()
+        end
+      end
+    end)
   end)
   hotkey.icon = iconForShortcuts
 end
@@ -23,10 +34,25 @@ if ok then
     local task = hs.task.new("/usr/bin/osascript",
         function(exitCode) if exitCode == 0 then hs.eventtap.keyStroke("⌘", "V") end end,
         { '-e', 'tell application "Shortcuts" to run shortcut "复制自PC"' })
+    local _ShortcutsLaunched = findApplication("com.apple.shortcuts") ~= nil
     task:start()
-    hs.timer.doAfter(10, function() if task:isRunning() then task:terminate() end end)
+    hs.timer.doAfter(10, function()
+      if task:isRunning() then task:terminate() end
+      if not _ShortcutsLaunched then
+        local shortcutsObj = findApplication("com.apple.shortcuts")
+        if shortcutsObj then
+            shortcutsObj:kill()
+        end
+      end
+    end)
   end)
   hotkey.icon = iconForShortcuts
+end
+if not shortcutsLaunched then
+  local shortcutsObj = findApplication("com.apple.shortcuts")
+  if shortcutsObj then
+    shortcutsObj:kill()
+  end
 end
 
 -- hold command and double tap C to prepend to pasteboard
