@@ -21,7 +21,7 @@ if ok then
   local hotkey = bindSpecSuspend(misc["pasteFromPC"], "Paste from PC",
   function()
     local task = hs.task.new("/usr/bin/osascript",
-        function(exitCode) print(exitCode) if exitCode == 0 then hs.eventtap.keyStroke("⌘", "V") end end,
+        function(exitCode) if exitCode == 0 then hs.eventtap.keyStroke("⌘", "V") end end,
         { '-e', 'tell application "Shortcuts" to run shortcut "复制自PC"' })
     task:start()
     hs.timer.doAfter(10, function() if task:isRunning() then task:terminate() end end)
