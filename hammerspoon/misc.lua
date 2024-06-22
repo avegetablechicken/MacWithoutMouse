@@ -155,6 +155,7 @@ function parseVerificationCodeFromFirstMessage()
       end
     end
     if string.find(content, '验证码')
+        or string.find(string.lower(content), 'verify')
         or string.find(string.lower(content), 'verification') then
       return string.match(content, '%d%d%d%d+')
     end
