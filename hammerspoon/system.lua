@@ -2,6 +2,7 @@ require "utils"
 
 -- menubar for caffeine
 caffeine = hs.menubar.new()
+caffeine:autosaveName("CAFFEINE")
 
 function setCaffeineDisplay(state)
   if state then
@@ -286,6 +287,7 @@ end
 -- menubar for proxy
 proxy = hs.menubar.new()
 proxy:setTitle("PROXY")
+proxy:autosaveName("PROXY")
 proxyMenu = {}
 
 -- load proxy configs
@@ -865,7 +867,7 @@ function()
   if findApplication("com.surteesstudios.Bartender") ~= nil then
     hs.osascript.applescript([[
       tell application id "com.surteesstudios.Bartender"
-        activate "org.hammerspoon.Hammerspoon-Item-2"
+        activate "org.hammerspoon.Hammerspoon-PROXY"
       end tell
     ]])
   else
