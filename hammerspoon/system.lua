@@ -1766,18 +1766,11 @@ function registerControlCenterHotKeys(panel)
             if hs.fnutils.contains({"com.google.Chrome", "com.microsoft.edgemac", "com.microsoft.edgemac.Dev"}, bundleID) then
               local scheme = bundleID == "com.google.Chrome" and "chrome" or "edge"
               local darkMode = enableds[i] == 1 and "Enabled" or "Disabled"
-              local getOptionParentCmd = nil
+              local optionList = nil
               if bundleID == "com.google.Chrome" then
-                getOptionParentCmd = [[
-                  set win to ]] .. aWinFor(bundleID) .. [[
-                  set g to group 1 of group 4 of group 1 of group 2 of UI element "Experiments" of group 1 of group 1 of group 1 of group 1 of win
-                ]]
+                optionList = "group 1 of group 4 of group 1 of group 2 of exp"
               else
-                local experiments = localizedString("Experiments", bundleID)
-                getOptionParentCmd = [[
-                  set win to ]] .. aWinFor(bundleID) .. [[
-                  set g to group 1 of group 3 of group 1 of group 2 of group 1 of UI element "]] .. experiments .. [[" of group 1 of group 1 of group 1 of group 1 of win
-                ]]
+                optionList = "group 1 of group 3 of group 1 of group 2 of group 1 of exp"
               end
               local aWin = activatedWindowIndex()
               hs.osascript.applescript([[
@@ -1809,16 +1802,33 @@ function registerControlCenterHotKeys(panel)
                 end tell
 
                 tell application "System Events"
-                  ]] .. getOptionParentCmd .. [[
-                  set options to the value of attribute "AXChildren" of g
-                  repeat with opt in options
-                    set optTitle to UI element 1 of opt
-                    if title of optTitle contains "Auto Dark Mode" then
-                      set bt to pop up button 1 of group 2 of opt
-                      perform action 1 of bt
-                      exit repeat
-                    end if
-                  end repeat
+                  delay 0.5
+                  set win to ]] .. aWinFor(bundleID) .. [[
+                  set exp to (first UI element whose value of attribute "AXTitle" is not "") ¬
+                      of group 1 of group 1 of group 1 of group 1 of win
+                  if exists ]] .. optionList .. [[ then
+                    set g to ]] .. optionList .. [[
+
+                    set options to the value of attribute "AXChildren" of g
+                    repeat with opt in options
+                      set optTitle to UI element 1 of opt
+                      if title of optTitle contains "Auto Dark Mode" then
+                        set bt to pop up button 1 of group 2 of opt
+                        perform action 1 of bt
+                        exit repeat
+                      end if
+                    end repeat
+                  else
+                    set g to (first UI element whose value of attribute "AXSubRole" is "AXTabPanel") of group 4 of exp
+                    set cnt to count (UI elements of g)
+                    repeat with i from 1 to (cnt / 4)
+                      if title of UI element (i * 4 - 3) of g contains "Auto Dark Mode" then
+                        set bt to pop up button 1 of UI element (i * 4) of g
+                        perform action 1 of bt
+                        exit repeat
+                      end if
+                    end repeat
+                  end if
 
                   set g to group 1 of group 1 of group 1 of group 1 of win
                   perform action 2 of menu item "]] .. darkMode .. [[" of menu 1 of g
