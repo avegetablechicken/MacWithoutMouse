@@ -1725,8 +1725,7 @@ function controlCenterLocalized(panel, key)
   if panel == "Users" and key == "Users" then
     key = "User"
   end
-  panel = panel:gsub(" ", "")
-  panel = panel:gsub("‑", "")
+  panel = panel:gsub(" ", ""):gsub("‑", "")
   return localizedString(key, "com.apple.controlcenter", panel)
 end
 
@@ -1735,8 +1734,7 @@ function clickRightMenuBarItem(menuBarName, menuItem, subMenuItem, show)
     return clickControlCenterMenuBarItem(menuBarName)
   end
   local resourceDir = findApplication("com.apple.controlcenter"):path() .. "/Contents/Resources/en.lproj"
-  local newName = menuBarName:gsub(" ", "")
-  newName = menuBarName:gsub("‑", "")
+  local newName = menuBarName:gsub(" ", ""):gsub("‑", "")
   if hs.fs.attributes(resourceDir .. '/' .. newName .. '.strings') ~= nil then
     return clickControlCenterMenuBarItem(menuBarName)
   end

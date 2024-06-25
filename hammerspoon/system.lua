@@ -1024,7 +1024,7 @@ local function popupControlCenterSubPanel(panel, allowReentry)
           tell application id "com.surteesstudios.Bartender"
             activate "com.apple.controlcenter-%s"
           end tell
-        ]], string.gsub(string.gsub(panel, " ", ""), "‑", "")))
+        ]], panel:gsub(" ", ""):gsub("‑", "")))
       else
         ok, result = hs.osascript.applescript(string.format([[
           tell application "System Events"
