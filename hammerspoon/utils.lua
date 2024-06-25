@@ -726,7 +726,7 @@ end
 local function localizeByChromium(str, localeDir, localesDict, bundleID)
   local resourceDir = localeDir .. '/..'
   local locale = localeDir:match("^.*/(.*)%.lproj$")
-  for _, enLocale in ipairs{"en", "English", "Base", "en-GB"} do
+  for _, enLocale in ipairs{"en", "English", "Base", "en_GB"} do
     if hs.fs.attributes(resourceDir .. '/' .. enLocale .. '.lproj') ~= nil then
       for file in hs.fs.dir(resourceDir .. '/' .. enLocale .. '.lproj') do
         if file:sub(-4) == ".pak" then
@@ -1010,7 +1010,7 @@ local function delocalizeByChromium(str, localeDir, bundleID)
             "grep -lrE '%s' '%s' | tr -d '\\n'", pattern, tmpdir))
       if status and output ~= "" then
         local matchFile = output:match("^.*/(.*)$")
-        for _, enLocale in ipairs{"en", "English", "Base", "en-GB"} do
+        for _, enLocale in ipairs{"en", "English", "Base", "en_GB"} do
           local fullPath = resourceDir .. '/' .. enLocale .. '.lproj/' .. file
           if hs.fs.attributes(fullPath) ~= nil then
             local enTmpdir = string.format(localeTmpDir .. '%s-%s-%s', bundleID, enLocale, fileStem)
