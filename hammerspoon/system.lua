@@ -1187,6 +1187,12 @@ function registerControlCenterHotKeys(panel)
         selectNetworkWatcher:stop()
         selectNetworkWatcher = nil
       end
+      if selectNetworkHotkeys ~= nil then
+        for _, hotkey in ipairs(selectNetworkHotkeys) do
+          hotkey:delete()
+        end
+        selectNetworkHotkeys = nil
+      end
       if controlCenterHotKeys ~= nil then
         for _, hotkey in ipairs(controlCenterHotKeys) do
           hotkey:delete()
