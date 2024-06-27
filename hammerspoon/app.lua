@@ -789,8 +789,6 @@ appHotKeyCallbacks = {
 
   ["com.apple.Safari"] =
   {
-    ["previousTab"] = specialCommonHotkeyConfigs["showPrevTab"],
-    ["nextTab"] = specialCommonHotkeyConfigs["showNextTab"],
     ["revealInFinder"] = {
       message = "Reveal in Finder",
       condition = function(appObject)
