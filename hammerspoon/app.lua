@@ -168,44 +168,52 @@ local function registerAppHotkeys()
   hyperModal.hyperMode.keys = hs.fnutils.filter(hyperModal.hyperMode.keys,
       function(hotkey) return hotkey.idx ~= nil end)
 
-  for appname, config in pairs(appConfigs) do
-    local flag = false
-    if config.appPath then
-      if type(config.appPath) == "string" then
-        flag = hs.fs.attributes(config.appPath) ~= nil
-      elseif type(config.appPath) == "table" then
-        flag = hs.fnutils.some(config.appPath, function(appPath)
-          return hs.fs.attributes(appPath) ~= nil
-        end)
-      end
-    elseif config.bundleID then
+  for name, config in pairs(appConfigs) do
+    local appPath
+    if config.bundleID then
       if type(config.bundleID) == "string" then
-        flag = (hs.application.pathForBundleID(config.bundleID) ~= nil
-            and hs.application.pathForBundleID(config.bundleID) ~= "")
+        appPath = hs.application.pathForBundleID(config.bundleID)
       elseif type(config.bundleID) == "table" then
-        flag = hs.fnutils.some(config.bundleID, function(bundleID)
-          return (hs.application.pathForBundleID(bundleID) ~= nil
-              and hs.application.pathForBundleID(bundleID) ~= "")
-        end)
+        for _, bundleID in ipairs(config.bundleID) do
+          appPath = hs.application.pathForBundleID(bundleID)
+          if appPath ~= nil then break end
+        end
       end
-    elseif config.vm then
+    end
+    if appPath == nil and config.vm ~= nil then
       if config.vm == "com.parallels.desktop.console" then
-        config.appPath = getParallelsVMPath(appname)
-        flag = config.appPath ~= nil
+        appPath = getParallelsVMPath(name)
+        config.appPath = appPath
       else
         hs.alert("Unsupported Virtual Machine : " .. config.vm)
       end
     end
-    if flag then
-      local hotkey = bindSpecSuspend(config, "Toggle " .. appname,
-          hs.fnutils.partial(config.fn or focusOrHide, config.bundleID or (config.appPath or appname)))
-      hotkey.kind = HK.APPKEY
-      if config.bundleID then
-        hotkey.bundleID = config.bundleID
-      elseif config.appPath then
-        hotkey.appPath = config.appPath
+    if appPath == nil and config.appPath ~= nil then
+      if type(config.appPath) == "string" then
+        appPath = config.appPath
+      elseif type(config.appPath) == "table" then
+        for _, path in ipairs(config.appPath) do
+          if hs.fs.attributes(path) ~= nil then
+            appPath = path
+            break
+          end
+        end
       end
-      table.insert(appHotkeys, hotkey)
+    end
+    if appPath ~= nil then
+      local appName, status_ok = hs.execute(string.format("mdls -name kMDItemDisplayName -raw '%s'", appPath))
+      if status_ok then
+        appName = appName:sub(1, -5)
+        local hotkey = bindSpecSuspend(config, "Toggle " .. appName,
+            hs.fnutils.partial(config.fn or focusOrHide, config.bundleID or (config.appPath or appName)))
+        hotkey.kind = HK.APPKEY
+        if config.bundleID then
+          hotkey.bundleID = config.bundleID
+        elseif config.appPath then
+          hotkey.appPath = config.appPath
+        end
+        table.insert(appHotkeys, hotkey)
+      end
     end
   end
 end
