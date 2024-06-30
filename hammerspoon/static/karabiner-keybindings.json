@@ -172,82 +172,82 @@
         "message": "Volume Up"
     },
     {
-        "mods": "touchbar:top-left",
+        "mods": "trackpad:top-left",
         "key": "W",
         "message": "Up"
     },
     {
-        "mods": "touchbar:top-left",
+        "mods": "trackpad:top-left",
         "key": "S",
         "message": "Down"
     },
     {
-        "mods": "touchbar:top-left",
+        "mods": "trackpad:top-left",
         "key": "A",
         "message": "Left"
     },
     {
-        "mods": "touchbar:top-left",
+        "mods": "trackpad:top-left",
         "key": "D",
         "message": "Right"
     },
     {
-        "mods": "touchbar:top-left",
+        "mods": "trackpad:top-left",
         "key": "Q",
         "message": "Home"
     },
     {
-        "mods": "touchbar:top-left",
+        "mods": "trackpad:top-left",
         "key": "E",
         "message": "End"
     },
     {
-        "mods": "touchbar:top-left",
+        "mods": "trackpad:top-left",
         "key": "Z",
         "message": "PageUp"
     },
     {
-        "mods": "touchbar:top-left",
+        "mods": "trackpad:top-left",
         "key": "X",
         "message": "PageDown"
     },
     {
-        "mods": ["shift", "touchbar:top-left"],
+        "mods": ["shift", "trackpad:top-left"],
         "key": "W",
         "message": "Up and Select"
     },
     {
-        "mods": ["shift", "touchbar:top-left"],
+        "mods": ["shift", "trackpad:top-left"],
         "key": "S",
         "message": "Down and Select"
     },
     {
-        "mods": ["shift", "touchbar:top-left"],
+        "mods": ["shift", "trackpad:top-left"],
         "key": "A",
         "message": "Left and Select"
     },
     {
-        "mods": ["shift", "touchbar:top-left"],
+        "mods": ["shift", "trackpad:top-left"],
         "key": "D",
         "message": "Right and Select"
     },
     {
-        "mods": ["shift", "touchbar:top-left"],
+        "mods": ["shift", "trackpad:top-left"],
         "key": "Q",
         "message": "Home and Select"
     },
     {
-        "mods": ["shift", "touchbar:top-left"],
+        "mods": ["shift", "trackpad:top-left"],
         "key": "E",
         "message": "End and Select"
     },
     {
-        "mods": ["shift", "touchbar:top-left"],
+        "mods": ["shift", "trackpad:top-left"],
         "key": "Z",
         "message": "PageUp and Select"
     },
     {
-        "mods": ["shift", "touchbar:top-left"],
+        "mods": ["shift", "trackpad:top-left"],
         "key": "X",
         "message": "PageDown and Select"
     }

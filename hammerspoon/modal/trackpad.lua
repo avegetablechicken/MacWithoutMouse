@@ -2,7 +2,7 @@ local This = {}
 This.keys = {}
 This.eventtapper = nil
 
-local touchbar = {
+local trackpad = {
   ["top-left"] = "⌜",
   ["top-right"] = "⌝",
   ["bottom-left"] = "⌞",
@@ -32,10 +32,10 @@ function This.bind(mods, key, message, pressedfn, releasedfn, repeatfn)
   end
   local hotkey = newHotkey(mods, key, message, pressedfn, releasedfn, repeatfn)
   local modsRepr = ""
-  if (modsCode // 8) % 2 == 1 then modsRepr = touchbar["bottom-right"] end
-  if (modsCode // 4) % 2 == 1 then modsRepr = touchbar["bottom-left"] .. modsRepr end
-  if (modsCode // 2) % 2 == 1 then modsRepr = touchbar["top-right"] .. modsRepr end
-  if modsCode % 2 == 1 then modsRepr = touchbar["top-left"] .. modsRepr end
+  if (modsCode // 8) % 2 == 1 then modsRepr = trackpad["bottom-right"] end
+  if (modsCode // 4) % 2 == 1 then modsRepr = trackpad["bottom-left"] .. modsRepr end
+  if (modsCode // 2) % 2 == 1 then modsRepr = trackpad["top-right"] .. modsRepr end
+  if modsCode % 2 == 1 then modsRepr = trackpad["top-left"] .. modsRepr end
   hotkey.msg = modsRepr .. hotkey.msg
   table.insert(This.keys[modsCode], hotkey)
   if This.eventtapper == nil then

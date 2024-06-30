@@ -200,10 +200,10 @@ local modifiersShowReverseOrder =
   "option", "alt",
   "control", "ctrl",
   "shift",
-  "touchbar:bottom-right",
-  "touchbar:bottom-left",
-  "touchbar:top-right",
-  "touchbar:top-left",
+  "trackpad:bottom-right",
+  "trackpad:bottom-left",
+  "trackpad:top-right",
+  "trackpad:top-left",
 }
 
 local modifierSymbols = { "🌐︎", "⌘", "⌥", "⌃", "⇧", "✧", "⌟", "⌞", "⌝", "⌜" }
@@ -218,10 +218,10 @@ local modifierSymbolMap = {
   alt = "⌥",
   fn = "🌐︎",
   hyper = "✧",
-  ["touchbar:top-left"] = "⌜",
-  ["touchbar:top-right"] = "⌝",
-  ["touchbar:bottom-left"] = "⌞",
-  ["touchbar:bottom-right"] = "⌟",
+  ["trackpad:top-left"] = "⌜",
+  ["trackpad:top-right"] = "⌝",
+  ["trackpad:bottom-left"] = "⌞",
+  ["trackpad:bottom-right"] = "⌟",
 }
 
 local function loadKarabinerKeyBindings(filePath)
@@ -965,13 +965,13 @@ function()
           and touches[1].touching == true and touches[1].type == 'indirect' then
           local tpos = touches[1].normalizedPosition
           if tpos.x < 0.25 and tpos.y > 0.75 then
-            evFlags["touchbar:top-left"] = true
+            evFlags["trackpad:top-left"] = true
           elseif tpos.x > 0.75 and tpos.y > 0.75 then
-            evFlags["touchbar:top-right"] = true
+            evFlags["trackpad:top-right"] = true
           elseif tpos.x < 0.25 and tpos.y < 0.25 then
-            evFlags["touchbar:bottom-left"] = true
+            evFlags["trackpad:bottom-left"] = true
           elseif tpos.x > 0.75 and tpos.y < 0.25 then
-            evFlags["touchbar:bottom-right"] = true
+            evFlags["trackpad:bottom-right"] = true
           end
         end
       end
