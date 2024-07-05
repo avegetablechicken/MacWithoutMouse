@@ -1453,8 +1453,8 @@ appHotKeyCallbacks = {
 
   ["com.tencent.QQMusicMac"] =
   {
-    ["backFromSongDetails"] = {
-      message = "Back",
+    ["exitSongDetails"] = {
+      message = "关闭歌曲详情",
       condition = function(appObject)
         local bundleID = appObject:bundleID()
         local version = hs.execute(string.format('mdls -r -name kMDItemVersion "%s"',
