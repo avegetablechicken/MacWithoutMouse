@@ -17,6 +17,10 @@
         {
             "filter": ["【12306】", "验证码"],
             "extract": "%d%d%d%d%d%d"
+        },
+        {
+            "filter": "验证码",
+            "extract": "%d%d%d%d+"
         }
     ]
 }
