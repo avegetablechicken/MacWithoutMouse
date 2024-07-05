@@ -1453,6 +1453,64 @@ appHotKeyCallbacks = {
 
   ["com.tencent.QQMusicMac"] =
   {
+    ["back"] = {
+      message = "上一页",
+      condition = function(appObject)
+        if appObject:focusedWindow() == nil then return false end
+        local appUIObj = hs.axuielement.applicationElement(appObject)
+        local frame = appObject:focusedWindow():frame()
+        local titleBarUIObj = appUIObj:elementAtPosition(frame.x + 100, frame.y + 10)
+        for _, button in ipairs(titleBarUIObj.AXChildren or {}) do
+          if button.AXHelp == "后退" then
+            return true, button:attributeValue("AXPosition")
+          end
+        end
+        return false
+      end,
+      fn = function(position, appObject)
+        leftClickAndRestore(position, appObject:name())
+      end
+    },
+    ["forward"] = {
+      message = "下一页",
+      condition = function(appObject)
+        if appObject:focusedWindow() == nil then return false end
+        local appUIObj = hs.axuielement.applicationElement(appObject)
+        local frame = appObject:focusedWindow():frame()
+        local titleBarUIObj = appUIObj:elementAtPosition(frame.x + 100, frame.y + 10)
+        for _, button in ipairs(titleBarUIObj.AXChildren or {}) do
+          if button.AXHelp == "前进" then
+            return true, button:attributeValue("AXPosition")
+          end
+        end
+        return false
+      end,
+      fn = function(position, appObject)
+        leftClickAndRestore(position, appObject:name())
+      end
+    },
+    ["refresh"] = {
+      message = "刷新",
+      condition = function(appObject)
+        if appObject:focusedWindow() == nil then return false end
+        local appUIObj = hs.axuielement.applicationElement(appObject)
+        local frame = appObject:focusedWindow():frame()
+        local titleBarUIObj = appUIObj:elementAtPosition(frame.x + 100, frame.y + 10)
+        local refreshButtonPosition, searchButtonPosition
+        for _, button in ipairs(titleBarUIObj.AXChildren or {}) do
+          if button.AXHelp == "刷新" then
+            refreshButtonPosition = button:attributeValue("AXPosition")
+          elseif button.AXHelp == nil then
+            searchButtonPosition = button:attributeValue("AXPosition")
+          end
+        end
+        return refreshButtonPosition ~= nil and searchButtonPosition ~= nil
+            and refreshButtonPosition.x ~= searchButtonPosition.x, refreshButtonPosition
+      end,
+      fn = function(position, appObject)
+        leftClickAndRestore(position, appObject:name())
+      end
+    },
     ["exitSongDetails"] = {
       message = "关闭歌曲详情",
       condition = function(appObject)

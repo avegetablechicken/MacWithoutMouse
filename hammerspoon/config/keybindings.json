@@ -1137,6 +1137,18 @@
       }
     },
     "com.tencent.QQMusicMac": {
+      "back": {
+        "mods": "command",
+        "key": "["
+      },
+      "forward": {
+        "mods": "command",
+        "key": "]"
+      },
+      "refresh": {
+        "mods": "command",
+        "key": "R"
+      },
       "exitSongDetails": {
         "mods": "",
         "key": "escape"
