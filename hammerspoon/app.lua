@@ -1271,104 +1271,68 @@ appHotKeyCallbacks = {
             localizedMenuBarItem('File', exBundleID),
             localizedString('Back', exBundleID)
           }
-          local appUIObj = hs.axuielement.applicationElement(appObject)
-          for _, menuBarItem in ipairs(getAXChildren(appUIObj, "AXMenuBar", 1).AXChildren) do
-            if menuBarItem.AXTitle == menuItemPath[1] then
-              for _, menuItem in ipairs(getAXChildren(menuBarItem, "AXMenu", 1).AXChildren) do
-                if menuItem.AXTitle == menuItemPath[2] then
-                  if menuItem.AXEnabled then return true, { 0, menuItemPath } end
-                end
-              end
-            end
+          local menuItem = findMenuItem(appObject, menuItemPath)
+          if menuItem ~= nil and menuItem.enabled then
+            return true, { 0, menuItemPath }
           end
         end
         if appObject:focusedWindow() == nil then return false end
         local bundleID = appObject:bundleID()
-        local album = localizedString("Album", bundleID)
-        local moments = localizedString("Moments", bundleID)
-        local detail = localizedString("SNS_Feed_Detail_Title", bundleID, { key = true })
-        if string.find(appObject:focusedWindow():title(), album .. '-') == 1
-            or appObject:focusedWindow():title() == moments .. '-' .. detail then
-          local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
-          return true, { 4, winUIObj:childrenWithRole("AXButton")[1].AXPosition }
-        end
-        local back = localizedString("Common.Navigation.Back", bundleID, { key = true })
-        local lastPage = localizedString("WebView.Previous.Item", bundleID, { key = true })
-        local ok, result = hs.osascript.applescript([[
-          tell application "System Events"
-            tell ]] .. aWinFor(appObject) .. [[
-              -- Official Accounts
-              if exists button "]] .. back .. [[" of splitter group 1 of splitter group 1 then
-                return 1
-              end if
-
-              -- Minimized Groups
-              if exists splitter group 1 then
-                set bt to every button of splitter group 1 whose description is "]] .. back .. [["
-                if (count bt) > 0 then
-                  return 2
-                end if
-              end if
-
-              -- Push Notifications
-              set bts to every button
-              repeat with bt in bts
-                if value of attribute "AXHelp" of bt is "]] .. lastPage .. [[" ¬
-                    and value of attribute "AXEnabled" of bt is True then
-                  return 3
-                end if
-              end repeat
-
-              return false
-            end tell
-          end tell
-        ]])
-        if ok and result ~= false then
-          if result == 1 then
-            return true, { 1, back}
-          elseif result == 2 then
-            return true, { 2 }
-          elseif result == 3 then
-            return true, { 3, lastPage }
+        local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
+        -- Moments
+        if string.find(appObject:focusedWindow():title(), appObject:name()) == nil then
+          local album = localizedString("Album_WindowTitle", bundleID, { key = true })
+          local moments = localizedString("SNS_Feed_Window_Title", bundleID, { key = true })
+          local detail = localizedString("SNS_Feed_Detail_Title", bundleID, { key = true })
+          if string.find(appObject:focusedWindow():title(), album .. '-') == 1
+              or appObject:focusedWindow():title() == moments .. '-' .. detail then
+            return true, { 4, winUIObj:childrenWithRole("AXButton")[1].AXPosition }
           end
-        else
           return false
         end
+        local back = localizedString("Common.Navigation.Back", bundleID, { key = true })
+        -- Minimized Groups
+        g = getAXChildren(winUIObj, "AXSplitGroup", 1)
+        if g ~= nil then
+          local cnt = 0
+          for _, bt in ipairs(g:childrenWithRole("AXButton")) do
+            if bt.AXDescription == back then
+              cnt = cnt + 1
+            end
+          end
+          if cnt > 2 then
+            return true, { 2 }
+          end
+        end
+        -- Official Accounts
+        local g = getAXChildren(winUIObj, "AXSplitGroup", 1, "AXSplitGroup", 1)
+        if g ~= nil then
+          for _, bt in ipairs(g:childrenWithRole("AXButton")) do
+            if bt.AXTitle == back then
+              return true, { 1, bt }
+            end
+          end
+        end
+        -- Push Notifications
+        local lastPage = localizedString("WebView.Previous.Item", bundleID, { key = true })
+        local bts = winUIObj:childrenWithRole("AXButton")
+        for _, bt in ipairs(bts) do
+          if bt.AXHelp == lastPage and bt.AXEnabled then
+            return true, { 3, bt }
+          end
+        end
+        return false
       end,
       fn = function(result, appObject)
         if result[1] == 0 then
           appObject:selectMenuItem(result[2])
+        elseif result[1] == 2 then
+          hs.eventtap.keyStroke("", "Left", nil, appObject)
         elseif result[1] == 4 then
           leftClickAndRestore(result[2], appObject:name())
         else
-          local script = [[
-            tell application "System Events"
-              tell ]] .. aWinFor(appObject) .. [[
-                %s
-              end tell
-            end tell
-          ]]
-          if result[1] == 1 then
-            script = string.format(script, [[
-              click button "]] .. result[2] .. [[" of splitter group 1 of splitter group 1
-            ]])
-          elseif result[1] == 2 then
-            script = string.format(script, [[
-              key code 123
-            ]])
-          else
-            script = string.format(script, [[
-              set bts to every button
-              repeat with bt in bts
-                if value of attribute "AXHelp" of bt is "]] .. result[2] .. [[" ¬
-                    and value of attribute "AXEnabled" of bt is True then
-                  click bt
-                  exit repeat
-                end if
-              end repeat
-            ]])
-          end
-          hs.osascript.applescript(script)
+          local button = result[2]
+          button:performAction("AXPress")
         end
       end
     },
