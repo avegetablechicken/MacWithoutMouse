@@ -1271,7 +1271,7 @@ appHotKeyCallbacks = {
             localizedMenuBarItem('File', exBundleID),
             localizedString('Back', exBundleID)
           }
-          local menuItem = findMenuItem(appObject, menuItemPath)
+          local menuItem = appObject:findMenuItem(menuItemPath)
           if menuItem ~= nil and menuItem.enabled then
             return true, { 0, menuItemPath }
           end
@@ -1286,7 +1286,7 @@ appHotKeyCallbacks = {
           local detail = localizedString("SNS_Feed_Detail_Title", bundleID, { key = true })
           if string.find(appObject:focusedWindow():title(), album .. '-') == 1
               or appObject:focusedWindow():title() == moments .. '-' .. detail then
-            return true, { 4, winUIObj:childrenWithRole("AXButton")[1].AXPosition }
+            return true, { 3, winUIObj:childrenWithRole("AXButton")[1].AXPosition }
           end
           return false
         end
@@ -1326,13 +1326,12 @@ appHotKeyCallbacks = {
       fn = function(result, appObject)
         if result[1] == 0 then
           appObject:selectMenuItem(result[2])
+        elseif result[1] == 1 then
+          result[2]:performAction("AXPress")
         elseif result[1] == 2 then
           hs.eventtap.keyStroke("", "Left", nil, appObject)
-        elseif result[1] == 4 then
+        elseif result[1] == 3 then
           leftClickAndRestore(result[2], appObject:name())
-        else
-          local button = result[2]
-          button:performAction("AXPress")
         end
       end,
       mayLastLong = true
@@ -1345,54 +1344,32 @@ appHotKeyCallbacks = {
         if exAppObject ~= nil then
           local menuItemPath = {
             localizedMenuBarItem('File', exBundleID),
-            localizedString('Forward', exBundleID)
+            localizedString('Back', exBundleID)
           }
-          local appUIObj = hs.axuielement.applicationElement(appObject)
-          for _, menuBarItem in ipairs(getAXChildren(appUIObj, "AXMenuBar", 1).AXChildren) do
-            if menuBarItem.AXTitle == menuItemPath[1] then
-              for _, menuItem in ipairs(getAXChildren(menuBarItem, "AXMenu", 1).AXChildren) do
-                if menuItem.AXTitle == menuItemPath[2] then
-                  if menuItem.AXEnabled then return true, { 0, menuItemPath } end
-                end
-              end
-            end
+          local menuItem = appObject:findMenuItem(menuItemPath)
+          if menuItem ~= nil and menuItem.enabled then
+            return true, { 0, menuItemPath }
           end
         end
         if appObject:focusedWindow() == nil then return false end
         local bundleID = appObject:bundleID()
+        -- Push Notifications
         local nextPage = localizedString("WebView.Next.Item", bundleID, { key = true })
-        local ok, valid = hs.osascript.applescript([[
-          tell application "System Events"
-            -- Push Notifications
-            set bts to every button of ]] .. aWinFor(appObject) .. [[
-            repeat with bt in bts
-              if value of attribute "AXHelp" of bt is "]] .. nextPage .. [[" ¬
-                  and value of attribute "AXEnabled" of bt is True then
-                return true
-              end if
-            end repeat
-            return false
-          end tell
-        ]])
-        return ok and valid, { 1, nextPage }
+        local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
+        local bts = winUIObj:childrenWithRole("AXButton")
+        for _, bt in ipairs(bts) do
+          if bt.AXHelp == nextPage and bt.AXEnabled then
+            return true, { 1, bt }
+          end
+        end
+        return false
       end,
       fn = function(result, appObject)
         if result[1] == 0 then
           appObject:selectMenuItem(result[2])
         elseif result[1] == 1 then
-          hs.osascript.applescript([[
-            tell application "System Events"
-              -- Push Notifications
-              set bts to every button of ]] .. aWinFor(appObject) .. [[
-              repeat with bt in bts
-                if value of attribute "AXHelp" of bt is "]] .. result[2] .. [[" ¬
-                    and value of attribute "AXEnabled" of bt is True then
-                  click bt
-                  return
-                end if
-              end repeat
-            end tell
-          ]])
+          local button = result[2]
+          button:performAction("AXPress")
         end
       end
     },
