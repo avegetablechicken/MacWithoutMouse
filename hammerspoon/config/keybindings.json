@@ -1127,10 +1127,6 @@
         "mods": "command",
         "key": "["
       },
-      "forward": {
-        "mods": "command",
-        "key": "]"
-      },
       "openInDefaultBrowser": {
         "mods": ["shift", "command"],
         "key": "O"

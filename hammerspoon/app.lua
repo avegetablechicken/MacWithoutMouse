@@ -1313,14 +1313,6 @@ appHotKeyCallbacks = {
             end
           end
         end
-        -- Push Notifications
-        local lastPage = localizedString("WebView.Previous.Item", bundleID, { key = true })
-        local bts = winUIObj:childrenWithRole("AXButton")
-        for _, bt in ipairs(bts) do
-          if bt.AXHelp == lastPage and bt.AXEnabled then
-            return true, { 3, bt }
-          end
-        end
         return false
       end,
       fn = function(result, appObject)
@@ -1335,43 +1327,6 @@ appHotKeyCallbacks = {
         end
       end,
       mayLastLong = true
-    },
-    ["forward"] = {
-      message = localizedMessage("WebView.Next.Item", {  key = true }),
-      condition = function(appObject)
-        local exBundleID = "com.tencent.xinWeChat.WeChatAppEx"
-        local exAppObject = findApplication(exBundleID)
-        if exAppObject ~= nil then
-          local menuItemPath = {
-            localizedMenuBarItem('File', exBundleID),
-            localizedString('Back', exBundleID)
-          }
-          local menuItem = appObject:findMenuItem(menuItemPath)
-          if menuItem ~= nil and menuItem.enabled then
-            return true, { 0, menuItemPath }
-          end
-        end
-        if appObject:focusedWindow() == nil then return false end
-        local bundleID = appObject:bundleID()
-        -- Push Notifications
-        local nextPage = localizedString("WebView.Next.Item", bundleID, { key = true })
-        local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
-        local bts = winUIObj:childrenWithRole("AXButton")
-        for _, bt in ipairs(bts) do
-          if bt.AXHelp == nextPage and bt.AXEnabled then
-            return true, { 1, bt }
-          end
-        end
-        return false
-      end,
-      fn = function(result, appObject)
-        if result[1] == 0 then
-          appObject:selectMenuItem(result[2])
-        elseif result[1] == 1 then
-          local button = result[2]
-          button:performAction("AXPress")
-        end
-      end
     },
     ["openInDefaultBrowser"] = {
       message = localizedMessage("Open in Default Browser"),
