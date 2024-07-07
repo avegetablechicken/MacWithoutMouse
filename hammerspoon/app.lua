@@ -1334,7 +1334,8 @@ appHotKeyCallbacks = {
           local button = result[2]
           button:performAction("AXPress")
         end
-      end
+      end,
+      mayLastLong = true
     },
     ["forward"] = {
       message = localizedMessage("WebView.Next.Item", {  key = true }),
