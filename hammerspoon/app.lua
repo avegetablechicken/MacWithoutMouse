@@ -2385,6 +2385,9 @@ local function registerInAppHotKeys(appName, eventType, appObject)
             cond = noSelectedMenuBarItemFunc(cond)
           end
           fn = function(appObject, appName, eventType)
+            if cfg.mayLastLong then
+              inAppHotKeys[bid][hkID]:disable()
+            end
             local satisfied, result = cond(appObject)
             if satisfied then
               if result ~= nil then
@@ -2397,6 +2400,9 @@ local function registerInAppHotKeys(appName, eventType, appObject)
               hs.eventtap.keyStroke(keyBinding.mods, keyBinding.key, nil, appObject)
             else
               selectMenuItemOrKeyStroke(appObject, keyBinding.mods, keyBinding.key)
+            end
+            if cfg.mayLastLong then
+              inAppHotKeys[bid][hkID]:enable()
             end
           end
           if cfg.repeatable ~= false then
@@ -2422,12 +2428,12 @@ local function registerInAppHotKeys(appName, eventType, appObject)
           local hotkey = bindSpecSuspend(keyBinding, msg, fn, nil, repeatedFn)
           hotkey.kind = HK.IN_APP
           hotkey.condition = cond
-          table.insert(inAppHotKeys[bid], hotkey)
+          inAppHotKeys[bid][hkID] = hotkey
         end
       end
     end
   else
-    for _, hotkey in ipairs(inAppHotKeys[bid]) do
+    for _, hotkey in pairs(inAppHotKeys[bid]) do
       hotkey:enable()
     end
   end
@@ -2436,11 +2442,11 @@ end
 local function unregisterInAppHotKeys(bid, eventType, delete)
   if appHotKeyCallbacks[bid] == nil then return end
 
-  for _, hotkey in ipairs(inAppHotKeys[bid]) do
+  for _, hotkey in pairs(inAppHotKeys[bid]) do
     hotkey:disable()
   end
   if delete ~= nil and delete then
-    for _, hotkey in ipairs(inAppHotKeys[bid]) do
+    for _, hotkey in pairs(inAppHotKeys[bid]) do
       hotkey:delete()
     end
     inAppHotKeys[bid] = nil
