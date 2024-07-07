@@ -173,10 +173,11 @@ local function registerAppHotkeys()
     if config.bundleID then
       if type(config.bundleID) == "string" then
         appPath = hs.application.pathForBundleID(config.bundleID)
+        if appPath == "" then appPath = nil end
       elseif type(config.bundleID) == "table" then
         for _, bundleID in ipairs(config.bundleID) do
           appPath = hs.application.pathForBundleID(bundleID)
-          if appPath ~= nil then break end
+          if appPath ~= nil and appPath ~= "" then break end
         end
       end
     end
