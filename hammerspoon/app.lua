@@ -1540,16 +1540,23 @@ appHotKeyCallbacks = {
         if not hasShowed and ok and #ret[1] > 0 then
           local positions, appNames = ret[1], ret[2]
           if bartenderBarHotkeys == nil then bartenderBarHotkeys = {} end
+          local icon = hs.image.imageFromAppBundle(bundleID)
           local maxCnt = math.min(#positions, 10)
           for i = 1, maxCnt do
-            table.insert(bartenderBarHotkeys, bindSuspend("", i == 10 and "0" or tostring(i), "Click " .. appNames[i], function()
+            local hotkey = bindSuspend("", i == 10 and "0" or tostring(i), "Click " .. appNames[i], function()
               leftClickAndRestore({ positions[i][1] + 10, positions[i][2] + 10 })
-            end))
+            end)
+            hotkey.kind = HK.MENUBAR
+            hotkey.icon = icon
+            table.insert(bartenderBarHotkeys, hotkey)
           end
           for i = 1, maxCnt do
-            table.insert(bartenderBarHotkeys, bindSuspend("⌥", i == 10 and "0" or tostring(i), "Right-click " .. appNames[i], function()
+            local hotkey = bindSuspend("⌥", i == 10 and "0" or tostring(i), "Right-click " .. appNames[i], function()
               rightClickAndRestore({ positions[i][1] + 10, positions[i][2] + 10 })
-            end))
+            end)
+            hotkey.kind = HK.MENUBAR
+            hotkey.icon = icon
+            table.insert(bartenderBarHotkeys, hotkey)
           end
           if bartenderBarFilter == nil then
             bartenderBarFilter = hs.window.filter.new(false):setAppFilter(appObject:name(),
