@@ -236,10 +236,9 @@ local function klatexformulaRender()
 end
 
 local function getFinderSidebarItem(idx, appObject)
-  if appObject:focusedWindow() == nil then return false end
-  local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
-  local outlineUIObj = getAXChildren(winUIObj,
-    "AXSplitGroup", 1, "AXScrollArea", 1, "AXOutline", 1)
+  local appUIObj = hs.axuielement.applicationElement(appObject)
+  local outlineUIObj = getAXChildren(appUIObj, "AXWindow", activatedWindowIndex(),
+      "AXSplitGroup", 1, "AXScrollArea", 1, "AXOutline", 1)
   if outlineUIObj == nil then return false end
   local cnt = 0
   for _, rowUIObj in ipairs(outlineUIObj:childrenWithRole("AXRow")) do
@@ -452,9 +451,9 @@ end
 
 local function JabRefShowLibraryByIndex(idx)
   return function(appObject)
-    if appObject:focusedWindow() == nil then return false end
-    local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
-    local tab = getAXChildren(winUIObj, "AXTabGroup", 1, "AXRadioButton", idx)
+    local appUIObj = hs.axuielement.applicationElement(appObject)
+    local tab = getAXChildren(appUIObj, "AXWindow", activatedWindowIndex(),
+        "AXTabGroup", 1, "AXRadioButton", idx)
     if tab ~= nil then
       return true, { x = tab.AXPosition.x + 10, y = tab.AXPosition.y + 10 }
     else
