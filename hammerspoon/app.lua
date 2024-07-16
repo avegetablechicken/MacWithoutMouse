@@ -450,6 +450,19 @@ local function VSCodeToggleSideBarSection(sidebar, section)
   ]])
 end
 
+local function JabRefShowLibraryByIndex(idx)
+  return function(appObject)
+    if appObject:focusedWindow() == nil then return false end
+    local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
+    local tab = getAXChildren(winUIObj, "AXTabGroup", 1, "AXRadioButton", idx)
+    if tab ~= nil then
+      return true, { x = tab.AXPosition.x + 10, y = tab.AXPosition.y + 10 }
+    else
+      return false
+    end
+  end
+end
+
 local function iCopySelectHotkeyRemapRequired()
   local version = hs.execute(string.format('mdls -r -name kMDItemVersion "%s"',
       hs.application.pathForBundleID("cn.better365.iCopy")))
@@ -1233,6 +1246,7 @@ appHotKeyCallbacks = {
       key = get(keybindingConfigs.hotkeys.appCommon, "remapPreviousTab", "key"),
       message = "Previous Library",
       repeatable = true,
+      condition = JabRefShowLibraryByIndex(2),
       fn = function(appObject) hs.eventtap.keyStroke('⇧⌃', 'Tab', nil, appObject) end
     },
     ["showPrevLibrary"] = {
@@ -1240,6 +1254,7 @@ appHotKeyCallbacks = {
       key = specialCommonHotkeyConfigs["showPrevTab"].key,
       message = "Previous Library",
       repeatable = true,
+      condition = JabRefShowLibraryByIndex(2),
       fn = function(appObject) hs.eventtap.keyStroke('⇧⌃', 'Tab', nil, appObject) end
     },
     ["showNextLibrary"] = {
@@ -1247,7 +1262,58 @@ appHotKeyCallbacks = {
       key = specialCommonHotkeyConfigs["showNextTab"].key,
       message = "Next Library",
       repeatable = true,
+      condition = JabRefShowLibraryByIndex(2),
       fn = function(appObject) hs.eventtap.keyStroke('⌃', 'Tab', nil, appObject) end
+    },
+    ["1stLibrary"] = {
+      message = "First Library",
+      condition = JabRefShowLibraryByIndex(1),
+      fn = receivePosition
+    },
+    ["2ndLibrary"] = {
+      message = "Second Library",
+      condition = JabRefShowLibraryByIndex(2),
+      fn = receivePosition
+    },
+    ["3rdLibrary"] = {
+      message = "Third Library",
+      condition = JabRefShowLibraryByIndex(3),
+      fn = receivePosition
+    },
+    ["4thLibrary"] = {
+      message = "Forth Library",
+      condition = JabRefShowLibraryByIndex(4),
+      fn = receivePosition
+    },
+    ["5thLibrary"] = {
+      message = "Fifth Library",
+      condition = JabRefShowLibraryByIndex(5),
+      fn = receivePosition
+    },
+    ["6thLibrary"] = {
+      message = "Sixth Library",
+      condition = JabRefShowLibraryByIndex(6),
+      fn = receivePosition
+    },
+    ["7thLibrary"] = {
+      message = "Seventh Library",
+      condition = JabRefShowLibraryByIndex(7),
+      fn = receivePosition
+    },
+    ["8thLibrary"] = {
+      message = "Eighth Library",
+      condition = JabRefShowLibraryByIndex(8),
+      fn = receivePosition
+    },
+    ["9thLibrary"] = {
+      message = "Nineth Library",
+      condition = JabRefShowLibraryByIndex(9),
+      fn = receivePosition
+    },
+    ["10thLibrary"] = {
+      message = "Tenth Library",
+      condition = JabRefShowLibraryByIndex(10),
+      fn = receivePosition
     },
     ["minimize"] = specialCommonHotkeyConfigs["minimize"]
   },

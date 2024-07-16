@@ -1114,6 +1114,46 @@
       "recentLibraries": {
         "mods": "control",
         "key": "R"
+      },
+      "1stLibrary": {
+        "mods": "command",
+        "key": "1"
+      },
+      "2ndLibrary": {
+        "mods": "command",
+        "key": "2"
+      },
+      "3rdLibrary": {
+        "mods": "command",
+        "key": "3"
+      },
+      "4thLibrary": {
+        "mods": "command",
+        "key": "4"
+      },
+      "5thLibrary": {
+        "mods": "command",
+        "key": "5"
+      },
+      "6thLibrary": {
+        "mods": "command",
+        "key": "6"
+      },
+      "7thLibrary": {
+        "mods": "command",
+        "key": "7"
+      },
+      "8thLibrary": {
+        "mods": "command",
+        "key": "8"
+      },
+      "9thLibrary": {
+        "mods": "command",
+        "key": "9"
+      },
+      "10thLibrary": {
+        "mods": "command",
+        "key": "0"
       }
     },
     "com.apple.iMovieApp": {
