@@ -269,8 +269,8 @@ end
 
 local function deleteAllMessages(appObject)
   local menuBarItemTitle = getOSVersion() < OS.Ventura and "File" or "Conversations"
-  local appLocale = applicationLocales(appObject:bundleID())[1]
-  local menuItemTitle = appLocale:sub(1, 2) == "en" and "Delete Conversation…" or "删除对话…"
+  local thisSpec = appHotKeyCallbacks[appObject:bundleID()]["deleteConversation"]
+  local menuItemTitle = thisSpec.message(appObject)
   local menuItem, menuItemPath = findMenuItem(appObject, { menuBarItemTitle, menuItemTitle })
   if menuItem == nil then return end
   appUIObj = hs.axuielement.applicationElement(appObject)
@@ -722,9 +722,8 @@ appHotKeyCallbacks = {
       end,
       condition = function(appObject)
         local menuBarItemTitle = getOSVersion() < OS.Ventura and "File" or "Conversations"
-        local appLocale = applicationLocales(appObject:bundleID())[1]
-        local menuItemTitle = appLocale:sub(1, 2) == "en" and "Delete Conversation…" or "删除对话…"
-        return checkMenuItem({ menuBarItemTitle, menuItemTitle })(appObject)
+        local thisSpec = appHotKeyCallbacks[appObject:bundleID()]["deleteConversation"]
+        return checkMenuItem({ menuBarItemTitle, thisSpec.message(appObject) })(appObject)
       end,
       fn = function(menuItemTitle, appObject) deleteSelectedMessage(appObject, menuItemTitle) end
     },
@@ -1199,7 +1198,8 @@ appHotKeyCallbacks = {
         return appLocale:sub(1, 2) == "en" and "Export" or "导出"
       end,
       fn = function(appObject)
-        selectMenuItem(appObject, { en = {"File", "Export"}, zh = {"文件", "导出"} }, true)
+        local thisSpec = appHotKeyCallbacks[appObject:bundleID()]["export"]
+        selectMenuItem(appObject, { "File", thisSpec.message(appObject) }, true)
       end
     },
     ["insertEquation"] = {
@@ -1215,13 +1215,15 @@ appHotKeyCallbacks = {
         local appLocale = applicationLocales(appObject:bundleID())[1]
         return appLocale:sub(1, 2) == "en" and "Open Recent" or "最近打开"
       end,
-      bindCondition = checkMenuItem({ en = {"File", "Open Recent"}, zh = {"文件", "最近打开"} }),
+      bindCondition = function(appObject)
+        local thisSpec = appHotKeyCallbacks[appObject:bundleID()]["openRecent"]
+        return checkMenuItem({ "File", thisSpec.message(appObject) })(appObject)
+      end,
       fn = function(appObject)
         showMenuItemWrapper(function()
-          local appLocale = applicationLocales(appObject:bundleID())[1]
-          local menuItemTitle = appLocale:sub(1, 2) == "en" and "Open Recent" or "最近打开"
+          local thisSpec = appHotKeyCallbacks[appObject:bundleID()]["openRecent"]
           selectMenuItem(appObject, { "File" })
-          selectMenuItem(appObject, { "File", menuItemTitle })
+          selectMenuItem(appObject, { "File", thisSpec.message(appObject) })
         end)()
       end
     }
@@ -2056,9 +2058,8 @@ appHotKeyCallbacks = {
         return appLocale:sub(1, 2) == "en" and "Show In Finder" or "在 Finder 中显示"
       end,
       fn = function(appObject)
-        local appLocale = applicationLocales(appObject:bundleID())[1]
-        local menuItemTitle = appLocale:sub(1, 2) == "en" and "Show In Finder" or "在 Finder 中显示"
-        selectMenuItem(appObject, { "Actions", menuItemTitle })
+        local thisSpec = appHotKeyCallbacks[appObject:bundleID()]["showInFinder"]
+        selectMenuItem(appObject, { "Actions", thisSpec.message(appObject) })
       end
     },
     ["openRecent"] = {
@@ -2068,10 +2069,9 @@ appHotKeyCallbacks = {
       end,
       fn = function(appObject)
         showMenuItemWrapper(function()
-          local appLocale = applicationLocales(appObject:bundleID())[1]
-          local menuItemTitle = appLocale:sub(1, 2) == "en" and "Open Recent" or "打开最近的"
+          local thisSpec = appHotKeyCallbacks[appObject:bundleID()]["openRecent"]
           selectMenuItem(appObject, { "File" })
-          selectMenuItem(appObject, { "File", menuItemTitle })
+          selectMenuItem(appObject, { "File", thisSpec.message(appObject) })
         end)()
       end
     }
