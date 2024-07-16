@@ -1194,23 +1194,34 @@ appHotKeyCallbacks = {
   ["net.xmind.vana.app"] =
   {
     ["export"] = {
-      message = "Export",
+      message = function(appObject)
+        local appLocale = applicationLocales(appObject:bundleID())[1]
+        return appLocale:sub(1, 2) == "en" and "Export" or "导出"
+      end,
       fn = function(appObject)
         selectMenuItem(appObject, { en = {"File", "Export"}, zh = {"文件", "导出"} }, true)
       end
     },
     ["insertEquation"] = {
-      message = "Insert Equation",
+      message = function(appObject)
+        local appLocale = applicationLocales(appObject:bundleID())[1]
+        return appLocale:sub(1, 2) == "en" and "Insert Equation" or "插入方程"
+      end,
       condition = checkMenuItem({ en = {"Insert", "Equation"}, zh = {"插入", "方程"} }),
       fn = receiveMenuItem
     },
     ["openRecent"] = {
-      message = "Open Recent",
-      bindCondition = checkMenuItem({ zh = {"文件", "最近打开"} }),
+      message = function(appObject)
+        local appLocale = applicationLocales(appObject:bundleID())[1]
+        return appLocale:sub(1, 2) == "en" and "Open Recent" or "最近打开"
+      end,
+      bindCondition = checkMenuItem({ en = {"File", "Open Recent"}, zh = {"文件", "最近打开"} }),
       fn = function(appObject)
         showMenuItemWrapper(function()
-          appObject:selectMenuItem({ "文件" })
-          appObject:selectMenuItem({ "文件", "最近打开" })
+          local appLocale = applicationLocales(appObject:bundleID())[1]
+          local menuItemTitle = appLocale:sub(1, 2) == "en" and "Open Recent" or "最近打开"
+          selectMenuItem(appObject, { "File" })
+          selectMenuItem(appObject, { "File", menuItemTitle })
         end)()
       end
     }
