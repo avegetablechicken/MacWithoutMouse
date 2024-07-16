@@ -600,6 +600,12 @@ function selectMenuItemOrKeyStroke(appObject, mods, key)
   end
 end
 
+local function ENOrZHSim(appObject)
+  local appLocale = applicationLocales(appObject:bundleID())[1]
+  return appLocale:match("^en[^%a]") ~= nil
+      or (appLocale:match("^zh[^%a]") ~= nil and (appLocale:find("Hans") ~= nil or appLocale:find("CN") ~= nil))
+end
+
 local specialCommonHotkeyConfigs = {
   ["closeWindow"] = {
     mods = "⌘", key = "W",
@@ -716,10 +722,7 @@ appHotKeyCallbacks = {
         local appLocale = applicationLocales(appObject:bundleID())[1]
         return appLocale:sub(1, 2) == "en" and "Delete Conversation…" or "删除对话…"
       end,
-      bindCondition = function(appObject)
-        local appLocale = applicationLocales(appObject:bundleID())[1]
-        return appLocale:sub(1, 2) == "en" or appLocale == "zh-Hans-CN"
-      end,
+      bindCondition = ENOrZHSim,
       condition = function(appObject)
         local menuBarItemTitle = getOSVersion() < OS.Ventura and "File" or "Conversations"
         local thisSpec = appHotKeyCallbacks[appObject:bundleID()]["deleteConversation"]
@@ -1197,6 +1200,7 @@ appHotKeyCallbacks = {
         local appLocale = applicationLocales(appObject:bundleID())[1]
         return appLocale:sub(1, 2) == "en" and "Export" or "导出"
       end,
+      bindCondition = ENOrZHSim,
       fn = function(appObject)
         local thisSpec = appHotKeyCallbacks[appObject:bundleID()]["export"]
         selectMenuItem(appObject, { "File", thisSpec.message(appObject) }, true)
@@ -1207,6 +1211,7 @@ appHotKeyCallbacks = {
         local appLocale = applicationLocales(appObject:bundleID())[1]
         return appLocale:sub(1, 2) == "en" and "Insert Equation" or "插入方程"
       end,
+      bindCondition = ENOrZHSim,
       condition = checkMenuItem({ en = {"Insert", "Equation"}, zh = {"插入", "方程"} }),
       fn = receiveMenuItem
     },
@@ -1216,6 +1221,7 @@ appHotKeyCallbacks = {
         return appLocale:sub(1, 2) == "en" and "Open Recent" or "最近打开"
       end,
       bindCondition = function(appObject)
+        if not ENOrZHSim(appObject) then return false end
         local thisSpec = appHotKeyCallbacks[appObject:bundleID()]["openRecent"]
         return checkMenuItem({ "File", thisSpec.message(appObject) })(appObject)
       end,
@@ -1352,10 +1358,7 @@ appHotKeyCallbacks = {
   {
     ["export"] = {
       message = "Export",
-      bindCondition = function(appObject)
-        local appLocale = applicationLocales(appObject:bundleID())[1]
-        return appLocale:sub(1, 2) == "en" or appLocale == "zh-Hans-CN"
-      end,
+      bindCondition = ENOrZHSim,
       fn = function(appObject)
         selectMenuItem(appObject, { en = { "File", "Share", "File…" },
                                     zh = { "文件", "共享", "文件…" } })
@@ -2057,6 +2060,7 @@ appHotKeyCallbacks = {
         local appLocale = applicationLocales(appObject:bundleID())[1]
         return appLocale:sub(1, 2) == "en" and "Show In Finder" or "在 Finder 中显示"
       end,
+      bindCondition = ENOrZHSim,
       fn = function(appObject)
         local thisSpec = appHotKeyCallbacks[appObject:bundleID()]["showInFinder"]
         selectMenuItem(appObject, { "Actions", thisSpec.message(appObject) })
@@ -2067,6 +2071,7 @@ appHotKeyCallbacks = {
         local appLocale = applicationLocales(appObject:bundleID())[1]
         return appLocale:sub(1, 2) == "en" and "Open Recent" or "打开最近的"
       end,
+      bindCondition = ENOrZHSim,
       fn = function(appObject)
         showMenuItemWrapper(function()
           local thisSpec = appHotKeyCallbacks[appObject:bundleID()]["openRecent"]
