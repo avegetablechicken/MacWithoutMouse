@@ -14,6 +14,11 @@
     "工具": "Tools",
     "查看": "View"
   },
+  "com.torusknot.SourceTreeNotMAS": {
+    "格式化": "Format",
+    "仓库": "Repository",
+    "动作": "Actions"
+  },
 
   "com.baidu.BaiduNetdisk-mac": {
     "账户": "Account"
