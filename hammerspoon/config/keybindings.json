@@ -1295,6 +1295,16 @@
         "key": "Escape"
       }
     },
+    "com.torusknot.SourceTreeNotMAS": {
+      "showInFinder": {
+        "mods": ["shift", "option", "command"],
+        "key": "F"
+      },
+      "openRecent": {
+        "mods": "control",
+        "key": "R"
+      }
+    },
     "com.jetbrains.CLion": {
       "newProject": {
         "mods": "command",

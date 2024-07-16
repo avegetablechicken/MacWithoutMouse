@@ -2037,6 +2037,35 @@ appHotKeyCallbacks = {
     }
   },
 
+  ["com.torusknot.SourceTreeNotMAS"] =
+  {
+    ["showInFinder"] = {
+      message = function(appObject)
+        local appLocale = applicationLocales(appObject:bundleID())[1]
+        return appLocale:sub(1, 2) == "en" and "Show In Finder" or "在 Finder 中显示"
+      end,
+      fn = function(appObject)
+        local appLocale = applicationLocales(appObject:bundleID())[1]
+        local menuItemTitle = appLocale:sub(1, 2) == "en" and "Show In Finder" or "在 Finder 中显示"
+        selectMenuItem(appObject, { "Actions", menuItemTitle })
+      end
+    },
+    ["openRecent"] = {
+      message = function(appObject)
+        local appLocale = applicationLocales(appObject:bundleID())[1]
+        return appLocale:sub(1, 2) == "en" and "Open Recent" or "打开最近的"
+      end,
+      fn = function(appObject)
+        showMenuItemWrapper(function()
+          local appLocale = applicationLocales(appObject:bundleID())[1]
+          local menuItemTitle = appLocale:sub(1, 2) == "en" and "Open Recent" or "打开最近的"
+          selectMenuItem(appObject, { "File" })
+          selectMenuItem(appObject, { "File", menuItemTitle })
+        end)()
+      end
+    }
+  },
+
   ["com.jetbrains.CLion"] =
   {
     ["newProject"] = {
