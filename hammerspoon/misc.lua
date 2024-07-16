@@ -4,13 +4,13 @@ local misc = keybindingConfigs.hotkeys.global
 local iconForShortcuts = hs.image.imageFromAppBundle("com.apple.shortcuts")
 local shortcutsLaunched = findApplication("com.apple.shortcuts") ~= nil
 
-local ok = hs.osascript.applescript([[tell application "Shortcuts" to get shortcut "粘贴到PC"]])
+local ok = hs.osascript.applescript([[tell application "Shortcuts" to get shortcut "Paste to PC"]])
 if ok then
   local hotkey = bindSpecSuspend(misc["copyToPC"], "Copy to PC",
   function()
     hs.eventtap.keyStroke("⌘", "C")
     local task = hs.task.new("/usr/bin/osascript", nil,
-        { '-e', 'tell application "Shortcuts" to run shortcut "粘贴到PC"' })
+        { '-e', 'tell application "Shortcuts" to run shortcut "Paste to PC"' })
     local _ShortcutsLaunched = findApplication("com.apple.shortcuts") ~= nil
     task:start()
     hs.timer.doAfter(10, function()
@@ -27,13 +27,13 @@ if ok then
 end
 
 -- call `ShortCuts` to paste from PC
-ok = hs.osascript.applescript([[tell application "Shortcuts" to get shortcut "复制自PC"]])
+ok = hs.osascript.applescript([[tell application "Shortcuts" to get shortcut "Copy from PC"]])
 if ok then
   local hotkey = bindSpecSuspend(misc["pasteFromPC"], "Paste from PC",
   function()
     local task = hs.task.new("/usr/bin/osascript",
         function(exitCode) if exitCode == 0 then hs.eventtap.keyStroke("⌘", "V") end end,
-        { '-e', 'tell application "Shortcuts" to run shortcut "复制自PC"' })
+        { '-e', 'tell application "Shortcuts" to run shortcut "Copy from PC"' })
     local _ShortcutsLaunched = findApplication("com.apple.shortcuts") ~= nil
     task:start()
     hs.timer.doAfter(10, function()
