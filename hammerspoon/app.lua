@@ -575,6 +575,10 @@ local function receiveMenuItem(menuItemTitle, appObject)
   appObject:selectMenuItem(menuItemTitle)
 end
 
+local function receivePosition(position, appObject)
+  leftClickAndRestore(position, appObject:name())
+end
+
 function selectMenuItemOrKeyStroke(appObject, mods, key)
   local menuItemPath, enabled = findMenuItemByKeyBinding(appObject, mods, key)
   if menuItemPath ~= nil and enabled then
@@ -1386,9 +1390,7 @@ appHotKeyCallbacks = {
         end
         return false
       end,
-      fn = function(position, appObject)
-        leftClickAndRestore(position, appObject:name())
-      end
+      fn = receivePosition
     },
     ["forward"] = {
       message = "下一页",
@@ -1404,9 +1406,7 @@ appHotKeyCallbacks = {
         end
         return false
       end,
-      fn = function(position, appObject)
-        leftClickAndRestore(position, appObject:name())
-      end
+      fn = receivePosition
     },
     ["refresh"] = {
       message = "刷新",
@@ -1426,9 +1426,7 @@ appHotKeyCallbacks = {
         return refreshButtonPosition ~= nil and searchButtonPosition ~= nil
             and refreshButtonPosition.x ~= searchButtonPosition.x, refreshButtonPosition
       end,
-      fn = function(position, appObject)
-        leftClickAndRestore(position, appObject:name())
-      end
+      fn = receivePosition
     },
     ["exitSongDetails"] = {
       message = "关闭歌曲详情",
