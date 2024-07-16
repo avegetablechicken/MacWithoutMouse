@@ -1224,6 +1224,27 @@ appHotKeyCallbacks = {
         end)()
       end
     },
+    ["remapPrevLibrary"] = {
+      mods = get(keybindingConfigs.hotkeys.appCommon, "remapPreviousTab", "mods"),
+      key = get(keybindingConfigs.hotkeys.appCommon, "remapPreviousTab", "key"),
+      message = "Previous Library",
+      repeatable = true,
+      fn = function(appObject) hs.eventtap.keyStroke('⇧⌃', 'Tab', nil, appObject) end
+    },
+    ["showPrevLibrary"] = {
+      mods = specialCommonHotkeyConfigs["showPrevTab"].mods,
+      key = specialCommonHotkeyConfigs["showPrevTab"].key,
+      message = "Previous Library",
+      repeatable = true,
+      fn = function(appObject) hs.eventtap.keyStroke('⇧⌃', 'Tab', nil, appObject) end
+    },
+    ["showNextLibrary"] = {
+      mods = specialCommonHotkeyConfigs["showNextTab"].mods,
+      key = specialCommonHotkeyConfigs["showNextTab"].key,
+      message = "Next Library",
+      repeatable = true,
+      fn = function(appObject) hs.eventtap.keyStroke('⌃', 'Tab', nil, appObject) end
+    },
     ["minimize"] = specialCommonHotkeyConfigs["minimize"]
   },
 
