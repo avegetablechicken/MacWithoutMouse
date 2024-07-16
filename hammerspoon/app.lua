@@ -1563,8 +1563,38 @@ appHotKeyCallbacks = {
           if bartenderBarHotkeys == nil then bartenderBarHotkeys = {} end
           local icon = hs.image.imageFromAppBundle(bundleID)
           local maxCnt = math.min(#positions, 10)
+          local _, items = hs.osascript.applescript([[
+            tell application id "com.surteesstudios.Bartender" to list menu bar items
+          ]])
+          local itemList = hs.fnutils.split(items, "\n")
+          local splitterIndex = hs.fnutils.indexOf(itemList, "com.surteesstudios.Bartender-statusItem")
+          local itemNames = {}
+          local barSplitterIndex = hs.fnutils.indexOf(appNames, "Bartender 5") or hs.fnutils.indexOf(appNames, "Bartender 4")
+          if barSplitterIndex ~= nil then
+            splitterIndex = splitterIndex - (#appNames - (barSplitterIndex - 1))
+          end
+          for i = 1,maxCnt do
+            local itemID = itemList[splitterIndex + 1 + #appNames - i]
+            local bid, idx = string.match(itemID, "(.-)%-Item%-(%d+)$")
+            if bid ~= nil then
+              if idx == "0" then
+                table.insert(itemNames, appNames[i])
+              else
+                table.insert(itemNames, string.format("%s (Item %s)", appNames[i], idx))
+              end
+            else
+              local app = findApplication(appNames[i])
+              if app == nil or app:bundleID() ~= itemID:sub(1, #app:bundleID()) then
+                table.insert(itemNames, appNames[i])
+              elseif app ~= nil then
+                local itemShortName = itemID:sub(#app:bundleID() + 2)
+                local itemName = string.format("%s (%s)", appNames[i], itemShortName)
+                table.insert(itemNames, itemName)
+              end
+            end
+          end
           for i = 1, maxCnt do
-            local hotkey = bindSuspend("", i == 10 and "0" or tostring(i), "Click " .. appNames[i], function()
+            local hotkey = bindSuspend("", i == 10 and "0" or tostring(i), "Click " .. itemNames[i], function()
               leftClickAndRestore({ positions[i][1] + 10, positions[i][2] + 10 })
             end)
             hotkey.kind = HK.MENUBAR
@@ -1572,7 +1602,7 @@ appHotKeyCallbacks = {
             table.insert(bartenderBarHotkeys, hotkey)
           end
           for i = 1, maxCnt do
-            local hotkey = bindSuspend("⌥", i == 10 and "0" or tostring(i), "Right-click " .. appNames[i], function()
+            local hotkey = bindSuspend("⌥", i == 10 and "0" or tostring(i), "Right-click " .. itemNames[i], function()
               rightClickAndRestore({ positions[i][1] + 10, positions[i][2] + 10 })
             end)
             hotkey.kind = HK.MENUBAR
