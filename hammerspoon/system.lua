@@ -1411,7 +1411,7 @@ function registerControlCenterHotKeys(panel)
           end if
         end repeat
         set sa to scroll area 1 of ]] .. pane .. [[ of application process "ControlCenter"
-        return {]] .. cbField.. [[, value} of checkboxes of sa
+        return {]] .. cbField.. [[, value} of (checkboxes whose value of attribute "AXEnabled" is true) of sa
       end tell
     ]])
     if ok and type(devices) == 'table' then
