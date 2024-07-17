@@ -4043,6 +4043,7 @@ function app_applicationCallback(appName, eventType, appObject)
     else
     end
     altMenuBarItemAfterLaunch(appObject)
+    registerRunningAppHotKeys(bundleID, appObject)
     if bundleID and appHotKeyCallbacks[bundleID] ~= nil then
       registerWinFiltersForDaemonApp(appObject, appHotKeyCallbacks[bundleID])
     end
@@ -4073,11 +4074,11 @@ function app_applicationCallback(appName, eventType, appObject)
         local appLocale = locales[1]
         if appLocales[bundleID] ~= nil and appLocales[bundleID] ~= appLocale then
           unregisterRunningAppHotKeys(bundleID, true)
+          registerRunningAppHotKeys(bundleID)
           unregisterInAppHotKeys(bundleID, eventType, true)
           unregisterInWinHotKeys(bundleID, true)
         end
         appLocales[bundleID] = appLocale
-        registerRunningAppHotKeys(bundleID, appObject)
         registerInAppHotKeys(appName, eventType, appObject)
         registerInWinHotKeys(appObject)
       end
