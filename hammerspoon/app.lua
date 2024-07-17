@@ -1750,12 +1750,38 @@ appHotKeyCallbacks = {
   {
     ["OCRForLatex"] = {
       message = "OCR for LaTeX",
+      bindCondition = function()
+        local bundleID = "com.mathpix.snipping-tool-noappstore"
+        local enabled = hs.execute(string.format(
+            "defaults read '%s' getLatexShortcutEnabledKey | tr -d '\\n'", bundleID))
+        return enabled == "1"
+      end,
       fn = function()
         local bundleID = "com.mathpix.snipping-tool-noappstore"
+        local mods = hs.execute(string.format(
+            "defaults read '%s' getLatexHotKeyModifiersKey | tr -d '\\n'", bundleID))
+        local key = hs.execute(string.format(
+            "defaults read '%s' getLatexHotKeyKey | tr -d '\\n'", bundleID))
+        mods = tonumber(mods) key = tonumber(key)
+        if mods == nil or key == nil then return end
+        key = hs.keycodes.map[key]
+        local modList = {}
+        if mods >= (1 << 12) then table.insert(modList, "control") end
+        if (mods % (1 << 12)) >= (1 << 11) then table.insert(modList, "option") end
+        if (mods % (1 << 11)) >= (1 << 9) then table.insert(modList, "shift") end
+        if (mods % (1 << 9)) >= (1 << 8) then table.insert(modList, "command") end
         local action = function()
-          runningAppHotKeys[bundleID][1]:disable()
-          hs.eventtap.keyStroke("⌃⌘", "M")
-          hs.timer.doAfter(1, function() runningAppHotKeys[bundleID][1]:enable() end)
+          local idx = hotkeyIdx(modList, key)
+          local conflicted = hs.fnutils.filter(hs.hotkey.getHotkeys(), function(hk)
+            return hk.idx == idx
+          end)
+          if conflicted[1] ~= nil then
+            conflicted[1]:disable()
+          end
+          hs.eventtap.keyStroke(modList, key)
+          if conflicted[1] ~= nil then
+            hs.timer.doAfter(1, function() conflicted[1]:enable() end)
+          end
         end
         if findApplication(bundleID) == nil then
           hs.application.open(bundleID)
@@ -2548,7 +2574,7 @@ end
 local inWinCallbackChain = {}
 inWinHotkeyInfoChain = {}
 
-local function hotkeyIdx(mods, key)
+function hotkeyIdx(mods, key)
   local idx = string.upper(key)
   if type(mods) == 'string' then
     mods = {mods}
