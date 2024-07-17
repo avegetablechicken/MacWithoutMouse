@@ -1370,6 +1370,7 @@ appHotKeyCallbacks = {
   {
     ["back"] = {
       message = localizedMessage("Common.Navigation.Back", { key = true }),
+      repeatable = false,
       condition = function(appObject)
         local exBundleID = "com.tencent.xinWeChat.WeChatAppEx"
         local exAppObject = findApplication(exBundleID)
@@ -1432,8 +1433,7 @@ appHotKeyCallbacks = {
         elseif result[1] == 3 then
           leftClickAndRestore(result[2], appObject:name())
         end
-      end,
-      mayLastLong = true
+      end
     },
     ["openInDefaultBrowser"] = {
       message = localizedMessage("Open in Default Browser"),
@@ -2485,9 +2485,6 @@ local function registerInAppHotKeys(appName, eventType, appObject)
             cond = noSelectedMenuBarItemFunc(cond)
           end
           fn = function(appObject, appName, eventType)
-            if cfg.mayLastLong then
-              inAppHotKeys[bid][hkID]:disable()
-            end
             local satisfied, result = cond(appObject)
             if satisfied then
               if result ~= nil then
@@ -2500,9 +2497,6 @@ local function registerInAppHotKeys(appName, eventType, appObject)
               hs.eventtap.keyStroke(keyBinding.mods, keyBinding.key, nil, appObject)
             else
               selectMenuItemOrKeyStroke(appObject, keyBinding.mods, keyBinding.key)
-            end
-            if cfg.mayLastLong then
-              inAppHotKeys[bid][hkID]:enable()
             end
           end
           if cfg.repeatable ~= false then
