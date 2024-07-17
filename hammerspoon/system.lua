@@ -1518,7 +1518,7 @@ function registerControlCenterHotKeys(panel)
           end tell
         ]])
       end
-      local localizedOtherNetworks = controlCenterLocalized("Wi‑Fi", "Other Networks")
+      local localizedOtherNetworks = mayLocalize("Other Networks")
       registerHotkeyForTraingleDisclosure(actionFunc, localizedOtherNetworks, result)
     end
 
@@ -1672,7 +1672,7 @@ function registerControlCenterHotKeys(panel)
       if ok then
         toggleNames = {}
         hs.fnutils.each(toggleIdents, function(ele)
-          for k, v in pairs(controlCenterAccessibiliyIdentifiers["Focus"]) do
+          for k, v in pairs(controlCenterAccessibiliyIdentifiers[panel]) do
             if v == ele then table.insert(toggleNames, mayLocalize(k) or k) break end
           end
         end)
@@ -1980,7 +1980,7 @@ function registerControlCenterHotKeys(panel)
       end
     end
 
-    local hotkey = newControlCenter("", "Space", "Toggle " .. controlCenterLocalized("Hearing", "Background Sounds"),
+    local hotkey = newControlCenter("", "Space", "Toggle " .. mayLocalize("Background Sounds"),
       function()
         local ok = hs.osascript.applescript([[
           tell application "System Events"
