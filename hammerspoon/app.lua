@@ -1358,11 +1358,9 @@ appHotKeyCallbacks = {
   {
     ["export"] = {
       message = "Export",
-      bindCondition = ENOrZHSim,
-      fn = function(appObject)
-        selectMenuItem(appObject, { en = { "File", "Share", "File…" },
-                                    zh = { "文件", "共享", "文件…" } })
-      end
+      repeatable = false,
+      condition = checkMenuItem({ "File", "Share", "File…" }),
+      fn = receiveMenuItem
     }
   },
 
