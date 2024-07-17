@@ -2471,7 +2471,7 @@ local function registerRunningAppHotKeys(bid, appObject)
       }
     end
     if keyBinding.background == true
-        and (cfg.bindCondition == nil or (appObject ~= nil and cfg.bindCondition(appObject)))
+        and (cfg.bindCondition == nil or cfg.bindCondition(appObject))
         and (appObject ~= nil or (keyBinding.persist == true
         and (hs.application.pathForBundleID(bid) ~= nil
              and hs.application.pathForBundleID(bid) ~= ""))) then
