@@ -1222,6 +1222,11 @@
         "mods": "${hyper.daemon}",
         "key": "space",
         "background": true
+      },
+      "keyboardNavigate": {
+        "mods": "control",
+        "key": "F1",
+        "background": true
       }
     },
     "com.app.menubarx": {

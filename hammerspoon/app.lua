@@ -468,7 +468,8 @@ local function parsePlistKeyBinding(mods, key)
   key = hs.keycodes.map[key]
   local modList = {}
   if mods >= (1 << 17) then
-    if mods >= (1 << 20) then table.insert(modList, "command") end
+    if mods >= (1 << 23) then table.insert(modList, "fn") end
+    if (mods % (1 << 23)) >= (1 << 20) then table.insert(modList, "command") end
     if (mods % (1 << 20)) >= (1 << 19) then table.insert(modList, "option") end
     if (mods % (1 << 19)) >= (1 << 18) then table.insert(modList, "control") end
     if (mods % (1 << 18)) >= (1 << 17) then table.insert(modList, "shift") end
@@ -1738,6 +1739,24 @@ appHotKeyCallbacks = {
         hs.osascript.applescript([[tell application id "com.surteesstudios.Bartender" to quick search]])
       end
     },
+    ["keyboardNavigate"] = {
+      message = "Navigate Menu Bar",
+      kind = HK.MENUBAR,
+      bindCondition = function(appObject)
+        local _, ok = hs.execute(string.format(
+            "defaults read '%s' hotkeyKeyboardNav", appObject:bundleID()))
+        return ok
+      end,
+      fn = function(appObject)
+        local output = hs.execute(string.format(
+            "defaults read '%s' hotkeyKeyboardNav", appObject:bundleID()))
+        local spec = hs.fnutils.split(output, "\n")
+        local mods = string.match(spec[4], "modifierFlags = (%d+)")
+        local key = string.match(spec[3], "keyCode = (%d+)")
+        mods, key = parsePlistKeyBinding(mods, key)
+        safeGlobalKeyStroke(mods, key)
+      end
+    },
     ["closeWindow"] = specialCommonHotkeyConfigs["closeWindow"]
   },
 
@@ -2634,7 +2653,6 @@ function hotkeyIdx(mods, key)
   if hs.fnutils.contains(mods, "option") then idx = "⌥" .. idx end
   if hs.fnutils.contains(mods, "control") then idx = "⌃" .. idx end
   if hs.fnutils.contains(mods, "command") then idx = "⌘" .. idx end
-  if hs.fnutils.contains(mods, "fn") then idx = "fn" .. idx end
   return idx
 end
 
