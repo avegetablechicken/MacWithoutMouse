@@ -482,6 +482,24 @@ local function parsePlistKeyBinding(mods, key)
   return modList, key
 end
 
+local function dumpPlistKeyBinding(mode, mods, key)
+  local modIdx = 0
+  if mode == 1 then
+    if hs.fnutils.contains(mods, "command") then modIdx = (1 << 8) end
+    if hs.fnutils.contains(mods, "option") then modIdx = modIdx + (1 << 11) end
+    if hs.fnutils.contains(mods, "control") then modIdx = modIdx + (1 << 12) end
+    if hs.fnutils.contains(mods, "shift") then modIdx = modIdx + (1 << 9) end
+  elseif mode == 2 then
+    if key:lower():match("^f(%d+)$") then modIdx = 1 << 23 end
+    if hs.fnutils.contains(mods, "command") then modIdx = modIdx + (1 << 20) end
+    if hs.fnutils.contains(mods, "option") then modIdx = modIdx + (1 << 19) end
+    if hs.fnutils.contains(mods, "control") then modIdx = modIdx + (1 << 18) end
+    if hs.fnutils.contains(mods, "shift") then modIdx = modIdx + (1 << 17) end
+  end
+  key = hs.keycodes.map[key]
+  return modIdx, key
+end
+
 local function iCopySelectHotkeyRemapRequired()
   local version = hs.execute(string.format('mdls -r -name kMDItemVersion "%s"',
       hs.application.pathForBundleID("cn.better365.iCopy")))
@@ -1765,20 +1783,29 @@ appHotKeyCallbacks = {
     ["toggleMenuBarX"] = {
       message = "Toggle MenuBarX",
       kind = HK.MENUBAR,
-      bindCondition = function()
-        local bundleID = "com.app.menubarx"
-        local output = hs.execute(string.format(
-            "defaults read '%s' KeyboardShortcuts_toggleX | tr -d '\\n'", bundleID))
-        return output ~= "0"
-      end,
       fn = function(appObject)
-        local bundleID = "com.app.menubarx"
+        local bundleID = appObject:bundleID()
         local output = hs.execute(string.format(
             "defaults read '%s' KeyboardShortcuts_toggleX | tr -d '\\n'", bundleID))
-        local json = hs.json.decode(output)
-        local mods, key = parsePlistKeyBinding(json["carbonModifiers"], json["carbonKeyCode"])
-        if mods == nil or key == nil then return end
-        safeGlobalKeyStroke(mods, key)
+        if output == "0" then
+          local spec = keybindingConfigs.hotkeys[bundleID]["toggleMenuBarX"]
+          local mods, key = dumpPlistKeyBinding(1, spec.mods, spec.key)
+          local _, ok = hs.execute(string.format(
+              [[defaults write '%s' KeyboardShortcuts_toggleX -string '{"carbonKeyCode":%d,"carbonModifiers":%d}']],
+              bundleID, key, mods))
+          appObject:kill()
+          hs.timer.doAfter(1, function()
+            hs.application.open(bundleID)
+            hs.timer.doAfter(1, function()
+              safeGlobalKeyStroke(spec.mods, spec.key)
+            end)
+          end)
+        else
+          local json = hs.json.decode(output)
+          local mods, key = parsePlistKeyBinding(json["carbonModifiers"], json["carbonKeyCode"])
+          if mods == nil or key == nil then return end
+          safeGlobalKeyStroke(mods, key)
+        end
       end
     }
   },
