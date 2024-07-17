@@ -462,6 +462,25 @@ local function JabRefShowLibraryByIndex(idx)
   end
 end
 
+local function parsePlistKeyBinding(mods, key)
+  mods = tonumber(mods) key = tonumber(key)
+  if mods == nil or key == nil then return end
+  key = hs.keycodes.map[key]
+  local modList = {}
+  if mods >= (1 << 17) then
+    if mods >= (1 << 20) then table.insert(modList, "command") end
+    if (mods % (1 << 20)) >= (1 << 19) then table.insert(modList, "option") end
+    if (mods % (1 << 19)) >= (1 << 18) then table.insert(modList, "control") end
+    if (mods % (1 << 18)) >= (1 << 17) then table.insert(modList, "shift") end
+  else
+    if mods >= (1 << 12) then table.insert(modList, "control") end
+    if (mods % (1 << 12)) >= (1 << 11) then table.insert(modList, "option") end
+    if (mods % (1 << 11)) >= (1 << 9) then table.insert(modList, "shift") end
+    if (mods % (1 << 9)) >= (1 << 8) then table.insert(modList, "command") end
+  end
+  return modList, key
+end
+
 local function iCopySelectHotkeyRemapRequired()
   local version = hs.execute(string.format('mdls -r -name kMDItemVersion "%s"',
       hs.application.pathForBundleID("cn.better365.iCopy")))
@@ -597,6 +616,20 @@ function selectMenuItemOrKeyStroke(appObject, mods, key)
     appObject:selectMenuItem(menuItemPath)
   else
     hs.eventtap.keyStroke(mods, key, nil, appObject)
+  end
+end
+
+local function safeGlobalKeyStroke(mods, key)
+  local idx = hotkeyIdx(mods, key)
+  local conflicted = hs.fnutils.filter(hs.hotkey.getHotkeys(), function(hk)
+    return hk.idx == idx
+  end)
+  if conflicted[1] ~= nil then
+    conflicted[1]:disable()
+  end
+  hs.eventtap.keyStroke(mods, key)
+  if conflicted[1] ~= nil then
+    hs.timer.doAfter(1, function() conflicted[1]:enable() end)
   end
 end
 
@@ -1762,26 +1795,10 @@ appHotKeyCallbacks = {
             "defaults read '%s' getLatexHotKeyModifiersKey | tr -d '\\n'", bundleID))
         local key = hs.execute(string.format(
             "defaults read '%s' getLatexHotKeyKey | tr -d '\\n'", bundleID))
-        mods = tonumber(mods) key = tonumber(key)
+        mods, key = parsePlistKeyBinding(mods, key)
         if mods == nil or key == nil then return end
-        key = hs.keycodes.map[key]
-        local modList = {}
-        if mods >= (1 << 12) then table.insert(modList, "control") end
-        if (mods % (1 << 12)) >= (1 << 11) then table.insert(modList, "option") end
-        if (mods % (1 << 11)) >= (1 << 9) then table.insert(modList, "shift") end
-        if (mods % (1 << 9)) >= (1 << 8) then table.insert(modList, "command") end
         local action = function()
-          local idx = hotkeyIdx(modList, key)
-          local conflicted = hs.fnutils.filter(hs.hotkey.getHotkeys(), function(hk)
-            return hk.idx == idx
-          end)
-          if conflicted[1] ~= nil then
-            conflicted[1]:disable()
-          end
-          hs.eventtap.keyStroke(modList, key)
-          if conflicted[1] ~= nil then
-            hs.timer.doAfter(1, function() conflicted[1]:enable() end)
-          end
+          safeGlobalKeyStroke(mods, key)
         end
         if findApplication(bundleID) == nil then
           hs.application.open(bundleID)
@@ -2225,26 +2242,10 @@ appHotKeyCallbacks = {
         local spec = hs.fnutils.split(output, "\n")
         local mods = string.match(spec[5], "modifierFlags = (%d+);")
         local key = string.match(spec[4], "keyCode = (%d+);")
-        mods = tonumber(mods) key = tonumber(key)
+        mods, key = parsePlistKeyBinding(mods, key)
         if mods == nil or key == nil then return end
-        key = hs.keycodes.map[key]
-        local modList = {}
-        if mods >= (1 << 20) then table.insert(modList, "command") end
-        if (mods % (1 << 20)) >= (1 << 19) then table.insert(modList, "option") end
-        if (mods % (1 << 19)) >= (1 << 18) then table.insert(modList, "control") end
-        if (mods % (1 << 18)) >= (1 << 17) then table.insert(modList, "shift") end
         local action = function()
-          local idx = hotkeyIdx(modList, key)
-          local conflicted = hs.fnutils.filter(hs.hotkey.getHotkeys(), function(hk)
-            return hk.idx == idx
-          end)
-          if conflicted[1] ~= nil then
-            conflicted[1]:disable()
-          end
-          hs.eventtap.keyStroke(modList, key)
-          if conflicted[1] ~= nil then
-            hs.timer.doAfter(1, function() conflicted[1]:enable() end)
-          end
+          safeGlobalKeyStroke(mods, key)
         end
         if findApplication(bundleID) == nil then
           hs.application.open(bundleID)
