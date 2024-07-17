@@ -680,6 +680,11 @@ local specialCommonHotkeyConfigs = {
     message = "Hide",
     fn = function(appObject) appObject:hide() end
   },
+  ["quit"] = {
+    mods = "⌘", key = "Q",
+    message = "Quit",
+    fn = function(appObject) appObject:kill() end
+  },
   ["showPrevTab"] = {
     mods = "⇧⌘", key = "[",
     message = menuItemMessage('⇧⌃', "⇥", 2),
