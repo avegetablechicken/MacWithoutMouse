@@ -12,7 +12,7 @@
   },
 
   "parameters": {
-    "windowMoveStep": 100,
+    "windowMoveStep": 20,
     "windowResizeStep": 100,
     "windowZoomToCenterSize": { "w": 830, "h": 750 }
   },
