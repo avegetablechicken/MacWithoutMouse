@@ -1673,7 +1673,7 @@ function registerControlCenterHotKeys(panel)
         toggleNames = {}
         hs.fnutils.each(toggleIdents, function(ele)
           for k, v in pairs(controlCenterAccessibiliyIdentifiers["Focus"]) do
-            if v == ele then table.insert(toggleNames, controlCenterLocalized("accessibility", k)) end
+            if v == ele then table.insert(toggleNames, mayLocalize(k) or k) break end
           end
         end)
       end
