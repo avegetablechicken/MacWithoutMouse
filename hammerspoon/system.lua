@@ -1705,16 +1705,18 @@ function registerControlCenterHotKeys(panel)
       if not checkAndRegisterControlCenterHotKeys(hotkey) then return end
     end
   elseif panel == "Display" then
+    local pos = osVersion < OS.Ventura and "scroll area 1 of" or "group 1 of"
     local ok, idx = hs.osascript.applescript([[
       tell application "System Events"
         set totalDelay to 0.0
-        repeat until scroll area 1 of ]] .. pane .. [[ of application process "ControlCenter" exists
+        repeat until ]] .. pos .. " " .. pane .. [[ of application process "ControlCenter" exists
           set totalDelay to totalDelay + 0.1
-          if totalDelay > 0.2 then
+          if totalDelay > 0.5 then
             return false
           end
+          delay 0.1
         end
-        set sa to scroll area 1 of ]] .. pane .. [[ of application process "ControlCenter"
+        set sa to ]] .. pos .. " " .. pane .. [[ of application process "ControlCenter"
         repeat with i from 1 to count (UI elements of sa)
           set ele to ui element i of sa
           if value of attribute "AXRole" of ele is "AXDisclosureTriangle" then
@@ -1728,7 +1730,7 @@ function registerControlCenterHotKeys(panel)
         function()
           hs.osascript.applescript([[
             tell application "System Events"
-              set sa to scroll area 1 of ]] .. pane .. [[ of application process "ControlCenter"
+              set sa to ]] .. pos .. " " .. pane .. [[ of application process "ControlCenter"
               perform action 1 of ui element ]] .. tostring(idx) .. [[ of sa
             end tell
           ]])
