@@ -2306,15 +2306,15 @@ appHotKeyCallbacks = {
     ["OCR"] = {
       message = "OCR",
       bindCondition = function()
-        local bundleID = "cn.better365.iShotProHelper"
+        local bundleID2 = "cn.better365.iShotProHelper"
         local _, ok = hs.execute(string.format(
-            "defaults read '%s' dicOfShortCutKey | grep OCRRecorder", bundleID))
+            "defaults read '%s' dicOfShortCutKey | grep OCRRecorder", bundleID2))
         return ok
       end,
       fn = function()
-        local bundleID = "cn.better365.iShotProHelper"
+        local bundleID2 = "cn.better365.iShotProHelper"
         local output = hs.execute(string.format(
-          "defaults read '%s' dicOfShortCutKey | grep OCRRecorder -A4", bundleID))
+          "defaults read '%s' dicOfShortCutKey | grep OCRRecorder -A4", bundleID2))
         local spec = hs.fnutils.split(output, "\n")
         local mods = string.match(spec[5], "modifierFlags = (%d+);")
         local key = string.match(spec[4], "keyCode = (%d+);")
@@ -2323,6 +2323,7 @@ appHotKeyCallbacks = {
         local action = function()
           safeGlobalKeyStroke(mods, key)
         end
+        local bundleID = "cn.better365.iShotPro"
         if findApplication(bundleID) == nil then
           hs.application.open(bundleID)
           hs.timer.doAfter(1, action)
