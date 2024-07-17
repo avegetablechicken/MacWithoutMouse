@@ -1780,7 +1780,9 @@ appHotKeyCallbacks = {
         safeGlobalKeyStroke(mods, key)
       end
     },
-    ["closeWindow"] = specialCommonHotkeyConfigs["closeWindow"]
+    ["closeWindow"] = specialCommonHotkeyConfigs["closeWindow"],
+    ["minimize"] = specialCommonHotkeyConfigs["minimize"],
+    ["quit"] = specialCommonHotkeyConfigs["quit"]
   },
 
   ["com.app.menubarx"] =
