@@ -1,4 +1,4 @@
 **/.DS_Store
 **/cache.file/
 **/*.dump
-/macos/.hammerspoon/config/private-proxy.json
+/hammerspoon/config/private-proxy.json
