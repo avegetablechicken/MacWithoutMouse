@@ -1741,6 +1741,29 @@ appHotKeyCallbacks = {
     ["closeWindow"] = specialCommonHotkeyConfigs["closeWindow"]
   },
 
+  ["com.app.menubarx"] =
+  {
+    ["toggleMenuBarX"] = {
+      message = "Toggle MenuBarX",
+      kind = HK.MENUBAR,
+      bindCondition = function()
+        local bundleID = "com.app.menubarx"
+        local output = hs.execute(string.format(
+            "defaults read '%s' KeyboardShortcuts_toggleX | tr -d '\\n'", bundleID))
+        return output ~= "0"
+      end,
+      fn = function(appObject)
+        local bundleID = "com.app.menubarx"
+        local output = hs.execute(string.format(
+            "defaults read '%s' KeyboardShortcuts_toggleX | tr -d '\\n'", bundleID))
+        local json = hs.json.decode(output)
+        local mods, key = parsePlistKeyBinding(json["carbonModifiers"], json["carbonKeyCode"])
+        if mods == nil or key == nil then return end
+        safeGlobalKeyStroke(mods, key)
+      end
+    }
+  },
+
   ["com.gaosun.eul"] =
   {
     ["showSystemStatus"] = {

@@ -1224,6 +1224,13 @@
         "background": true
       }
     },
+    "com.app.menubarx": {
+      "toggleMenuBarX": {
+        "mods": ["shift", "option", "command"],
+        "key": "X",
+        "background": true
+      }
+    },
     "com.gaosun.eul": {
       "showSystemStatus": {
         "mods": "${hyper.daemon}",
