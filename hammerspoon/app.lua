@@ -2212,12 +2212,39 @@ appHotKeyCallbacks = {
   {
     ["OCR"] = {
       message = "OCR",
+      bindCondition = function()
+        local bundleID = "cn.better365.iShotProHelper"
+        local _, ok = hs.execute(string.format(
+            "defaults read '%s' dicOfShortCutKey | grep OCRRecorder", bundleID))
+        return ok
+      end,
       fn = function()
-        local bundleID = "cn.better365.iShotPro"
+        local bundleID = "cn.better365.iShotProHelper"
+        local output = hs.execute(string.format(
+          "defaults read '%s' dicOfShortCutKey | grep OCRRecorder -A4", bundleID))
+        local spec = hs.fnutils.split(output, "\n")
+        local mods = string.match(spec[5], "modifierFlags = (%d+);")
+        local key = string.match(spec[4], "keyCode = (%d+);")
+        mods = tonumber(mods) key = tonumber(key)
+        if mods == nil or key == nil then return end
+        key = hs.keycodes.map[key]
+        local modList = {}
+        if mods >= (1 << 20) then table.insert(modList, "command") end
+        if (mods % (1 << 20)) >= (1 << 19) then table.insert(modList, "option") end
+        if (mods % (1 << 19)) >= (1 << 18) then table.insert(modList, "control") end
+        if (mods % (1 << 18)) >= (1 << 17) then table.insert(modList, "shift") end
         local action = function()
-          runningAppHotKeys[bundleID][1]:disable()
-          hs.eventtap.keyStroke("⌃⌘", "O")
-          hs.timer.doAfter(1, function() runningAppHotKeys[bundleID][1]:enable() end)
+          local idx = hotkeyIdx(modList, key)
+          local conflicted = hs.fnutils.filter(hs.hotkey.getHotkeys(), function(hk)
+            return hk.idx == idx
+          end)
+          if conflicted[1] ~= nil then
+            conflicted[1]:disable()
+          end
+          hs.eventtap.keyStroke(modList, key)
+          if conflicted[1] ~= nil then
+            hs.timer.doAfter(1, function() conflicted[1]:enable() end)
+          end
         end
         if findApplication(bundleID) == nil then
           hs.application.open(bundleID)
