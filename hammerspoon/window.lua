@@ -770,7 +770,7 @@ local browserBundleIDs = {
   "com.microsoft.edgemac",
   "com.microsoft.edgemac.Dev",
 }
-switcher_browsers = nil
+local switcher_browsers
 
 local anotherLastBrowserHotkey
 

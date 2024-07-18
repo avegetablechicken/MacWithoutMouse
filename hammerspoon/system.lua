@@ -1220,11 +1220,11 @@ function registerControlCenterHotKeys(panel)
         controlCenterSubPanelWatcher = nil
       end
     end)
-  
+
   -- back to main panel
   hotkeyMainBack = newControlCenter("⌘", "[", "Back",
     function()
-      hotkeyMainBack:disable()
+      assert(hotkeyMainBack) hotkeyMainBack:disable()
       for _, hotkey in ipairs(controlCenterHotKeys) do
         hotkey:delete()
       end
@@ -1251,7 +1251,7 @@ function registerControlCenterHotKeys(panel)
       clickRightMenuBarItem("Control Center")
       hotkeyMainForward = newControlCenter("⌘", "]", "Forward",
         function()
-          hotkeyMainForward:disable()
+          assert(hotkeyMainForward) hotkeyMainForward:disable()
           popupControlCenterSubPanel(panel)
         end)
       if not checkAndRegisterControlCenterHotKeys(hotkeyMainForward) then return end
@@ -1446,13 +1446,13 @@ function registerControlCenterHotKeys(panel)
     if enabled == 0 then
       hotkeyShow = newControlCenter("", "Right", "Show " .. msg,
         function()
-          hotkeyShow:disable()
+          assert(hotkeyShow) hotkeyShow:disable()
           actionFunc()
           if hotkeyHide == nil then
             hotkeyHide = newControlCenter("", "Left", "Hide " .. msg,
               function()
-                hotkeyHide:disable()
-                hotkeyShow:enable()
+                assert(hotkeyHide) hotkeyHide:disable()
+                assert(hotkeyShow) hotkeyShow:enable()
                 actionFunc()
               end)
           end
@@ -1462,12 +1462,12 @@ function registerControlCenterHotKeys(panel)
     else
       hotkeyHide = newControlCenter("", "Left", "Hide " .. msg,
         function()
-          hotkeyHide:disable()
+          assert(hotkeyHide) hotkeyHide:disable()
           actionFunc()
           if hotkeyShow == nil then
             hotkeyShow = newControlCenter("", "Right", "Show " .. msg,
               function()
-                hotkeyShow:disable()
+                assert(hotkeyShow) hotkeyShow:disable()
                 hotkeyHide:enable()
                 actionFunc()
               end)
@@ -1587,7 +1587,7 @@ function registerControlCenterHotKeys(panel)
                   end tell
                 ]])
               end)
-            hotkey:enable()
+            assert(hotkey) hotkey:enable()
             table.insert(selectNetworkHotkeys, hotkey)
           end
         end
@@ -1944,8 +1944,8 @@ function registerControlCenterHotKeys(panel)
                 end tell
               ]])
             end)
+          assert(hotkey) hotkey:enable()
           table.insert(backgroundSoundsHotkeys, hotkey)
-          hotkey:enable()
         end
       end
       ok, result = hs.osascript.applescript([[
@@ -1976,8 +1976,8 @@ function registerControlCenterHotKeys(panel)
                 end tell
               ]])
             end)
+          assert(hotkey) hotkey:enable()
           table.insert(backgroundSoundsHotkeys, hotkey)
-          hotkey:enable()
         end
       end
     end
