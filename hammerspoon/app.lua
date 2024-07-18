@@ -2500,7 +2500,7 @@ local function registerRunningAppHotKeys(bid, appObject)
   end
 
   if runningAppHotKeys[bid] ~= nil then
-    for _, hotkey in ipairs(runningAppHotKeys[bid]) do
+    for _, hotkey in pairs(runningAppHotKeys[bid]) do
       hotkey:delete()
     end
   end
@@ -2535,7 +2535,7 @@ local function registerRunningAppHotKeys(bid, appObject)
         end
         hotkey.kind = cfg.kind or HK.BACKGROUND
         hotkey.bundleID = bid
-        table.insert(runningAppHotKeys[bid], hotkey)
+        runningAppHotKeys[bid][hkID] = hotkey
       end
     end
   end
@@ -2547,17 +2547,16 @@ local function registerRunningAppHotKeys(bid, appObject)
         return app:bundleID() == bid
       end)
       if appObject == nil then
-        local invalidIdx = {}
-        for i, hotkey in ipairs(runningAppHotKeys[bid]) do
+        local allDeleted = true
+        for hkID, hotkey in pairs(runningAppHotKeys[bid]) do
           if hotkey.persist ~= true then
             hotkey:delete()
-            table.insert(invalidIdx, i)
+            runningAppHotKeys[bid][hkID] = nil
+          else
+            allDeleted = false
           end
         end
-        for i=#invalidIdx, 1, -1 do
-          table.remove(runningAppHotKeys[bid], invalidIdx[i])
-        end
-        if #runningAppHotKeys[bid] == 0 then
+        if allDeleted then
           runningAppHotKeys[bid] = nil
           runningAppWatchers[bid]:stop()
           runningAppWatchers[bid] = nil
@@ -2571,12 +2570,12 @@ local function unregisterRunningAppHotKeys(bid, force)
   if appHotKeyCallbacks[bid] == nil then return end
 
   if force then
-    for _, hotkey in ipairs(runningAppHotKeys[bid] or {}) do
+    for _, hotkey in pairs(runningAppHotKeys[bid] or {}) do
       hotkey:delete()
     end
     runningAppHotKeys[bid] = nil
   else
-    for _, hotkey in ipairs(runningAppHotKeys[bid] or {}) do
+    for _, hotkey in pairs(runningAppHotKeys[bid] or {}) do
       if hotkey.persist ~= true then
         hotkey:disable()
       end
@@ -2715,14 +2714,15 @@ end
 local function unregisterInAppHotKeys(bid, eventType, delete)
   if appHotKeyCallbacks[bid] == nil then return end
 
-  for _, hotkey in pairs(inAppHotKeys[bid]) do
-    hotkey:disable()
-  end
   if delete then
     for _, hotkey in pairs(inAppHotKeys[bid]) do
       hotkey:delete()
     end
     inAppHotKeys[bid] = nil
+  else
+    for _, hotkey in pairs(inAppHotKeys[bid]) do
+      hotkey:disable()
+    end
   end
 end
 
@@ -2815,12 +2815,12 @@ local function registerInWinHotKeys(appObject)
             local repeatedFn = spec.repeatable ~= false and fn or nil
             local hotkey = bindSpecSuspend(keyBinding, msg, fn, nil, repeatedFn)
             hotkey.kind = HK.IN_APPWIN
-            table.insert(inWinHotKeys[bid], hotkey)
+            inWinHotKeys[bid][hkID] = hotkey
           end
         end
       else  -- now only for `iCopy`
         local cfg = spec
-        for _, spec in ipairs(cfg.hotkeys) do
+        for i, spec in ipairs(cfg.hotkeys) do
           ---@diagnostic disable-next-line: redundant-parameter
           if (spec.bindCondition == nil or spec.bindCondition(appObject)) and not spec.notActivateApp then
             local msg = type(spec.message) == 'string' and spec.message or spec.message(appObject)
@@ -2829,14 +2829,14 @@ local function registerInWinHotKeys(appObject)
               local repeatedFn = spec.repeatable ~= false and fn or nil
               local hotkey = bindSpecSuspend(spec, msg, fn, nil, repeatedFn)
               hotkey.kind = HK.IN_APPWIN
-              table.insert(inWinHotKeys[bid], hotkey)
+              inWinHotKeys[bid][hkID .. tostring(i)] = hotkey
             end
           end
         end
       end
     end
   else
-    for _, hotkey in ipairs(inWinHotKeys[bid]) do
+    for _, hotkey in pairs(inWinHotKeys[bid]) do
       hotkey:enable()
     end
     for hkID, spec in pairs(appHotKeyCallbacks[bid]) do
@@ -2897,16 +2897,17 @@ end
 local function unregisterInWinHotKeys(bid, delete)
   if appHotKeyCallbacks[bid] == nil or inWinHotKeys[bid] == nil then return end
 
-  for _, hotkey in ipairs(inWinHotKeys[bid]) do
-    hotkey:disable()
-  end
   if delete then
-    for _, hotkey in ipairs(inWinHotKeys[bid]) do
+    for _, hotkey in pairs(inWinHotKeys[bid]) do
       hotkey:delete()
     end
     inWinHotKeys[bid] = nil
     inWinCallbackChain[bid] = nil
     inWinHotkeyInfoChain[bid] = nil
+  else
+    for _, hotkey in pairs(inWinHotKeys[bid]) do
+      hotkey:disable()
+    end
   end
 end
 
