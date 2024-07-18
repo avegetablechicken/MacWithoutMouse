@@ -2543,25 +2543,25 @@ local function registerRunningAppHotKeys(bid, appObject)
   if not allPersist and runningAppWatchers[bid] == nil then
     runningAppWatchers[bid] = hs.timer.new(1, function()
       local runningApps = hs.application.runningApplications()
-      local invalidIdx = {}
-      for i, hotkey in ipairs(runningAppHotKeys[bid]) do
-        if hotkey.persist ~= true then
-          local appObject = hs.fnutils.find(runningApps, function(app)
-            return app:bundleID() == bid
-          end)
-          if appObject == nil then
+      local appObject = hs.fnutils.find(runningApps, function(app)
+        return app:bundleID() == bid
+      end)
+      if appObject == nil then
+        local invalidIdx = {}
+        for i, hotkey in ipairs(runningAppHotKeys[bid]) do
+          if hotkey.persist ~= true then
             hotkey:delete()
             table.insert(invalidIdx, i)
           end
         end
-      end
-      for i=#invalidIdx, 1, -1 do
-        table.remove(runningAppHotKeys[bid], invalidIdx[i])
-      end
-      if #runningAppHotKeys[bid] == 0 then
-        runningAppHotKeys[bid] = nil
-        runningAppWatchers[bid]:stop()
-        runningAppWatchers[bid] = nil
+        for i=#invalidIdx, 1, -1 do
+          table.remove(runningAppHotKeys[bid], invalidIdx[i])
+        end
+        if #runningAppHotKeys[bid] == 0 then
+          runningAppHotKeys[bid] = nil
+          runningAppWatchers[bid]:stop()
+          runningAppWatchers[bid] = nil
+        end
       end
     end):start()
   end
@@ -2570,20 +2570,16 @@ end
 local function unregisterRunningAppHotKeys(bid, force)
   if appHotKeyCallbacks[bid] == nil then return end
 
-  if runningAppHotKeys[bid] then
-    local allDeleted = true
-    for _, hotkey in ipairs(runningAppHotKeys[bid]) do
+  if force then
+    for _, hotkey in ipairs(runningAppHotKeys[bid] or {}) do
+      hotkey:delete()
+    end
+    runningAppHotKeys[bid] = nil
+  else
+    for _, hotkey in ipairs(runningAppHotKeys[bid] or {}) do
       if hotkey.persist ~= true then
         hotkey:disable()
       end
-      if force == true then
-        hotkey:delete()
-      else
-        allDeleted = false
-      end
-    end
-    if allDeleted then
-      runningAppHotKeys[bid] = nil
     end
   end
   if runningAppWatchers[bid] ~= nil and findApplication(bid) == nil then
@@ -2722,7 +2718,7 @@ local function unregisterInAppHotKeys(bid, eventType, delete)
   for _, hotkey in pairs(inAppHotKeys[bid]) do
     hotkey:disable()
   end
-  if delete ~= nil and delete then
+  if delete then
     for _, hotkey in pairs(inAppHotKeys[bid]) do
       hotkey:delete()
     end
@@ -2904,7 +2900,7 @@ local function unregisterInWinHotKeys(bid, delete)
   for _, hotkey in ipairs(inWinHotKeys[bid]) do
     hotkey:disable()
   end
-  if delete ~= nil and delete then
+  if delete then
     for _, hotkey in ipairs(inWinHotKeys[bid]) do
       hotkey:delete()
     end
