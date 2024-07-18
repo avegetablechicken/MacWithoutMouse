@@ -2443,6 +2443,7 @@ runningAppHotKeys = {}
 inAppHotKeys = {}
 inWinHotKeys = {}
 
+-- hotkeys for background apps
 local runningAppWatchers = {}
 local function registerRunningAppHotKeys(bid, appObject)
   if appHotKeyCallbacks[bid] == nil then return end
@@ -2463,19 +2464,16 @@ local function registerRunningAppHotKeys(bid, appObject)
   runningAppHotKeys[bid] = {}
 
   local allPersist = true
+  -- do not support "condition" property currently
   for hkID, cfg in pairs(appHotKeyCallbacks[bid]) do
     local keyBinding = keyBindings[hkID]
-    if keyBinding == nil then
-      keyBinding = {
-        mods = cfg.mods,
-        key = cfg.key,
-      }
-    end
-    if keyBinding.background == true
+    if keyBinding ~= nil and keyBinding.background == true
+        -- bindable (note: appObject may be nil)
         and (cfg.bindCondition == nil or cfg.bindCondition(appObject))
+        -- runninng / installed and persist
         and (appObject ~= nil or (keyBinding.persist == true
-        and (hs.application.pathForBundleID(bid) ~= nil
-             and hs.application.pathForBundleID(bid) ~= ""))) then
+            and (hs.application.pathForBundleID(bid) ~= nil
+                and hs.application.pathForBundleID(bid) ~= ""))) then
       local fn = hs.fnutils.partial(cfg.fn, appObject)
       local repeatedFn = cfg.repeatable and fn or nil
       local msg
@@ -2550,6 +2548,7 @@ local function unregisterRunningAppHotKeys(bid, force)
   end
 end
 
+-- record windows created and alive since last app switch
 windowCreatedSince = {}
 windowWatcher = hs.window.filter.new(true):subscribe(
 {hs.window.filter.windowCreated, hs.window.filter.windowFocused, hs.window.filter.windowDestroyed},
@@ -2569,6 +2568,7 @@ function(winObj, appName, eventType)
   end
 end)
 
+-- key strokes must be sent to frontmost window instead of frontmost app
 local function inAppHotKeysWrapper(appObject, mods, key, func)
   if func == nil then
     func = key key = mods.key mods = mods.mods
@@ -2587,6 +2587,7 @@ local function inAppHotKeysWrapper(appObject, mods, key, func)
   end
 end
 
+-- hotkeys for active app
 local function registerInAppHotKeys(appName, eventType, appObject)
   local bid = appObject:bundleID()
   if appHotKeyCallbacks[bid] == nil then return end
@@ -2600,6 +2601,7 @@ local function registerInAppHotKeys(appName, eventType, appObject)
     for hkID, cfg in pairs(appHotKeyCallbacks[bid]) do
       if type(hkID) == 'number' then break end
       local keyBinding = keyBindings[hkID]
+      -- prefer keybinding specified in configuration file than in code
       if keyBinding == nil then
         keyBinding = {
           mods = cfg.mods,
@@ -2610,13 +2612,14 @@ local function registerInAppHotKeys(appName, eventType, appObject)
         local fn = cfg.fn
         local cond = cfg.condition
         if cond ~= nil then
+          -- if a menu is extended, hotkeys are disabled
           if keyBinding.mods == nil or keyBinding.mods == "" or #keyBinding.mods == 0 then
             cond = noSelectedMenuBarItemFunc(cond)
           end
           fn = function(appObject, appName, eventType)
             local satisfied, result = cond(appObject)
             if satisfied then
-              if result ~= nil then
+              if result ~= nil then -- condition function can pass result to callback function
                 cfg.fn(result, appObject, appName, eventType)
               else
                 cfg.fn(appObject, appName, eventType)
@@ -2625,9 +2628,12 @@ local function registerInAppHotKeys(appName, eventType, appObject)
                 or result == COND_FAIL.MENU_ITEM_SELECTED then
               hs.eventtap.keyStroke(keyBinding.mods, keyBinding.key, nil, appObject)
             else
+              -- most of the time, directly selecting menu item costs less time than key strokes
               selectMenuItemOrKeyStroke(appObject, keyBinding.mods, keyBinding.key)
             end
           end
+          -- in current version of Hammerspoon, if condition function or callback function lasts too long,
+          -- keeping pressing a hotkey may lead to unexpected repeated triggering of callback function
           if cfg.repeatable ~= false then
             local oldFn = fn
             fn = function(appObject, appName, eventType)
@@ -2643,6 +2649,8 @@ local function registerInAppHotKeys(appName, eventType, appObject)
         fn = inAppHotKeysWrapper(appObject, keyBinding,
                                  hs.fnutils.partial(fn, appObject, appName, eventType))
         local repeatedFn
+        -- hotkey with condition function is repeatable by defaults
+        -- because when its condition is not satisfied it will be re-stroked
         if cfg.repeatable or (cfg.repeatable ~= false and cfg.condition ~= nil) then
           repeatedFn = fn
         end
@@ -2676,9 +2684,7 @@ local function unregisterInAppHotKeys(bid, eventType, delete)
   end
 end
 
-local inWinCallbackChain = {}
-inWinHotkeyInfoChain = {}
-
+-- get hotkey idx like how Hammerspoon does that
 function hotkeyIdx(mods, key)
   local idx = string.upper(key)
   if type(mods) == 'string' then
@@ -2691,6 +2697,11 @@ function hotkeyIdx(mods, key)
   return idx
 end
 
+-- multiple window-specified hotkeys may share a common keybinding
+-- they are cached in a linked list.
+-- each window filter will be tested until one matched target window
+local inWinCallbackChain = {}
+inWinHotkeyInfoChain = {}
 local function inWinHotKeysWrapper(appObject, filter, mods, key, message, fn)
   if fn == nil then
     fn = message message = key key = mods.key mods = mods.mods
@@ -2723,6 +2734,7 @@ local function inWinHotKeysWrapper(appObject, filter, mods, key, message, fn)
   return inAppHotKeysWrapper(appObject, mods, key, wrapper)
 end
 
+-- hotkeys for focused window of active app
 local function registerInWinHotKeys(appObject)
   local bid = appObject:bundleID()
   if appHotKeyCallbacks[bid] == nil then return end
@@ -2735,23 +2747,26 @@ local function registerInWinHotKeys(appObject)
     inWinHotKeys[bid] = {}
     for hkID, spec in pairs(appHotKeyCallbacks[bid]) do
       local keyBinding = keyBindings[hkID]
+      -- prefer keybinding specified in configuration file than in code
       if keyBinding == nil then
         keyBinding = {
           mods = spec.mods,
           key = spec.key,
         }
       end
+      -- prefer window filter specified in configuration file than in code
       if keyBinding.windowFilter == nil and spec.windowFilter ~= nil then
         keyBinding.windowFilter = spec.windowFilter
+        -- window filter specified in code can be in function format
         for k, v in pairs(keyBinding.windowFilter) do
           if type(v) == 'function' then
             keyBinding.windowFilter[k] = v(appObject)
           end
         end
       end
-      if type(hkID) ~= 'number' then
+      if type(hkID) ~= 'number' then  -- usual situation
         if keyBinding.windowFilter ~= nil and (spec.bindCondition == nil or spec.bindCondition(appObject))
-            and not spec.notActivateApp then
+            and not spec.notActivateApp then  -- only consider windows of active app
           local msg = type(spec.message) == 'string' and spec.message or spec.message(appObject)
           if msg ~= nil then
             local fn = inWinHotKeysWrapper(appObject, keyBinding.windowFilter, keyBinding, msg, spec.fn)
@@ -2761,7 +2776,7 @@ local function registerInWinHotKeys(appObject)
             table.insert(inWinHotKeys[bid], hotkey)
           end
         end
-      else
+      else  -- now only for `iCopy`
         local cfg = spec
         for _, spec in ipairs(cfg.hotkeys) do
           if (spec.bindCondition == nil or spec.bindCondition(appObject)) and not spec.notActivateApp then
@@ -2783,21 +2798,26 @@ local function registerInWinHotKeys(appObject)
     end
     for hkID, spec in pairs(appHotKeyCallbacks[bid]) do
       local keyBinding = keyBindings[hkID]
+      -- prefer keybinding specified in configuration file than in code
       if keyBinding == nil then
         keyBinding = {
           mods = spec.mods,
           key = spec.key,
         }
       end
+      -- prefer window filter specified in configuration file than in code
       if keyBinding.windowFilter == nil and spec.windowFilter ~= nil then
         keyBinding.windowFilter = spec.windowFilter
+        -- window filter specified in code can be in function format
         for k, v in pairs(keyBinding.windowFilter) do
           if type(v) == 'function' then
             keyBinding.windowFilter[k] = v(appObject)
           end
         end
       end
-      if type(hkID) ~= 'number' then
+      if type(hkID) ~= 'number' then  -- usual situation
+        -- multiple window-specified hotkkeys may share a common keybinding
+        -- append current hotkey to the linked list
         if keyBinding.windowFilter ~= nil then
           local hkIdx = hotkeyIdx(keyBinding.mods, keyBinding.key)
           local prevHotkeyInfo = inWinHotkeyInfoChain[bid][hkIdx]
@@ -2811,7 +2831,7 @@ local function registerInWinHotKeys(appObject)
             }
           end
         end
-      else
+      else  -- now only for `iCopy`
         local cfg = spec
         for _, spec in ipairs(cfg.hotkeys) do
           local hkIdx = hotkeyIdx(spec.mods, spec.key)
@@ -2868,7 +2888,7 @@ local function inWinOfUnactivatedAppWatcherEnableCallback(bid, filter, winObj, a
     inWinOfUnactivatedAppHotKeys[bid] = {}
   end
   for hkID, spec in pairs(appHotKeyCallbacks[bid]) do
-    if type(hkID) ~= 'number' then
+    if type(hkID) ~= 'number' then  -- usual situation
       local filterCfg = get(keybindingConfigs.hotkeys[bid], hkID) or spec
       if (spec.bindCondition == nil or spec.bindCondition(winObj:application())) and sameFilter(filterCfg.windowFilter, filter) then
         local msg = type(spec.message) == 'string' and spec.message or spec.message(winObj:application())
@@ -2881,7 +2901,7 @@ local function inWinOfUnactivatedAppWatcherEnableCallback(bid, filter, winObj, a
           table.insert(inWinOfUnactivatedAppHotKeys[bid], hotkey)
         end
       end
-    else
+    else  -- now only for `iCopy`
       local cfg = spec[1]
       if sameFilter(cfg.filter, filter) then
         for _, spec in ipairs(cfg) do
@@ -2927,31 +2947,34 @@ local function registerSingleWinFilterForDaemonApp(appObject, filter)
   inWinOfUnactivatedAppWatchers[bid][filter] = { filterEnable, filterDisable }
 end
 
+-- hotkeys for frontmost window belonging to unactivated app
 local function registerWinFiltersForDaemonApp(appObject, appConfig)
   local bid = appObject:bundleID()
   for hkID, spec in pairs(appConfig) do
     if spec.notActivateApp then
       local filter
-      if type(hkID) ~= 'number' then
+      if type(hkID) ~= 'number' then  -- usual situation
         local cfg = get(keybindingConfigs.hotkeys[bid], hkID) or spec
         filter = cfg.windowFilter
-      else
+      else  -- now only for `iCopy`
         local cfg = spec[1]
         filter = cfg.filter
       end
       for k, v in pairs(filter) do
+        -- window filter specified in code can be in function format
         if type(v) == 'function' then
           filter[k] = v(appObject)
         end
       end
       if inWinOfUnactivatedAppWatchers[bid] == nil
-        or inWinOfUnactivatedAppWatchers[bid][filter] == nil then
+          or inWinOfUnactivatedAppWatchers[bid][filter] == nil then
         if inWinOfUnactivatedAppWatchers[bid] == nil then
           inWinOfUnactivatedAppWatchers[bid] = {}
         end
-        if type(hkID) ~= 'number' then
+        if type(hkID) ~= 'number' then  -- usual situation
+          -- a window filter can be shared by multiple hotkeys
           registerSingleWinFilterForDaemonApp(appObject, filter)
-        else
+        else  -- now only for `iCopy`
           local cfg = spec[1]
           for _, spec in ipairs(cfg) do
             registerSingleWinFilterForDaemonApp(appObject, filter)
@@ -2962,18 +2985,22 @@ local function registerWinFiltersForDaemonApp(appObject, appConfig)
   end
 end
 
+-- register hotkeys for background apps
 for bid, _ in pairs(appHotKeyCallbacks) do
   registerRunningAppHotKeys(bid)
 end
 
+-- register hotkeys for active app
 registerInAppHotKeys(hs.application.frontmostApplication():title(),
   hs.application.watcher.activated,
   hs.application.frontmostApplication())
 
+-- register hotkeys for focused window of active app
+registerInWinHotKeys(hs.application.frontmostApplication())
+
 local frontWin = hs.window.frontmostWindow()
 if frontWin ~= nil then
-  registerInWinHotKeys(frontWin:application())
-
+  -- register hotkeys for frontmost window belonging to unactivated app
   local frontWinAppBid = frontWin:application():bundleID()
   if inWinOfUnactivatedAppWatchers[frontWinAppBid] ~= nil then
     local frontWinAppName = frontWin:application():title()
@@ -2986,6 +3013,7 @@ if frontWin ~= nil then
   end
 end
 
+-- register watchers for frontmost window belonging to unactivated app
 for bid, appConfig in pairs(appHotKeyCallbacks) do
   local appObject = findApplication(bid)
   if appObject ~= nil then
@@ -2993,7 +3021,8 @@ for bid, appConfig in pairs(appHotKeyCallbacks) do
   end
 end
 
--- simplify switching to previous tab
+-- hotkey shared by multiple apps
+
 function remapPreviousTab(bundleID)
   if remapPreviousTabHotkey then
     remapPreviousTabHotkey:delete()
@@ -3231,76 +3260,6 @@ function registerForOpenSavePanel(appObject)
   openSavePanelObserver:start()
 end
 registerForOpenSavePanel(frontmostApplication)
-
-function connectMountainDuckEntries(appObject, connection)
-  local script = string.format([[
-    tell application "System Events"
-      tell first application process whose bundle identifier is "%s"
-        set li to menu 1 of last menu bar
-  ]], appObject:bundleID(), appObject:bundleID())
-
-  if type(connection) == 'string' then
-    script = script .. string.format([[
-        if exists menu item "%s" of li then
-          click menu item 1 of menu 1 of menu item "%s" of li
-        end
-    ]], connection, connection)
-  else
-    local fullfilled = connection.condition(appObject)
-    if fullfilled == nil then return end
-    local connects = connection[connection.locations[fullfilled and 1 or 2]]
-    local disconnects = connection[connection.locations[fullfilled and 2 or 1]]
-    for _, item in ipairs(connects) do
-      script = script .. string.format([[
-          if exists menu item "%s" of li then
-            click menu item 1 of menu 1 of menu item "%s" of li
-          end
-      ]], item, item)
-    end
-    for _, item in ipairs(disconnects) do
-      script = script .. string.format([[
-          if exists menu item "%s" of li then
-            click menu item "%s" of menu 1 of menu item "%s" of li
-          end
-      ]], item, localizedString('Disconnect', 'io.mountainduck'), item)
-    end
-  end
-
-  script = script .. [[
-      end tell
-    end tell
-  ]]
-
-  hs.osascript.applescript(script)
-end
-local mountainDuckConfig = applicationConfigs["io.mountainduck"]
-if mountainDuckConfig ~= nil and mountainDuckConfig.connections ~= nil then
-  for _, connection in ipairs(mountainDuckConfig.connections) do
-    if type(connection) == 'table' then
-      local shell_command = get(connection, "condition", "shell_command")
-      if shell_command ~= nil then
-        connection.condition = function()
-          local _, _, _, rc = hs.execute(shell_command)
-          if rc == 0 then
-            return true
-          elseif rc == 1 then
-            return false
-          else
-            return nil
-          end
-        end
-      else
-        connection.condition = nil
-      end
-    end
-  end
-end
-local mountainDuckObject = findApplication("io.mountainduck")
-if mountainDuckConfig ~= nil and mountainDuckObject ~= nil then
-  for _, connection in ipairs(mountainDuckConfig.connections) do
-    connectMountainDuckEntries(mountainDuckObject, connection)
-  end
-end
 
 
 -- bind `alt+?` hotkeys to menu bar 1 functions
@@ -3773,6 +3732,79 @@ for bundleID, rules in pairs(appsAutoQuitWithNoPseudoWindows) do
   if findApplication(bundleID) then
     registerPseudoWindowDestroyWatcher(
           findApplication(bundleID), rules, appsAutoQuitWithNoWindows[bundleID], true)
+  end
+end
+
+
+-- configure specific apps
+
+function connectMountainDuckEntries(appObject, connection)
+  local script = string.format([[
+    tell application "System Events"
+      tell first application process whose bundle identifier is "%s"
+        set li to menu 1 of last menu bar
+  ]], appObject:bundleID(), appObject:bundleID())
+
+  if type(connection) == 'string' then
+    script = script .. string.format([[
+        if exists menu item "%s" of li then
+          click menu item 1 of menu 1 of menu item "%s" of li
+        end
+    ]], connection, connection)
+  else
+    local fullfilled = connection.condition(appObject)
+    if fullfilled == nil then return end
+    local connects = connection[connection.locations[fullfilled and 1 or 2]]
+    local disconnects = connection[connection.locations[fullfilled and 2 or 1]]
+    for _, item in ipairs(connects) do
+      script = script .. string.format([[
+          if exists menu item "%s" of li then
+            click menu item 1 of menu 1 of menu item "%s" of li
+          end
+      ]], item, item)
+    end
+    for _, item in ipairs(disconnects) do
+      script = script .. string.format([[
+          if exists menu item "%s" of li then
+            click menu item "%s" of menu 1 of menu item "%s" of li
+          end
+      ]], item, localizedString('Disconnect', 'io.mountainduck'), item)
+    end
+  end
+
+  script = script .. [[
+      end tell
+    end tell
+  ]]
+
+  hs.osascript.applescript(script)
+end
+local mountainDuckConfig = applicationConfigs["io.mountainduck"]
+if mountainDuckConfig ~= nil and mountainDuckConfig.connections ~= nil then
+  for _, connection in ipairs(mountainDuckConfig.connections) do
+    if type(connection) == 'table' then
+      local shell_command = get(connection, "condition", "shell_command")
+      if shell_command ~= nil then
+        connection.condition = function()
+          local _, _, _, rc = hs.execute(shell_command)
+          if rc == 0 then
+            return true
+          elseif rc == 1 then
+            return false
+          else
+            return nil
+          end
+        end
+      else
+        connection.condition = nil
+      end
+    end
+  end
+end
+local mountainDuckObject = findApplication("io.mountainduck")
+if mountainDuckConfig ~= nil and mountainDuckObject ~= nil then
+  for _, connection in ipairs(mountainDuckConfig.connections) do
+    connectMountainDuckEntries(mountainDuckObject, connection)
   end
 end
 
