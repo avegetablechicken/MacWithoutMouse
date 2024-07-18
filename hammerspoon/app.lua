@@ -3289,11 +3289,13 @@ function registerForOpenSavePanel(appObject)
     else
       spec = get(keybindingConfigs.hotkeys[bundleID], "goToDownloads")
     end
-    openSavePanelHotkey = bindSpecSuspend(spec, message, function()
-      local action = openSavePanelActor:actionNames()[1]
-      openSavePanelActor:performAction(action)
-    end)
-    openSavePanelHotkey.kind = HK.IN_APPWIN
+    if spec ~= nil then
+      openSavePanelHotkey = bindSpecSuspend(spec, message, function()
+        local action = openSavePanelActor:actionNames()[1]
+        openSavePanelActor:performAction(action)
+      end)
+      openSavePanelHotkey.kind = HK.IN_APPWIN
+    end
   end
   if appObject:focusedWindow() ~= nil then
     actionFunc(hs.axuielement.windowElement(appObject:focusedWindow()))
