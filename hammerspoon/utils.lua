@@ -46,9 +46,15 @@ end
 
 function inFullscreenWindow()
   local focusedWindow = hs.application.frontmostApplication():focusedWindow()
-  return focusedWindow ~= nil
-      and focusedWindow:id() ~= 0
-      and hs.spaces.spaceType(hs.spaces.windowSpaces(focusedWindow)[1]) ~= "user"
+  if focusedWindow ~= nil and focusedWindow:id() ~= 0 then
+    local spaces = hs.spaces.windowSpaces(focusedWindow)
+    if #spaces == 0 then
+      hs.timer.usleep(0.1 * 1000000)
+      spaces = hs.spaces.windowSpaces(focusedWindow)
+    end
+    return hs.spaces.spaceType(spaces[1]) ~= "user"
+  end
+  return false
 end
 
 function activatedWindowIndex()
