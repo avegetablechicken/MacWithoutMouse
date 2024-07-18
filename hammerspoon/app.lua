@@ -2534,6 +2534,7 @@ local function registerRunningAppHotKeys(bid, appObject)
           allPersist = false
         end
         hotkey.kind = cfg.kind or HK.BACKGROUND
+        hotkey.deleteOnDisable = cfg.deleteOnDisable
         hotkey.bundleID = bid
         runningAppHotKeys[bid][hkID] = hotkey
       end
@@ -2575,10 +2576,22 @@ local function unregisterRunningAppHotKeys(bid, force)
     end
     runningAppHotKeys[bid] = nil
   else
+    local allDeleted = true
     for _, hotkey in pairs(runningAppHotKeys[bid] or {}) do
       if hotkey.persist ~= true then
         hotkey:disable()
+        if hotkey.deleteOnDisable then
+          hotkey:delete()
+          runningAppHotKeys[bid][hotkey] = nil
+        else
+          allDeleted = false
+        end
+      else
+        allDeleted = false
       end
+    end
+    if allDeleted then
+      runningAppHotKeys[bid] = nil
     end
   end
   if runningAppWatchers[bid] ~= nil and findApplication(bid) == nil then
@@ -2637,8 +2650,12 @@ local function registerInAppHotKeys(appName, eventType, appObject)
 
   if not inAppHotKeys[bid] then
     inAppHotKeys[bid] = {}
-    for hkID, cfg in pairs(appHotKeyCallbacks[bid]) do
-      if type(hkID) == 'number' then break end
+  end
+  for hkID, cfg in pairs(appHotKeyCallbacks[bid]) do
+    if type(hkID) == 'number' then break end
+    if inAppHotKeys[bid][hkID] ~= nil then
+      inAppHotKeys[bid][hkID]:enable()
+    else
       local keyBinding = keyBindings[hkID]
       -- prefer keybinding specified in configuration file than in code
       if keyBinding == nil then
@@ -2700,13 +2717,10 @@ local function registerInAppHotKeys(appName, eventType, appObject)
           local hotkey = bindSpecSuspend(keyBinding, msg, fn, nil, repeatedFn)
           hotkey.kind = HK.IN_APP
           hotkey.condition = cond
+          hotkey.deleteOnDisable = cfg.deleteOnDisable
           inAppHotKeys[bid][hkID] = hotkey
         end
       end
-    end
-  else
-    for _, hotkey in pairs(inAppHotKeys[bid]) do
-      hotkey:enable()
     end
   end
 end
@@ -2720,8 +2734,18 @@ local function unregisterInAppHotKeys(bid, eventType, delete)
     end
     inAppHotKeys[bid] = nil
   else
-    for _, hotkey in pairs(inAppHotKeys[bid]) do
+    local allDeleted = true
+    for hkID, hotkey in pairs(inAppHotKeys[bid]) do
       hotkey:disable()
+      if hotkey.deleteOnDisable then
+        hotkey:delete()
+        inAppHotKeys[bid][hkID] = nil
+      else
+        allDeleted = false
+      end
+    end
+    if allDeleted then
+      inAppHotKeys[bid] = nil
     end
   end
 end
@@ -2787,25 +2811,27 @@ local function registerInWinHotKeys(appObject)
 
   if not inWinHotKeys[bid] then
     inWinHotKeys[bid] = {}
-    for hkID, spec in pairs(appHotKeyCallbacks[bid]) do
-      local keyBinding = keyBindings[hkID]
-      -- prefer keybinding specified in configuration file than in code
-      if keyBinding == nil then
-        keyBinding = {
-          mods = spec.mods,
-          key = spec.key,
-        }
-      end
-      -- prefer window filter specified in configuration file than in code
-      if keyBinding.windowFilter == nil and spec.windowFilter ~= nil then
-        keyBinding.windowFilter = spec.windowFilter
-        -- window filter specified in code can be in function format
-        for k, v in pairs(keyBinding.windowFilter) do
-          if type(v) == 'function' then
-            keyBinding.windowFilter[k] = v(appObject)
-          end
+  end
+  for hkID, spec in pairs(appHotKeyCallbacks[bid]) do
+    local keyBinding = keyBindings[hkID]
+    -- prefer keybinding specified in configuration file than in code
+    if keyBinding == nil then
+      keyBinding = {
+        mods = spec.mods,
+        key = spec.key,
+      }
+    end
+    -- prefer window filter specified in configuration file than in code
+    if keyBinding.windowFilter == nil and spec.windowFilter ~= nil then
+      keyBinding.windowFilter = spec.windowFilter
+      -- window filter specified in code can be in function format
+      for k, v in pairs(keyBinding.windowFilter) do
+        if type(v) == 'function' then
+          keyBinding.windowFilter[k] = v(appObject)
         end
       end
+    end
+    if inWinHotKeys[bid][hkID] == nil then
       if type(hkID) ~= 'number' then  -- usual situation
         if keyBinding.windowFilter ~= nil and (spec.bindCondition == nil or spec.bindCondition(appObject))
             and not spec.notActivateApp then  -- only consider windows of active app
@@ -2815,6 +2841,7 @@ local function registerInWinHotKeys(appObject)
             local repeatedFn = spec.repeatable ~= false and fn or nil
             local hotkey = bindSpecSuspend(keyBinding, msg, fn, nil, repeatedFn)
             hotkey.kind = HK.IN_APPWIN
+            hotkey.deleteOnDisable = spec.deleteOnDisable
             inWinHotKeys[bid][hkID] = hotkey
           end
         end
@@ -2829,35 +2856,14 @@ local function registerInWinHotKeys(appObject)
               local repeatedFn = spec.repeatable ~= false and fn or nil
               local hotkey = bindSpecSuspend(spec, msg, fn, nil, repeatedFn)
               hotkey.kind = HK.IN_APPWIN
+              hotkey.deleteOnDisable = spec.deleteOnDisable
               inWinHotKeys[bid][hkID .. tostring(i)] = hotkey
             end
           end
         end
       end
-    end
-  else
-    for _, hotkey in pairs(inWinHotKeys[bid]) do
-      hotkey:enable()
-    end
-    for hkID, spec in pairs(appHotKeyCallbacks[bid]) do
-      local keyBinding = keyBindings[hkID]
-      -- prefer keybinding specified in configuration file than in code
-      if keyBinding == nil then
-        keyBinding = {
-          mods = spec.mods,
-          key = spec.key,
-        }
-      end
-      -- prefer window filter specified in configuration file than in code
-      if keyBinding.windowFilter == nil and spec.windowFilter ~= nil then
-        keyBinding.windowFilter = spec.windowFilter
-        -- window filter specified in code can be in function format
-        for k, v in pairs(keyBinding.windowFilter) do
-          if type(v) == 'function' then
-            keyBinding.windowFilter[k] = v(appObject)
-          end
-        end
-      end
+    else
+      inWinHotKeys[bid][hkID]:enable()
       if type(hkID) ~= 'number' then  -- usual situation
         -- multiple window-specified hotkkeys may share a common keybinding
         -- append current hotkey to the linked list
@@ -2905,8 +2911,20 @@ local function unregisterInWinHotKeys(bid, delete)
     inWinCallbackChain[bid] = nil
     inWinHotkeyInfoChain[bid] = nil
   else
-    for _, hotkey in pairs(inWinHotKeys[bid]) do
+    local allDeleted = true
+    for hkID, hotkey in pairs(inWinHotKeys[bid]) do
       hotkey:disable()
+      if hotkey.deleteOnDisable then
+        hotkey:delete()
+        inWinHotKeys[bid][hkID] = nil
+      else
+        allDeleted = false
+      end
+    end
+    if allDeleted then
+      inWinHotKeys[bid] = nil
+      inWinCallbackChain[bid] = nil
+      inWinHotkeyInfoChain[bid] = nil
     end
   end
 end
