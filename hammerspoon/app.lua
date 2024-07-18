@@ -764,52 +764,62 @@ appHotKeyCallbacks = {
     ["open1stSidebarItem"] = {
       message = getFinderSidebarItemTitle(1),
       condition = getFinderSidebarItem(1),
-      fn = openFinderSidebarItem
+      fn = openFinderSidebarItem,
+      deleteOnDisable = true
     },
     ["open2ndSidebarItem"] = {
       message = getFinderSidebarItemTitle(2),
       condition = getFinderSidebarItem(2),
-      fn = openFinderSidebarItem
+      fn = openFinderSidebarItem,
+      deleteOnDisable = true
     },
     ["open3rdSidebarItem"] = {
       message = getFinderSidebarItemTitle(3),
       condition = getFinderSidebarItem(3),
-      fn = openFinderSidebarItem
+      fn = openFinderSidebarItem,
+      deleteOnDisable = true
     },
     ["open4thSidebarItem"] = {
       message = getFinderSidebarItemTitle(4),
       condition = getFinderSidebarItem(4),
-      fn = openFinderSidebarItem
+      fn = openFinderSidebarItem,
+      deleteOnDisable = true
     },
     ["open5thSidebarItem"] = {
       message = getFinderSidebarItemTitle(5),
       condition = getFinderSidebarItem(5),
-      fn = openFinderSidebarItem
+      fn = openFinderSidebarItem,
+      deleteOnDisable = true
     },
     ["open6thSidebarItem"] = {
       message = getFinderSidebarItemTitle(6),
       condition = getFinderSidebarItem(6),
-      fn = openFinderSidebarItem
+      fn = openFinderSidebarItem,
+      deleteOnDisable = true
     },
     ["open7thSidebarItem"] = {
       message = getFinderSidebarItemTitle(7),
       condition = getFinderSidebarItem(7),
-      fn = openFinderSidebarItem
+      fn = openFinderSidebarItem,
+      deleteOnDisable = true
     },
     ["open8thSidebarItem"] = {
       message = getFinderSidebarItemTitle(8),
       condition = getFinderSidebarItem(8),
-      fn = openFinderSidebarItem
+      fn = openFinderSidebarItem,
+      deleteOnDisable = true
     },
     ["open9thSidebarItem"] = {
       message = getFinderSidebarItemTitle(9),
       condition = getFinderSidebarItem(9),
-      fn = openFinderSidebarItem
+      fn = openFinderSidebarItem,
+      deleteOnDisable = true
     },
     ["open10thSidebarItem"] = {
       message = getFinderSidebarItemTitle(10),
       condition = getFinderSidebarItem(10),
-      fn = openFinderSidebarItem
+      fn = openFinderSidebarItem,
+      deleteOnDisable = true
     }
   },
 
