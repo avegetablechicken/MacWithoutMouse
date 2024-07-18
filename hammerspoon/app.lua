@@ -250,10 +250,10 @@ local function getFinderSidebarItemTitle(idx)
         header = rowUIObj.AXChildren[1]:childrenWithRole("AXStaticText")[1].AXValue
       else
         cnt = cnt + 1
-      end
-      if cnt == idx then
-        local itemTitle = rowUIObj.AXChildren[1]:childrenWithRole("AXStaticText")[1].AXValue
-        return header .. ' > ' .. itemTitle
+        if cnt == idx then
+          local itemTitle = rowUIObj.AXChildren[1]:childrenWithRole("AXStaticText")[1].AXValue
+          return header .. ' > ' .. itemTitle
+        end
       end
     end
     local suffix
@@ -273,7 +273,6 @@ local function getFinderSidebarItem(idx)
     if outlineUIObj == nil then return false end
     local cnt = 0
     for _, rowUIObj in ipairs(outlineUIObj:childrenWithRole("AXRow")) do
-      if rowUIObj.AXChildren == nil then hs.timer.usleep(0.3 * 1000000) end
       if rowUIObj.AXChildren[1]:childrenWithRole("AXStaticText")[1].AXIdentifier == nil then
         cnt = cnt + 1
       end
