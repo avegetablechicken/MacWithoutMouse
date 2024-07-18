@@ -2511,12 +2511,13 @@ local function registerRunningAppHotKeys(bid, appObject)
   for hkID, cfg in pairs(appHotKeyCallbacks[bid]) do
     local keyBinding = keyBindings[hkID]
     if keyBinding ~= nil and keyBinding.background == true
-        -- bindable (note: appObject may be nil)
-        and (cfg.bindCondition == nil or cfg.bindCondition(appObject))
         -- runninng / installed and persist
         and (appObject ~= nil or (keyBinding.persist == true
             and (hs.application.pathForBundleID(bid) ~= nil
-                and hs.application.pathForBundleID(bid) ~= ""))) then
+                and hs.application.pathForBundleID(bid) ~= "")))
+        -- bindable
+        and (cfg.bindCondition == nil or ((appObject ~= nil and cfg.bindCondition(appObject))
+            or (appObject == nil and keyBinding.persist == true and cfg.bindCondition()))) then
       local fn = hs.fnutils.partial(cfg.fn, appObject)
       local repeatedFn = cfg.repeatable and fn or nil
       local msg
