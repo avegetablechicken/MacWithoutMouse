@@ -1099,10 +1099,9 @@ local function popupControlCenterSubPanel(panel, allowReentry)
     end
 
     if allowReentry == nil then
-      allowReentry = "false"
-    else
-      allowReentry = tostring(allowReentry)
+      allowReentry = false
     end
+    allowReentry = tostring(allowReentry)
     ok, result = hs.osascript.applescript([[
       tell application "System Events"
         set pane to ]] .. pane .. [[ of application process "ControlCenter"
