@@ -1041,8 +1041,15 @@ end)
 doubleTapModal.kind = HK.PRIVELLEGE
 
 
+function getCurrentApplication()
+  local app = hs.window.frontmostWindow():application()
+  local bundleID = app:bundleID()
+  local appName = app:name()
+  return app, appName, bundleID
+end
+
 -- show info of current window
-function getCurrentWindow()
+bindSpecSuspend(misc["showCurrentWindowInfo"], "Show Info of Current Window", function()
   local win = hs.window.frontmostWindow()
   if not win then return false end
   local title = win:title()
@@ -1051,19 +1058,6 @@ function getCurrentWindow()
   local subrole = win:subrole()
   local pid = win:pid()
   local frame = win:frame()
-  return win, title, id, role, subrole, pid, frame
-end
-
-function getCurrentApplication()
-  local app = hs.window.frontmostWindow():application()
-  local bundleID = app:bundleID()
-  local appName = app:name()
-  return app, appName, bundleID
-end
-
-bindSpecSuspend(misc["showCurrentWindowInfo"], "Show Info of Current Window", function()
-  local win, title, id, role, subrole, pid, frame = getCurrentWindow()
-  if not win then return end
   local app, appName, bundleID = getCurrentApplication()
   hs.focus()
   hs.dialog.blockAlert("Current Window",

@@ -1,5 +1,7 @@
-local moveStep = keybindingConfigs.parameters.windowMoveStep
-local resizeStep = keybindingConfigs.parameters.windowResizeStep
+local windowParams = keybindingConfigs["parameters"] or {}
+local moveStep = windowParams.windowMoveStep or 20
+local resizeStep = windowParams.windowResizeStep or 100
+local windowZoomToCenterSize = windowParams.windowZoomToCenterSize or { w = 830, h = 750 }
 
 local function newWindow(...)
   local hotkey = newSpecSuspend(...)
@@ -459,9 +461,8 @@ function()
     local screen = win:screen()
     local max = screen:frame()
 
-    local s = keybindingConfigs.parameters.windowZoomToCenterSize
-    f.w = s.w
-    f.h = s.h
+    f.w = windowZoomToCenterSize.w
+    f.h = windowZoomToCenterSize.h
     f.x = (max.x + max.x + max.w - f.w) / 2
     f.y = (max.y + max.y + max.h - f.h) / 2
     win:setFrame(f)
@@ -609,7 +610,7 @@ local ignoredApps = {
   "whbalzac.Dongtaizhuomian",
   "com.macosgame.iwallpaper",
 }
-switcher = nil
+local switcher
 
 hotkeyEnabledByWindowSwitcher = false
 local function enabledByWindowSwitcherFunc()

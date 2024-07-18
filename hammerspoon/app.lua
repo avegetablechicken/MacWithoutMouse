@@ -184,7 +184,6 @@ local function registerAppHotkeys()
     if appPath == nil and config.vm ~= nil then
       if config.vm == "com.parallels.desktop.console" then
         appPath = getParallelsVMPath(name)
-        config.appPath = appPath
       else
         hs.alert("Unsupported Virtual Machine : " .. config.vm)
       end
@@ -192,7 +191,7 @@ local function registerAppHotkeys()
     if appPath == nil and config.appPath ~= nil then
       if type(config.appPath) == "string" then
         appPath = config.appPath
-      elseif type(config.appPath) == "table" then
+      else
         for _, path in ipairs(config.appPath) do
           if hs.fs.attributes(path) ~= nil then
             appPath = path
@@ -212,6 +211,8 @@ local function registerAppHotkeys()
           hotkey.bundleID = config.bundleID
         elseif config.appPath then
           hotkey.appPath = config.appPath
+        elseif config.vm then
+          hotkey.appPath = appPath
         end
         table.insert(appHotkeys, hotkey)
       end
@@ -557,6 +558,7 @@ local function menuItemMessage(mods, key, titleIndex, sep)
     else
       if sep == nil then sep = ' > ' end
       local menuItem = findMenuItemByKeyBinding(appObject, mods, key)
+      assert(menuItem)
       local str = menuItem[titleIndex[1]]
       for i=2,#titleIndex do
         str = str .. sep .. menuItem[titleIndex[i]]
@@ -1187,6 +1189,7 @@ appHotKeyCallbacks = {
         ]])
         if ok and filePath ~= nil then
           local pos = string.find(filePath, ":", 1)
+          assert(pos)
           filePath = string.sub(filePath, pos)
           filePath = string.gsub(filePath, ":", "/")
           return true, filePath
@@ -1239,6 +1242,7 @@ appHotKeyCallbacks = {
         ]])
         if ok and filePath ~= nil then
           local pos = string.find(filePath, ":", 1)
+          assert(pos)
           filePath = string.sub(filePath, pos)
           filePath = string.gsub(filePath, ":", "/")
           return true, filePath
@@ -2620,8 +2624,10 @@ local function registerInAppHotKeys(appName, eventType, appObject)
             local satisfied, result = cond(appObject)
             if satisfied then
               if result ~= nil then -- condition function can pass result to callback function
+                ---@diagnostic disable-next-line: redundant-parameter
                 cfg.fn(result, appObject, appName, eventType)
               else
+                ---@diagnostic disable-next-line: redundant-parameter
                 cfg.fn(appObject, appName, eventType)
               end
             elseif result == COND_FAIL.NO_MENU_ITEM_BY_KEYBINDING
@@ -2779,6 +2785,7 @@ local function registerInWinHotKeys(appObject)
       else  -- now only for `iCopy`
         local cfg = spec
         for _, spec in ipairs(cfg.hotkeys) do
+          ---@diagnostic disable-next-line: redundant-parameter
           if (spec.bindCondition == nil or spec.bindCondition(appObject)) and not spec.notActivateApp then
             local msg = type(spec.message) == 'string' and spec.message or spec.message(appObject)
             if msg ~= nil then

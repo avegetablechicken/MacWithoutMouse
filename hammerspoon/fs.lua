@@ -177,8 +177,11 @@ function handleRequest(method, path, headers, body)
     hs.pasteboard.setContents(body)
     print("[LOG] Copied text to clipboard: " .. body)
   elseif string.find(headers["Content-Type"], "image/") then
-    local tmpname = os.tmpname()
-    local file = io.open(tmpname, "wb")
+    local file
+    while file == nil do
+      tmpname = os.tmpname()
+      file = io.open(tmpname, "wb")
+    end
     file:write(body)
     local image = hs.image.imageFromPath(tmpname)
     os.remove(tmpname)
@@ -211,9 +214,10 @@ function handleRequest(method, path, headers, body)
       end
     end
     local file = io.open(path, "wb")
+    assert(file)
     file:write(body)
     file:close()
-  hs.pasteboard.writeObjects(path)
+    hs.pasteboard.writeObjects(path)
     print("[LOG] Copied file to clipboard: " .. path)
   end
 

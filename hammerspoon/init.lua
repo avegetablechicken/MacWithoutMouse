@@ -48,14 +48,14 @@ local function loadKeybindings(filePath)
             local pos = 0
             local buf = keybindingConfigs
             while true do
-              local oldPos = pos
-              pos = string.find(key, "%.", oldPos + 1)
-              if pos then
-                buf = buf[string.sub(key, oldPos + 1, pos - 1)]
+              local newPos = string.find(key, "%.", pos + 1)
+              if newPos then
+                buf = buf[string.sub(key, pos + 1, newPos - 1)]
               else
-                buf = buf[string.sub(key, oldPos + 1)]
+                buf = buf[string.sub(key, pos + 1)]
                 break
               end
+              pos = newPos
             end
             return buf
           end)
