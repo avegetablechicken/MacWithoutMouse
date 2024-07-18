@@ -236,26 +236,65 @@ local function klatexformulaRender()
   ]])
 end
 
-local function getFinderSidebarItem(idx, appObject)
-  local appUIObj = hs.axuielement.applicationElement(appObject)
-  local outlineUIObj = getAXChildren(appUIObj, "AXWindow", activatedWindowIndex(),
-      "AXSplitGroup", 1, "AXScrollArea", 1, "AXOutline", 1)
-  if outlineUIObj == nil then return false end
-  local cnt = 0
-  for _, rowUIObj in ipairs(outlineUIObj:childrenWithRole("AXRow")) do
-    if rowUIObj.AXChildren == nil then hs.timer.usleep(0.3 * 1000000) end
-    if rowUIObj.AXChildren[1]:childrenWithRole("AXStaticText")[1].AXIdentifier == nil then
-      cnt = cnt + 1
+local function getFinderSidebarItemTitle(idx)
+  return function(appObject)
+    local appUIObj = hs.axuielement.applicationElement(appObject)
+    local outlineUIObj = getAXChildren(appUIObj, "AXWindow", activatedWindowIndex(),
+        "AXSplitGroup", 1, "AXScrollArea", 1, "AXOutline", 1)
+    if outlineUIObj == nil then return false end
+    local header
+    local cnt = 0
+    for _, rowUIObj in ipairs(outlineUIObj:childrenWithRole("AXRow")) do
+      if rowUIObj.AXChildren == nil then hs.timer.usleep(0.3 * 1000000) end
+      if rowUIObj.AXChildren[1]:childrenWithRole("AXStaticText")[1].AXIdentifier ~= nil then
+        header = rowUIObj.AXChildren[1]:childrenWithRole("AXStaticText")[1].AXValue
+      else
+        cnt = cnt + 1
+      end
+      if cnt == idx then
+        local itemTitle = rowUIObj.AXChildren[1]:childrenWithRole("AXStaticText")[1].AXValue
+        return header .. ' > ' .. itemTitle
+      end
     end
-    if cnt == idx then
-      return true, rowUIObj.AXChildren[1]
-    end
+    local suffix
+    if idx == 1 then suffix = "st"
+    elseif idx == 2 then suffix = "nd"
+    elseif idx == 3 then suffix = "rd"
+    else suffix = "th" end
+    return string.format("Open %d%s Sidebar Item", idx, suffix)
   end
-  return false
 end
 
-local function openFinderSidebarItem(cellUIObj)
-  cellUIObj:performAction("AXOpen")
+local function getFinderSidebarItem(idx)
+  return function(appObject)
+    local appUIObj = hs.axuielement.applicationElement(appObject)
+    local outlineUIObj = getAXChildren(appUIObj, "AXWindow", activatedWindowIndex(),
+        "AXSplitGroup", 1, "AXScrollArea", 1, "AXOutline", 1)
+    if outlineUIObj == nil then return false end
+    local cnt = 0
+    for _, rowUIObj in ipairs(outlineUIObj:childrenWithRole("AXRow")) do
+      if rowUIObj.AXChildren == nil then hs.timer.usleep(0.3 * 1000000) end
+      if rowUIObj.AXChildren[1]:childrenWithRole("AXStaticText")[1].AXIdentifier == nil then
+        cnt = cnt + 1
+      end
+      if cnt == idx then
+        return true, rowUIObj.AXChildren[1]
+      end
+    end
+    return false
+  end
+end
+
+local function openFinderSidebarItem(cellUIObj, appObject)
+  local go = localizedString("Go", appObject:bundleID())
+  local itemTitle = cellUIObj:childrenWithRole("AXStaticText")[1].AXValue
+  if appObject:findMenuItem({ go, itemTitle }) ~= nil then
+    appObject:selectMenuItem({ go, itemTitle })
+  else
+    if not leftClickAndRestore(cellUIObj.AXPosition, appObject:name()) then
+      cellUIObj:performAction("AXOpen")
+    end
+  end
 end
 
 local function deleteSelectedMessage(appObject, menuItem, force)
@@ -723,53 +762,53 @@ appHotKeyCallbacks = {
     ["showPrevTab"] = specialCommonHotkeyConfigs["showPrevTab"],
     ["showNextTab"] = specialCommonHotkeyConfigs["showNextTab"],
     ["open1stSidebarItem"] = {
-      message = "Open 1st Sidebar Item",
-      condition = hs.fnutils.partial(getFinderSidebarItem, 1),
+      message = getFinderSidebarItemTitle(1),
+      condition = getFinderSidebarItem(1),
       fn = openFinderSidebarItem
     },
     ["open2ndSidebarItem"] = {
-      message = "Open 2nd Sidebar Item",
-      condition = hs.fnutils.partial(getFinderSidebarItem, 2),
+      message = getFinderSidebarItemTitle(2),
+      condition = getFinderSidebarItem(2),
       fn = openFinderSidebarItem
     },
     ["open3rdSidebarItem"] = {
-      message = "Open 3rd Sidebar Item",
-      condition = hs.fnutils.partial(getFinderSidebarItem, 3),
+      message = getFinderSidebarItemTitle(3),
+      condition = getFinderSidebarItem(3),
       fn = openFinderSidebarItem
     },
     ["open4thSidebarItem"] = {
-      message = "Open 4th Sidebar Item",
-      condition = hs.fnutils.partial(getFinderSidebarItem, 4),
+      message = getFinderSidebarItemTitle(4),
+      condition = getFinderSidebarItem(4),
       fn = openFinderSidebarItem
     },
     ["open5thSidebarItem"] = {
-      message = "Open 5th Sidebar Item",
-      condition = hs.fnutils.partial(getFinderSidebarItem, 5),
+      message = getFinderSidebarItemTitle(5),
+      condition = getFinderSidebarItem(5),
       fn = openFinderSidebarItem
     },
     ["open6thSidebarItem"] = {
-      message = "Open 6th Sidebar Item",
-      condition = hs.fnutils.partial(getFinderSidebarItem, 6),
+      message = getFinderSidebarItemTitle(6),
+      condition = getFinderSidebarItem(6),
       fn = openFinderSidebarItem
     },
     ["open7thSidebarItem"] = {
-      message = "Open 7th Sidebar Item",
-      condition = hs.fnutils.partial(getFinderSidebarItem, 7),
+      message = getFinderSidebarItemTitle(7),
+      condition = getFinderSidebarItem(7),
       fn = openFinderSidebarItem
     },
     ["open8thSidebarItem"] = {
-      message = "Open 8th Sidebar Item",
-      condition = hs.fnutils.partial(getFinderSidebarItem, 8),
+      message = getFinderSidebarItemTitle(8),
+      condition = getFinderSidebarItem(8),
       fn = openFinderSidebarItem
     },
     ["open9thSidebarItem"] = {
-      message = "Open 9th Sidebar Item",
-      condition = hs.fnutils.partial(getFinderSidebarItem, 9),
+      message = getFinderSidebarItemTitle(9),
+      condition = getFinderSidebarItem(9),
       fn = openFinderSidebarItem
     },
     ["open10thSidebarItem"] = {
-      message = "Open 10th Sidebar Item",
-      condition = hs.fnutils.partial(getFinderSidebarItem, 10),
+      message = getFinderSidebarItemTitle(10),
+      condition = getFinderSidebarItem(10),
       fn = openFinderSidebarItem
     }
   },
@@ -3195,9 +3234,7 @@ function registerForOpenSavePanel(appObject)
     local cellUIObj = {}
     for _, rowUIObj in ipairs(outlineUIObj:childrenWithRole("AXRow")) do
       if rowUIObj.AXChildren == nil then hs.timer.usleep(0.3 * 1000000) end
-      if rowUIObj.AXChildren[1]:childrenWithRole("AXStaticText")[1].AXIdentifier == nil then
-        table.insert(cellUIObj, rowUIObj.AXChildren[1])
-      end
+      table.insert(cellUIObj, rowUIObj.AXChildren[1])
     end
     for _, rowUIObj in ipairs(outlineUIObj:childrenWithRole("AXRow")) do
       if rowUIObj.AXChildren[1]:childrenWithRole("AXStaticText")[1].AXValue == downloadsString then
@@ -3220,20 +3257,30 @@ function registerForOpenSavePanel(appObject)
     end
 
     local cellUIObj, openSavePanelActor, message = getUIObj(winUIObj)
-    for i, cell in ipairs(cellUIObj or {}) do
+    local header
+    local i = 1
+    for _, cell in ipairs(cellUIObj or {}) do
       if i > 10 then break end
-      local suffix
-      if i == 1 then suffix = "st"
-      elseif i == 2 then suffix = "nd"
-      elseif i == 3 then suffix = "rd"
-      else suffix = "th" end
-      local hkID = "open" .. tostring(i) .. suffix .. "SidebarItem"
-      local spec = get(keybindingConfigs.hotkeys[bundleID], hkID)
-      local hotkey = bindSpecSuspend(spec, cell:childrenWithRole("AXStaticText")[1].AXValue, function()
-        cell:performAction("AXOpen")
-      end)
-      hotkey.kind = HK.IN_APPWIN
-      table.insert(finderSibebarHotkeys, hotkey)
+      if cell:childrenWithRole("AXStaticText")[1].AXIdentifier ~= nil then
+        header = cell:childrenWithRole("AXStaticText")[1].AXValue
+      else
+        local suffix
+        if i == 1 then suffix = "st"
+        elseif i == 2 then suffix = "nd"
+        elseif i == 3 then suffix = "rd"
+        else suffix = "th" end
+        local hkID = "open" .. tostring(i) .. suffix .. "SidebarItem"
+        local spec = get(keybindingConfigs.hotkeys[bundleID], hkID)
+        if spec ~= nil then
+          local folder = cell:childrenWithRole("AXStaticText")[1].AXValue
+          local hotkey = bindSpecSuspend(spec, header .. ' > ' .. folder, function()
+            cell:performAction("AXOpen")
+          end)
+          hotkey.kind = HK.IN_APPWIN
+          table.insert(finderSibebarHotkeys, hotkey)
+          i = i + 1
+        end
+      end
     end
     if openSavePanelActor == nil then return end
     local spec
