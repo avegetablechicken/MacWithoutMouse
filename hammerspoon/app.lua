@@ -3056,9 +3056,43 @@ local function registerWinFiltersForDaemonApp(appObject, appConfig)
   end
 end
 
+
+local processesOnLaunch = {}
+local processesOnLaunchMonitored = {}
+local hasLaunched = {}
+local extraAppLaunchWatcher
+local function execOnLaunch(bundleID, action)
+  if processesOnLaunch[bundleID] == nil then
+    processesOnLaunch[bundleID] = {}
+  end
+  table.insert(processesOnLaunch[bundleID], action)
+end
+
+local processesOnActivated = {}
+local function execOnActivated(bundleID, action)
+  if processesOnActivated[bundleID] == nil then
+    processesOnActivated[bundleID] = {}
+  end
+  table.insert(processesOnActivated[bundleID], action)
+end
+
+local observersStopOnQuit = {}
+local function stopOnQuit(bundleID, observer, action)
+  if observersStopOnQuit[bundleID] == nil then
+    observersStopOnQuit[bundleID] = {}
+  end
+  table.insert(observersStopOnQuit[bundleID], { observer, action })
+end
+
 -- register hotkeys for background apps
-for bid, _ in pairs(appHotKeyCallbacks) do
+for bid, appConfig in pairs(appHotKeyCallbacks) do
   registerRunningAppHotKeys(bid)
+  for _, spec in pairs(appConfig) do
+    if spec.background == true and spec.persist ~= true then
+      execOnLaunch(bid, hs.fnutils.partial(registerRunningAppHotKeys, bid))
+      break
+    end
+  end
 end
 
 -- register hotkeys for active app
@@ -3089,6 +3123,14 @@ for bid, appConfig in pairs(appHotKeyCallbacks) do
   local appObject = findApplication(bid)
   if appObject ~= nil then
     registerWinFiltersForDaemonApp(appObject, appConfig)
+  else
+    for _, spec in pairs(appConfig) do
+      if spec.notActivateApp then
+        execOnLaunch(bid, function(appObject)
+          registerWinFiltersForDaemonApp(appObject, appConfig)
+        end)
+      end
+    end
   end
 end
 
@@ -3579,6 +3621,8 @@ local function watchMenuBarItems(appObject)
     appsMenuBarItemsWatchers[appObject:bundleID()][2] = menuBarItemTitlesString
   end
   appsMenuBarItemsWatchers[appObject:bundleID()][1]:start()
+  stopOnQuit(appObject:bundleID(), appsMenuBarItemsWatchers[appObject:bundleID()][1],
+      function(bundleID) appsMenuBarItemsWatchers[bundleID] = nil end)
 end
 
 local appsMayChangeMenuBar = get(applicationConfigs.menuBarItemsMayChange, 'window') or {}
@@ -3727,6 +3771,8 @@ local function registerPseudoWindowDestroyWatcher(appObject, roles, windowFilter
   observer:callback(observerCallback)
   observer:start()
   appPseudoWindowObservers[appObject:bundleID()] = observer
+  stopOnQuit(appObject:bundleID(), observer,
+      function(bundleID) appPseudoWindowObservers[bundleID] = nil end)
 end
 
 local appsAutoHideWithNoWindowsLoaded = applicationConfigs.autoHideWithNoWindow
@@ -3782,6 +3828,14 @@ for bundleID, cfg in pairs(appsAutoHideWithNoWindows) do
   local appObject = findApplication(bundleID)
   if appObject ~= nil then
     windowFilterAutoHide:setAppFilter(appObject:name(), cfg)
+  else
+    execOnLaunch(bundleID, function(appObject)
+      windowFilterAutoHide:setAppFilter(appObject:name(), cfg)
+      local rules = appsAutoHideWithNoPseudoWindows[bundleID]
+      if rules then
+        registerPseudoWindowDestroyWatcher(appObject, rules, cfg, false)
+      end
+    end)
   end
 end
 windowFilterAutoHide:subscribe(hs.window.filter.windowDestroyed,
@@ -3795,6 +3849,14 @@ for bundleID, cfg in pairs(appsAutoQuitWithNoWindows) do
   local appObject = findApplication(bundleID)
   if appObject ~= nil then
     windowFilterAutoQuit:setAppFilter(appObject:name(), cfg)
+  else
+    execOnLaunch(bundleID, function(appObject)
+      windowFilterAutoQuit:setAppFilter(appObject:name(), cfg)
+      local rules = appsAutoQuitWithNoPseudoWindows[bundleID]
+      if rules then
+        registerPseudoWindowDestroyWatcher(appObject, rules, cfg, true)
+      end
+    end)
   end
 end
 windowFilterAutoQuit:subscribe(hs.window.filter.windowDestroyed,
@@ -3881,11 +3943,16 @@ if mountainDuckConfig ~= nil and mountainDuckConfig.connections ~= nil then
       end
     end
   end
-end
-local mountainDuckObject = findApplication("io.mountainduck")
-if mountainDuckConfig ~= nil and mountainDuckObject ~= nil then
-  for _, connection in ipairs(mountainDuckConfig.connections) do
-    connectMountainDuckEntries(mountainDuckObject, connection)
+  execOnLaunch("io.mountainduck", function(appObject)
+    for _, connection in ipairs(mountainDuckConfig.connections) do
+      connectMountainDuckEntries(appObject, connection)
+    end
+  end)
+  local mountainDuckObject = findApplication("io.mountainduck")
+  if mountainDuckObject ~= nil then
+    for _, connection in ipairs(mountainDuckConfig.connections) do
+      connectMountainDuckEntries(mountainDuckObject, connection)
+    end
   end
 end
 
@@ -3896,7 +3963,7 @@ local function watchForMathpixPopoverWindow(appObject)
     appUIObj,
     hs.axuielement.observer.notifications.focusedUIElementChanged
   )
-  mathpixObserverCallback = function()
+  local mathpixObserverCallback = function()
     appUIObj:elementSearch(function (msg, results, count)
       if count > 0 then
         if mathpixPopoverHide ~= nil then
@@ -3905,8 +3972,10 @@ local function watchForMathpixPopoverWindow(appObject)
         end
         mathpixPopoverHide = bindSuspend("", "Escape", "Hide Popover", function()
           clickRightMenuBarItem(appObject:bundleID())
-          mathpixPopoverHide:delete()
-          mathpixPopoverHide = nil
+          if mathpixPopoverHide ~= nil then
+            mathpixPopoverHide:delete()
+            mathpixPopoverHide = nil
+          end
         end)
         mathpixPopoverObserver = hs.axuielement.observer.new(appObject:pid())
         mathpixPopoverObserver:addWatcher(
@@ -3931,7 +4000,9 @@ local function watchForMathpixPopoverWindow(appObject)
   end
   mathpixObserver:callback(mathpixObserverCallback)
   mathpixObserver:start()
+  stopOnQuit(appObject:bundleID(), mathpixObserver)
 end
+execOnLaunch("com.mathpix.snipping-tool-noappstore", watchForMathpixPopoverWindow)
 local mathpixApp = findApplication("com.mathpix.snipping-tool-noappstore")
 if mathpixApp ~= nil then
   watchForMathpixPopoverWindow(mathpixApp)
@@ -3942,12 +4013,12 @@ local function watchForLemonMonitorWindow(appObject)
       or get(appHotKeyCallbacks, "com.tencent.LemonMonitor", "closeWindow")
   if spec == nil then return end
   local appUIObj = hs.axuielement.applicationElement(appObject)
-  lemonMonitorObserver = hs.axuielement.observer.new(appObject:pid())
+  local lemonMonitorObserver = hs.axuielement.observer.new(appObject:pid())
   lemonMonitorObserver:addWatcher(
     appUIObj,
     hs.axuielement.observer.notifications.focusedWindowChanged
   )
-  lemonMonitorObserverCallback = function(observer, element)
+  local lemonMonitorObserverCallback = function(observer, element)
     if element.AXRole == "AXWindow" then
       if lemonMonitorClose ~= nil then
         lemonMonitorClose:delete()
@@ -3977,7 +4048,9 @@ local function watchForLemonMonitorWindow(appObject)
   end
   lemonMonitorObserver:callback(lemonMonitorObserverCallback)
   lemonMonitorObserver:start()
+  stopOnQuit(appObject:bundleID(), lemonMonitorObserver)
 end
+execOnLaunch("com.tencent.LemonMonitor", watchForLemonMonitorWindow)
 local lemonMonitorApp = findApplication("com.tencent.LemonMonitor")
 if lemonMonitorApp ~= nil then
   watchForLemonMonitorWindow(lemonMonitorApp)
@@ -4258,38 +4331,11 @@ function app_applicationCallback(appName, eventType, appObject)
   if eventType == hs.application.watcher.launched then
     if bundleID == "com.apple.finder" then
       selectMenuItem(appObject, { "File", "New Finder Window" })
-    elseif bundleID == "com.mathpix.snipping-tool-noappstore" then
-      watchForMathpixPopoverWindow(appObject)
-    elseif bundleID == "com.tencent.LemonMonitor" then
-      watchForLemonMonitorWindow(appObject)
-    elseif bundleID == "io.mountainduck" then
-      if mountainDuckConfig ~= nil then
-        for _, connection in ipairs(mountainDuckConfig.connections) do
-          connectMountainDuckEntries(appObject, connection)
-        end
-      end
     end
-    if bundleID and appsAutoHideWithNoWindows[bundleID] then
-      local cfg = appsAutoHideWithNoWindows[bundleID]
-      windowFilterAutoHide:setAppFilter(appName, cfg)
-      local rules = appsAutoHideWithNoPseudoWindows[bundleID]
-      if rules then
-        registerPseudoWindowDestroyWatcher(appObject, rules, cfg, false)
-      end
-    elseif bundleID and appsAutoQuitWithNoWindows[bundleID] then
-      local cfg = appsAutoQuitWithNoWindows[bundleID]
-      windowFilterAutoQuit:setAppFilter(appName, cfg)
-      local rules = appsAutoQuitWithNoPseudoWindows[bundleID]
-      if rules then
-        registerPseudoWindowDestroyWatcher(appObject, rules, cfg, true)
-      end
-    else
+    for _, proc in ipairs(processesOnLaunch[bundleID] or {}) do
+      proc(appObject)
     end
     altMenuBarItemAfterLaunch(appObject)
-    registerRunningAppHotKeys(bundleID, appObject)
-    if bundleID and appHotKeyCallbacks[bundleID] ~= nil then
-      registerWinFiltersForDaemonApp(appObject, appHotKeyCallbacks[bundleID])
-    end
   elseif eventType == hs.application.watcher.activated then
     windowCreatedSince = {}
     if bundleID == "cn.better365.iShotProHelper" then
@@ -4372,21 +4418,14 @@ function app_applicationCallback(appName, eventType, appObject)
         end
       end
     else
-      if mathpixObserver ~= nil then
-        if findApplication("com.mathpix.snipping-tool-noappstore") == nil then
-          mathpixObserver:stop()
-          mathpixObserver = nil
-        end
-      elseif lemonMonitorObserver ~= nil then
-        if findApplication("com.tencent.LemonMonitor") then
-          lemonMonitorObserver:stop()
-          lemonMonitorObserver = nil
-        end
-      end
-      for bid, observer in pairs(appPseudoWindowObservers) do
+      for bid, obs in pairs(observersStopOnQuit) do
         if findApplication(bid) == nil then
-          observer:stop()
-          appPseudoWindowObservers[bid] = nil
+          for _, ob in ipairs(obs) do
+            local observer, func = ob[1], ob[2]
+            observer:stop()
+            if func ~= nil then func(bid, observer) end
+          end
+          observersStopOnQuit[bid] = nil
         end
       end
       for bid, _ in pairs(runningAppHotKeys) do
@@ -4407,12 +4446,6 @@ function app_applicationCallback(appName, eventType, appObject)
       for bid, _ in pairs(appLocales) do
         if findApplication(bid) == nil then
           appLocales[bid] = nil
-        end
-      end
-      for bid, _ in pairs(appsMenuBarItemsWatchers) do
-        if findApplication(bid) == nil then
-          appsMenuBarItemsWatchers[bid][1]:stop()
-          appsMenuBarItemsWatchers[bid] = nil
         end
       end
     end
