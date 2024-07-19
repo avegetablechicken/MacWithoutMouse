@@ -3465,7 +3465,7 @@ function altMenuBarItem(appObject)
     local menuItems = getMenuItems(appObject)
     if menuItems == nil then return end
     menuBarItemTitles = hs.fnutils.map(menuItems, function(item)
-      return item.AXTitle
+      return item.AXChildren ~= nil and item.AXTitle or nil
     end)
     menuBarItemTitles = hs.fnutils.filter(menuBarItemTitles, function(item)
       return item ~= nil and item ~= ""
