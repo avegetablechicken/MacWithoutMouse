@@ -1725,9 +1725,6 @@ function controlCenterLocalized(panel, key)
   if key == nil then
     key = panel
   end
-  if panel == "Control Center" then
-    return findApplication("com.apple.controlcenter"):name()
-  end
   if panel == "Users" and key == "Users" then
     key = "User"
   end

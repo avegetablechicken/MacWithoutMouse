@@ -932,7 +932,7 @@ bindControlCenter(menubarHK["showNotificationCenter"], findApplication("com.appl
     function() hs.eventtap.keyStroke("fn", "N") end)
 
 -- toggle show `Control Center`
-bindControlCenter(menubarHK["showControlCenter"], controlCenterLocalized("Control Center"),
+bindControlCenter(menubarHK["showControlCenter"], findApplication("com.apple.controlcenter"):name(),
     function() hs.eventtap.keyStroke("fn", "C") end)
 
 local controlCenterIdentifiers = hs.json.read("static/controlcenter-identifies.json")
@@ -2085,7 +2085,7 @@ function registerControlCenterHotKeys(panel)
 end
 
 local controlCenterPanelConfigs = keybindingConfigs.hotkeys.ControlCenterAppKeys
-local localizedControlCenter = controlCenterLocalized("Control Center")
+local localizedControlCenter = findApplication("com.apple.controlcenter"):name()
 for panel, spec in pairs(controlCenterPanelConfigs) do
   local localizedPanel = controlCenterLocalized(panel)
   bindControlCenter(spec, localizedControlCenter .. " > " .. localizedPanel,
