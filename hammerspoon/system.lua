@@ -960,10 +960,6 @@ local function popupControlCenterSubPanel(panel, allowReentry)
   local osVersion = getOSVersion()
   local pane = osVersion < OS.Ventura and "window 1" or "group 1 of window 1"
 
-  local function mayLocalize(value)
-    return controlCenterLocalized("Now Playing", value)
-  end
-
   local enter = nil
   local enterTemplate = [[
     set panelFound to false
@@ -1083,6 +1079,7 @@ local function popupControlCenterSubPanel(panel, allowReentry)
       already = string.format(alreadyTemplate, "static text", controlCenterMenuBarItemIdentifiers[panel])
     elseif panel == "Now Playing" then
       if osVersion < OS.Ventura then
+        local mayLocalize = hs.fnutils.partial(controlCenterLocalized, "Now Playing")
         already = [[
           if (exists button "]] .. mayLocalize("rewind") .. [[" of pane) or  ¬
               (exists button "]] .. mayLocalize("previous") .. [[" of pane) or ¬
