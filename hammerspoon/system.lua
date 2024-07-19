@@ -735,11 +735,22 @@ function registerProxySettingsEntry(menu)
     title = "Proxy Settings",
     fn = function()
       local osVersion = getOSVersion()
-      local script
+      local script = [[
+        tell application id "com.apple.systempreferences" to activate
+        tell application "System Events"
+          tell ]] .. aWinFor("com.apple.systempreferences") .. [[
+            if sheet 1 exists then
+              key code 53
+              repeat until not (sheet 1 exists)
+                delay 0.05
+              end repeat
+            end if
+          end tell
+        end tell
+      ]]
       if osVersion < OS.Ventura then
-        script = [[
+        script = script .. [[
           tell application id "com.apple.systempreferences"
-            activate
             set current pane to pane "com.apple.preference.network"
             repeat until anchor "Proxies" of current pane exists
               delay 0.1
@@ -761,21 +772,11 @@ function registerProxySettingsEntry(menu)
           end tell
         ]]
       else
-        script = [[
-          tell application id "com.apple.systempreferences" to activate
-          tell application "System Events"
-            tell ]] .. aWinFor("com.apple.systempreferences") .. [[
-              if sheet 1 exists then
-                key code 53
-                repeat until not (sheet 1 exists)
-                  delay 0.05
-                end repeat
-              end if
-            end tell
-          end tell
+        script = script .. [[
           tell application id "com.apple.systempreferences"
             reveal anchor "Proxies" of pane id "com.apple.Network-Settings.extension"
           end tell
+
           delay 1
           tell application "System Events"
             tell ]] .. aWinFor("com.apple.systempreferences") .. [[
