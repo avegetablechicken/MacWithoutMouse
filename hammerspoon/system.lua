@@ -1778,7 +1778,7 @@ function registerControlCenterHotKeys(panel)
                 optionList = "group 1 of group 3 of group 1 of group 2 of group 1 of exp"
               end
               local aWin = activatedWindowIndex()
-              hs.osascript.applescript([[
+              local ok = hs.osascript.applescript([[
                 tell application id "]] .. bundleID .. [["
                   set tabCount to count of tabs of window ]] .. aWin .. [[
 
@@ -1839,6 +1839,56 @@ function registerControlCenterHotKeys(panel)
                   perform action 2 of menu item "]] .. darkMode .. [[" of menu 1 of g
                 end tell
               ]])
+              if ok then
+                local appObject = findApplication(bundleID)
+                relaunchHotkey = bindSuspend("⌘", "Return", "Relaunch",
+                    inAppHotKeysWrapper(appObject, "⌘", "Return", function()
+                      hs.osascript.applescript([[
+                        tell application "System Events"
+                          set win to ]] .. aWinFor(bundleID) .. [[
+                          set exp to (first UI element whose value of attribute "AXTitle" is not "") ¬
+                              of group 1 of group 1 of group 1 of group 1 of win
+                          set bt to button 1 of group 2 of last group of group 4 of exp
+                          perform action 1 of bt
+                        end tell
+                      ]])
+                      if relaunchHotkey ~= nil then
+                        relaunchHotkey:delete()
+                        relaunchHotkey = nil
+                      end
+                      if relaunchObserver ~= nil then
+                        relaunchObserver:stop()
+                        relaunchObserver = nil
+                      end
+                    end))
+                relaunchHotkey.kind = HK.IN_APP
+                local appUIObj = hs.axuielement.applicationElement(appObject)
+                local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
+                relaunchObserver = hs.axuielement.observer.new(appObject:pid())
+                relaunchObserver:addWatcher(
+                  appUIObj, hs.axuielement.observer.notifications.focusedUIElementChanged)
+                relaunchObserver:addWatcher(
+                  winUIObj, hs.axuielement.observer.notifications.titleChanged)
+                relaunchObserver:addWatcher(
+                  appUIObj, hs.axuielement.observer.notifications.applicationDeactivated
+                )
+                relaunchObserver:callback(function()
+                  local frontWinBundleID = hs.window.frontmostWindow():application():bundleID()
+                  local ok, url = hs.osascript.applescript(
+                      [[tell application id "]] .. bundleID .. [[" to get URL of active tab of window ]] .. aWin)
+                  if frontWinBundleID ~= bundleID or not ok or url ~= scheme .. "://flags/#enable-force-dark" then
+                    if relaunchHotkey ~= nil then
+                      relaunchHotkey:delete()
+                      relaunchHotkey = nil
+                    end
+                    if relaunchObserver ~= nil then
+                      relaunchObserver:stop()
+                      relaunchObserver = nil
+                    end
+                  end
+                end)
+                relaunchObserver:start()
+              end
             end
           end
         end)

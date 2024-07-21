@@ -2630,7 +2630,7 @@ function(winObj, appName, eventType)
 end)
 
 -- key strokes must be sent to frontmost window instead of frontmost app
-local function inAppHotKeysWrapper(appObject, mods, key, func)
+function inAppHotKeysWrapper(appObject, mods, key, func)
   if func == nil then
     func = key key = mods.key mods = mods.mods
   end
@@ -2777,7 +2777,7 @@ end
 -- each window filter will be tested until one matched target window
 local inWinCallbackChain = {}
 inWinHotkeyInfoChain = {}
-local function inWinHotKeysWrapper(appObject, filter, mods, key, message, fn)
+function inWinHotKeysWrapper(appObject, filter, mods, key, message, fn)
   if fn == nil then
     fn = message message = key key = mods.key mods = mods.mods
   end
