@@ -241,7 +241,7 @@ local function getFinderSidebarItemTitle(idx)
     local appUIObj = hs.axuielement.applicationElement(appObject)
     local outlineUIObj = getAXChildren(appUIObj, "AXWindow", activatedWindowIndex(),
         "AXSplitGroup", 1, "AXScrollArea", 1, "AXOutline", 1)
-    if outlineUIObj == nil then return false end
+    if outlineUIObj == nil then return end
     local header
     local cnt = 0
     for _, rowUIObj in ipairs(outlineUIObj:childrenWithRole("AXRow")) do
@@ -256,12 +256,6 @@ local function getFinderSidebarItemTitle(idx)
         end
       end
     end
-    local suffix
-    if idx == 1 then suffix = "st"
-    elseif idx == 2 then suffix = "nd"
-    elseif idx == 3 then suffix = "rd"
-    else suffix = "th" end
-    return string.format("Open %d%s Sidebar Item", idx, suffix)
   end
 end
 
