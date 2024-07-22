@@ -1016,7 +1016,7 @@
         "key": "S"
       },
       "insertEquation": {
-        "mods": ["option", "command"],
+        "mods": ["shift", "command"],
         "key": "E"
       },
       "openFileLocation": {
@@ -1054,7 +1054,7 @@
         "key": "P"
       },
       "insertEquation": {
-        "mods": ["option", "command"],
+        "mods": ["shift", "command"],
         "key": "E"
       },
       "revealInFinder": {
@@ -1080,7 +1080,7 @@
         "key": "V"
       },
       "insertEquation": {
-        "mods": ["option", "command"],
+        "mods": ["shift", "command"],
         "key": "E"
       },
       "revealInFinder": {
@@ -1094,7 +1094,7 @@
         "key": "E"
       },
       "insertEquation": {
-        "mods": ["option", "command"],
+        "mods": ["shift", "command"],
         "key": "E"
       },
       "openRecent": {
