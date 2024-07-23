@@ -619,10 +619,11 @@ end
 
 local windowSwitcherWindowIdx = nil
 local windowSwitcherWindowNumber = nil
-local anotherLastWindowHotkey = nil
+local nextWindowHotkey, lastWindowHotkey
+local anotherLastWindowHotkey
 local anotherLastWindowModifierTap
 
-if misc["switchWindow"] ~= nil and findApplication("com.lwouis.alt-tab-macos") == nil then
+local function registerWindowSwitcher()
   anotherLastWindowHotkey =
   newWindowMisc(misc["switchWindowBackTriggered"], 'Previous Window',
   function()
@@ -676,7 +677,7 @@ if misc["switchWindow"] ~= nil and findApplication("com.lwouis.alt-tab-macos") =
     return false
   end)
 
-  bindWindowMisc(misc["switchWindow"], 'Next Window',
+  nextWindowHotkey = bindWindowMisc(misc["switchWindow"], 'Next Window',
   function()
     if not anotherLastWindowModifierTap:isEnabled() then
       hotkeyEnabledByWindowSwitcher = true
@@ -720,7 +721,7 @@ if misc["switchWindow"] ~= nil and findApplication("com.lwouis.alt-tab-macos") =
   end,
   { fn = enabledByWindowSwitcherFunc, or_ = true })
 
-  bindWindowMisc(misc["switchWindowBack"], 'Previous Window',
+  lastWindowHotkey = bindWindowMisc(misc["switchWindowBack"], 'Previous Window',
   function()
     if not anotherLastWindowModifierTap:isEnabled() then
       hotkeyEnabledByWindowSwitcher = true
@@ -761,6 +762,43 @@ if misc["switchWindow"] ~= nil and findApplication("com.lwouis.alt-tab-macos") =
     end
   end,
   { fn = enabledByWindowSwitcherFunc, or_ = true })
+end
+
+local function unregisterWindowSwitcher()
+  if nextWindowHotkey ~= nil then
+    nextWindowHotkey:delete()
+    nextWindowHotkey = nil
+  end
+  if lastWindowHotkey ~= nil then
+    lastWindowHotkey:delete()
+    lastWindowHotkey = nil
+  end
+  if anotherLastWindowHotkey ~= nil then
+    anotherLastWindowHotkey:delete()
+    anotherLastWindowHotkey = nil
+  end
+  windowSwitcherWindowIdx = nil
+  windowSwitcherWindowNumber = nil
+  switcher = nil
+  if anotherLastWindowModifierTap ~= nil then
+    anotherLastWindowModifierTap:stop()
+    anotherLastWindowModifierTap = nil
+  end
+end
+
+if misc["switchWindow"] ~= nil and findApplication("com.lwouis.alt-tab-macos") == nil then
+  registerWindowSwitcher()
+end
+
+if misc["switchWindow"] ~= nil then
+  AltTabWatcher = hs.timer.new(1, function()
+    local appObject = findApplication("com.lwouis.alt-tab-macos")
+    if appObject == nil and nextWindowHotkey == nil then
+      registerWindowSwitcher()
+    elseif appObject ~= nil and nextWindowHotkey ~= nil then
+      unregisterWindowSwitcher()
+    end
+  end):start()
 end
 
 -- visible windows of all browsers on all user spaces
