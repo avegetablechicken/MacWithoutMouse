@@ -1785,7 +1785,7 @@ appHotKeyCallbacks = {
             end
           end
           for i = 1, maxCnt do
-            local hotkey = bindSuspend("", i == 10 and "0" or tostring(i), "Click " .. itemNames[i], function()
+            local hotkey = appBindSuspend(appObject, "", i == 10 and "0" or tostring(i), "Click " .. itemNames[i], function()
               leftClickAndRestore({ positions[i][1] + 10, positions[i][2] + 10 })
             end)
             hotkey.kind = HK.MENUBAR
@@ -1793,7 +1793,7 @@ appHotKeyCallbacks = {
             table.insert(bartenderBarHotkeys, hotkey)
           end
           for i = 1, maxCnt do
-            local hotkey = bindSuspend("⌥", i == 10 and "0" or tostring(i), "Right-click " .. itemNames[i], function()
+            local hotkey = appBindSuspend(appObject, "⌥", i == 10 and "0" or tostring(i), "Right-click " .. itemNames[i], function()
               rightClickAndRestore({ positions[i][1] + 10, positions[i][2] + 10 })
             end)
             hotkey.kind = HK.MENUBAR
@@ -2948,8 +2948,8 @@ local function inWinOfUnactivatedAppWatcherEnableCallback(bid, filter, winObj, a
           if (spec.bindCondition == nil or spec.bindCondition(winObj:application())) then
             local msg = type(spec.message) == 'string' and spec.message or spec.message(winObj:application())
             if msg ~= nil then
-              local hotkey = bindSuspend(spec.mods, spec.key, msg,
-                                        spec.fn, nil, spec.repeatable and spec.fn or nil)
+              local hotkey = appBindSpecSuspend(appConfigs, spec, msg,
+                                                spec.fn, nil, spec.repeatable and spec.fn or nil)
               hotkey.kind = HK.IN_WIN
               hotkey.notActivateApp = cfg.notActivateApp
               table.insert(inWinOfUnactivatedAppHotKeys[bid], hotkey)
@@ -3232,7 +3232,7 @@ local function WPSCloseDialog(winUIObj)
       for hkID, btnName in pairs(btnNames) do
         if button.AXTitle == btnName then
           local spec = get(KeybindingConfigs.hotkeys, bundleID, hkID) or appConfig[hkID]
-          local hotkey = bindSpecSuspend(spec, btnName, function()
+          local hotkey = appBindSpecSuspend(findApplication(bundleID), spec, btnName, function()
             local action = button:actionNames()[1]
             button:performAction(action)
           end)
@@ -3327,7 +3327,7 @@ local function registerForOpenSavePanel(appObject)
         local spec = get(KeybindingConfigs.hotkeys[bundleID], hkID)
         if spec ~= nil then
           local folder = cell:childrenWithRole("AXStaticText")[1].AXValue
-          local hotkey = bindSpecSuspend(spec, header .. ' > ' .. folder, function()
+          local hotkey = appBindSpecSuspend(appObject, spec, header .. ' > ' .. folder, function()
             cell:performAction("AXOpen")
           end)
           hotkey.kind = HK.IN_APPWIN
@@ -3344,7 +3344,7 @@ local function registerForOpenSavePanel(appObject)
       spec = get(KeybindingConfigs.hotkeys[bundleID], "goToDownloads")
     end
     if spec ~= nil then
-      hotkey = bindSpecSuspend(spec, message, function()
+      hotkey = appBindSpecSuspend(appObject, spec, message, function()
         local action = openSavePanelActor:actionNames()[1]
         openSavePanelActor:performAction(action)
       end)
@@ -3930,7 +3930,7 @@ local function watchForMathpixPopoverWindow(appObject)
     appUIObj:elementSearch(function(msg, results, count)
       if count > 0 then
         local hotkey, closeObserver
-        hotkey = bindSuspend("", "Escape", "Hide Popover", function()
+        hotkey = appBindSuspend(appObject, "", "Escape", "Hide Popover", function()
           clickRightMenuBarItem(appObject:bundleID())
           if hotkey ~= nil then
             hotkey:delete()
@@ -3985,7 +3985,7 @@ local function watchForLemonMonitorWindow(appObject)
   local callback = function(_, element)
     if element.AXRole == "AXWindow" then
       local hotkey, closeObserver
-      hotkey = bindSpecSuspend(spec, spec.message or "Close Window", function()
+      hotkey = appBindSpecSuspend(appObject, spec, spec.message or "Close Window", function()
         leftClickAndRestore({ x = element.AXPosition.x + element.AXSize.w/2,
                               y = element.AXPosition.y })
         if hotkey ~= nil then
