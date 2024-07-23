@@ -911,6 +911,8 @@ local function toggleSystemProxy(networkservice)
     end
 end
 
+-- assume `Control Center` window is always frontmost
+-- so not necessary to call "inAppHotKeysWrapper"
 local function newControlCenter(...)
   local hotkey = newSuspend(...)
   if hotkey == nil then return nil end
