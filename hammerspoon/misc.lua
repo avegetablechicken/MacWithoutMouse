@@ -6,7 +6,7 @@ local shortcutsLaunched = findApplication("com.apple.shortcuts") ~= nil
 
 local ok = hs.osascript.applescript([[tell application "Shortcuts" to get shortcut "Paste to PC"]])
 if ok then
-  local hotkey = bindSpecSuspend(misc["copyToPC"], "Copy to PC",
+  local hotkey = bindHotkeySpec(misc["copyToPC"], "Copy to PC",
   function()
     hs.eventtap.keyStroke("⌘", "C")
     local task = hs.task.new("/usr/bin/osascript", nil,
@@ -29,7 +29,7 @@ end
 -- call `ShortCuts` to paste from PC
 ok = hs.osascript.applescript([[tell application "Shortcuts" to get shortcut "Copy from PC"]])
 if ok then
-  local hotkey = bindSpecSuspend(misc["pasteFromPC"], "Paste from PC",
+  local hotkey = bindHotkeySpec(misc["pasteFromPC"], "Paste from PC",
   function()
     local task = hs.task.new("/usr/bin/osascript",
         function(exitCode) if exitCode == 0 then hs.eventtap.keyStroke("⌘", "V") end end,
@@ -927,7 +927,7 @@ end
 local doubleTapModal = require('modal/doubletap')
 doubleTapModal.install(HYPER)
 table.insert(DoubleTapModalList, doubleTapModal)
-doubleTapModal.bindSuspend("Show Keybindings",
+doubleTapModal.bind("Show Keybindings",
 function()
   local hkKeybindingsLastModifier, hkKeybindingsWatcher, hkHideKeybindingsWatcher
   local cancelFunc = function()
@@ -1047,7 +1047,7 @@ local function getCurrentApplication()
 end
 
 -- show info of current window
-bindSpecSuspend(misc["showCurrentWindowInfo"], "Show Info of Current Window", function()
+bindHotkeySpec(misc["showCurrentWindowInfo"], "Show Info of Current Window", function()
   local win = hs.window.frontmostWindow()
   if not win then return false end
   local title = win:title()
@@ -1071,7 +1071,7 @@ bindSpecSuspend(misc["showCurrentWindowInfo"], "Show Info of Current Window", fu
     appName, bundleID))
 end)
 
-local searchHotkey = bindSpecSuspend(misc["searchHotkeys"], "Search Hotkey", function()
+local searchHotkey = bindHotkeySpec(misc["searchHotkeys"], "Search Hotkey", function()
   local allKeys = {}
   local enabledAltMenuHotkeys = {}
 

@@ -1,5 +1,5 @@
 local function newWindow(...)
-  local hotkey = newSpecSuspend(...)
+  local hotkey = newHotkeySpec(...)
   if hotkey == nil then return nil end
   hotkey.kind = HK.WIN_OP
   hotkey.subkind = HK.WIN_OP_.SPACE_SCREEN
@@ -7,7 +7,7 @@ local function newWindow(...)
 end
 
 local function bindWindow(...)
-  local hotkey = bindSpecSuspend(...)
+  local hotkey = bindHotkeySpec(...)
   if hotkey == nil then return nil end
   hotkey.kind = HK.WIN_OP
   hotkey.subkind = HK.WIN_OP_.SPACE_SCREEN
@@ -96,10 +96,10 @@ end
 -- move cursor to next monitor
 local adjacentMonitorHotkeys = {}
 local image = hs.image.imageFromPath("static/display.png")
-table.insert(adjacentMonitorHotkeys, newSpecSuspend(ssHK["focusNextScreen"], "Focus on Next Monitor",
+table.insert(adjacentMonitorHotkeys, newHotkeySpec(ssHK["focusNextScreen"], "Focus on Next Monitor",
     hs.fnutils.partial(checkAndMoveCursurToMonitor, "r")))
 -- move cursor to previous monitor
-table.insert(adjacentMonitorHotkeys, newSpecSuspend(ssHK["focusPrevScreen"], "Focus on Previous Monitor",
+table.insert(adjacentMonitorHotkeys, newHotkeySpec(ssHK["focusPrevScreen"], "Focus on Previous Monitor",
     hs.fnutils.partial(checkAndMoveCursurToMonitor, "l")))
 
 -- move window to next monitor
@@ -150,7 +150,7 @@ local function registerMonitorHotkeys()
           end
         end)
     table.insert(moveToScreenHotkeys, hotkey)
-    hotkey = bindSpecSuspend(ssHK["focusScreen" .. i], "Focus on Monitor " .. i,
+    hotkey = bindHotkeySpec(ssHK["focusScreen" .. i], "Focus on Monitor " .. i,
         function()
           local win = hs.window.focusedWindow()
           if win:screen():id() ~= hs.screen.allScreens()[i]:id() then

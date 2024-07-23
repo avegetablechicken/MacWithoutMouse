@@ -878,7 +878,7 @@ networkInterfaceWatcher:start()
 
 local menubarHK = KeybindingConfigs.hotkeys.global
 
-local proxyHotkey = bindSpecSuspend(menubarHK["showProxyMenu"], "Show Proxy Menu",
+local proxyHotkey = bindHotkeySpec(menubarHK["showProxyMenu"], "Show Proxy Menu",
 function()
   if findApplication("com.surteesstudios.Bartender") ~= nil then
     hs.osascript.applescript([[
@@ -929,7 +929,7 @@ end
 -- assume `Control Center` window is always frontmost
 -- so not necessary to call "inAppHotKeysWrapper"
 local function newControlCenter(...)
-  local hotkey = newSuspend(...)
+  local hotkey = newHotkey(...)
   if hotkey == nil then return nil end
   hotkey.kind = HK.MENUBAR
   hotkey.subkind = HK.MENUBAR_.CONTROL_CENTER
@@ -937,7 +937,7 @@ local function newControlCenter(...)
 end
 
 local function bindControlCenter(...)
-  local hotkey = bindSpecSuspend(...)
+  local hotkey = bindHotkeySpec(...)
   if hotkey == nil then return nil end
   hotkey.kind = HK.MENUBAR
   hotkey.subkind = HK.MENUBAR_.CONTROL_CENTER
@@ -1863,7 +1863,7 @@ function registerControlCenterHotKeys(panel)
               if ok then
                 local appObject = findApplication(bundleID)
                 local hotkey, observer
-                hotkey = AppBindSuspend(appObject, "⌘", "Return", "Relaunch", function()
+                hotkey = AppBind(appObject, "⌘", "Return", "Relaunch", function()
                   hs.osascript.applescript([[
                     tell application "System Events"
                       set win to ]] .. aWinFor(bundleID) .. [[

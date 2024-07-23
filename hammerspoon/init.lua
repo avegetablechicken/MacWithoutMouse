@@ -135,7 +135,7 @@ local function getFunc(f)
 end
 
 ---@diagnostic disable-next-line: lowercase-global
-function newHotkey(mods, key, message, pressedfn, releasedfn, repeatfn)
+function newHotkeyImpl(mods, key, message, pressedfn, releasedfn, repeatfn)
   if message == nil or getFunc(message) then
     repeatfn=releasedfn releasedfn=pressedfn pressedfn=message message=nil -- shift down arguments
   end
@@ -150,7 +150,7 @@ function newHotkey(mods, key, message, pressedfn, releasedfn, repeatfn)
     return modal.hyper == mods
   end)
   if validHyperModal ~= nil then
-    hotkey = validHyperModal.bindSuspend("", key, message, pressedfn, releasedfn, repeatfn)
+    hotkey = validHyperModal.bind("", key, message, pressedfn, releasedfn, repeatfn)
   else
     hotkey = hs.hotkey.new(mods, key, pressedfn, releasedfn, repeatfn)
   end
@@ -165,7 +165,7 @@ function newHotkey(mods, key, message, pressedfn, releasedfn, repeatfn)
 end
 
 ---@diagnostic disable-next-line: lowercase-global
-function newSuspend(mods, key, message, pressedfn, releasedfn, repeatfn, predicates)
+function newHotkey(mods, key, message, pressedfn, releasedfn, repeatfn, predicates)
   if message == nil or getFunc(message) then
     predicates = repeatfn
     repeatfn=releasedfn releasedfn=pressedfn pressedfn=message message=nil -- shift down arguments
@@ -176,20 +176,20 @@ function newSuspend(mods, key, message, pressedfn, releasedfn, repeatfn, predica
   pressedfn = suspendWrapper(pressedfn, mods, key, predicates)
   releasedfn = suspendWrapper(releasedfn, mods, key, predicates)
   repeatfn = suspendWrapper(repeatfn, mods, key, predicates)
-  local hotkey = newHotkey(mods, key, message, pressedfn, releasedfn, repeatfn)
+  local hotkey = newHotkeyImpl(mods, key, message, pressedfn, releasedfn, repeatfn)
   hotkey.suspendable = true
   return hotkey
 end
 
 ---@diagnostic disable-next-line: lowercase-global
-function newSpecSuspend(spec, ...)
+function newHotkeySpec(spec, ...)
   if spec == nil then return nil end
-  return newSuspend(spec.mods, spec.key, ...)
+  return newHotkey(spec.mods, spec.key, ...)
 end
 
 ---@diagnostic disable-next-line: lowercase-global
-function bindHotkeySpec(spec, ...)
-  local hotkey = newHotkey(spec.mods, spec.key, ...)
+function bindHotkeySpecImpl(spec, ...)
+  local hotkey = newHotkeyImpl(spec.mods, spec.key, ...)
   if hotkey ~= nil then
     local validHyperModal = hs.fnutils.find(HyperModalList, function(modal)
       return modal.hyper == spec.mods
@@ -202,8 +202,8 @@ function bindHotkeySpec(spec, ...)
 end
 
 ---@diagnostic disable-next-line: lowercase-global
-function bindSuspend(mods, ...)
-  local hotkey = newSuspend(mods, ...)
+function bindHotkey(mods, ...)
+  local hotkey = newHotkey(mods, ...)
   if hotkey ~= nil then
     local validHyperModal = hs.fnutils.find(HyperModalList, function(modal)
       return modal.hyper == mods
@@ -216,9 +216,9 @@ function bindSuspend(mods, ...)
 end
 
 ---@diagnostic disable-next-line: lowercase-global
-function bindSpecSuspend(spec, ...)
+function bindHotkeySpec(spec, ...)
   if spec == nil then return nil end
-  return bindSuspend(spec.mods, spec.key, ...)
+  return bindHotkey(spec.mods, spec.key, ...)
 end
 
 local misc = KeybindingConfigs.hotkeys.global
@@ -226,7 +226,7 @@ local misc = KeybindingConfigs.hotkeys.global
 -- toggle hotkeys
 F_hotkeySuspended = false
 HSKeybindings = nil
-local toggleHotkey = bindHotkeySpec(misc["toggleHotkeys"], function()
+local toggleHotkey = bindHotkeySpecImpl(misc["toggleHotkeys"], function()
   F_hotkeySuspended = not F_hotkeySuspended
   if F_hotkeySuspended then
     hs.alert.show("Hammerspoon Hotkeys Suspended")
@@ -246,10 +246,12 @@ toggleHotkey.msg = toggleHotkey.idx .. ": Toggle Hotkeys"
 toggleHotkey.kind = HK.PRIVELLEGE
 
 -- reload
-bindSpecSuspend(misc["reloadHammerspoon"], "Reload Hammerspoon", function() hs.reload() end).kind = HK.PRIVELLEGE
+bindHotkeySpec(misc["reloadHammerspoon"], "Reload Hammerspoon", function()
+  hs.reload()
+end).kind = HK.PRIVELLEGE
 
 -- toggle hamerspoon console
-bindSpecSuspend(misc["toggleConsole"], "Toggle Hammerspoon Console",
+bindHotkeySpec(misc["toggleConsole"], "Toggle Hammerspoon Console",
 function()
   local consoleWin = hs.console.hswindow()
   if consoleWin and consoleWin:isVisible() then

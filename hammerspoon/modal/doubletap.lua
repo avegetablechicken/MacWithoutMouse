@@ -96,7 +96,7 @@ function module.install(mods, key)
   end
 end
 
-function module.bind(msg, func)
+function module.bindNoSuspend(msg, func)
   if func == nil then
     func = msg msg = nil
   end
@@ -111,12 +111,12 @@ function module.bind(msg, func)
   return module
 end
 
-function module.bindSuspend(msg, func)
+function module.bind(msg, func)
   if func == nil then
     func = msg msg = nil
   end
   func = suspendWrapper(func)
-  module.bind(msg, func)
+  module.bindNoSuspend(msg, func)
   module.suspendable = true
 end
 

@@ -30,7 +30,7 @@ function This.bind(mods, key, message, pressedfn, releasedfn, repeatfn)
   if This.keys[modsCode] == nil then
     This.keys[modsCode] = {}
   end
-  local hotkey = newHotkey(mods, key, message, pressedfn, releasedfn, repeatfn)
+  local hotkey = newHotkeyImpl(mods, key, message, pressedfn, releasedfn, repeatfn)
   local modsRepr = ""
   if (modsCode // 8) % 2 == 1 then modsRepr = trackpad["bottom-right"] end
   if (modsCode // 4) % 2 == 1 then modsRepr = trackpad["bottom-left"] .. modsRepr end

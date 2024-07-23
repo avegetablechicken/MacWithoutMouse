@@ -34,7 +34,7 @@ local function enterHyperMode()
 end
 
 -- Utility to bind handler to Hyper+modifiers+key
-function This.bind(mods, key, message, pressedfn, releasedfn, repeatfn)
+function This.bindNoSuspend(mods, key, message, pressedfn, releasedfn, repeatfn)
   pressedfn = forgiveWrapper(pressedfn, mods, key)
   releasedfn = forgiveWrapper(releasedfn, mods, key)
   repeatfn = forgiveWrapper(repeatfn, mods, key)
@@ -44,8 +44,8 @@ function This.bind(mods, key, message, pressedfn, releasedfn, repeatfn)
   return hotkey
 end
 
-function This.bindSuspend(...)
-  local hotkey = newSuspend(...)
+function This.bind(...)
+  local hotkey = newHotkey(...)
   hotkey.msg = This.hyper .. hotkey.msg
   table.insert(This.hyperMode.keys, hotkey)
   return hotkey

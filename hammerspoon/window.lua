@@ -4,14 +4,14 @@ local resizeStep = windowParams.windowResizeStep or 100
 local windowZoomToCenterSize = windowParams.windowZoomToCenterSize or { w = 830, h = 750 }
 
 local function newWindow(...)
-  local hotkey = newSpecSuspend(...)
+  local hotkey = newHotkeySpec(...)
   if hotkey == nil then return nil end
   hotkey.kind = HK.WIN_OP
   return hotkey
 end
 
 local function bindWindow(...)
-  local hotkey = bindSpecSuspend(...)
+  local hotkey = bindHotkeySpec(...)
   if hotkey == nil then return nil end
   hotkey.kind = HK.WIN_OP
   return hotkey
@@ -577,14 +577,14 @@ end)
 local misc = KeybindingConfigs.hotkeys.global
 
 local function newWindowMisc(...)
-  local hotkey = newSpecSuspend(...)
+  local hotkey = newHotkeySpec(...)
   if hotkey == nil then return nil end
   hotkey.kind = HK.SWITCH
   return hotkey
 end
 
 local function bindWindowMisc(...)
-  local hotkey = bindSpecSuspend(...)
+  local hotkey = bindHotkeySpec(...)
   if hotkey == nil then return nil end
   hotkey.kind = HK.SWITCH
   return hotkey
