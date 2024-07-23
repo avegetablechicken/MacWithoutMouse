@@ -2557,11 +2557,7 @@ local function registerRunningAppHotKeys(bid, appObject)
 
   if not allPersist and runningAppWatchers[bid] == nil then
     runningAppWatchers[bid] = hs.timer.new(1, function()
-      local runningApps = hs.application.runningApplications()
-      local appObject = hs.fnutils.find(runningApps, function(app)
-        return app:bundleID() == bid
-      end)
-      if appObject == nil then
+      if findApplication(bid) == nil then
         local allDeleted = true
         for hkID, hotkey in pairs(runningAppHotKeys[bid]) do
           if hotkey.persist ~= true then
@@ -3063,11 +3059,8 @@ local function execOnLaunch(bundleID, action, require_check)
     table.insert(processesOnLaunchMonitored[bundleID], action)
     if ExtraAppLaunchWatcher == nil then
       ExtraAppLaunchWatcher = hs.timer.new(1, function()
-        local runningApps = hs.application.runningApplications()
         for bid, processes in pairs(processesOnLaunchMonitored) do
-          local appObject = hs.fnutils.find(runningApps, function(app)
-            return app:bundleID() == bid
-          end)
+          local appObject = findApplication(bid)
           if hasLaunched[bid] == false and appObject ~= nil then
             for _, proc in ipairs(processes) do
               proc(appObject)
