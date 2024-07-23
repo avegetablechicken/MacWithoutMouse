@@ -128,7 +128,7 @@ local function getFunc(f)
   return nil
 end
 
-function newHotkey(mods, key, message, pressedfn, releasefn, repeatfn)
+function newHotkey(mods, key, message, pressedfn, releasedfn, repeatfn)
   if message == nil or getFunc(message) then
     repeatfn=releasedfn releasedfn=pressedfn pressedfn=message message=nil -- shift down arguments
   end
@@ -157,9 +157,9 @@ function newHotkey(mods, key, message, pressedfn, releasefn, repeatfn)
   return hotkey
 end
 
-function newSuspend(mods, key, message, pressedfn, releasefn, repeatfn, predicates)
+function newSuspend(mods, key, message, pressedfn, releasedfn, repeatfn, predicates)
   if message == nil or getFunc(message) then
-    predicate = repeatfn
+    predicates = repeatfn
     repeatfn=releasedfn releasedfn=pressedfn pressedfn=message message=nil -- shift down arguments
   end
   pressedfn = getFunc(pressedfn)

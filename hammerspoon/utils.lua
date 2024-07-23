@@ -1643,7 +1643,7 @@ function clickAppRightMenuBarItem(bundleID, menuItem, subMenuItem, show)
       local clickSubMenuItemCmd = ""
       if subMenuItem ~= nil then
         if type(subMenuItem) ~= "table" then
-          clickSubMenuItemCmdFmt = string.format([[
+          clickSubMenuItemCmd = string.format([[
             set submenuitem to menu item %s of menu %s of menuitem
             click submenuitem
           ]], subMenuItem, item)
