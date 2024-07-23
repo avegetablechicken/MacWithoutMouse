@@ -2948,7 +2948,7 @@ local function inWinOfUnactivatedAppWatcherEnableCallback(bid, filter, winObj, a
           if (spec.bindCondition == nil or spec.bindCondition(winObj:application())) then
             local msg = type(spec.message) == 'string' and spec.message or spec.message(winObj:application())
             if msg ~= nil then
-              local hotkey = appBindSpecSuspend(appConfigs, spec, msg,
+              local hotkey = appBindSpecSuspend(findApplication(bid), spec, msg,
                                                 spec.fn, nil, spec.repeatable and spec.fn or nil)
               hotkey.kind = HK.IN_WIN
               hotkey.notActivateApp = cfg.notActivateApp
