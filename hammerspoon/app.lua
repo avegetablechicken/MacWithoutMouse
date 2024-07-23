@@ -4315,10 +4315,6 @@ function App_applicationCallback(appName, eventType, appObject)
       watchForMicrosoftRemoteDesktopWindow(appObject)
     end
     deactivateCloseWindowForIOSApps(appObject)
-    if pseudoWindowObserver ~= nil then
-      pseudoWindowObserver:stop()
-      pseudoWindowObserver = nil
-    end
     if bundleID then selectInputSourceInApp(bundleID) end
     F_doNotReloadShowingKeybings = true
     hs.timer.doAfter(3, function()
