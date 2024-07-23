@@ -3805,13 +3805,14 @@ end
 local windowFilterAutoHide = hs.window.filter.new(false)
     :setAppFilter("Hammerspoon", true)
 for bundleID, cfg in pairs(appsAutoHideWithNoWindows) do
+  local func = function(appObject)
+    windowFilterAutoHide:setAppFilter(appObject:name(), cfg)
+  end
   local appObject = findApplication(bundleID)
   if appObject ~= nil then
-    windowFilterAutoHide:setAppFilter(appObject:name(), cfg)
+    func(appObject)
   else
-    execOnLaunch(bundleID, function(appObject)
-      windowFilterAutoHide:setAppFilter(appObject:name(), cfg)
-    end)
+    execOnLaunch(bundleID, func)
   end
 end
 windowFilterAutoHide:subscribe(hs.window.filter.windowDestroyed,
@@ -3823,13 +3824,14 @@ windowFilterAutoHide:subscribe(hs.window.filter.windowDestroyed,
 
 local windowFilterAutoQuit = hs.window.filter.new(false)
 for bundleID, cfg in pairs(appsAutoQuitWithNoWindows) do
+  local func = function(appObject)
+    windowFilterAutoQuit:setAppFilter(appObject:name(), cfg)
+  end
   local appObject = findApplication(bundleID)
   if appObject ~= nil then
-    windowFilterAutoQuit:setAppFilter(appObject:name(), cfg)
+    func(appObject)
   else
-    execOnLaunch(bundleID, function(appObject)
-      windowFilterAutoQuit:setAppFilter(appObject:name(), cfg)
-    end)
+    execOnLaunch(bundleID, func)
   end
 end
 windowFilterAutoQuit:subscribe(hs.window.filter.windowDestroyed,
@@ -3840,25 +3842,27 @@ windowFilterAutoQuit:subscribe(hs.window.filter.windowDestroyed,
   end)
 
 for bundleID, rules in pairs(appsAutoHideWithNoPseudoWindows) do
-  if findApplication(bundleID) then
-    registerPseudoWindowDestroyWatcher(findApplication(
-        bundleID), rules, appsAutoHideWithNoWindows[bundleID], false, appsWithNoWindowsDelay[bundleID])
+  local func = function(appObject)
+    registerPseudoWindowDestroyWatcher(appObject, rules,
+        appsAutoHideWithNoWindows[bundleID], false, appsWithNoWindowsDelay[bundleID])
+  end
+  local appObject = findApplication(bundleID)
+  if appObject ~= nil then
+    func(appObject)
   else
-    execOnLaunch(bundleID, function(appObject)
-      registerPseudoWindowDestroyWatcher(appObject, rules,
-          appsAutoHideWithNoWindows[bundleID], false, appsWithNoWindowsDelay[bundleID])
-    end)
+    execOnLaunch(bundleID, func)
   end
 end
 for bundleID, rules in pairs(appsAutoQuitWithNoPseudoWindows) do
-  if findApplication(bundleID) then
-    registerPseudoWindowDestroyWatcher(
-        findApplication(bundleID), rules, appsAutoQuitWithNoWindows[bundleID], true, appsWithNoWindowsDelay[bundleID])
+  local func = function(appObject)
+    registerPseudoWindowDestroyWatcher(appObject, rules,
+        appsAutoHideWithNoWindows[bundleID], true, appsWithNoWindowsDelay[bundleID])
+  end
+  local appObject = findApplication(bundleID)
+  if appObject ~= nil then
+    func(appObject)
   else
-    execOnLaunch(bundleID, function(appObject)
-      registerPseudoWindowDestroyWatcher(appObject, rules,
-          appsAutoHideWithNoWindows[bundleID], true, appsWithNoWindowsDelay[bundleID])
-    end)
+    execOnLaunch(bundleID, func)
   end
 end
 
