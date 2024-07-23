@@ -3055,12 +3055,34 @@ end
 local processesOnLaunch = {}
 local processesOnLaunchMonitored = {}
 local hasLaunched = {}
-local extraAppLaunchWatcher
-local function execOnLaunch(bundleID, action)
-  if processesOnLaunch[bundleID] == nil then
-    processesOnLaunch[bundleID] = {}
+local function execOnLaunch(bundleID, action, require_check)
+  if require_check then
+    if processesOnLaunchMonitored[bundleID] == nil then
+      processesOnLaunchMonitored[bundleID] = {}
+    end
+    table.insert(processesOnLaunchMonitored[bundleID], action)
+    if ExtraAppLaunchWatcher == nil then
+      ExtraAppLaunchWatcher = hs.timer.new(1, function()
+        local runningApps = hs.application.runningApplications()
+        for bid, processes in pairs(processesOnLaunchMonitored) do
+          local appObject = hs.fnutils.find(runningApps, function(app)
+            return app:bundleID() == bid
+          end)
+          if hasLaunched[bid] == false and appObject ~= nil then
+            for _, proc in ipairs(processes) do
+              proc(appObject)
+            end
+          end
+          hasLaunched[bid] = appObject ~= nil
+        end
+      end, true):start()
+    end
+  else
+    if processesOnLaunch[bundleID] == nil then
+      processesOnLaunch[bundleID] = {}
+    end
+    table.insert(processesOnLaunch[bundleID], action)
   end
-  table.insert(processesOnLaunch[bundleID], action)
 end
 
 local processesOnActivated = {}
@@ -3948,7 +3970,7 @@ local function watchForMathpixPopoverWindow(appObject)
   observer:start()
   stopOnQuit(appObject:bundleID(), observer)
 end
-execOnLaunch("com.mathpix.snipping-tool-noappstore", watchForMathpixPopoverWindow)
+execOnLaunch("com.mathpix.snipping-tool-noappstore", watchForMathpixPopoverWindow, true)
 local mathpixApp = findApplication("com.mathpix.snipping-tool-noappstore")
 if mathpixApp ~= nil then
   watchForMathpixPopoverWindow(mathpixApp)
@@ -3999,7 +4021,7 @@ local function watchForLemonMonitorWindow(appObject)
   observer:start()
   stopOnQuit(appObject:bundleID(), observer)
 end
-execOnLaunch("com.tencent.LemonMonitor", watchForLemonMonitorWindow)
+execOnLaunch("com.tencent.LemonMonitor", watchForLemonMonitorWindow, true)
 local lemonMonitorApp = findApplication("com.tencent.LemonMonitor")
 if lemonMonitorApp ~= nil then
   watchForLemonMonitorWindow(lemonMonitorApp)
