@@ -2594,8 +2594,7 @@ function(winObj, appName, eventType)
 end)
 
 -- key strokes must be sent to frontmost window instead of frontmost app
----@diagnostic disable-next-line: lowercase-global
-function inAppHotKeysWrapper(appObject, mods, key, func)
+local function inAppHotKeysWrapper(appObject, mods, key, func)
   if func == nil then
     func = key key = mods.key mods = mods.mods
   end
@@ -2611,6 +2610,23 @@ function inAppHotKeysWrapper(appObject, mods, key, func)
       func()
     end
   end
+end
+
+---@diagnostic disable-next-line: lowercase-global
+function appBindSuspend(appObject, mods, key, message, pressedfn, releasedfn, repeatedfn, ...)
+  pressedfn = inAppHotKeysWrapper(appObject, mods, key, pressedfn)
+  if releasedfn ~= nil then
+    releasedfn = inAppHotKeysWrapper(appObject, mods, key, releasedfn)
+  end
+  if repeatedfn ~= nil then
+    repeatedfn = inAppHotKeysWrapper(appObject, mods, key, repeatedfn)
+  end
+  return bindSuspend(mods, key, message, pressedfn, releasedfn, repeatedfn, ...)
+end
+
+---@diagnostic disable-next-line: lowercase-global
+function appBindSpecSuspend(appObject, spec, ...)
+  return appBindSuspend(appObject, spec.mods, spec.key, ...)
 end
 
 -- hotkeys for active app
@@ -2679,8 +2695,7 @@ local function registerInAppHotKeys(appName, eventType, appObject)
             end
           end
         end
-        fn = inAppHotKeysWrapper(appObject, keyBinding,
-                                 hs.fnutils.partial(fn, appObject, appName, eventType))
+        fn = hs.fnutils.partial(fn, appObject, appName, eventType)
         local repeatedFn
         -- hotkey with condition function is repeatable by defaults
         -- because when its condition is not satisfied it will be re-stroked
@@ -2689,7 +2704,7 @@ local function registerInAppHotKeys(appName, eventType, appObject)
         end
         local msg = type(cfg.message) == 'string' and cfg.message or cfg.message(appObject)
         if msg ~= nil then
-          local hotkey = bindSpecSuspend(keyBinding, msg, fn, nil, repeatedFn)
+          local hotkey = appBindSpecSuspend(appObject, keyBinding, msg, fn, nil, repeatedFn)
           hotkey.kind = HK.IN_APP
           hotkey.condition = cond
           hotkey.deleteOnDisable = cfg.deleteOnDisable
@@ -3145,13 +3160,12 @@ local function remapPreviousTab(bundleID)
     if spec.mods == nil or spec.mods == "" or #spec.mods == 0 then
       cond = noSelectedMenuBarItemFunc(cond)
     end
-    local fn = inAppHotKeysWrapper(appObject, spec.mods, spec.key,
-        function()
-          if cond(appObject) then appObject:selectMenuItem(menuItemPath)
-          else hs.eventtap.keyStroke(spec.mods, spec.key, nil, appObject) end
-        end)
-    remapPreviousTabHotkey = bindSpecSuspend(spec, menuItemPath[#menuItemPath],
-                                             fn, nil, fn)
+    local fn = function()
+      if cond(appObject) then appObject:selectMenuItem(menuItemPath)
+      else hs.eventtap.keyStroke(spec.mods, spec.key, nil, appObject) end
+    end
+    remapPreviousTabHotkey = appBindSpecSuspend(appObject, spec, menuItemPath[#menuItemPath],
+                                                fn, nil, fn)
     remapPreviousTabHotkey.condition = cond
     remapPreviousTabHotkey.kind = HK.IN_APP
   end
@@ -3183,16 +3197,15 @@ local function registerOpenRecent(bundleID)
     if spec.mods == nil or spec.mods == "" or #spec.mods == 0 then
       cond = noSelectedMenuBarItemFunc(cond)
     end
-    local fn = inAppHotKeysWrapper(appObject, spec.mods, spec.key,
-        function()
-          if cond(appObject) then
-            showMenuItemWrapper(function()
-              appObject:selectMenuItem({menuItemPath[1]})
-              appObject:selectMenuItem(menuItemPath)
-            end)()
-          else hs.eventtap.keyStroke(spec.mods, spec.key, nil, appObject) end
-        end)
-    openRecentHotkey = bindSpecSuspend(spec, menuItemPath[2], fn)
+    local fn = function()
+      if cond(appObject) then
+        showMenuItemWrapper(function()
+          appObject:selectMenuItem({menuItemPath[1]})
+          appObject:selectMenuItem(menuItemPath)
+        end)()
+      else hs.eventtap.keyStroke(spec.mods, spec.key, nil, appObject) end
+    end
+    openRecentHotkey = appBindSpecSuspend(appObject, spec, menuItemPath[2], fn)
     openRecentHotkey.condition = cond
     openRecentHotkey.kind = HK.IN_APP
   end
@@ -3369,8 +3382,7 @@ local function bindAltMenu(appObject, mods, key, message, fn)
     fn = hasSelectedMenuBarItemFunc(fn, appObject)
   end
   fn = showMenuItemWrapper(fn)
-  fn = inAppHotKeysWrapper(appObject, mods, key, fn)
-  local hotkey = bindSuspend(mods, key, message, fn)
+  local hotkey = appBindSuspend(appObject, mods, key, message, fn)
   hotkey.kind = HK.APP_MENU
   return hotkey
 end
