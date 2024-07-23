@@ -106,9 +106,11 @@ focusLeftMonitorHotkey.icon = image
 -- move window to next monitor
 moveToRightMonitorHotkey = newWindow(ssHK["moveToNextScreen"], "Move to Next Monitor",
     hs.fnutils.partial(checkAndMoveWindowToMonitor, "r"))
+moveToRightMonitorHotkey.icon = image
 -- move window to previous monitor
 moveToLeftMonitorHotkey = newWindow(ssHK["moveToPrevScreen"], "Move to Previous Monitor",
     hs.fnutils.partial(checkAndMoveWindowToMonitor, "l"))
+moveToLeftMonitorHotkey.icon = image
 
 focusMonitorHotkeys = {}
 moveToScreenHotkeys = {}
@@ -203,9 +205,11 @@ end
 -- move window to next space
 moveToRightSpaceHotkey = newWindow(ssHK["moveToNextSpace"], "Move to Next Space",
     hs.fnutils.partial(checkAndMoveWindowToSpace, "r"))
+moveToRightSpaceHotkey.icon = image
 -- move window to previous space
 moveToLeftSpaceHotkey = newWindow(ssHK["moveToPrevSpace"], "Move to Previous Space",
     hs.fnutils.partial(checkAndMoveWindowToSpace, "l"))
+moveToRightSpaceHotkey.icon = image
 
 moveToSpaceHotkeys = {}
 local function registerMoveToSpaceHotkeys()
@@ -241,6 +245,7 @@ local function registerMoveToSpaceHotkeys()
         end
         win:focus()
       end)
+    hotkey.icon = image
     table.insert(moveToSpaceHotkeys, hotkey)
   end
 end
