@@ -2501,7 +2501,6 @@ local inAppHotKeys = {}
 local inWinHotKeys = {}
 
 -- hotkeys for background apps
-local runningAppWatchers = {}
 local function registerRunningAppHotKeys(bid, appObject)
   if appHotKeyCallbacks[bid] == nil then return end
   local keyBindings = KeybindingConfigs.hotkeys[bid]
@@ -2520,7 +2519,6 @@ local function registerRunningAppHotKeys(bid, appObject)
   end
   runningAppHotKeys[bid] = {}
 
-  local allPersist = true
   -- do not support "condition" property currently
   for hkID, cfg in pairs(appHotKeyCallbacks[bid]) do
     local keyBinding = keyBindings[hkID]
@@ -2544,8 +2542,6 @@ local function registerRunningAppHotKeys(bid, appObject)
         local hotkey = bindSpecSuspend(keyBinding, msg, fn, nil, repeatedFn)
         if keyBinding.persist == true then
           hotkey.persist = true
-        else
-          allPersist = false
         end
         hotkey.kind = cfg.kind or HK.BACKGROUND
         hotkey.deleteOnDisable = cfg.deleteOnDisable
@@ -2553,27 +2549,6 @@ local function registerRunningAppHotKeys(bid, appObject)
         runningAppHotKeys[bid][hkID] = hotkey
       end
     end
-  end
-
-  if not allPersist and runningAppWatchers[bid] == nil then
-    runningAppWatchers[bid] = hs.timer.new(1, function()
-      if findApplication(bid) == nil then
-        local allDeleted = true
-        for hkID, hotkey in pairs(runningAppHotKeys[bid]) do
-          if hotkey.persist ~= true then
-            hotkey:delete()
-            runningAppHotKeys[bid][hkID] = nil
-          else
-            allDeleted = false
-          end
-        end
-        if allDeleted then
-          runningAppHotKeys[bid] = nil
-          runningAppWatchers[bid]:stop()
-          runningAppWatchers[bid] = nil
-        end
-      end
-    end):start()
   end
 end
 
@@ -2586,27 +2561,15 @@ local function unregisterRunningAppHotKeys(bid, force)
     end
     runningAppHotKeys[bid] = nil
   else
-    local allDeleted = true
     for _, hotkey in pairs(runningAppHotKeys[bid] or {}) do
       if hotkey.persist ~= true then
         hotkey:disable()
         if hotkey.deleteOnDisable then
           hotkey:delete()
           runningAppHotKeys[bid][hotkey] = nil
-        else
-          allDeleted = false
         end
-      else
-        allDeleted = false
       end
     end
-    if allDeleted then
-      runningAppHotKeys[bid] = nil
-    end
-  end
-  if runningAppWatchers[bid] ~= nil and findApplication(bid) == nil then
-    runningAppWatchers[bid]:stop()
-    runningAppWatchers[bid] = nil
   end
 end
 
@@ -3051,8 +3014,9 @@ end
 local processesOnLaunch = {}
 local processesOnLaunchMonitored = {}
 local hasLaunched = {}
-local function execOnLaunch(bundleID, action, require_check)
-  if require_check then
+local appsLaunchSilently = applicationConfigs.launchSilently or {}
+local function execOnLaunch(bundleID, action)
+  if hs.fnutils.contains(appsLaunchSilently, bundleID) then
     if processesOnLaunchMonitored[bundleID] == nil then
       processesOnLaunchMonitored[bundleID] = {}
     end
@@ -3105,8 +3069,11 @@ end
 -- register hotkeys for background apps
 for bid, appConfig in pairs(appHotKeyCallbacks) do
   registerRunningAppHotKeys(bid)
-  for _, spec in pairs(appConfig) do
-    if spec.background == true and spec.persist ~= true then
+  local keyBindings = KeybindingConfigs.hotkeys[bid] or {}
+  for hkID, spec in pairs(appConfig) do
+    if type(spec) ~= 'number'
+        and (keyBindings[hkID] ~= nil and keyBindings[hkID].background == true and keyBindings[hkID].persist ~= true)
+        or (spec.background == true and spec.persist ~= true) then
       execOnLaunch(bid, hs.fnutils.partial(registerRunningAppHotKeys, bid))
       break
     end
@@ -3142,8 +3109,11 @@ for bid, appConfig in pairs(appHotKeyCallbacks) do
   if appObject ~= nil then
     registerWinFiltersForDaemonApp(appObject, appConfig)
   else
-    for _, spec in pairs(appConfig) do
-      if spec.notActivateApp then
+    local keyBindings = KeybindingConfigs.hotkeys[bid] or {}
+    for hkID, spec in pairs(appConfig) do
+      if type(spec) ~= 'number'
+          and (keyBindings[hkID] ~= nil and keyBindings[hkID].notActivateApp)
+          or spec.notActivateApp then
         execOnLaunch(bid, function(appObject)
           registerWinFiltersForDaemonApp(appObject, appConfig)
         end)
@@ -3984,7 +3954,7 @@ local function watchForMathpixPopoverWindow(appObject)
   observer:start()
   stopOnQuit(appObject:bundleID(), observer)
 end
-execOnLaunch("com.mathpix.snipping-tool-noappstore", watchForMathpixPopoverWindow, true)
+execOnLaunch("com.mathpix.snipping-tool-noappstore", watchForMathpixPopoverWindow)
 local mathpixApp = findApplication("com.mathpix.snipping-tool-noappstore")
 if mathpixApp ~= nil then
   watchForMathpixPopoverWindow(mathpixApp)
@@ -4035,7 +4005,7 @@ local function watchForLemonMonitorWindow(appObject)
   observer:start()
   stopOnQuit(appObject:bundleID(), observer)
 end
-execOnLaunch("com.tencent.LemonMonitor", watchForLemonMonitorWindow, true)
+execOnLaunch("com.tencent.LemonMonitor", watchForLemonMonitorWindow)
 local lemonMonitorApp = findApplication("com.tencent.LemonMonitor")
 if lemonMonitorApp ~= nil then
   watchForLemonMonitorWindow(lemonMonitorApp)

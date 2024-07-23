@@ -21,6 +21,12 @@
     ]
   },
 
+  "launchSilently": [
+    "com.mathpix.snipping-tool-noappstore",
+    "whbalzac.Dongtaizhuomian",
+    "com.tencent.LemonMonitor"
+  ],
+
   "autoHideWithNoWindow": [
     "org.hammerspoon.Hammerspoon",
     "com.surteesstudios.Bartender",
