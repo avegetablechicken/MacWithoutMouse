@@ -2275,22 +2275,6 @@ function()
     hotkey:delete()
   end
   controlCenterPanelHotKeys = {}
-  hotkeyMainBack = nil
-  hotkeyMainForward = nil
-  if hotkeyShow ~= nil then
-    hotkeyShow:delete()
-    hotkeyShow = nil
-  end
-  if hotkeyHide ~= nil then
-    hotkeyHide:delete()
-    hotkeyHide = nil
-  end
-  if backgroundSoundsHotkeys ~= nil then
-    for _, hotkey in ipairs(backgroundSoundsHotkeys) do
-      hotkey:delete()
-    end
-    backgroundSoundsHotkeys = nil
-  end
 end)
 
 -- # callbacks
