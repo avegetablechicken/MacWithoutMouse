@@ -308,7 +308,7 @@ local proxyMenu = {}
 -- load proxy configs
 ProxyConfigs = {}
 
-function parseProxyConfigurations(configs)
+local function parseProxyConfigurations(configs)
   for name, config in pairs(configs) do
     ProxyConfigs[name] = {}
     if config.condition ~= nil then
@@ -448,7 +448,49 @@ local proxyMenuItemCandidates =
   },
 }
 
-function registerProxyMenuEntry(name, enabled, mode, proxyMenuIdx)
+local function updateProxyWrapper(wrapped, appname)
+  local fn = function(mod, item)
+    wrapped.fn(mod, item)
+    local newProxyMenu = {}
+    for i, _item in ipairs(proxyMenu) do
+      _item.checked = false
+      item.checked = true
+      if not string.find(_item.title, "Proxy:")
+          and not string.find(_item.title, "PAC File:")then
+        table.insert(newProxyMenu, _item)
+      end
+      if _item.title == appname then
+        if string.match(item.title, "PAC") then
+          local PACFile = hs.execute("networksetup -getautoproxyurl " .. curNetworkService
+                                          .. " | grep URL: | awk '{print $2}'")
+          table.insert(newProxyMenu, { title = "PAC File: " .. PACFile, disabled = true })
+        else
+          local httpAddr = hs.execute("networksetup -getwebproxy " .. curNetworkService
+                                          .. " | grep Server: | awk '{print $2}'")
+          local httpPort = hs.execute("networksetup -getwebproxy " .. curNetworkService
+                                          .. " | grep Port: | awk '{print $2}'")
+          local socksAddr = hs.execute("networksetup -getsocksfirewallproxy " .. curNetworkService
+                                          .. " | grep Server: | awk '{print $2}'")
+          local socksPort = hs.execute("networksetup -getsocksfirewallproxy " .. curNetworkService
+                                          .. " | grep Port: | awk '{print $2}'")
+          table.insert(newProxyMenu, { title = "HTTP Proxy: " .. httpAddr .. ":" .. httpPort, disabled = true })
+          table.insert(newProxyMenu, { title = "SOCKS5 Proxy: " .. socksAddr .. ":" .. socksPort, disabled = true })
+        end
+      end
+    end
+    proxyMenu = newProxyMenu
+    proxy:setMenu(proxyMenu)
+  end
+
+  return {
+    title = wrapped.title,
+    fn = fn,
+    shortcut = wrapped.shortcut,
+    checked = wrapped.checked,
+  }
+end
+
+local function registerProxyMenuEntry(name, enabled, mode, proxyMenuIdx)
   local config, loc
   if ProxyConfigs[name].condition == nil then
     config = ProxyConfigs[name]
@@ -492,48 +534,6 @@ function registerProxyMenuEntry(name, enabled, mode, proxyMenuIdx)
     end
   end
   return proxyMenuIdx
-end
-
-function updateProxyWrapper(wrapped, appname)
-  local fn = function(mod, item)
-    wrapped.fn(mod, item)
-    local newProxyMenu = {}
-    for i, _item in ipairs(proxyMenu) do
-      _item.checked = false
-      item.checked = true
-      if not string.find(_item.title, "Proxy:")
-          and not string.find(_item.title, "PAC File:")then
-        table.insert(newProxyMenu, _item)
-      end
-      if _item.title == appname then
-        if string.match(item.title, "PAC") then
-          local PACFile = hs.execute("networksetup -getautoproxyurl " .. curNetworkService
-                                          .. " | grep URL: | awk '{print $2}'")
-          table.insert(newProxyMenu, { title = "PAC File: " .. PACFile, disabled = true })
-        else
-          local httpAddr = hs.execute("networksetup -getwebproxy " .. curNetworkService
-                                          .. " | grep Server: | awk '{print $2}'")
-          local httpPort = hs.execute("networksetup -getwebproxy " .. curNetworkService
-                                          .. " | grep Port: | awk '{print $2}'")
-          local socksAddr = hs.execute("networksetup -getsocksfirewallproxy " .. curNetworkService
-                                          .. " | grep Server: | awk '{print $2}'")
-          local socksPort = hs.execute("networksetup -getsocksfirewallproxy " .. curNetworkService
-                                          .. " | grep Port: | awk '{print $2}'")
-          table.insert(newProxyMenu, { title = "HTTP Proxy: " .. httpAddr .. ":" .. httpPort, disabled = true })
-          table.insert(newProxyMenu, { title = "SOCKS5 Proxy: " .. socksAddr .. ":" .. socksPort, disabled = true })
-        end
-      end
-    end
-    proxyMenu = newProxyMenu
-    proxy:setMenu(proxyMenu)
-  end
-
-  return {
-    title = wrapped.title,
-    fn = fn,
-    shortcut = wrapped.shortcut,
-    checked = wrapped.checked,
-  }
 end
 
 local function parseProxyInfo(info, require_mode)
@@ -625,6 +625,78 @@ local function parseProxyInfo(info, require_mode)
   else
     return enabledProxy
   end
+end
+
+local function registerProxySettingsEntry(menu)
+  table.insert(menu, { title = "-" })
+  table.insert(menu, {
+    title = "Proxy Settings",
+    fn = function()
+      local osVersion = getOSVersion()
+      local script = [[
+        tell application id "com.apple.systempreferences" to activate
+        tell application "System Events"
+          tell ]] .. aWinFor("com.apple.systempreferences") .. [[
+            if sheet 1 exists then
+              key code 53
+              repeat until not (sheet 1 exists)
+                delay 0.05
+              end repeat
+            end if
+          end tell
+        end tell
+      ]]
+      if osVersion < OS.Ventura then
+        script = script .. [[
+          tell application id "com.apple.systempreferences"
+            set current pane to pane "com.apple.preference.network"
+            repeat until anchor "Proxies" of current pane exists
+              delay 0.1
+            end repeat
+            reveal anchor "Proxies" of current pane
+          end tell
+
+          delay 1
+          tell application "System Events"
+            tell ]] .. aWinFor("com.apple.systempreferences") .. [[
+              set tb to table 1 of scroll area 1 of group 1 of tab group 1 of sheet 1
+              repeat with r in every row of tb
+                if value of checkbox 1 of r is 1 then
+                  return position of text field 1 of r
+                end if
+              end repeat
+              return false
+            end tell
+          end tell
+        ]]
+      else
+        script = script .. [[
+          tell application id "com.apple.systempreferences"
+            reveal anchor "Proxies" of pane id "com.apple.Network-Settings.extension"
+          end tell
+
+          delay 1
+          tell application "System Events"
+            tell ]] .. aWinFor("com.apple.systempreferences") .. [[
+              set tb to scroll area 1 of group 2 of splitter group 1 of group 1 of sheet 1
+              repeat with r in every group of tb
+                if value of checkbox 1 of r is 1 then
+                  return position of text field 1 of r
+                end if
+              end repeat
+              return false
+            end tell
+          end tell
+        ]]
+      end
+      local ok, position = hs.osascript.applescript(script)
+      if ok and type(position) == "table" then
+        leftClickAndRestore({ position[1], position[2] + 10 },
+                            findApplication("com.apple.systempreferences"):name())
+      end
+    end,
+    shortcut = 'p'
+  })
 end
 
 local function registerProxyMenuImpl()
@@ -744,79 +816,7 @@ local function registerProxyMenuImpl()
   proxy:setMenu(proxyMenu)
 end
 
-function registerProxySettingsEntry(menu)
-  table.insert(menu, { title = "-" })
-  table.insert(menu, {
-    title = "Proxy Settings",
-    fn = function()
-      local osVersion = getOSVersion()
-      local script = [[
-        tell application id "com.apple.systempreferences" to activate
-        tell application "System Events"
-          tell ]] .. aWinFor("com.apple.systempreferences") .. [[
-            if sheet 1 exists then
-              key code 53
-              repeat until not (sheet 1 exists)
-                delay 0.05
-              end repeat
-            end if
-          end tell
-        end tell
-      ]]
-      if osVersion < OS.Ventura then
-        script = script .. [[
-          tell application id "com.apple.systempreferences"
-            set current pane to pane "com.apple.preference.network"
-            repeat until anchor "Proxies" of current pane exists
-              delay 0.1
-            end repeat
-            reveal anchor "Proxies" of current pane
-          end tell
-
-          delay 1
-          tell application "System Events"
-            tell ]] .. aWinFor("com.apple.systempreferences") .. [[
-              set tb to table 1 of scroll area 1 of group 1 of tab group 1 of sheet 1
-              repeat with r in every row of tb
-                if value of checkbox 1 of r is 1 then
-                  return position of text field 1 of r
-                end if
-              end repeat
-              return false
-            end tell
-          end tell
-        ]]
-      else
-        script = script .. [[
-          tell application id "com.apple.systempreferences"
-            reveal anchor "Proxies" of pane id "com.apple.Network-Settings.extension"
-          end tell
-
-          delay 1
-          tell application "System Events"
-            tell ]] .. aWinFor("com.apple.systempreferences") .. [[
-              set tb to scroll area 1 of group 2 of splitter group 1 of group 1 of sheet 1
-              repeat with r in every group of tb
-                if value of checkbox 1 of r is 1 then
-                  return position of text field 1 of r
-                end if
-              end repeat
-              return false
-            end tell
-          end tell
-        ]]
-      end
-      local ok, position = hs.osascript.applescript(script)
-      if ok and type(position) == "table" then
-        leftClickAndRestore({ position[1], position[2] + 10 },
-                            findApplication("com.apple.systempreferences"):name())
-      end
-    end,
-    shortcut = 'p'
-  })
-end
-
-function registerProxyMenu(retry)
+local function registerProxyMenu(retry)
   getCurrentNetworkService()
   if not curNetworkService then
     local menu = {{
@@ -956,20 +956,6 @@ local controlCenterIdentifiers = hs.json.read("static/controlcenter-identifies.j
 local controlCenterSubPanelIdentifiers = controlCenterIdentifiers.subpanel
 local controlCenterMenuBarItemIdentifiers = controlCenterIdentifiers.menubar
 local controlCenterAccessibiliyIdentifiers = controlCenterIdentifiers.accessibility
-
-local controlCenterHotKeys = nil
-local controlCenterSubPanelWatcher = nil
-
-local function checkAndRegisterControlCenterHotKeys(hotkey)
-  if controlCenterHotKeys == nil then
-    hotkey:delete()
-    return false
-  else
-    hotkey:enable()
-    table.insert(controlCenterHotKeys, hotkey)
-    return true
-  end
-end
 
 local function popupControlCenterSubPanel(panel, allowReentry)
   local ident = controlCenterSubPanelIdentifiers[panel]
@@ -1166,6 +1152,24 @@ local function popupControlCenterSubPanel(panel, allowReentry)
   end
 end
 
+local controlCenterHotKeys = nil
+local controlCenterSubPanelWatcher = nil
+
+local function checkAndRegisterControlCenterHotKeys(hotkey)
+  if controlCenterHotKeys == nil then
+    hotkey:delete()
+    return false
+  else
+    hotkey:enable()
+    table.insert(controlCenterHotKeys, hotkey)
+    return true
+  end
+end
+
+local hotkeyMainForward, hotkeyMainBack
+local hotkeyShow, hotkeyHide
+local backgroundSoundsHotkeys
+---@diagnostic disable-next-line: lowercase-global
 function registerControlCenterHotKeys(panel)
   local osVersion = getOSVersion()
   local pane = osVersion < OS.Ventura and "window 1" or "group 1 of window 1"
@@ -1195,6 +1199,7 @@ function registerControlCenterHotKeys(panel)
     backgroundSoundsHotkeys = nil
   end
 
+  local selectNetworkHotkeys, selectNetworkWatcher
   controlCenterSubPanelWatcher = hs.window.filter.new(findApplication("com.apple.controlcenter"):name())
     :subscribe(hs.window.filter.windowDestroyed, function()
       if selectNetworkWatcher ~= nil then
@@ -1538,7 +1543,7 @@ function registerControlCenterHotKeys(panel)
 
     -- select network
     selectNetworkHotkeys = {}
-    availableNetworksString = ""
+    local availableNetworksString = ""
     local selectNetworkActionFunc = function()
       local cbField
       if osVersion < OS.Ventura then
