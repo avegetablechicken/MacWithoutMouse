@@ -919,8 +919,8 @@ end
 ---
 
 function HSKeybindings:hide()
-    self.sheetView:hide()
-    self.sheetView:delete()
+  self.sheetView:hide()
+  self.sheetView:delete()
   self.isShowing = false
 end
 

@@ -1381,7 +1381,7 @@ function registerControlCenterHotKeys(panel)
                ["["] = {"Brightness Min", "set value of slid to 0\n"},
                ["]"] = {"Brightness Max", "set value of slid to 100\n"}}
     end
-  
+
     local pos = nil
     if panel == "Display" then
       if osVersion < OS.Ventura then
