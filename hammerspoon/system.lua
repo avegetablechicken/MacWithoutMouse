@@ -1,10 +1,10 @@
 require "utils"
 
 -- menubar for caffeine
-caffeine = hs.menubar.new()
+local caffeine = hs.menubar.new()
 caffeine:autosaveName("CAFFEINE")
 
-function setCaffeineDisplay(state)
+local function setCaffeineDisplay(state)
   if state then
     caffeine:setTitle("AWAKE")
   else
@@ -12,7 +12,7 @@ function setCaffeineDisplay(state)
   end
 end
 
-function caffeineClicked()
+local function caffeineClicked()
   setCaffeineDisplay(hs.caffeinate.toggle("displayIdle"))
 end
 
@@ -22,13 +22,28 @@ if caffeine then
 end
 
 -- system proxy helpers
+local curNetworkService
+local function getCurrentNetworkService()
+  local interfacev4, interfacev6 = hs.network.primaryInterfaces()
+  if interfacev4 then
+    local networkservice, status = hs.execute([[
+        networksetup -listallhardwareports \
+        | awk "/]] .. interfacev4 .. [[/ {print prev} {prev=\$0;}" \
+        | awk -F: '{print $2}' | awk '{$1=$1};1']])
+    curNetworkService = '"' .. networkservice:gsub("\n", "") .. '"'
+  else
+    curNetworkService = nil
+  end
+  return curNetworkService
+end
+
 local function proxy_info(networkservice)
   networkservice = networkservice or curNetworkService
-  autodiscovery = hs.execute("networksetup -getproxyautodiscovery " .. networkservice)
-  autoproxyurl = hs.execute("networksetup -getautoproxyurl " .. networkservice)
-  webproxy = hs.execute("networksetup -getwebproxy " .. networkservice)
-  securewebproxy = hs.execute("networksetup -getsecurewebproxy " .. networkservice)
-  socksproxy = hs.execute("networksetup -getsocksfirewallproxy " .. networkservice)
+  local autodiscovery = hs.execute("networksetup -getproxyautodiscovery " .. networkservice)
+  local autoproxyurl = hs.execute("networksetup -getautoproxyurl " .. networkservice)
+  local webproxy = hs.execute("networksetup -getwebproxy " .. networkservice)
+  local securewebproxy = hs.execute("networksetup -getsecurewebproxy " .. networkservice)
+  local socksproxy = hs.execute("networksetup -getsocksfirewallproxy " .. networkservice)
   return { autodiscovery, autoproxyurl, webproxy, securewebproxy, socksproxy }
 end
 
@@ -285,10 +300,10 @@ local function toggleMonoCloud(enable, alert)
 end
 
 -- menubar for proxy
-proxy = hs.menubar.new()
+local proxy = hs.menubar.new()
 proxy:setTitle("PROXY")
 proxy:autosaveName("PROXY")
-proxyMenu = {}
+local proxyMenu = {}
 
 -- load proxy configs
 ProxyConfigs = {}
@@ -354,7 +369,7 @@ if privateProxyConfigs ~= nil then
   parseProxyConfigurations(privateProxyConfigs)
 end
 
-proxyMenuItemCandidates =
+local proxyMenuItemCandidates =
 {
   {
     appname = "V2RayX",
@@ -829,7 +844,7 @@ function registerProxyMenu(retry)
   end
 end
 
-networkInterfaceWatcher = hs.network.configuration.open()
+local networkInterfaceWatcher = hs.network.configuration.open()
 local function registerProxyMenuWrapper(storeObj, changedKeys)
   local Ipv4State = networkInterfaceWatcher:contents("State:/Network/Global/IPv4")["State:/Network/Global/IPv4"]
   if Ipv4State ~= nil then
@@ -861,7 +876,7 @@ registerProxyMenuWrapper()
 networkInterfaceWatcher:setCallback(registerProxyMenuWrapper)
 networkInterfaceWatcher:start()
 
-local menubarHK = keybindingConfigs.hotkeys.global
+local menubarHK = KeybindingConfigs.hotkeys.global
 
 local proxyHotkey = bindSpecSuspend(menubarHK["showProxyMenu"], "Show Proxy Menu",
 function()
@@ -890,11 +905,11 @@ proxyHotkey.icon = hs.image.imageFromAppBundle("com.apple.systempreferences")
 -- toggle system proxy
 local function toggleSystemProxy(networkservice)
   networkservice = networkservice or curNetworkService
-  autodiscovery = hs.execute("networksetup -getproxyautodiscovery " .. networkservice)
-  autoproxyurl = hs.execute("networksetup -getautoproxyurl " .. networkservice)
-  webproxy = hs.execute("networksetup -getwebproxy " .. networkservice)
-  securewebproxy = hs.execute("networksetup -getsecurewebproxy " .. networkservice)
-  socksproxy = hs.execute("networksetup -getsocksfirewallproxy " .. networkservice)
+  local autodiscovery = hs.execute("networksetup -getproxyautodiscovery " .. networkservice)
+  local autoproxyurl = hs.execute("networksetup -getautoproxyurl " .. networkservice)
+  local webproxy = hs.execute("networksetup -getwebproxy " .. networkservice)
+  local securewebproxy = hs.execute("networksetup -getsecurewebproxy " .. networkservice)
+  local socksproxy = hs.execute("networksetup -getsocksfirewallproxy " .. networkservice)
 
   if string.match(autodiscovery, "On")
     or string.match(webproxy, "Yes")
@@ -942,8 +957,8 @@ local controlCenterSubPanelIdentifiers = controlCenterIdentifiers.subpanel
 local controlCenterMenuBarItemIdentifiers = controlCenterIdentifiers.menubar
 local controlCenterAccessibiliyIdentifiers = controlCenterIdentifiers.accessibility
 
-controlCenterHotKeys = nil
-controlCenterSubPanelWatcher = nil
+local controlCenterHotKeys = nil
+local controlCenterSubPanelWatcher = nil
 
 local function checkAndRegisterControlCenterHotKeys(hotkey)
   if controlCenterHotKeys == nil then
@@ -1612,7 +1627,7 @@ function registerControlCenterHotKeys(panel)
         end tell
       ]])
     else
-      ok, toggleIdents = hs.osascript.applescript([[
+      local ok, toggleIdents = hs.osascript.applescript([[
         tell application "System Events"
           repeat until checkbox 3 of ]] .. pane .. [[ of application process "ControlCenter" exists
             delay 0.1
@@ -1658,7 +1673,7 @@ function registerControlCenterHotKeys(panel)
         end tell
       ]])
     else
-      ok, toggleIdents = hs.osascript.applescript([[
+      local ok, toggleIdents = hs.osascript.applescript([[
         tell application "System Events"
           repeat until checkbox 2 of ]] .. pane .. [[ of application process "ControlCenter" exists
             delay 0.1
@@ -1747,8 +1762,7 @@ function registerControlCenterHotKeys(panel)
         return {value of attribute "AXIdentifier" of checkbox of sa, value of checkbox of sa}
       end tell
     ]])
-    cbIdents = result[1]
-    enableds = result[2]
+    local cbIdents, enableds = result[1], result[2]
     for i=1,3 do
       local cbIdent = cbIdents[i]
       local checkbox = hs.fnutils.find({"Dark Mode", "Night Shift", "True Tone"},
@@ -1843,7 +1857,8 @@ function registerControlCenterHotKeys(panel)
               ]])
               if ok then
                 local appObject = findApplication(bundleID)
-                relaunchHotkey = bindSuspend("⌘", "Return", "Relaunch",
+                local hotkey, observer
+                hotkey = bindSuspend("⌘", "Return", "Relaunch",
                     inAppHotKeysWrapper(appObject, "⌘", "Return", function()
                       hs.osascript.applescript([[
                         tell application "System Events"
@@ -1854,42 +1869,42 @@ function registerControlCenterHotKeys(panel)
                           perform action 1 of bt
                         end tell
                       ]])
-                      if relaunchHotkey ~= nil then
-                        relaunchHotkey:delete()
-                        relaunchHotkey = nil
+                      if hotkey ~= nil then
+                        hotkey:delete()
+                        hotkey = nil
                       end
-                      if relaunchObserver ~= nil then
-                        relaunchObserver:stop()
-                        relaunchObserver = nil
+                      if observer ~= nil then
+                        observer:stop()
+                        observer = nil
                       end
                     end))
-                relaunchHotkey.kind = HK.IN_APP
+                hotkey.kind = HK.IN_APP
                 local appUIObj = hs.axuielement.applicationElement(appObject)
                 local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
-                relaunchObserver = hs.axuielement.observer.new(appObject:pid())
-                relaunchObserver:addWatcher(
+                observer = hs.axuielement.observer.new(appObject:pid())
+                observer:addWatcher(
                   appUIObj, hs.axuielement.observer.notifications.focusedUIElementChanged)
-                relaunchObserver:addWatcher(
+                observer:addWatcher(
                   winUIObj, hs.axuielement.observer.notifications.titleChanged)
-                relaunchObserver:addWatcher(
+                observer:addWatcher(
                   appUIObj, hs.axuielement.observer.notifications.applicationDeactivated
                 )
-                relaunchObserver:callback(function()
+                observer:callback(function()
                   local frontWinBundleID = hs.window.frontmostWindow():application():bundleID()
                   local ok, url = hs.osascript.applescript(
                       [[tell application id "]] .. bundleID .. [[" to get URL of active tab of window ]] .. aWin)
                   if frontWinBundleID ~= bundleID or not ok or url ~= scheme .. "://flags/#enable-force-dark" then
-                    if relaunchHotkey ~= nil then
-                      relaunchHotkey:delete()
-                      relaunchHotkey = nil
+                    if hotkey ~= nil then
+                      hotkey:delete()
+                      hotkey = nil
                     end
-                    if relaunchObserver ~= nil then
-                      relaunchObserver:stop()
-                      relaunchObserver = nil
+                    if observer ~= nil then
+                      observer:stop()
+                      observer = nil
                     end
                   end
                 end)
-                relaunchObserver:start()
+                observer:start()
               end
             end
           end
@@ -2136,7 +2151,7 @@ function registerControlCenterHotKeys(panel)
   end
 end
 
-local controlCenterPanelConfigs = keybindingConfigs.hotkeys.ControlCenterAppKeys
+local controlCenterPanelConfigs = KeybindingConfigs.hotkeys.ControlCenterAppKeys
 local localizedControlCenter = findApplication("com.apple.controlcenter"):name()
 for panel, spec in pairs(controlCenterPanelConfigs) do
   local localizedPanel = controlCenterLocalized(panel)
@@ -2167,7 +2182,7 @@ local function getActiveControlCenterPanel()
   for panel, ident in pairs(controlCenterSubPanelIdentifiers) do
     local already = nil
     if hs.fnutils.contains({ "Wi‑Fi", "Focus", "Bluetooth", "AirDrop", "Keyboard Brightness", "Screen Mirroring",
-                             "Accessibility Shortcuts", "Battery" }, panel) then
+          "Accessibility Shortcuts", "Battery" }, panel) then
       already = string.format(alreadyTemplate, "static text", ident, panel)
     elseif panel == "Display" then
       already = [[
@@ -2188,6 +2203,7 @@ local function getActiveControlCenterPanel()
       ]]
     end
   end
+  local already
   if osVersion < OS.Ventura then
     already = [[
       if (exists button "]] .. mayLocalize("rewind") .. [[" of pane) or  ¬
@@ -2222,8 +2238,9 @@ if hs.window.focusedWindow() ~= nil
   registerControlCenterHotKeys(getActiveControlCenterPanel())
 end
 
-controlCenterPanelHotKeys = {}
-controlCenterWatcher = hs.window.filter.new(findApplication("com.apple.controlcenter"):name())
+local tapperForExtraInfo
+local controlCenterPanelHotKeys = {}
+local controlCenterWatcher = hs.window.filter.new(findApplication("com.apple.controlcenter"):name())
 controlCenterWatcher:subscribe(hs.window.filter.windowCreated,
 function()
   for panel, spec in pairs(controlCenterPanelConfigs) do
@@ -2232,7 +2249,7 @@ function()
         localizedControlCenter .. " > " .. localizedPanel,
         hs.fnutils.partial(popupControlCenterSubPanel, panel))
     table.insert(controlCenterPanelHotKeys, hotkey)
-    timeTapperForExtraInfo = os.time()
+    local timeTapperForExtraInfo = os.time()
     tapperForExtraInfo = hs.eventtap.new({hs.eventtap.event.types.flagsChanged},
       function(event)
         if event:getFlags():containExactly({"alt"}) and os.time() - timeTapperForExtraInfo > 2 then
@@ -2275,7 +2292,7 @@ end)
 -- # callbacks
 
 -- application event callbacks
-function system_applicationCallback(appName, eventType, appObject)
+function System_applicationCallback(appName, eventType, appObject)
   if eventType == hs.application.watcher.deactivated then
     if appName == nil and curNetworkService ~= nil then
       local enabledProxy = parseProxyInfo(proxy_info(), false)
@@ -2293,7 +2310,7 @@ function system_applicationCallback(appName, eventType, appObject)
 end
 
 -- application installation/uninstallation callbacks
-function system_applicationInstalledCallback(files, flagTables)
+function System_applicationInstalledCallback(files, flagTables)
   for i=1,#files do
     if string.match(files[i], "V2RayX")
       or string.match(files[i], "V2rayU")
@@ -2310,7 +2327,7 @@ end
 -- use lab proxy in lab
 local lastWifi = hs.wifi.currentNetwork()
 
-function system_wifiChangedCallback()
+function System_wifiChangedCallback()
 
   local curWifi = hs.wifi.currentNetwork()
   if curWifi == nil then
@@ -2374,7 +2391,7 @@ end
 
 local builtinMonitor = "Built-in Retina Display"
 
-function system_monitorChangedCallback()
+function System_monitorChangedCallback()
   local screens = hs.screen.allScreens()
 
   -- only for built-in monitor
@@ -2395,7 +2412,7 @@ end
 
 -- battery callbacks
 
-function system_batteryChangedCallback()
+function System_batteryChangedCallback()
   local percent = hs.battery.percentage()
   if percent <= 10 then
     if not hs.battery.isCharging() then

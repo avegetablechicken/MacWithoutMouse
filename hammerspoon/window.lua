@@ -1,4 +1,4 @@
-local windowParams = keybindingConfigs["parameters"] or {}
+local windowParams = KeybindingConfigs["parameters"] or {}
 local moveStep = windowParams.windowMoveStep or 20
 local resizeStep = windowParams.windowResizeStep or 100
 local windowZoomToCenterSize = windowParams.windowZoomToCenterSize or { w = 830, h = 750 }
@@ -17,6 +17,8 @@ local function bindWindow(...)
   return hotkey
 end
 
+local frameCacheMaximize = {}
+local frameCacheZoomToCenter = {}
 local function bindMoveWindow(spec, message, fn, repeatable)
   local newFn = function()
     fn()
@@ -43,7 +45,7 @@ local function bindResizeWindow(spec, message, fn, repeatable)
   return hotkey
 end
 
-local winHK = keybindingConfigs.hotkeys.global
+local winHK = KeybindingConfigs.hotkeys.global
 
 -- continuously move the focused window
 
@@ -369,7 +371,6 @@ function()
 end, true)
 
 -- maximize
-frameCacheMaximize = {}
 bindWindow(winHK["toggleMaximize"], "Toggle Maximize",
 function()
   local win = hs.window.focusedWindow()
@@ -447,7 +448,6 @@ function()
 end)
 
 -- move and zoom to center
-frameCacheZoomToCenter = {}
 bindWindow(winHK["toggleZoomToCenter"], "Toggle Zoom to Center",
 function()
   local win = hs.window.focusedWindow()
@@ -574,7 +574,7 @@ end)
 
 -- window-based switcher like Windows
 
-local misc = keybindingConfigs.hotkeys.global
+local misc = KeybindingConfigs.hotkeys.global
 
 local function newWindowMisc(...)
   local hotkey = newSpecSuspend(...)
@@ -612,7 +612,7 @@ local ignoredApps = {
 }
 local switcher
 
-hotkeyEnabledByWindowSwitcher = false
+local hotkeyEnabledByWindowSwitcher = false
 local function enabledByWindowSwitcherFunc()
   return hotkeyEnabledByWindowSwitcher
 end
@@ -620,6 +620,7 @@ end
 local windowSwitcherWindowIdx = nil
 local windowSwitcherWindowNumber = nil
 local anotherLastWindowHotkey = nil
+local anotherLastWindowModifierTap
 
 if misc["switchWindow"] ~= nil and findApplication("com.lwouis.alt-tab-macos") == nil then
   anotherLastWindowHotkey =
@@ -663,7 +664,7 @@ if misc["switchWindow"] ~= nil and findApplication("com.lwouis.alt-tab-macos") =
     local flags = event:getFlags()
     if not flags:contain(lastWindowMods) then
       hotkeyEnabledByWindowSwitcher = false
-      hotkeySuspended = false
+      F_hotkeySuspended = false
       if anotherLastWindowHotkey ~= nil then
         anotherLastWindowHotkey:disable()
       end
@@ -679,7 +680,7 @@ if misc["switchWindow"] ~= nil and findApplication("com.lwouis.alt-tab-macos") =
   function()
     if not anotherLastWindowModifierTap:isEnabled() then
       hotkeyEnabledByWindowSwitcher = true
-      hotkeySuspended = true
+      F_hotkeySuspended = true
       if anotherLastWindowHotkey ~= nil then
         anotherLastWindowHotkey:enable()
       end
@@ -723,7 +724,7 @@ if misc["switchWindow"] ~= nil and findApplication("com.lwouis.alt-tab-macos") =
   function()
     if not anotherLastWindowModifierTap:isEnabled() then
       hotkeyEnabledByWindowSwitcher = true
-      hotkeySuspended = true
+      F_hotkeySuspended = true
       if anotherLastWindowHotkey ~= nil then
         anotherLastWindowHotkey:enable()
       end
@@ -773,6 +774,7 @@ local browserBundleIDs = {
 local switcher_browsers
 
 local anotherLastBrowserHotkey
+local anotherLastBrowserModifierTap
 
 if misc["switchBrowserWindow"] ~= nil then
   anotherLastBrowserHotkey =
@@ -816,7 +818,7 @@ if misc["switchBrowserWindow"] ~= nil then
     local flags = event:getFlags()
     if not flags:contain(lastBrowserWindowMods) then
       hotkeyEnabledByWindowSwitcher = false
-      hotkeySuspended = false
+      F_hotkeySuspended = false
       if anotherLastBrowserHotkey ~= nil then
         anotherLastBrowserHotkey:disable()
       end
@@ -832,7 +834,7 @@ if misc["switchBrowserWindow"] ~= nil then
   function()
     if not anotherLastBrowserModifierTap:isEnabled() then
       hotkeyEnabledByWindowSwitcher = true
-      hotkeySuspended = true
+      F_hotkeySuspended = true
       if anotherLastBrowserHotkey ~= nil then
         anotherLastBrowserHotkey:enable()
       end
@@ -874,7 +876,7 @@ if misc["switchBrowserWindow"] ~= nil then
   function()
     if not anotherLastBrowserModifierTap:isEnabled() then
       hotkeyEnabledByWindowSwitcher = true
-      hotkeySuspended = true
+      F_hotkeySuspended = true
       if anotherLastBrowserHotkey ~= nil then
         anotherLastBrowserHotkey:enable()
       end
@@ -951,6 +953,7 @@ local function browserChooser()
   for _, browser in ipairs(browserBundleIDs) do
     local appObject = findApplication(browser)
     if appObject ~= nil then
+      local title, tabIDCmd
       if browser == "com.apple.Safari" then
         title = 'name'
         tabIDCmd = 'set theID to j\n'
@@ -1001,6 +1004,7 @@ local function browserChooser()
 
   local chooser = hs.chooser.new(function(choice)
     if not choice then return end
+    local findTabCmd, focusTabCmd, titleField
     if choice.browser == "com.apple.Safari" then
       findTabCmd = 'j is ' .. choice.id
       focusTabCmd = [[
@@ -1173,6 +1177,7 @@ local function PDFChooser()
                             "com.microsoft.edgemac", "com.microsoft.edgemac.Dev"}) do
     local appObject = findApplication(browser)
     if appObject ~= nil then
+      local title, tabIDCmd
       if browser == "com.apple.Safari" then
         title = 'name'
         tabIDCmd = 'set theID to j\n'
@@ -1288,6 +1293,7 @@ local function PDFChooser()
         end tell
       ]])
     else
+      local findTabCmd, focusTabCmd, titleField
       if choice.app == "com.apple.Safari" then
         findTabCmd = 'j is ' .. choice.id
         focusTabCmd = [[

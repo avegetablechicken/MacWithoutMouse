@@ -19,7 +19,7 @@ module.action = nil
 module.enabled = false
 
 local function getIndex(keycode) -- key for hotkeys table
-  if keycode == hs.keycodes.map[hyper] then return "✧" end
+  if keycode == hs.keycodes.map[HYPER] then return "✧" end
   local key = hs.keycodes.map[keycode]
   key = key and string.upper(key) or '[#'..keycode..']'
   return key

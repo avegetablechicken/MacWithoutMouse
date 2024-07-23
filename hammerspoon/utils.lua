@@ -1,3 +1,5 @@
+---@diagnostic disable: lowercase-global
+
 OS = {
   Cheetah = "10.00",
   Puma = "10.01",
@@ -101,7 +103,7 @@ function showMenuItemWrapper(fn)
   end
 end
 
-keySymbolMap = {
+SPECIAL_KEY_SIMBOL_MAP = {
   ['\b'] = '⌫',
   ['\t'] = '⇥',
   ['\n'] = '↵',
@@ -202,7 +204,7 @@ local function findMenuItemByKeyBindingImpl(mods, key, menuItem)
   for _, subItem in ipairs(menuItem.AXChildren[1]) do
     local cmdChar = subItem.AXMenuItemCmdChar
     if cmdChar ~= "" and (string.byte(cmdChar, 1) <= 32 or string.byte(cmdChar, 1) > 127) then
-      cmdChar = keySymbolMap[key] or cmdChar
+      cmdChar = SPECIAL_KEY_SIMBOL_MAP[key] or cmdChar
     end
     if (cmdChar == key
         or (subItem.AXMenuItemCmdGlyph ~= "" and hs.application.menuGlyphs[subItem.AXMenuItemCmdGlyph] == key))
@@ -893,8 +895,8 @@ function localizedString(str, bundleID, params)
     if appLocaleAssetBufferInverse[bundleID] == nil then
       appLocaleAssetBufferInverse[bundleID] = {}
     end
-    if localizationMapByKey[bundleID] ~= nil then
-      local key = hs.fnutils.indexOf(localizationMapByKey[bundleID], str)
+    if LOCALE_KEY_MAP[bundleID] ~= nil then
+      local key = hs.fnutils.indexOf(LOCALE_KEY_MAP[bundleID], str)
       if key ~= nil then
         result = localizeByStrings(key, localeDir, localeFile, locale, localesDict,
                                   appLocaleAssetBufferInverse[bundleID])
@@ -1263,8 +1265,8 @@ function delocalizedString(str, bundleID, params)
         result = searchFunc(k)
         if result ~= nil then
           goto L_END_DELOCALIZED
-        elseif localizationMapByKey[bundleID] ~= nil then
-          result = localizationMapByKey[bundleID][k]
+        elseif LOCALE_KEY_MAP[bundleID] ~= nil then
+          result = LOCALE_KEY_MAP[bundleID][k]
           if result ~= nil then goto L_END_DELOCALIZED end
         end
       end
@@ -1304,8 +1306,8 @@ function delocalizedString(str, bundleID, params)
           result = searchFunc(k)
           if result ~= nil then
             goto L_END_DELOCALIZED
-          elseif localizationMapByKey[bundleID] ~= nil then
-            result = localizationMapByKey[bundleID][k]
+          elseif LOCALE_KEY_MAP[bundleID] ~= nil then
+            result = LOCALE_KEY_MAP[bundleID][k]
             if result ~= nil then goto L_END_DELOCALIZED end
           end
         end
@@ -1347,7 +1349,9 @@ function delocalizedString(str, bundleID, params)
   return result
 end
 
+local menuBarTitleLocalizationMap
 function delocalizedMenuBarItem(title, bundleID, params)
+  local defaultTitleMap, titleMap
   if menuBarTitleLocalizationMap ~= nil then
     defaultTitleMap = menuBarTitleLocalizationMap.common
     titleMap = menuBarTitleLocalizationMap[bundleID]
@@ -1368,15 +1372,56 @@ function delocalizedMenuBarItem(title, bundleID, params)
   return newTitle
 end
 
+function delocalizeMenuBarItems(itemTitles, bundleID, localeFile)
+  if menuBarTitleLocalizationMap[bundleID] == nil then
+    menuBarTitleLocalizationMap[bundleID] = {}
+  end
+  local defaultTitleMap, titleMap
+  if menuBarTitleLocalizationMap ~= nil then
+    defaultTitleMap = menuBarTitleLocalizationMap.common
+    titleMap = menuBarTitleLocalizationMap[bundleID]
+  end
+  local result = {}
+  for _, title in ipairs(itemTitles) do
+    -- remove titles starting with non-ascii characters
+    local splits = hs.fnutils.split(title, ' ')
+    if string.byte(title, 1) <= 127
+        and (string.len(title) < 2 or string.byte(title, 2) <= 127)
+        and (string.len(title) < 3 or string.byte(title, 3) <= 127)
+        and (#splits == 1 or string.byte(splits[2], 1) <= 127) then
+      table.insert(result, { title, title })
+    else
+      if titleMap[title] ~= nil then
+        table.insert(result, { title, titleMap[title] })
+        goto L_CONTINUE
+      end
+      if defaultTitleMap ~= nil then
+        if defaultTitleMap[title] ~= nil then
+          table.insert(result, { title, defaultTitleMap[title] })
+          titleMap[title] = defaultTitleMap[title]
+          goto L_CONTINUE
+        end
+      end
+      local newTitle = delocalizedString(title, bundleID, localeFile)
+      if newTitle ~= nil then
+        table.insert(result, { title, newTitle })
+        titleMap[title] = newTitle
+      end
+      ::L_CONTINUE::
+    end
+  end
+  return result
+end
+
 local menuBarTitleLocalizationMapLoaded = {}
 menuBarTitleLocalizationMap = {}
 if hs.fs.attributes("config/menuitem-localization.json") ~= nil then
   menuBarTitleLocalizationMapLoaded = hs.json.read("config/menuitem-localization.json")
   menuBarTitleLocalizationMap = hs.fnutils.copy(menuBarTitleLocalizationMapLoaded)
 end
-localizationMapByKey = {}
+LOCALE_KEY_MAP = {}
 if hs.fs.attributes("static/localization-keys.json") ~= nil then
-  localizationMapByKey = hs.json.read("static/localization-keys.json")
+  LOCALE_KEY_MAP = hs.json.read("static/localization-keys.json")
 end
 menuBarTitleLocalizationMap.common = {}
 local systemLocale = systemLocales()[1]
@@ -1742,20 +1787,4 @@ function clickRightMenuBarItem(menuBarName, menuItem, subMenuItem, show)
     return clickControlCenterMenuBarItem(menuBarName)
   end
   return clickAppRightMenuBarItem(menuBarName, menuItem, subMenuItem, show)
-end
-
-
-curNetworkService = nil
-function getCurrentNetworkService()
-  local interfacev4, interfacev6 = hs.network.primaryInterfaces()
-  if interfacev4 then
-    local networkservice, status = hs.execute([[
-        networksetup -listallhardwareports \
-        | awk "/]] .. interfacev4 .. [[/ {print prev} {prev=\$0;}" \
-        | awk -F: '{print $2}' | awk '{$1=$1};1']])
-    curNetworkService = '"' .. networkservice:gsub("\n", "") .. '"'
-  else
-    curNetworkService = nil
-  end
-  return curNetworkService
 end

@@ -1,5 +1,5 @@
 local function syncFiles(targetDir, watchedDir, changedPaths, beforeFunc, workFunc, afterFunc)
-  relativePaths = {}
+  local relativePaths = {}
   for i, path in ipairs(changedPaths) do
     relativePaths[i] = string.sub(path, string.len(hs.fs.pathToAbsolute(watchedDir)) + 1)
   end
@@ -79,7 +79,7 @@ end
 for k, v in pairs(config.variable or {}) do
   config.variable[k] = computePath(config.variable, v)
 end
-filesToSync = {}
+local filesToSync = {}
 for k, v in pairs(config.file or {}) do
   local spec = {
     computePath(config.variable, k),
@@ -94,7 +94,7 @@ for k, v in pairs(config.file or {}) do
   table.insert(filesToSync, spec)
 end
 
-syncPathWatchers = {}
+SyncPathWatchers = {}
 for _, tuple in ipairs(filesToSync) do
   local beforeFunc
   local workFunc
@@ -109,14 +109,14 @@ for _, tuple in ipairs(filesToSync) do
     afterFunc = tuple[5]
   end
 
-  watcher = hs.pathwatcher.new(tuple[1], function(paths)
+  local watcher = hs.pathwatcher.new(tuple[1], function(paths)
     syncFiles(tuple[2], tuple[1], paths, beforeFunc, workFunc, afterFunc)
   end)
   watcher:start()
-  table.insert(syncPathWatchers, watcher)
+  table.insert(SyncPathWatchers, watcher)
 end
 
-function fs_applicationInstalledCallback(files, flagTables)
+function File_applicationInstalledCallback(files, flagTables)
   for i=1,#files do
     if string.match(files[i], "Google Docs")
       or string.match(files[i], "Google Sheets")
@@ -129,7 +129,7 @@ function fs_applicationInstalledCallback(files, flagTables)
 end
 
 -- listen to other devices on port 8086 and copy received text/image/file to clipboard
-function handleRequest(method, path, headers, body)
+local function handleRequest(method, path, headers, body)
   print("[LOG] Received " .. method .. " request for " .. path)
   print("[LOG] Headers: " .. hs.inspect.inspect(headers))
 
@@ -139,9 +139,10 @@ function handleRequest(method, path, headers, body)
 
     if hs.fnutils.contains(types, "public.file-url") then
       contentType = "application/octet-stream"
-      filePath = hs.pasteboard.readURL().filePath
+      local filePath = hs.pasteboard.readURL().filePath
       contentDisposition = "attachment; filename=\"" .. hs.pasteboard.readString() .. "\""
-      file = io.open(filePath, "rb")
+      local file = io.open(filePath, "rb")
+      assert(file)
       content = file:read("*all")
       file:close()
     elseif hs.fnutils.contains(types, "public.utf8-plain-text") then
@@ -177,7 +178,7 @@ function handleRequest(method, path, headers, body)
     hs.pasteboard.setContents(body)
     print("[LOG] Copied text to clipboard: " .. body)
   elseif string.find(headers["Content-Type"], "image/") then
-    local file
+    local file, tmpname
     while file == nil do
       tmpname = os.tmpname()
       file = io.open(tmpname, "wb")
@@ -231,4 +232,4 @@ function handleRequest(method, path, headers, body)
   return response.body, response.status, response.headers
 end
 
-server = hs.httpserver.new():setPort(8086):setCallback(handleRequest):start()
+HTTPServer = hs.httpserver.new():setPort(8086):setCallback(handleRequest):start()

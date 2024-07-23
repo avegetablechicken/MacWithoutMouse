@@ -1,4 +1,4 @@
-local misc = keybindingConfigs.hotkeys.global
+local misc = KeybindingConfigs.hotkeys.global
 
 -- call `ShortCuts` to copy to PC
 local iconForShortcuts = hs.image.imageFromAppBundle("com.apple.shortcuts")
@@ -56,10 +56,11 @@ if not shortcutsLaunched then
 end
 
 -- hold command and double tap C to prepend to pasteboard
-pasteboardKeyDown = false
-pasteboardKeyUp = false
-pasteboardBuffer = nil
-prependPasteboardTapper = hs.eventtap.new({hs.eventtap.event.types.keyDown, hs.eventtap.event.types.keyUp},
+local pasteboardKeyDown = false
+local pasteboardKeyUp = false
+local pasteboardBuffer = nil
+local prependPasteboardTimer
+PrependPasteboardTapper = hs.eventtap.new({ hs.eventtap.event.types.keyDown, hs.eventtap.event.types.keyUp },
 function(ev)
   if ev:getKeyCode() ~= hs.keycodes.map["c"] or not ev:getFlags():containExactly({"cmd"}) then
     return false
@@ -109,7 +110,7 @@ if hs.fs.attributes("config/misc.json") ~= nil then
   pasteboardFilterPatterns = hs.json.read("config/misc.json").pasteboardFilter or {}
 end
 
-generalPBWatcher = hs.pasteboard.watcher.new(
+GeneralPBWatcher = hs.pasteboard.watcher.new(
 function(v)
   if v == nil then return end
   if hs.fnutils.contains(hs.pasteboard.contentTypes(), "public.utf8-plain-text") then
@@ -128,7 +129,7 @@ local verificationPatterns = {}
 if hs.fs.attributes("config/misc.json") ~= nil then
   verificationPatterns = hs.json.read("config/misc.json").verificationFilter or {}
 end
-function parseVerificationCodeFromFirstMessage()
+local function parseVerificationCodeFromFirstMessage()
   local ok, content = hs.osascript.applescript([[
     tell application "System Events"
       tell window 1 of (first application process ¬
@@ -161,7 +162,7 @@ function parseVerificationCodeFromFirstMessage()
   end
 end
 
-newMessageWindowFilter = hs.window.filter.new(false):
+NewMessageWindowFilter = hs.window.filter.new(false):
 allowApp(findApplication("com.apple.notificationcenterui"):name()):
 subscribe(hs.window.filter.windowCreated,
   function()
@@ -233,7 +234,7 @@ local function loadKarabinerKeyBindings(filePath)
     for _, mod in ipairs(modifiersShowReverseOrder) do
       if hs.fnutils.contains(mods, mod) then modsRepr = modsRepr .. modifierSymbolMap[mod] end
     end
-    local key = string.upper(item.key) == hyper and 'hyper' or item.key
+    local key = string.upper(item.key) == HYPER and 'hyper' or item.key
     local key = modifierSymbolMap[key] or string.upper(key)
     local idx = modsRepr .. key
     local msg = idx .. ": " .. item.message
@@ -277,7 +278,7 @@ local function menuItemHotkeyIdx(mods, key)
     if hs.fnutils.contains(mods, mod) then idx = idx .. modifierSymbolMap[mod] end
   end
   if string.byte(key, 1) <= 32 or string.byte(key, 1) > 127 then
-    key = keySymbolMap[key] or key
+    key = SPECIAL_KEY_SIMBOL_MAP[key] or key
   else
     key = string.upper(key)
   end
@@ -285,6 +286,7 @@ local function menuItemHotkeyIdx(mods, key)
   return idx
 end
 
+local localizedEnterFullScreen
 local function getSubMenuHotkeys(t, menuItem, titleAsEntry, titlePrefix)
   if menuItem.AXChildren == nil then return end
   if titleAsEntry == true then
@@ -352,7 +354,7 @@ local function loadAppHotkeys(t)
         if (frontWin ~= nil and activeApp:focusedWindow() ~= nil
             and frontWin:application():bundleID() ~= activeApp:bundleID())
             or (frontWin == nil and activeApp:focusedWindow() ~= nil
-            and windowCreatedSince[activeApp:focusedWindow():id()]) then
+            and WindowCreatedSince[activeApp:focusedWindow():id()]) then
           hotkey.valid = false
         end
         if hotkey.valid and hs.fnutils.find(t, function(hk)
@@ -374,7 +376,7 @@ end
 local function testValid(entry)
   local pos = string.find(entry.msg, ": ")
   local valid = pos ~= nil
-      and not (entry.suspendable and hotkeySuspended)
+      and not (entry.suspendable and F_hotkeySuspended)
   local actualMsg
   if valid then
     valid = valid and (entry.enabled == nil or entry.enabled == true)
@@ -392,8 +394,8 @@ local function testValid(entry)
       else
         bundleID = hs.window.frontmostWindow():application():bundleID()
       end
-      if inWinHotkeyInfoChain ~= nil and inWinHotkeyInfoChain[bundleID] ~= nil then
-        local hotkeyInfo = inWinHotkeyInfoChain[bundleID][entry.idx]
+      if InWinHotkeyInfoChain ~= nil and InWinHotkeyInfoChain[bundleID] ~= nil then
+        local hotkeyInfo = InWinHotkeyInfoChain[bundleID][entry.idx]
         if hotkeyInfo then
           valid, actualMsg = getValidMessage(hotkeyInfo)
         end
@@ -410,6 +412,7 @@ local function testValid(entry)
   end
 end
 
+local karaHotkeys
 local function processHotkeys(validOnly, showHS, showKara, showApp, evFlags, reload)
   local allKeys = {}
   local enabledAltMenuHotkeys = {}
@@ -418,7 +421,7 @@ local function processHotkeys(validOnly, showHS, showKara, showApp, evFlags, rel
     goto L_endCollect
   end
 
-  for i, modal in ipairs(doubleTapModalList) do
+  for i, modal in ipairs(DoubleTapModalList) do
     table.insert(allKeys, { idx = modal.idx, msg = modal.msg,
                             condition = modal.condition, enabled = modal.enabled,
                             kind = modal.kind, subkind = modal.subkind,
@@ -426,7 +429,7 @@ local function processHotkeys(validOnly, showHS, showKara, showApp, evFlags, rel
                             suspendable = modal.suspendable, source = 0 })
   end
 
-  for _, modal in ipairs(hyperModalList) do
+  for _, modal in ipairs(HyperModalList) do
     if modal.hyperMode.Entered == false then
       for i, hotkey in ipairs(modal.hyperMode.keys) do
         table.insert(allKeys, { idx = hotkey.idx, msg = hotkey.msg,
@@ -438,7 +441,7 @@ local function processHotkeys(validOnly, showHS, showKara, showApp, evFlags, rel
     end
   end
 
-  for _, modal in ipairs(touchModalList) do
+  for _, modal in ipairs(TouchModalList) do
     for _, hotkeys in pairs(modal.keys) do
       for _, hotkey in ipairs(hotkeys) do
         table.insert(allKeys, { idx = hotkey.idx, msg = hotkey.msg, source = 0 })
@@ -529,7 +532,7 @@ local function processHotkeys(validOnly, showHS, showKara, showApp, evFlags, rel
     for i, hotkey in ipairs(allKeys) do
       if hotkey.kind > HK.APP_MENU then insertIdx = i break end
     end
-    for i, hk in ipairs(altMenuBarItemHotkeys) do
+    for i, hk in ipairs(AltMenuBarItemHotkeys) do
       local entry = hs.fnutils.find(enabledAltMenuHotkeys, function(menuHK)
         return menuHK.idx == hk.idx
       end)
@@ -890,10 +893,6 @@ function HSKeybindings:show()
   else
     self.colRatio = 47
   end
-  if validOnly == nil then validOnly = true end
-  if showHS == nil then showHS = true end
-  if showKara == nil then showKara = false end
-  if showApp == nil then showApp = false end
   self:update(true, true, false, false)
   loadAppHotkeys(self.buffer)
 end
@@ -925,12 +924,12 @@ function HSKeybindings:hide()
   self.isShowing = false
 end
 
-doubleTapModal = require('modal/doubletap')
-doubleTapModal.install(hyper)
-table.insert(doubleTapModalList, doubleTapModal)
-local hkKeybindingsLastModifier
+local doubleTapModal = require('modal/doubletap')
+doubleTapModal.install(HYPER)
+table.insert(DoubleTapModalList, doubleTapModal)
 doubleTapModal.bindSuspend("Show Keybindings",
 function()
+  local hkKeybindingsLastModifier, hkKeybindingsWatcher, hkHideKeybindingsWatcher
   local cancelFunc = function()
     HSKeybindings:hide()
     HSKeybindings:reset()
@@ -942,18 +941,17 @@ function()
 
   -- disable all modals activated by this modal
   doubleTapModal.disable()
-  local enteredModal = hs.fnutils.find(hyperModalList,
-      function(modal) return modal.hyper == hyper end)
+  local enteredModal = hs.fnutils.find(HyperModalList,
+      function(modal) return modal.hyper == HYPER end)
   if enteredModal then
     enteredModal.hyperMode:exit()
     enteredModal.hyperMode.Entered = false
   end
 
   HSKeybindings:show()
-  hkKeybindingsOptionDown = false
   hkKeybindingsLastModifier = {}
   local callback = function(ev)
-    if doNotReloadShowingKeybings then return end
+    if F_doNotReloadShowingKeybings then return end
     local evFlags = ev:getFlags()
     if ev:getType() == hs.eventtap.event.types.gesture then
       if hkKeybindingsLastModifier.hyper then
@@ -975,7 +973,7 @@ function()
         end
       end
     elseif ev:getType() == hs.eventtap.event.types.keyDown then
-      if ev:getKeyCode() == hs.keycodes.map[hyper] then
+      if ev:getKeyCode() == hs.keycodes.map[HYPER] then
         evFlags.hyper = true
       elseif ev:getKeyCode() == hs.keycodes.map["Space"] then
         HSKeybindings:update(false, HSKeybindings.showHS,
@@ -998,7 +996,7 @@ function()
         return true
       end
     elseif ev:getType() == hs.eventtap.event.types.keyUp then
-      if ev:getKeyCode() == hs.keycodes.map[hyper] then
+      if ev:getKeyCode() == hs.keycodes.map[HYPER] then
         evFlags.hyper = nil
       elseif ev:getKeyCode() == hs.keycodes.map["Space"] then
         HSKeybindings:update(true, HSKeybindings.showHS,
@@ -1041,7 +1039,7 @@ end)
 doubleTapModal.kind = HK.PRIVELLEGE
 
 
-function getCurrentApplication()
+local function getCurrentApplication()
   local app = hs.window.frontmostWindow():application()
   local bundleID = app:bundleID()
   local appName = app:name()
@@ -1077,7 +1075,7 @@ local searchHotkey = bindSpecSuspend(misc["searchHotkeys"], "Search Hotkey", fun
   local allKeys = {}
   local enabledAltMenuHotkeys = {}
 
-  for i, modal in ipairs(doubleTapModalList) do
+  for i, modal in ipairs(DoubleTapModalList) do
     table.insert(allKeys, { modalType = 2,
                             idx = modal.idx, msg = modal.msg,
                             condition = modal.condition, enabled = modal.enabled,
@@ -1085,7 +1083,7 @@ local searchHotkey = bindSpecSuspend(misc["searchHotkeys"], "Search Hotkey", fun
                             icon = modal.icon })
   end
 
-  for _, modal in ipairs(hyperModalList) do
+  for _, modal in ipairs(HyperModalList) do
     if modal.hyperMode.Entered == false then
       for i, hotkey in ipairs(modal.hyperMode.keys) do
         table.insert(allKeys, { modalType = 1, hyper = _,
@@ -1178,7 +1176,7 @@ local searchHotkey = bindSpecSuspend(misc["searchHotkeys"], "Search Hotkey", fun
     for i, hotkey in ipairs(allKeys) do
       if hotkey.kind > HK.APP_MENU then insertIdx = i break end
     end
-    for i, hk in ipairs(altMenuBarItemHotkeys) do
+    for i, hk in ipairs(AltMenuBarItemHotkeys) do
       local entry = hs.fnutils.find(enabledAltMenuHotkeys, function(menuHK)
         return menuHK.idx == hk.idx
       end)
@@ -1210,7 +1208,7 @@ local searchHotkey = bindSpecSuspend(misc["searchHotkeys"], "Search Hotkey", fun
       if (frontWin ~= nil and activeApp:focusedWindow() ~= nil
           and frontWin:application():bundleID() ~= activeApp:bundleID())
           or (frontWin == nil and activeApp:focusedWindow() ~= nil
-          and windowCreatedSince[activeApp:focusedWindow():id()]) then
+          and WindowCreatedSince[activeApp:focusedWindow():id()]) then
         hotkey.valid = false
       end
       if hotkey.valid and hs.fnutils.find(allKeys, function(hk)
@@ -1333,11 +1331,11 @@ local searchHotkey = bindSpecSuspend(misc["searchHotkeys"], "Search Hotkey", fun
     local idx = entry.idx
     local thisHyper
     if entry.modalType == 1 then
-      if hyperModalList[entry.hyper].hyper == hyper then
+      if HyperModalList[entry.hyper].hyper == HYPER then
         thisHyper = "✧"
         idx = thisHyper .. idx
       else
-        thisHyper = hyperModalList[entry.hyper].hyper
+        thisHyper = HyperModalList[entry.hyper].hyper
         idx = thisHyper .. idx
       end
     elseif entry.modalType == 0 then
@@ -1368,17 +1366,17 @@ local searchHotkey = bindSpecSuspend(misc["searchHotkeys"], "Search Hotkey", fun
     if choice.modalType == 0 then
       if choice.hyper ~= nil then
         if choice.hyper == "✧" then
-          for _, hotkey in ipairs(hyperModal.hyperMode.keys) do
+          for _, hotkey in ipairs(HyperModal.hyperMode.keys) do
             hotkey:enable()
           end
           hs.eventtap.keyStroke(choice.mods, choice.key)
           hs.timer.doAfter(0.2, function()
-            for _, hotkey in ipairs(hyperModal.hyperMode.keys) do
+            for _, hotkey in ipairs(HyperModal.hyperMode.keys) do
               hotkey:disable()
             end
           end)
         else
-          for _, modal in ipairs(hyperModalList) do
+          for _, modal in ipairs(HyperModalList) do
             if modal.hyper == choice.hyper then
               for _, hotkey in ipairs(modal.hyperMode.keys) do
                 hotkey:enable()
@@ -1397,7 +1395,7 @@ local searchHotkey = bindSpecSuspend(misc["searchHotkeys"], "Search Hotkey", fun
         hs.eventtap.keyStroke(choice.mods:gsub('🌐︎', 'fn'), choice.key)
       end
     elseif choice.modalType == 1 then
-      local modal = hyperModalList[choice.hyperModalIdx]
+      local modal = HyperModalList[choice.hyperModalIdx]
       for _, hotkey in ipairs(modal.hyperMode.keys) do
         hotkey:enable()
       end
@@ -1428,7 +1426,7 @@ local searchHotkey = bindSpecSuspend(misc["searchHotkeys"], "Search Hotkey", fun
       else
         local keycode
         if choice.key == "✧" then
-          keycode = hs.keycodes.map[hyper]
+          keycode = hs.keycodes.map[HYPER]
         else
           local keyLen = string.len(choice.key)
           keycode = string.sub(choice.key, 1, keyLen / 2)

@@ -14,7 +14,7 @@ local function bindWindow(...)
   return hotkey
 end
 
-local ssHK = keybindingConfigs.hotkeys.global
+local ssHK = KeybindingConfigs.hotkeys.global
 
 -- # monitor ops
 
@@ -94,26 +94,27 @@ local function checkAndMoveWindowToMonitor(monitor)
 end
 
 -- move cursor to next monitor
+local adjacentMonitorHotkeys = {}
 local image = hs.image.imageFromPath("static/display.png")
-focusRightMonitorHotkey = newSpecSuspend(ssHK["focusNextScreen"], "Focus on Next Monitor",
-    hs.fnutils.partial(checkAndMoveCursurToMonitor, "r"))
-focusRightMonitorHotkey.icon = image
+table.insert(adjacentMonitorHotkeys, newSpecSuspend(ssHK["focusNextScreen"], "Focus on Next Monitor",
+    hs.fnutils.partial(checkAndMoveCursurToMonitor, "r")))
 -- move cursor to previous monitor
-focusLeftMonitorHotkey = newSpecSuspend(ssHK["focusPrevScreen"], "Focus on Previous Monitor",
-    hs.fnutils.partial(checkAndMoveCursurToMonitor, "l"))
-focusLeftMonitorHotkey.icon = image
+table.insert(adjacentMonitorHotkeys, newSpecSuspend(ssHK["focusPrevScreen"], "Focus on Previous Monitor",
+    hs.fnutils.partial(checkAndMoveCursurToMonitor, "l")))
 
 -- move window to next monitor
-moveToRightMonitorHotkey = newWindow(ssHK["moveToNextScreen"], "Move to Next Monitor",
-    hs.fnutils.partial(checkAndMoveWindowToMonitor, "r"))
-moveToRightMonitorHotkey.icon = image
+table.insert(adjacentMonitorHotkeys, newWindow(ssHK["moveToNextScreen"], "Move to Next Monitor",
+    hs.fnutils.partial(checkAndMoveWindowToMonitor, "r")))
 -- move window to previous monitor
-moveToLeftMonitorHotkey = newWindow(ssHK["moveToPrevScreen"], "Move to Previous Monitor",
-    hs.fnutils.partial(checkAndMoveWindowToMonitor, "l"))
-moveToLeftMonitorHotkey.icon = image
+table.insert(adjacentMonitorHotkeys, newWindow(ssHK["moveToPrevScreen"], "Move to Previous Monitor",
+    hs.fnutils.partial(checkAndMoveWindowToMonitor, "l")))
 
-focusMonitorHotkeys = {}
-moveToScreenHotkeys = {}
+for _, hotkey in ipairs(adjacentMonitorHotkeys) do
+  hotkey.icon = image
+end
+
+local focusMonitorHotkeys = {}
+local moveToScreenHotkeys = {}
 local function registerMonitorHotkeys()
   if #moveToScreenHotkeys > 0 or #focusMonitorHotkeys > 0 then
     for _, hotkey in ipairs(focusMonitorHotkeys) do
@@ -128,17 +129,15 @@ local function registerMonitorHotkeys()
 
   local nscreens = #hs.screen.allScreens()
   if nscreens <= 1 then
-    focusRightMonitorHotkey:disable()
-    focusLeftMonitorHotkey:disable()
-    moveToRightMonitorHotkey:disable()
-    moveToLeftMonitorHotkey:disable()
+    for _, hotkey in ipairs(adjacentMonitorHotkeys) do
+      hotkey:disable()
+    end
     return
   end
 
-  focusRightMonitorHotkey:enable()
-  focusLeftMonitorHotkey:enable()
-  moveToRightMonitorHotkey:enable()
-  moveToLeftMonitorHotkey:enable()
+  for _, hotkey in ipairs(adjacentMonitorHotkeys) do
+    hotkey:enable()
+  end
 
   -- move window to screen by idx
   for i=1,nscreens do
@@ -203,15 +202,18 @@ local function checkAndMoveWindowToSpace(space)
 end
 
 -- move window to next space
-moveToRightSpaceHotkey = newWindow(ssHK["moveToNextSpace"], "Move to Next Space",
-    hs.fnutils.partial(checkAndMoveWindowToSpace, "r"))
-moveToRightSpaceHotkey.icon = image
+local adjacentSpaceHotkeys = {}
+table.insert(adjacentSpaceHotkeys, newWindow(ssHK["moveToNextSpace"], "Move to Next Space",
+    hs.fnutils.partial(checkAndMoveWindowToSpace, "r")))
 -- move window to previous space
-moveToLeftSpaceHotkey = newWindow(ssHK["moveToPrevSpace"], "Move to Previous Space",
-    hs.fnutils.partial(checkAndMoveWindowToSpace, "l"))
-moveToRightSpaceHotkey.icon = image
+table.insert(adjacentSpaceHotkeys, newWindow(ssHK["moveToPrevSpace"], "Move to Previous Space",
+    hs.fnutils.partial(checkAndMoveWindowToSpace, "l")))
 
-moveToSpaceHotkeys = {}
+for _, hotkey in ipairs(adjacentSpaceHotkeys) do
+  hotkey.icon = image
+end
+
+local moveToSpaceHotkeys = {}
 local function registerMoveToSpaceHotkeys()
   if #moveToSpaceHotkeys > 0 then
     for _, hotkey in ipairs(moveToSpaceHotkeys) do
@@ -223,13 +225,15 @@ local function registerMoveToSpaceHotkeys()
   local user_spaces = getUserSpaces()
   local nspaces = #user_spaces
   if nspaces <= 1 then
-    moveToRightSpaceHotkey:disable()
-    moveToLeftSpaceHotkey:disable()
+    for _, hotkey in ipairs(adjacentSpaceHotkeys) do
+      hotkey:disable()
+    end
     return
   end
 
-  moveToRightSpaceHotkey:enable()
-  moveToLeftSpaceHotkey:enable()
+  for _, hotkey in ipairs(adjacentSpaceHotkeys) do
+    hotkey:enable()
+  end
 
   -- move window to space by idx
   for i=1,nspaces do
@@ -254,7 +258,7 @@ registerMoveToSpaceHotkeys()
 
 -- watch screen changes
 
-function screen_monitorChangedCallback()
+function Screen_monitorChangedCallback()
   registerMonitorHotkeys()
   registerMoveToSpaceHotkeys()
 end
@@ -262,7 +266,7 @@ end
 -- watch space changes
 
 -- detect number of user spaces
-spaceNumberWatcher = hs.timer.new(1, function()
+SpaceNumberWatcher = hs.timer.new(1, function()
   local user_spaces = getUserSpaces()
   local nspaces = #user_spaces
   if nspaces ~= #moveToSpaceHotkeys then

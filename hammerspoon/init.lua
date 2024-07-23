@@ -13,11 +13,11 @@ HK = {
   WIN_OP_ = { MOVE = 1, RESIZE = 2, SPACE_SCREEN = 3 },
 }
 
-hyper = nil
-keybindingConfigs = nil
+HYPER = nil
+KeybindingConfigs = nil
 local function loadKeybindings(filePath)
-  keybindingConfigs = hs.json.read(filePath)
-  for k, hp in pairs(keybindingConfigs.hyper or {}) do
+  KeybindingConfigs = hs.json.read(filePath)
+  for k, hp in pairs(KeybindingConfigs.hyper or {}) do
     if type(hp) == "string" then
       if hs.fnutils.contains({"fn", "shift", "option", "control", "command"}) then
         hp = {hp}
@@ -30,23 +30,23 @@ local function loadKeybindings(filePath)
       if hs.fnutils.contains(hp, "option") then modsRepr = modsRepr .. "⌥" end
       if hs.fnutils.contains(hp, "shift") then modsRepr = modsRepr .. "⇧" end
       if hs.fnutils.contains(hp, "fn") then modsRepr = "fn" .. modsRepr end
-      keybindingConfigs.hyper[k] = modsRepr
+      KeybindingConfigs.hyper[k] = modsRepr
     end
   end
-  if keybindingConfigs.hyper ~= nil then
-    hyper = keybindingConfigs.hyper.hyper
+  if KeybindingConfigs.hyper ~= nil then
+    HYPER = KeybindingConfigs.hyper.hyper
   end
 
-  if keybindingConfigs.hotkeys == nil then
-    keybindingConfigs.hotkeys = {}
+  if KeybindingConfigs.hotkeys == nil then
+    KeybindingConfigs.hotkeys = {}
   end
-  for kind, cfg in pairs(keybindingConfigs.hotkeys) do
+  for kind, cfg in pairs(KeybindingConfigs.hotkeys) do
     if kind ~= "menuBarItems" then
       for k, spec in pairs(cfg) do
         if type(spec.mods) == 'string' then
           spec.mods = string.gsub(spec.mods, "%${(.-)}", function(key)
             local pos = 0
-            local buf = keybindingConfigs
+            local buf = KeybindingConfigs
             while true do
               local newPos = string.find(key, "%.", pos + 1)
               if newPos then
@@ -66,20 +66,25 @@ local function loadKeybindings(filePath)
 end
 loadKeybindings("config/keybindings.json")
 
-hyperModalList = {}
-doubleTapModalList = {}
-touchModalList = {}
+HyperModalList = {}
+DoubleTapModalList = {}
+TouchModalList = {}
 
-forgivenApps = {
+HyperModal = require('modal/hyper')
+HyperModal.install(HYPER)
+table.insert(HyperModalList, HyperModal)
+
+FORGIVEN_APPS = {
   "com.devolutions.remotedesktopmanager", "com.devolutions.remotedesktopmanager.free",
   "com.parallels.macvm",
 }
 
+---@diagnostic disable-next-line: lowercase-global
 function forgiveWrapper(fn, mods, key)
   if fn ~= nil then
     local oldFn = fn
     fn = function()
-      if not hs.fnutils.contains(forgivenApps, hs.application.frontmostApplication():bundleID()) then
+      if not hs.fnutils.contains(FORGIVEN_APPS, hs.application.frontmostApplication():bundleID()) then
         oldFn()
       elseif mods ~= nil and key ~= nil then
         selectMenuItemOrKeyStroke(hs.window.frontmostWindow():application(), mods, key)
@@ -89,11 +94,12 @@ function forgiveWrapper(fn, mods, key)
   return fn
 end
 
+---@diagnostic disable-next-line: lowercase-global
 function suspendWrapper(fn, mods, key, predicates)
   if fn ~= nil then
     local oldFn = fn
     fn = function()
-      local enabled = not hotkeySuspended
+      local enabled = not F_hotkeySuspended
       if predicates ~= nil then
         if enabled and predicates.and_ == true then
           if not(predicates.fn)() then
@@ -128,6 +134,7 @@ local function getFunc(f)
   return nil
 end
 
+---@diagnostic disable-next-line: lowercase-global
 function newHotkey(mods, key, message, pressedfn, releasedfn, repeatfn)
   if message == nil or getFunc(message) then
     repeatfn=releasedfn releasedfn=pressedfn pressedfn=message message=nil -- shift down arguments
@@ -139,7 +146,7 @@ function newHotkey(mods, key, message, pressedfn, releasedfn, repeatfn)
   releasedfn = forgiveWrapper(releasedfn, mods, key)
   repeatfn = forgiveWrapper(repeatfn, mods, key)
   local hotkey
-  local validHyperModal = hs.fnutils.find(hyperModalList, function(modal)
+  local validHyperModal = hs.fnutils.find(HyperModalList, function(modal)
     return modal.hyper == mods
   end)
   if validHyperModal ~= nil then
@@ -148,8 +155,8 @@ function newHotkey(mods, key, message, pressedfn, releasedfn, repeatfn)
     hotkey = hs.hotkey.new(mods, key, pressedfn, releasedfn, repeatfn)
   end
   if message ~= nil then
-    if mods == hyper then
-      hotkey.msg = string.gsub(hotkey.msg, hyperModal.hyper, "✧", 1)
+    if mods == HYPER then
+      hotkey.msg = string.gsub(hotkey.msg, HyperModal.hyper, "✧", 1)
     else
       hotkey.msg = hotkey.idx .. ": " .. message
     end
@@ -157,6 +164,7 @@ function newHotkey(mods, key, message, pressedfn, releasedfn, repeatfn)
   return hotkey
 end
 
+---@diagnostic disable-next-line: lowercase-global
 function newSuspend(mods, key, message, pressedfn, releasedfn, repeatfn, predicates)
   if message == nil or getFunc(message) then
     predicates = repeatfn
@@ -173,15 +181,17 @@ function newSuspend(mods, key, message, pressedfn, releasedfn, repeatfn, predica
   return hotkey
 end
 
+---@diagnostic disable-next-line: lowercase-global
 function newSpecSuspend(spec, ...)
   if spec == nil then return nil end
   return newSuspend(spec.mods, spec.key, ...)
 end
 
+---@diagnostic disable-next-line: lowercase-global
 function bindHotkeySpec(spec, ...)
   local hotkey = newHotkey(spec.mods, spec.key, ...)
   if hotkey ~= nil then
-    local validHyperModal = hs.fnutils.find(hyperModalList, function(modal)
+    local validHyperModal = hs.fnutils.find(HyperModalList, function(modal)
       return modal.hyper == spec.mods
     end)
     if validHyperModal == nil then
@@ -191,10 +201,11 @@ function bindHotkeySpec(spec, ...)
   return hotkey
 end
 
+---@diagnostic disable-next-line: lowercase-global
 function bindSuspend(mods, ...)
   local hotkey = newSuspend(mods, ...)
   if hotkey ~= nil then
-    local validHyperModal = hs.fnutils.find(hyperModalList, function(modal)
+    local validHyperModal = hs.fnutils.find(HyperModalList, function(modal)
       return modal.hyper == mods
     end)
     if validHyperModal == nil then
@@ -204,19 +215,20 @@ function bindSuspend(mods, ...)
   return hotkey
 end
 
+---@diagnostic disable-next-line: lowercase-global
 function bindSpecSuspend(spec, ...)
   if spec == nil then return nil end
   return bindSuspend(spec.mods, spec.key, ...)
 end
 
-local misc = keybindingConfigs.hotkeys.global
+local misc = KeybindingConfigs.hotkeys.global
 
 -- toggle hotkeys
-hotkeySuspended = false
+F_hotkeySuspended = false
 HSKeybindings = nil
 local toggleHotkey = bindHotkeySpec(misc["toggleHotkeys"], function()
-  hotkeySuspended = not hotkeySuspended
-  if hotkeySuspended then
+  F_hotkeySuspended = not F_hotkeySuspended
+  if F_hotkeySuspended then
     hs.alert.show("Hammerspoon Hotkeys Suspended")
   else
     hs.alert.show("Hammerspoon Hotkeys Resumed")
@@ -249,47 +261,47 @@ function()
   end
 end).kind = HK.PRIVELLEGE
 
-function reloadConfig(files)
+local function reloadConfig(files)
   if hs.fnutils.some(files, function(file) return file:sub(-4) == ".lua" end) then
     hs.reload()
   end
 end
 
-function applicationCallback(appName, eventType, appObject)
-  app_applicationCallback(appName, eventType, appObject)
-  system_applicationCallback(appName, eventType, appObject)
+local function applicationCallback(appName, eventType, appObject)
+  App_applicationCallback(appName, eventType, appObject)
+  System_applicationCallback(appName, eventType, appObject)
 end
 
-function applicationInstalledCallback(files, flagTables)
-  local files = hs.fnutils.filter(files, function(file) return file:sub(-4) == ".app" end)
+local function applicationInstalledCallback(files, flagTables)
+  files = hs.fnutils.filter(files, function(file) return file:sub(-4) == ".app" end)
   if #files ~= 0 then
-    app_applicationInstalledCallback(files, flagTables)
-    system_applicationInstalledCallback(files, flagTables)
-    fs_applicationInstalledCallback(files, flagTables)
+    App_applicationInstalledCallback(files, flagTables)
+    System_applicationInstalledCallback(files, flagTables)
+    File_applicationInstalledCallback(files, flagTables)
   end
 end
 
-function wifiChangedCallback()
-  app_wifiChangedCallback()
-  system_wifiChangedCallback()
+local function wifiChangedCallback()
+  App_wifiChangedCallback()
+  System_wifiChangedCallback()
 end
 
-function monitorChangedCallback()
-  app_monitorChangedCallback()
-  system_monitorChangedCallback()
-  screen_monitorChangedCallback()
+local function monitorChangedCallback()
+  App_monitorChangedCallback()
+  System_monitorChangedCallback()
+  Screen_monitorChangedCallback()
 end
 
-function usbChangedCallback(device)
-  app_usbChangedCallback(device)
+local function usbChangedCallback(device)
+  App_usbChangedCallback(device)
 end
 
-configWatcher = hs.pathwatcher.new(os.getenv("HOME") .. "/.hammerspoon/", reloadConfig):start()
-appWatcher = hs.application.watcher.new(applicationCallback):start()
-wifiWatcher = hs.wifi.watcher.new(wifiChangedCallback):start()
-monitorWatcher = hs.screen.watcher.new(monitorChangedCallback):start()
-usbWatcher = hs.usb.watcher.new(usbChangedCallback):start()
-appInstalledWatchers = {}
+ConfigWatcher = hs.pathwatcher.new(os.getenv("HOME") .. "/.hammerspoon/", reloadConfig):start()
+AppWatcher = hs.application.watcher.new(applicationCallback):start()
+WifiWatcher = hs.wifi.watcher.new(wifiChangedCallback):start()
+MonitorWatcher = hs.screen.watcher.new(monitorChangedCallback):start()
+UsbWatcher = hs.usb.watcher.new(usbChangedCallback):start()
+AppInstalledWatchers = {}
 local appDirs =
 {
   "/Applications",
@@ -299,12 +311,15 @@ local appDirs =
 }
 for _, appDir in ipairs(appDirs) do
   local watcher = hs.pathwatcher.new(appDir, applicationInstalledCallback):start()
-  appInstalledWatchers[appDir] = watcher
+  AppInstalledWatchers[appDir] = watcher
 end
 
 hs.urlevent.bind("alert", function(eventName, params)
   hs.alert.show(params["text"])
 end)
+
+-- manage app
+require "app"
 
 -- change system preferences
 require "system"
@@ -314,9 +329,6 @@ require "window"
 
 -- move cursor or window to other monitor
 require "screen"
-
--- manage app
-require "app"
 
 -- manage filesystem
 require "fs"
