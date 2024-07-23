@@ -3,8 +3,17 @@ local This = {}
 This.hyperMode = hs.hotkey.modal.new()
 This.hyperMode.Entered = false
 
--- Enter Hyper Mode when Hyper is pressed
-function enterHyperMode()
+-- Leave Hyper Mode when Hyper is pressed
+local function exitHyperMode()
+  This.hyperMode:exit()
+  This.hyperMode.Entered = false
+  This.hyperTapper:stop()
+  This.hyperTapper = nil
+  This.hyperTimer:stop()
+  This.hyperTimer = nil
+end
+
+local function enterHyperMode()
   This.hyperMode:enter()
   This.hyperMode.Entered = true
 
@@ -22,16 +31,6 @@ function enterHyperMode()
     end
     This.hyperPressed = false
   end):start()
-end
-
--- Leave Hyper Mode when Hyper is pressed
-function exitHyperMode()
-  This.hyperMode:exit()
-  This.hyperMode.Entered = false
-  This.hyperTapper:stop()
-  This.hyperTapper = nil
-  This.hyperTimer:stop()
-  This.hyperTimer = nil
 end
 
 -- Utility to bind handler to Hyper+modifiers+key
