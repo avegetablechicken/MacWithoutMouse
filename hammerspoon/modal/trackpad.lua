@@ -9,6 +9,11 @@ local trackpad = {
   ["bottom-right"] = "⌟",
 }
 
+local params = KeybindingConfigs["parameters"] or {}
+CORNER_SIZE = params.trackpadCornerSize or 0.25
+if CORNER_SIZE <= 0 then CORNER_SIZE = 0.1 end
+if CORNER_SIZE >= 0.5 then CORNER_SIZE = 0.4 end
+
 function This.bind(mods, key, message, pressedfn, releasedfn, repeatfn)
   local modsCode = 0
   if type(mods) == 'string' then mods = {mods} end
@@ -47,13 +52,14 @@ function This.bind(mods, key, message, pressedfn, releasedfn, repeatfn)
           function(t) return t.touching == true and t.type == 'indirect' end) then
         for _, t in ipairs(touches) do
           local tpos = t.normalizedPosition
-          if tpos.x < 0.25 and tpos.y > 0.75 then
+          local s1, s2 = CORNER_SIZE, 1 - CORNER_SIZE
+          if tpos.x < s1 and tpos.y > s2 then
             modsCodeInvoked = modsCodeInvoked + 1
-          elseif tpos.x > 0.75 and tpos.y > 0.75 then
+          elseif tpos.x > s2 and tpos.y > s2 then
             modsCodeInvoked = modsCodeInvoked + 2
-          elseif tpos.x < 0.25 and tpos.y < 0.25 then
+          elseif tpos.x < s1 and tpos.y < s1 then
             modsCodeInvoked = modsCodeInvoked + 4
-          elseif tpos.x > 0.75 and tpos.y < 0.25 then
+          elseif tpos.x > s2 and tpos.y < s1 then
             modsCodeInvoked = modsCodeInvoked + 8
           else
             modsCodeInvoked = 0

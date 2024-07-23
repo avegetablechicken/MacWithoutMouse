@@ -924,6 +924,8 @@ function HSKeybindings:hide()
   self.isShowing = false
 end
 
+require('modal/trackpad')
+
 local doubleTapModal = require('modal/doubletap')
 doubleTapModal.install(HYPER)
 table.insert(DoubleTapModalList, doubleTapModal)
@@ -961,13 +963,14 @@ function()
         if touches ~= nil and #touches == 1
           and touches[1].touching == true and touches[1].type == 'indirect' then
           local tpos = touches[1].normalizedPosition
-          if tpos.x < 0.25 and tpos.y > 0.75 then
+          local s1, s2 = CORNER_SIZE, 1 - CORNER_SIZE
+          if tpos.x < s1 and tpos.y > s2 then
             evFlags["trackpad:top-left"] = true
-          elseif tpos.x > 0.75 and tpos.y > 0.75 then
+          elseif tpos.x > s2 and tpos.y > s2 then
             evFlags["trackpad:top-right"] = true
-          elseif tpos.x < 0.25 and tpos.y < 0.25 then
+          elseif tpos.x < s1 and tpos.y < s1 then
             evFlags["trackpad:bottom-left"] = true
-          elseif tpos.x > 0.75 and tpos.y < 0.25 then
+          elseif tpos.x > s2 and tpos.y < s1 then
             evFlags["trackpad:bottom-right"] = true
           end
         end
