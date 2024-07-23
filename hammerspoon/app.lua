@@ -3071,6 +3071,14 @@ local function execOnActivated(bundleID, action)
   table.insert(processesOnActivated[bundleID], action)
 end
 
+local observersStopOnDeactivated = {}
+local function stopOnDeactivated(bundleID, observer, action)
+  if observersStopOnDeactivated[bundleID] == nil then
+    observersStopOnDeactivated[bundleID] = {}
+  end
+  table.insert(observersStopOnDeactivated[bundleID], { observer, action })
+end
+
 local observersStopOnQuit = {}
 local function stopOnQuit(bundleID, observer, action)
   if observersStopOnQuit[bundleID] == nil then
@@ -3238,23 +3246,9 @@ local function WPSCloseDialog(winUIObj)
   end
 end
 
-local openSavePanelObserver, openSavePanelHotkey
-local finderSibebarHotkeys = {}
 local function registerForOpenSavePanel(appObject)
-  if openSavePanelObserver ~= nil then
-    openSavePanelObserver:stop()
-    openSavePanelObserver = nil
-  end
-  if openSavePanelHotkey ~= nil then
-    openSavePanelHotkey:delete()
-    openSavePanelHotkey = nil
-  end
-  if #finderSibebarHotkeys > 0 then
-    for _, hotkey in ipairs(finderSibebarHotkeys) do
-      hotkey:delete()
-    end
-    finderSibebarHotkeys = {}
-  end
+  local hotkey
+  local finderSibebarHotkeys = {}
 
   if appObject:bundleID() == nil then return end
 
@@ -3312,10 +3306,7 @@ local function registerForOpenSavePanel(appObject)
   end
 
   local actionFunc = function(winUIObj)
-    if openSavePanelHotkey ~= nil then
-      openSavePanelHotkey:delete()
-      openSavePanelHotkey = nil
-    end
+    if hotkey ~= nil then hotkey:delete() hotkey = nil end
     for _, hotkey in ipairs(finderSibebarHotkeys) do
       hotkey:delete()
       finderSibebarHotkeys = {}
@@ -3355,30 +3346,31 @@ local function registerForOpenSavePanel(appObject)
       spec = get(KeybindingConfigs.hotkeys[bundleID], "goToDownloads")
     end
     if spec ~= nil then
-      openSavePanelHotkey = bindSpecSuspend(spec, message, function()
+      hotkey = bindSpecSuspend(spec, message, function()
         local action = openSavePanelActor:actionNames()[1]
         openSavePanelActor:performAction(action)
       end)
-      openSavePanelHotkey.kind = HK.IN_APPWIN
+      hotkey.kind = HK.IN_APPWIN
     end
   end
   if appObject:focusedWindow() ~= nil then
     actionFunc(hs.axuielement.windowElement(appObject:focusedWindow()))
   end
 
-  openSavePanelObserver = hs.axuielement.observer.new(appObject:pid())
-  openSavePanelObserver:addWatcher(
+  local observer = hs.axuielement.observer.new(appObject:pid())
+  observer:addWatcher(
     hs.axuielement.applicationElement(appObject),
     hs.axuielement.observer.notifications.focusedWindowChanged
   )
-  openSavePanelObserver:callback(function(observer, element, notifications)
+  observer:callback(function(observer, element, notifications)
     if hs.application.frontmostApplication():bundleID()
         == "com.kingsoft.wpsoffice.mac" then
       WPSCloseDialog(element)
     end
     actionFunc(element)
   end)
-  openSavePanelObserver:start()
+  observer:start()
+  stopOnDeactivated(appObject:bundleID(), observer)
 end
 registerForOpenSavePanel(frontmostApplication)
 
@@ -3578,17 +3570,16 @@ local function watchMenuBarItems(appObject)
     appsMenuBarItemsWatchers[appObject:bundleID()][2] = menuBarItemTitlesString
   end
   appsMenuBarItemsWatchers[appObject:bundleID()][1]:start()
-  stopOnQuit(appObject:bundleID(), appsMenuBarItemsWatchers[appObject:bundleID()][1],
+  stopOnDeactivated(appObject:bundleID(), appsMenuBarItemsWatchers[appObject:bundleID()][1],
       function(bundleID) appsMenuBarItemsWatchers[bundleID] = nil end)
 end
 
 local appsMayChangeMenuBar = get(applicationConfigs.menuBarItemsMayChange, 'window') or {}
 
-local curAppMenuBarItemWatcher
 local function appMenuBarChangeCallback(appObject)
   altMenuBarItem(appObject)
   local menuBarItemStr = getMenuBarItemTitlesString(appObject)
-  curAppMenuBarItemWatcher = hs.timer.doAfter(1, function()
+  hs.timer.doAfter(1, function()
     if hs.application.frontmostApplication():bundleID() ~= appObject:bundleID() then
       return
     end
@@ -3599,21 +3590,7 @@ local function appMenuBarChangeCallback(appObject)
   end)
 end
 
-local appMenuBarChangeObserver, appMenuBarChangeFilter
 local function registerObserverForMenuBarChange(appObject)
-  if appMenuBarChangeObserver ~= nil then
-    appMenuBarChangeObserver:stop()
-    appMenuBarChangeObserver = nil
-  end
-  if appMenuBarChangeFilter ~= nil then
-    appMenuBarChangeFilter:unsubscribeAll()
-    appMenuBarChangeFilter = nil
-  end
-  if curAppMenuBarItemWatcher ~= nil then
-    curAppMenuBarItemWatcher:stop()
-    curAppMenuBarItemWatcher = nil
-  end
-
   if appObject:bundleID() == nil then return end
 
   if hs.fnutils.contains(appswatchMenuBarItems, appObject:bundleID()) then
@@ -3624,24 +3601,32 @@ local function registerObserverForMenuBarChange(appObject)
     return
   end
 
-  appMenuBarChangeObserver = hs.axuielement.observer.new(appObject:pid())
-  appMenuBarChangeObserver:addWatcher(
+  local observer, windowFilter
+  observer = hs.axuielement.observer.new(appObject:pid())
+  observer:addWatcher(
     hs.axuielement.applicationElement(appObject),
     hs.axuielement.observer.notifications.focusedWindowChanged
   )
-  appMenuBarChangeObserver:addWatcher(
+  observer:addWatcher(
     hs.axuielement.applicationElement(appObject),
     hs.axuielement.observer.notifications.windowMiniaturized
   )
-  appMenuBarChangeObserver:callback(hs.fnutils.partial(appMenuBarChangeCallback, appObject))
-  appMenuBarChangeObserver:start()
+  observer:callback(hs.fnutils.partial(appMenuBarChangeCallback, appObject))
+  observer:start()
 
-  appMenuBarChangeFilter = hs.window.filter.new(frontmostApplication:name())
+  windowFilter = hs.window.filter.new(frontmostApplication:name())
       :subscribe(hs.window.filter.windowDestroyed,
         function(winObj)
           if winObj == nil or winObj:application() == nil then return end
           appMenuBarChangeCallback(winObj:application())
         end)
+  stopOnDeactivated(appObject:bundleID(), observer,
+    function()
+      if windowFilter ~= nil then
+        windowFilter:unsubscribeAll()
+        windowFilter = nil
+      end
+    end)
 end
 registerObserverForMenuBarChange(frontmostApplication)
 
@@ -3669,7 +3654,6 @@ local function processAppWithNoWindows(appObject, quit)
 end
 
 local appPseudoWindowObservers = {}
-local pseudoWindowObserver
 local function registerPseudoWindowDestroyWatcher(appObject, roles, windowFilter, quit)
   local observer = appPseudoWindowObservers[appObject:bundleID()]
   local appUIObj = hs.axuielement.applicationElement(appObject)
@@ -3684,6 +3668,7 @@ local function registerPseudoWindowDestroyWatcher(appObject, roles, windowFilter
   end
   local criterion = function(element) return hs.fnutils.contains(roles, element.AXRole) end
   local params = { count = 1, depth = 2 }
+  local pseudoWindowObserver
   local observerCallback = function()
     appUIObj:elementSearch(function(msg, results, count)
       if count > 0 then
@@ -3723,6 +3708,7 @@ local function registerPseudoWindowDestroyWatcher(appObject, roles, windowFilter
         end
         pseudoWindowObserver:callback(pseudoWindowObserverCallback)
         pseudoWindowObserver:start()
+        stopOnDeactivated(appObject:bundleID(), pseudoWindowObserver)
       end
     end,
     criterion, params)
@@ -4381,6 +4367,12 @@ function App_applicationCallback(appName, eventType, appObject)
         if appsMenuBarItemsWatchers[bundleID] ~= nil then
           appsMenuBarItemsWatchers[bundleID][1]:stop()
         end
+        for _, ob in ipairs(observersStopOnDeactivated[bundleID] or {}) do
+          local observer, func = ob[1], ob[2]
+          observer:stop()
+          if func ~= nil then func(bundleID, observer) end
+        end
+        observersStopOnDeactivated[bundleID] = nil
       end
     else
       for bid, obs in pairs(observersStopOnQuit) do
