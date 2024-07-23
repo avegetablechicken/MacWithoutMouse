@@ -3652,31 +3652,33 @@ local function registerObserverForMenuBarChange(appObject)
 end
 registerObserverForMenuBarChange(frontmostApplication)
 
-local function processAppWithNoWindows(appObject, quit)
-  if #appObject:visibleWindows() == 0
-    or (appObject:bundleID() == "com.app.menubarx"
-        and #hs.fnutils.filter(appObject:visibleWindows(),
-            function(win) return win:title() ~= "" end) == 0) then
-    if quit == true then
+local function processAppWithNoWindows(appObject, quit, delay)
+  hs.timer.doAfter(delay or 0, function()
+    if #appObject:visibleWindows() == 0
+      or (appObject:bundleID() == "com.app.menubarx"
+          and #hs.fnutils.filter(appObject:visibleWindows(),
+              function(win) return win:title() ~= "" end) == 0) then
+        if quit == true then
+          local wFilter = hs.window.filter.new(appObject:name())
+          if #wFilter:getWindows() == 0 then
+            appObject:kill()
+          end
+        else
+          appObject:hide()
+        end
+    elseif appObject:bundleID() == "com.apple.finder" then
       local wFilter = hs.window.filter.new(appObject:name())
-      if #wFilter:getWindows() == 0 then
-        appObject:kill()
+      local windows = wFilter:getWindows()
+      local standard = hs.fnutils.find(windows, function(win) return win:isStandard() end)
+      if standard == nil then
+        appObject:hide()
       end
-    else
-      appObject:hide()
     end
-  elseif appObject:bundleID() == "com.apple.finder" then
-    local wFilter = hs.window.filter.new(appObject:name())
-    local windows = wFilter:getWindows()
-    local standard = hs.fnutils.find(windows, function(win) return win:isStandard() end)
-    if standard == nil then
-      appObject:hide()
-    end
-  end
+  end)
 end
 
 local appPseudoWindowObservers = {}
-local function registerPseudoWindowDestroyWatcher(appObject, roles, windowFilter, quit)
+local function registerPseudoWindowDestroyWatcher(appObject, roles, windowFilter, quit, delay)
   local observer = appPseudoWindowObservers[appObject:bundleID()]
   local appUIObj = hs.axuielement.applicationElement(appObject)
   if observer ~= nil then observer:start() return end
@@ -3704,31 +3706,33 @@ local function registerPseudoWindowDestroyWatcher(appObject, roles, windowFilter
           hs.axuielement.observer.notifications.uIElementDestroyed
         )
         local pseudoWindowObserverCallback = function()
-          appUIObj:elementSearch(function (newMsg, newResults, newCount)
-            if newCount == 0 then
-              local windows = appObject:visibleWindows()
-              if windowFilter ~= nil then
-                windows = hs.fnutils.filter(windows, function(win)
-                  return windowFilter:isWindowAllowed(win)
-                end)
-              end
-              if #windows == 0 then
-                if quit == true then
-                  local wFilter = hs.window.filter.new(appObject:name())
-                  if #wFilter:getWindows() == 0 then
-                    appObject:kill()
-                  end
-                else
-                  appObject:hide()
+          appUIObj:elementSearch(function(newMsg, newResults, newCount)
+              if newCount == 0 then
+                local windows = appObject:visibleWindows()
+                if windowFilter ~= nil then
+                  windows = hs.fnutils.filter(windows, function(win)
+                    return windowFilter:isWindowAllowed(win)
+                  end)
                 end
-                pseudoWindowObserver:stop()
-                pseudoWindowObserver = nil
+                if #windows == 0 then
+                  if quit == true then
+                    local wFilter = hs.window.filter.new(appObject:name())
+                    if #wFilter:getWindows() == 0 then
+                      appObject:kill()
+                    end
+                  else
+                    appObject:hide()
+                  end
+                  pseudoWindowObserver:stop()
+                  pseudoWindowObserver = nil
+                end
               end
-            end
-          end,
-          criterion, params)
+            end,
+            criterion, params)
         end
-        pseudoWindowObserver:callback(pseudoWindowObserverCallback)
+        pseudoWindowObserver:callback(function()
+          hs.timer.doAfter(delay or 0, pseudoWindowObserverCallback)
+        end)
         pseudoWindowObserver:start()
         stopOnDeactivated(appObject:bundleID(), pseudoWindowObserver)
       end
@@ -3748,6 +3752,7 @@ local appsAutoHideWithNoWindows = {}
 local appsAutoQuitWithNoWindows = {}
 local appsAutoHideWithNoPseudoWindows = {}
 local appsAutoQuitWithNoPseudoWindows = {}
+local appsWithNoWindowsDelay = {}
 for _, item in ipairs(appsAutoHideWithNoWindowsLoaded or {}) do
   if type(item) == 'string' then
     appsAutoHideWithNoWindows[item] = true
@@ -3764,6 +3769,10 @@ for _, item in ipairs(appsAutoHideWithNoWindowsLoaded or {}) do
           table.insert(appsAutoHideWithNoPseudoWindows[k], "AXSheet")
           appsAutoHideWithNoWindows[k].allowSheet = nil
         end
+      end
+      if v.delay then
+        appsWithNoWindowsDelay[k] = v.delay
+        v.delay = nil
       end
     end
   end
@@ -3785,6 +3794,10 @@ for _, item in ipairs(appsAutoQuitWithNoWindowsLoaded or {}) do
           appsAutoQuitWithNoWindows[k].allowSheet = nil
         end
       end
+      if v.delay then
+        appsWithNoWindowsDelay[k] = v.delay
+        v.delay = nil
+      end
     end
   end
 end
@@ -3798,17 +3811,14 @@ for bundleID, cfg in pairs(appsAutoHideWithNoWindows) do
   else
     execOnLaunch(bundleID, function(appObject)
       windowFilterAutoHide:setAppFilter(appObject:name(), cfg)
-      local rules = appsAutoHideWithNoPseudoWindows[bundleID]
-      if rules then
-        registerPseudoWindowDestroyWatcher(appObject, rules, cfg, false)
-      end
     end)
   end
 end
 windowFilterAutoHide:subscribe(hs.window.filter.windowDestroyed,
   function(winObj)
     if winObj == nil or winObj:application() == nil then return end
-    processAppWithNoWindows(winObj:application(), false)
+    local bundleID = winObj:application():bundleID()
+    processAppWithNoWindows(winObj:application(), false, appsWithNoWindowsDelay[bundleID])
   end)
 
 local windowFilterAutoQuit = hs.window.filter.new(false)
@@ -3819,29 +3829,36 @@ for bundleID, cfg in pairs(appsAutoQuitWithNoWindows) do
   else
     execOnLaunch(bundleID, function(appObject)
       windowFilterAutoQuit:setAppFilter(appObject:name(), cfg)
-      local rules = appsAutoQuitWithNoPseudoWindows[bundleID]
-      if rules then
-        registerPseudoWindowDestroyWatcher(appObject, rules, cfg, true)
-      end
     end)
   end
 end
 windowFilterAutoQuit:subscribe(hs.window.filter.windowDestroyed,
   function(winObj)
     if winObj == nil or winObj:application() == nil then return end
-      processAppWithNoWindows(winObj:application(), true)
+    local bundleID = winObj:application():bundleID()
+    processAppWithNoWindows(winObj:application(), true, appsWithNoWindowsDelay[bundleID])
   end)
 
 for bundleID, rules in pairs(appsAutoHideWithNoPseudoWindows) do
   if findApplication(bundleID) then
     registerPseudoWindowDestroyWatcher(findApplication(
-        bundleID), rules, appsAutoHideWithNoWindows[bundleID], false)
+        bundleID), rules, appsAutoHideWithNoWindows[bundleID], false, appsWithNoWindowsDelay[bundleID])
+  else
+    execOnLaunch(bundleID, function(appObject)
+      registerPseudoWindowDestroyWatcher(appObject, rules,
+          appsAutoHideWithNoWindows[bundleID], false, appsWithNoWindowsDelay[bundleID])
+    end)
   end
 end
 for bundleID, rules in pairs(appsAutoQuitWithNoPseudoWindows) do
   if findApplication(bundleID) then
     registerPseudoWindowDestroyWatcher(
-          findApplication(bundleID), rules, appsAutoQuitWithNoWindows[bundleID], true)
+        findApplication(bundleID), rules, appsAutoQuitWithNoWindows[bundleID], true, appsWithNoWindowsDelay[bundleID])
+  else
+    execOnLaunch(bundleID, function(appObject)
+      registerPseudoWindowDestroyWatcher(appObject, rules,
+          appsAutoHideWithNoWindows[bundleID], true, appsWithNoWindowsDelay[bundleID])
+    end)
   end
 end
 

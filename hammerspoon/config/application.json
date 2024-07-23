@@ -35,7 +35,8 @@
         "rejectTitles": "^$"
       },
       "com.mathpix.snipping-tool-noappstore": {
-        "allowPopover": true
+        "allowPopover": true,
+        "delay": 0.5
       }
     }
   ],
