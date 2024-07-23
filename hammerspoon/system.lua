@@ -1475,9 +1475,9 @@ function registerControlCenterHotKeys(panel)
                 actionFunc()
               end)
           end
-          hotkeyHide:enable()
+          assert(hotkeyHide) hotkeyHide:enable()
         end)
-      hotkeyShow:enable()
+      assert(hotkeyShow) hotkeyShow:enable()
     else
       hotkeyHide = newControlCenter("", "Left", "Hide " .. msg,
         function()
@@ -1491,9 +1491,9 @@ function registerControlCenterHotKeys(panel)
                 actionFunc()
               end)
           end
-          hotkeyShow:enable()
+          assert(hotkeyShow) hotkeyShow:enable()
         end)
-      hotkeyHide:enable()
+      assert(hotkeyHide) hotkeyHide:enable()
     end
   end
 
