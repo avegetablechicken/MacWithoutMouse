@@ -619,17 +619,6 @@ local function noSelectedMenuBarItem(appObject)
   return true
 end
 
-local function hasSelectedMenuBarItemFunc(fn, appObject)
-  return function(...)
-    local result = noSelectedMenuBarItem(appObject)
-    if result == false then
-      hs.eventtap.keyStroke("", "Escape", nil, appObject)
-      hs.timer.usleep(0.05 * 1000000)
-    end
-    return fn(...)
-  end
-end
-
 local function noSelectedMenuBarItemFunc(fn)
   return function(appObject)
     local result = noSelectedMenuBarItem(appObject)
@@ -3408,9 +3397,6 @@ registerForOpenSavePanel(frontmostApplication)
 AltMenuBarItemHotkeys = {}
 
 local function bindAltMenu(appObject, mods, key, message, fn)
-  if getOSVersion() >= OS.Sonoma then
-    fn = hasSelectedMenuBarItemFunc(fn, appObject)
-  end
   fn = showMenuItemWrapper(fn)
   local hotkey = AppBind(appObject, mods, key, message, fn)
   hotkey.kind = HK.APP_MENU
