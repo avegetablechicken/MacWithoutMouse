@@ -288,6 +288,28 @@ local function openFinderSidebarItem(cellUIObj, appObject)
 end
 
 local function deleteSelectedMessage(appObject, menuItem, force)
+  if menuItem == nil then
+    local appUIObj = hs.axuielement.applicationElement(appObject)
+    local button = getAXChildren(appUIObj, "AXWindow", activatedWindowIndex(),
+        "AXGroup", 1, "AXGroup", 1, "AXGroup", 2, "AXGroup", 1, "AXButton", 2)
+    if button ~= nil then
+      button:performAction("AXPress")
+      if force ~= nil then
+        hs.timer.usleep(0.1 * 1000000)
+        hs.eventtap.keyStroke("", "Tab", nil, appObject)
+        hs.timer.usleep(0.1 * 1000000)
+        hs.eventtap.keyStroke("", "Space", nil, appObject)
+      end
+      return
+    end
+  end
+  if menuItem == nil then
+    local menuBarItemTitle = getOSVersion() < OS.Ventura and "File" or "Conversations"
+    local thisSpec = appHotKeyCallbacks[appObject:bundleID()]["deleteConversation"]
+    local menuItemTitle = thisSpec.message(appObject)
+    local _, menuItemPath = findMenuItem(appObject, { menuBarItemTitle, menuItemTitle })
+    menuItem = menuItemPath
+  end
   appObject:selectMenuItem(menuItem)
   if force ~= nil then
     hs.timer.usleep(0.1 * 1000000)
@@ -296,15 +318,10 @@ local function deleteSelectedMessage(appObject, menuItem, force)
 end
 
 local function deleteAllMessages(appObject)
-  local menuBarItemTitle = getOSVersion() < OS.Ventura and "File" or "Conversations"
-  local thisSpec = appHotKeyCallbacks[appObject:bundleID()]["deleteConversation"]
-  local menuItemTitle = thisSpec.message(appObject)
-  local menuItem, menuItemPath = findMenuItem(appObject, { menuBarItemTitle, menuItemTitle })
-  if menuItem == nil then return end
   local appUIObj = hs.axuielement.applicationElement(appObject)
   appUIObj:elementSearch(
     function(msg, results, count)
-      assert(#results == 1)
+      if count ~= 1 then return end
 
       local messageItems = results[1].AXChildren
       if messageItems == nil or #messageItems == 0
@@ -315,7 +332,7 @@ local function deleteAllMessages(appObject)
       for _, messageItem in ipairs(messageItems) do
         messageItem:performAction("AXPress")
         hs.timer.usleep(0.1 * 1000000)
-        deleteSelectedMessage(appObject, menuItemPath, true)
+        deleteSelectedMessage(appObject, nil, true)
         hs.timer.usleep(1 * 1000000)
       end
       deleteAllMessages(appObject)
