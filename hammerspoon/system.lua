@@ -1611,10 +1611,12 @@ function registerControlCenterHotKeys(panel)
           end
         end
       else
-        for _, hotkey in ipairs(selectNetworkHotkeys) do
-          hotkey:delete()
+        if selectNetworkHotkeys ~= nil then
+          for _, hotkey in ipairs(selectNetworkHotkeys) do
+            hotkey:delete()
+          end
+          selectNetworkHotkeys = {}
         end
-        selectNetworkHotkeys = {}
       end
     end
     selectNetworkActionFunc()
