@@ -851,28 +851,11 @@ local function registerProxyMenuWrapper(storeObj, changedKeys)
     local curNetID = Ipv4State["PrimaryService"]
     networkInterfaceWatcher:monitorKeys({"State:/Network/Global/IPv4", "Setup:/Network/Service/" .. curNetID .. "/Proxies"})
     registerProxyMenu(true)
-  else
-    hs.timer.waitUntil(
-      function()
-        local Ipv4State = networkInterfaceWatcher:contents("State:/Network/Global/IPv4")["State:/Network/Global/IPv4"]
-        return Ipv4State ~= nil
-      end,
-      function()
-        local Ipv4State = networkInterfaceWatcher:contents("State:/Network/Global/IPv4")["State:/Network/Global/IPv4"]
-        local curNetID = Ipv4State["PrimaryService"]
-        networkInterfaceWatcher:monitorKeys({"State:/Network/Global/IPv4", "Setup:/Network/Service/" .. curNetID .. "/Proxies"})
-        registerProxyMenu(true)
-      end
-    )
   end
-  networkInterfaceWatcher:stop()
-  hs.timer.doAfter(3, function()
-    registerProxyMenu()
-    networkInterfaceWatcher:start()
-  end)
 end
 
 registerProxyMenuWrapper()
+networkInterfaceWatcher:monitorKeys("State:/Network/Global/IPv4")
 networkInterfaceWatcher:setCallback(registerProxyMenuWrapper)
 networkInterfaceWatcher:start()
 
