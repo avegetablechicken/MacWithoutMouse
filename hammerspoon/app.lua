@@ -291,9 +291,7 @@ local function deleteSelectedMessage(appObject, menuItem, force)
   appObject:selectMenuItem(menuItem)
   if force ~= nil then
     hs.timer.usleep(0.1 * 1000000)
-    hs.eventtap.keyStroke("", "Tab", nil, appObject)
-    hs.timer.usleep(0.1 * 1000000)
-    hs.eventtap.keyStroke("", "Space", nil, appObject)
+    hs.eventtap.keyStroke("", "Return", nil, appObject)
   end
 end
 
