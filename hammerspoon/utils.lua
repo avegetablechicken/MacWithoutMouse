@@ -1511,7 +1511,7 @@ function leftClick(position, appName)
   if position.x == nil then position = hs.geometry.point(position) end
   if appName ~= nil then
     local appHere = hs.axuielement.systemElementAtPosition(position)
-    while appHere.AXParent ~= nil do
+    while appHere ~= nil and appHere.AXParent ~= nil do
       appHere = appHere.AXParent
     end
     if appHere.AXTitle ~= appName then return false end
