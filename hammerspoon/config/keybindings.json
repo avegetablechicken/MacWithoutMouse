@@ -709,6 +709,12 @@
         "key": "0"
       }
     },
+    "com.apple.ActivityMonitor": {
+      "search": {
+        "mods": "command",
+        "key": "F"
+      }
+    },
     "com.apple.Terminal": {
       "tmuxPreviousPane": {
         "mods": ["shift", "command"],

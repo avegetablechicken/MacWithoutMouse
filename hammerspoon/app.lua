@@ -827,6 +827,24 @@ appHotKeyCallbacks = {
     }
   },
 
+  ["com.apple.ActivityMonitor"] =
+  {
+    ["search"] = {
+      message = "Search",
+      condition = function(appObject)
+        if appObject:focusedWindow() == nil then return false end
+        local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
+        local searchField = getAXChildren(winUIObj, "AXToolbar", 1, "AXGroup", 2, "AXTextField", 1)
+        if searchField == nil then return false end
+        return true, searchField
+      end,
+      fn = function(searchField, appObject)
+        local position = { searchField.AXPosition.x + 10, searchField.AXPosition.y + 2 }
+        leftClickAndRestore(position, appObject:name())
+      end
+    }
+  },
+
   ["com.apple.MobileSMS"] =
   {
     ["deleteConversation"] = {
