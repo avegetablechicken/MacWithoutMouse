@@ -168,7 +168,10 @@ subscribe(hs.window.filter.windowCreated,
   function()
     local code = parseVerificationCodeFromFirstMessage()
     if code then
-      hs.alert(string.format('Copy verification code "%s" to pasteboard', code))
+      hs.notify.new({
+        title = string.format("SMS Code Detected: %s", code),
+        informativeText = 'Copied to pasteboard',
+      }):send()
       hs.pasteboard.writeObjects(code)
     end
   end)
