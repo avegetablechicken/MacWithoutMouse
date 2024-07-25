@@ -4459,12 +4459,6 @@ function App_applicationInstalledCallback(files, flagTables)
   registerAppHotkeys()
 end
 
--- wifi callbacks
-
-function App_wifiChangedCallback()
-
-end
-
 -- monitor callbacks
 
 -- launch applications automatically when connected to an external monitor

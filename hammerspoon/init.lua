@@ -283,11 +283,6 @@ local function applicationInstalledCallback(files, flagTables)
   end
 end
 
-local function wifiChangedCallback()
-  App_wifiChangedCallback()
-  System_wifiChangedCallback()
-end
-
 local function monitorChangedCallback()
   App_monitorChangedCallback()
   System_monitorChangedCallback()
@@ -300,7 +295,6 @@ end
 
 ConfigWatcher = hs.pathwatcher.new(os.getenv("HOME") .. "/.hammerspoon/", reloadConfig):start()
 AppWatcher = hs.application.watcher.new(applicationCallback):start()
-WifiWatcher = hs.wifi.watcher.new(wifiChangedCallback):start()
 MonitorWatcher = hs.screen.watcher.new(monitorChangedCallback):start()
 UsbWatcher = hs.usb.watcher.new(usbChangedCallback):start()
 AppInstalledWatchers = {}

@@ -844,14 +844,95 @@ local function registerProxyMenu(retry)
   end
 end
 
+local proxySettings
+if hs.fs.attributes("config/misc.json") ~= nil then
+  proxySettings = hs.json.read("config/misc.json").proxy
+  for _, cfg in ipairs(proxySettings) do
+    if cfg.condition ~= nil then
+      local shell_command = cfg.condition["shell_command"]
+      if shell_command ~= nil then
+        cfg.condition = function()
+          local _, _, _, rc = hs.execute(shell_command)
+          return rc == 0
+        end
+      end
+    end
+  end
+end
 local networkInterfaceWatcher = hs.network.configuration.open()
+local lastIpv4State
 local function registerProxyMenuWrapper(storeObj, changedKeys)
   local Ipv4State = networkInterfaceWatcher:contents("State:/Network/Global/IPv4")["State:/Network/Global/IPv4"]
   if Ipv4State ~= nil then
     local curNetID = Ipv4State["PrimaryService"]
     networkInterfaceWatcher:monitorKeys({"State:/Network/Global/IPv4", "Setup:/Network/Service/" .. curNetID .. "/Proxies"})
-    registerProxyMenu(true)
+    if lastIpv4State == nil and proxySettings ~= nil then
+      getCurrentNetworkService()
+      disable_proxy()
+      for _, cfg in ipairs(proxySettings) do
+        if cfg.condition ~= nil and cfg.condition() then
+          for _, candidate in ipairs(cfg.candidates or {}) do
+            local name, mode = candidate.name, candidate.mode
+            if ProxyConfigs[name] ~= nil then
+              local config, loc
+              if ProxyConfigs[name].condition == nil then
+                config = ProxyConfigs[name]
+              else
+                local locations = ProxyConfigs[name].locations
+                local fullfilled = ProxyConfigs[name].condition()
+                if fullfilled ~= nil then
+                  loc = fullfilled and locations[1] or locations[2]
+                  config = ProxyConfigs[name][loc]
+                end
+              end
+              if config ~= nil then
+                if name == "MonoCloud" then
+                  toggleMonoCloud(false)
+                  if mode == "global" then
+                    clickRightMenuBarItem(proxyAppBundleIDs.MonoCloud, "Outbound Mode", 2)
+                    enable_proxy_global(name)
+                  elseif mode == "pac" then
+                    clickRightMenuBarItem(proxyAppBundleIDs.MonoCloud, "Outbound Mode", 3)
+                    enable_proxy_PAC(name)
+                  end
+                elseif name == "V2rayU" then
+                  if toggleV2RayU(true) then
+                    if mode == "global" then
+                      clickRightMenuBarItem(proxyAppBundleIDs.V2rayU, "Global Mode")
+                      enable_proxy_global(name)
+                    elseif mode == "pac" then
+                      clickRightMenuBarItem(proxyAppBundleIDs.V2rayU, "Pac Mode")
+                      enable_proxy_PAC(name)
+                    end
+                  end
+                elseif name == "V2RayX" then
+                  if toggleV2RayX(true) then
+                    if mode == "global" then
+                      clickRightMenuBarItem(proxyAppBundleIDs.V2RayX, "Global Mode")
+                      enable_proxy_global(name)
+                    elseif mode == "pac" then
+                      clickRightMenuBarItem(proxyAppBundleIDs.V2RayX, "Pac Mode")
+                      enable_proxy_PAC(name)
+                    end
+                  end
+                else
+                  if mode == "global" then
+                    enable_proxy_global(name, nil, loc)
+                  elseif mode == "pac" then
+                    enable_proxy_PAC(name, nil, loc)
+                  end
+                end
+                goto L_PROXY_SET
+              end
+            end
+          end
+        end
+      end
+    end
   end
+  ::L_PROXY_SET::
+  registerProxyMenu(true)
+  lastIpv4State = Ipv4State
 end
 
 registerProxyMenuWrapper()
@@ -2293,71 +2374,6 @@ function System_applicationInstalledCallback(files, flagTables)
       end
     end
   end
-end
-
--- wifi callbacks
-
--- use lab proxy in lab
-local lastWifi = hs.wifi.currentNetwork()
-
-function System_wifiChangedCallback()
-
-  local curWifi = hs.wifi.currentNetwork()
-  if curWifi == nil then
-    lastWifi = nil
-    if curNetworkService ~= nil then
-      disable_proxy()
-    end
-    registerProxyMenu()
-    return
-  end
-
-  if lastWifi == nil then
-    hs.timer.waitUntil(
-        function()
-          getCurrentNetworkService()
-          return curNetworkService ~= nil
-        end,
-        function()
-          disable_proxy()
-          local proxySet = false
-          for name, config in pairs(ProxyConfigs) do
-            if config.condition ~= nil then
-              local fullfilled = config.condition()
-              if fullfilled then
-                local loc = config.locations[1]
-                if config[loc].PAC ~= nil then
-                  enable_proxy_PAC(name, nil, loc)
-                  proxySet = true
-                  break
-                elseif config[loc].global ~= nil then
-                  enable_proxy_global(name, nil, loc)
-                  proxySet = true
-                  break
-                end
-              end
-            end
-          end
-          if not proxySet then
-            if findApplication(proxyAppBundleIDs.MonoCloud) then
-              hs.application.launchOrFocusByBundleID(proxyAppBundleIDs.MonoCloud)
-              clickRightMenuBarItem(proxyAppBundleIDs.MonoCloud, "Outbound Mode", 3)
-              enable_proxy_global("MonoCloud")
-            elseif findApplication(proxyAppBundleIDs.V2rayU) then
-              toggleV2RayU(true)
-              clickRightMenuBarItem(proxyAppBundleIDs.V2rayU, "Pac Mode")
-              enable_proxy_PAC("V2rayU")
-            elseif findApplication(proxyAppBundleIDs.V2RayX) then
-              toggleV2RayX(true)
-              clickRightMenuBarItem(proxyAppBundleIDs.V2RayX, "PAC Mode")
-              enable_proxy_PAC("V2RayX")
-            end
-          end
-          registerProxyMenu()
-        end)
-  end
-
-  lastWifi = curWifi
 end
 
 -- monitor callbacks
