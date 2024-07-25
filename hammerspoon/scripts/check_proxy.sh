@@ -1,6 +1,10 @@
 #! /bin/zsh
 
-interface=$(route get default | grep interface | awk '{print $2}')
+if [ -x "$(which gtimeout 2>/dev/null)" ]; then
+  interface=$(gtimeout 1s route get default | grep interface | awk '{print $2}')
+else
+  interface=$(route get default | grep interface | awk '{print $2}')
+fi
 if [[ $? -ne 0 ]]; then
 	return 1
 fi
