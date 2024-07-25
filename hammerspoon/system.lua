@@ -859,13 +859,19 @@ if hs.fs.attributes("config/misc.json") ~= nil then
     end
   end
 end
-local networkInterfaceWatcher = hs.network.configuration.open()
+
 local lastIpv4State
 local function registerProxyMenuWrapper(storeObj, changedKeys)
-  local Ipv4State = networkInterfaceWatcher:contents("State:/Network/Global/IPv4")["State:/Network/Global/IPv4"]
+  for i = #NetworkMonitorKeys, 1, -1 do
+    local netID = string.match(NetworkMonitorKeys[i], "Setup:/Network/Service/(.-)/Proxies")
+    if netID ~= nil then
+      table.remove(NetworkMonitorKeys, i)
+    end
+  end
+  local Ipv4State = NetworkWatcher:contents("State:/Network/Global/IPv4")["State:/Network/Global/IPv4"]
   if Ipv4State ~= nil then
     local curNetID = Ipv4State["PrimaryService"]
-    networkInterfaceWatcher:monitorKeys({"State:/Network/Global/IPv4", "Setup:/Network/Service/" .. curNetID .. "/Proxies"})
+    table.insert(NetworkMonitorKeys, "Setup:/Network/Service/" .. curNetID .. "/Proxies")
     if lastIpv4State == nil and proxySettings ~= nil then
       getCurrentNetworkService()
       disable_proxy()
@@ -931,14 +937,12 @@ local function registerProxyMenuWrapper(storeObj, changedKeys)
     end
   end
   ::L_PROXY_SET::
+  NetworkWatcher:monitorKeys(NetworkMonitorKeys)
   registerProxyMenu(true)
   lastIpv4State = Ipv4State
 end
-
 registerProxyMenuWrapper()
-networkInterfaceWatcher:monitorKeys("State:/Network/Global/IPv4")
-networkInterfaceWatcher:setCallback(registerProxyMenuWrapper)
-networkInterfaceWatcher:start()
+
 
 local menubarHK = KeybindingConfigs.hotkeys.global
 
@@ -2397,6 +2401,10 @@ function System_monitorChangedCallback()
     hs.caffeinate.set("displayIdle", false)
     caffeine:setTitle("SLEEPY")
   end
+end
+
+function System_networkChangedCallback(storeObj, changedKeys)
+  registerProxyMenuWrapper(storeObj, changedKeys)
 end
 
 -- battery callbacks

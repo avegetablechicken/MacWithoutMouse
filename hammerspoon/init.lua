@@ -293,6 +293,10 @@ local function usbChangedCallback(device)
   App_usbChangedCallback(device)
 end
 
+local function networkChangedCallback(storeObj, changedKeys)
+  System_networkChangedCallback(storeObj, changedKeys)
+end
+
 ConfigWatcher = hs.pathwatcher.new(os.getenv("HOME") .. "/.hammerspoon/", reloadConfig):start()
 AppWatcher = hs.application.watcher.new(applicationCallback):start()
 MonitorWatcher = hs.screen.watcher.new(monitorChangedCallback):start()
@@ -309,6 +313,12 @@ for _, appDir in ipairs(appDirs) do
   local watcher = hs.pathwatcher.new(appDir, applicationInstalledCallback):start()
   AppInstalledWatchers[appDir] = watcher
 end
+
+NetworkMonitorKeys = { "State:/Network/Global/IPv4" }
+NetworkWatcher = hs.network.configuration.open()
+NetworkWatcher:monitorKeys(NetworkMonitorKeys)
+NetworkWatcher:setCallback(networkChangedCallback)
+NetworkWatcher:start()
 
 hs.urlevent.bind("alert", function(eventName, params)
   hs.alert.show(params["text"])
