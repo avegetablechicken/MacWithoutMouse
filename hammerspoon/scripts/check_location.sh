@@ -1,5 +1,5 @@
 #! /bin/zsh
-# Usage: checkinlab.sh --wifi <ssid1> <ssid2> ... --ethernet <ip1> <ip2> ...
+# Usage: check_location.sh --wifi <ssid1> <ssid2> ... --ethernet <ip1> <ip2> ...
 
 params=("$@")
 
