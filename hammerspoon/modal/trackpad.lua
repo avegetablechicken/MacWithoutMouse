@@ -16,20 +16,50 @@ if This.CORNER_SIZE >= 0.5 then This.CORNER_SIZE = 0.4 end
 
 function This.bind(mods, key, message, pressedfn, releasedfn, repeatfn)
   local modsCode = 0
-  if type(mods) == 'string' then mods = {mods} end
-  for i=#mods,1,-1 do
-    if mods[i] == "top-left" then
+  if type(mods) == 'table' then
+    for i=#mods,1,-1 do
+      if mods[i] == "top-left" then
+        modsCode = modsCode + 1
+        table.remove(mods, i)
+      elseif mods[i] == "top-right" then
+        modsCode = modsCode + 2
+        table.remove(mods, i)
+      elseif mods[i] == "bottom-left" then
+        modsCode = modsCode + 4
+        table.remove(mods, i)
+      elseif mods[i] == "bottom-right" then
+        modsCode = modsCode + 8
+        table.remove(mods, i)
+      end
+    end
+  elseif mods == "top-left" then
+    modsCode = 1
+    mods = ""
+  elseif mods == "top-right" then
+    modsCode = 2
+    mods = ""
+  elseif mods == "bottom-left" then
+    modsCode = 4
+    mods = ""
+  elseif mods == "bottom-right" then
+    modsCode = 8
+    mods = ""
+  else
+    if string.find(mods, "⌜") then
       modsCode = modsCode + 1
-      table.remove(mods, i)
-    elseif mods[i] == "top-right" then
+      mods = string.gsub(mods, "⌜", "")
+    end
+    if string.find(mods, "⌝") then
       modsCode = modsCode + 2
-      table.remove(mods, i)
-    elseif mods[i] == "bottom-left" then
+      mods = string.gsub(mods, "⌝", "")
+    end
+    if string.find(mods, "⌞") then
       modsCode = modsCode + 4
-      table.remove(mods, i)
-    elseif mods[i] == "bottom-right" then
+      mods = string.gsub(mods, "⌞", "")
+    end
+    if string.find(mods, "⌟") then
       modsCode = modsCode + 8
-      table.remove(mods, i)
+      mods = string.gsub(mods, "⌟", "")
     end
   end
   if This.keys[modsCode] == nil then
