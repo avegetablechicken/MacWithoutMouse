@@ -1,60 +1,78 @@
-local This = {}
-
-This.hyperMode = hs.hotkey.modal.new()
-This.hyperMode.Entered = false
+local module = {}
 
 -- Leave Hyper Mode when Hyper is pressed
-local function exitHyperMode()
-  This.hyperMode:exit()
-  This.hyperMode.Entered = false
-  This.hyperTapper:stop()
-  This.hyperTapper = nil
-  This.hyperTimer:stop()
-  This.hyperTimer = nil
+function module:exitHyperMode()
+  self.hyperMode:exit()
+  self.hyperMode.Entered = false
+  self.hyperTapper:stop()
+  self.hyperTapper = nil
+  self.hyperTimer:stop()
+  self.hyperTimer = nil
 end
 
-local function enterHyperMode()
-  This.hyperMode:enter()
-  This.hyperMode.Entered = true
+function module:enterHyperMode()
+  self.hyperMode:enter()
+  self.hyperMode.Entered = true
 
   -- hyper key up may be captured by `Parallels Desktop`
   -- we need to check if hyper key is still pressed
-  This.hyperPressed = true
-  This.hyperTapper = hs.eventtap.new({hs.eventtap.event.types.keyDown}, function(e)
-    if e:getKeyCode() == hs.keycodes.map[This.hyper] then
-      This.hyperPressed = true
+  self.hyperPressed = true
+  self.hyperTapper = hs.eventtap.new({hs.eventtap.event.types.keyDown}, function(e)
+    if e:getKeyCode() == hs.keycodes.map[self.hyper] then
+      self.hyperPressed = true
     end
   end):start()
-  This.hyperTimer = hs.timer.doEvery(1, function()
-    if not This.hyperPressed then
-      exitHyperMode()
+  self.hyperTimer = hs.timer.doEvery(1, function()
+    if not self.hyperPressed then
+      self:exitHyperMode()
     end
-    This.hyperPressed = false
+    self.hyperPressed = false
   end):start()
 end
 
 -- Utility to bind handler to Hyper+modifiers+key
-function This.bindNoSuspend(mods, key, message, pressedfn, releasedfn, repeatfn)
+function module:bindNoSuspend(mods, key, message, pressedfn, releasedfn, repeatfn)
   pressedfn = forgiveWrapper(pressedfn, mods, key)
   releasedfn = forgiveWrapper(releasedfn, mods, key)
   repeatfn = forgiveWrapper(repeatfn, mods, key)
   local hotkey = hs.hotkey.new(mods, key, pressedfn, releasedfn, repeatfn)
-  hotkey.msg = This.hyper .. hotkey.idx .. ": " .. message
-  table.insert(This.hyperMode.keys, hotkey)
+  hotkey.msg = self.hyper .. hotkey.idx .. ": " .. message
+  table.insert(self.hyperMode.keys, hotkey)
   return hotkey
 end
 
-function This.bind(...)
+function module:bind(...)
   local hotkey = newHotkey(...)
-  hotkey.msg = This.hyper .. hotkey.msg
-  table.insert(This.hyperMode.keys, hotkey)
+  hotkey.msg = self.hyper .. hotkey.msg
+  table.insert(self.hyperMode.keys, hotkey)
   return hotkey
 end
 
 -- Binds the enter/exit functions of the Hyper modal to all combinations of modifiers
-function This.install(hotKey)
-  This.hyper = hotKey
-  local hotkey = hs.hotkey.bind("", hotKey, enterHyperMode, exitHyperMode)
+function module:_new(hotKey)
+  local o = {}
+  setmetatable(o, self)
+  self.__index = self
+  self.hyper = hotKey
+  self.hyperMode = hs.hotkey.modal.new()
+  self.hyperMode.Entered = false
+  self.trigger = hs.hotkey.bind("", hotKey,
+      function() self:enterHyperMode() end, function() self:exitHyperMode() end)
+  return o
 end
 
-return This
+function module:enable()
+  self.trigger:enable()
+  return self
+end
+
+function module:disable()
+  self.trigger:disable()
+  return self
+end
+
+function module.install(hotKey)
+  return module:_new(hotKey)
+end
+
+return module

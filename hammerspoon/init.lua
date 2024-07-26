@@ -70,8 +70,8 @@ HyperModalList = {}
 DoubleTapModalList = {}
 TouchModalList = {}
 
-HyperModal = require('modal/hyper')
-HyperModal.install(HYPER)
+local hyper = require('modal/hyper')
+HyperModal = hyper.install(HYPER)
 table.insert(HyperModalList, HyperModal)
 
 FORGIVEN_APPS = {
@@ -150,7 +150,7 @@ function newHotkeyImpl(mods, key, message, pressedfn, releasedfn, repeatfn)
     return modal.hyper == mods
   end)
   if validHyperModal ~= nil then
-    hotkey = validHyperModal.bind("", key, message, pressedfn, releasedfn, repeatfn)
+    hotkey = validHyperModal:bind("", key, message, pressedfn, releasedfn, repeatfn)
   else
     hotkey = hs.hotkey.new(mods, key, pressedfn, releasedfn, repeatfn)
   end
