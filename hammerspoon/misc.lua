@@ -415,6 +415,7 @@ local function testValid(entry)
   end
 end
 
+local trackpad = require('modal.trackpad')
 local karaHotkeys
 local function processHotkeys(validOnly, showHS, showKara, showApp, evFlags, reload)
   local allKeys = {}
@@ -444,11 +445,9 @@ local function processHotkeys(validOnly, showHS, showKara, showApp, evFlags, rel
     end
   end
 
-  for _, modal in ipairs(TouchModalList) do
-    for _, hotkeys in pairs(modal.keys) do
-      for _, hotkey in ipairs(hotkeys) do
-        table.insert(allKeys, { idx = hotkey.idx, msg = hotkey.msg, source = 0 })
-      end
+  for _, hotkeys in pairs(trackpad.keys) do
+    for _, hotkey in ipairs(hotkeys) do
+      table.insert(allKeys, { idx = hotkey.idx, msg = hotkey.msg, source = 0 })
     end
   end
 
@@ -926,8 +925,6 @@ function HSKeybindings:hide()
   self.sheetView:delete()
   self.isShowing = false
 end
-
-local trackpad = require('modal/trackpad')
 
 local doubletap = require('modal/doubletap')
 local hkKeybinding
