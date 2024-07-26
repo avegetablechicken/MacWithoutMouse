@@ -10,9 +10,9 @@ local trackpad = {
 }
 
 local params = KeybindingConfigs["parameters"] or {}
-CORNER_SIZE = params.trackpadCornerSize or 0.25
-if CORNER_SIZE <= 0 then CORNER_SIZE = 0.1 end
-if CORNER_SIZE >= 0.5 then CORNER_SIZE = 0.4 end
+This.CORNER_SIZE = params.trackpadCornerSize or 0.25
+if This.CORNER_SIZE <= 0 then This.CORNER_SIZE = 0.1 end
+if This.CORNER_SIZE >= 0.5 then This.CORNER_SIZE = 0.4 end
 
 function This.bind(mods, key, message, pressedfn, releasedfn, repeatfn)
   local modsCode = 0
@@ -52,7 +52,7 @@ function This.bind(mods, key, message, pressedfn, releasedfn, repeatfn)
           function(t) return t.touching == true and t.type == 'indirect' end) then
         for _, t in ipairs(touches) do
           local tpos = t.normalizedPosition
-          local s1, s2 = CORNER_SIZE, 1 - CORNER_SIZE
+          local s1, s2 = This.CORNER_SIZE, 1 - This.CORNER_SIZE
           if tpos.x < s1 and tpos.y > s2 then
             modsCodeInvoked = modsCodeInvoked + 1
           elseif tpos.x > s2 and tpos.y > s2 then

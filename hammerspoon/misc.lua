@@ -927,7 +927,7 @@ function HSKeybindings:hide()
   self.isShowing = false
 end
 
-require('modal/trackpad')
+local trackpad = require('modal/trackpad')
 
 local doubletap = require('modal/doubletap')
 local hkKeybinding
@@ -965,7 +965,7 @@ function()
         if touches ~= nil and #touches == 1
           and touches[1].touching == true and touches[1].type == 'indirect' then
           local tpos = touches[1].normalizedPosition
-          local s1, s2 = CORNER_SIZE, 1 - CORNER_SIZE
+          local s1, s2 = trackpad.CORNER_SIZE, 1 - trackpad.CORNER_SIZE
           if tpos.x < s1 and tpos.y > s2 then
             evFlags["trackpad:top-left"] = true
           elseif tpos.x > s2 and tpos.y > s2 then
