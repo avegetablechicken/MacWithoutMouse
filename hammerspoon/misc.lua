@@ -929,10 +929,9 @@ end
 
 require('modal/trackpad')
 
-local doubleTapModal = require('modal/doubletap')
-doubleTapModal.install(HYPER)
-table.insert(DoubleTapModalList, doubleTapModal)
-doubleTapModal.bind("Show Keybindings",
+local doubletap = require('modal/doubletap')
+local hkKeybinding
+hkKeybinding = doubletap.bind("", HYPER, "Show Keybindings",
 function()
   local hkKeybindingsLastModifier, hkKeybindingsWatcher, hkHideKeybindingsWatcher
   local cancelFunc = function()
@@ -941,11 +940,11 @@ function()
     hkKeybindingsWatcher:stop()
     hkKeybindingsLastModifier = nil
     hkHideKeybindingsWatcher:stop()
-    doubleTapModal.enable()
+    hkKeybinding:enable()
   end
 
   -- disable all modals activated by this modal
-  doubleTapModal.disable()
+  hkKeybinding:disable()
   local enteredModal = hs.fnutils.find(HyperModalList,
       function(modal) return modal.hyper == HYPER end)
   if enteredModal then
@@ -1042,7 +1041,8 @@ function()
   end
   hs.timer.doAfter(0.3, function() hkHideKeybindingsWatcher:start() end)
 end)
-doubleTapModal.kind = HK.PRIVELLEGE
+hkKeybinding.kind = HK.PRIVELLEGE
+table.insert(DoubleTapModalList, hkKeybinding)
 
 
 local function getCurrentApplication()
