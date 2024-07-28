@@ -41,8 +41,13 @@ function get(table, key, ...)
 end
 
 function getAXChildren(element, role, index, ...)
-  if element == nil or role == nil then return element end
-  local children = element:childrenWithRole(role)[index]
+  if element == nil or (role == nil and index == nil) then return element end
+  local children
+  if role == nil and element.AXChildren ~= nil then
+    children = element.AXChildren[index]
+  else
+    children = element:childrenWithRole(role)[index]
+  end
   return getAXChildren(children, ...)
 end
 
