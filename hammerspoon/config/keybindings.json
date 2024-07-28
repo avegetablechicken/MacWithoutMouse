@@ -1161,6 +1161,13 @@
       "10thLibrary": {
         "mods": "command",
         "key": "0"
+      },
+      "discardChanges": {
+        "mods": "",
+        "key": "N",
+        "windowFilter": {
+          "allowTitles": "^Save before closing$"
+        }
       }
     },
     "com.apple.iMovieApp": {

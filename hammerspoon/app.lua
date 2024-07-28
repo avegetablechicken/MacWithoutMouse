@@ -1469,6 +1469,16 @@ appHotKeyCallbacks = {
       condition = JabRefShowLibraryByIndex(10),
       fn = receivePosition
     },
+    ["discardChanges"] = {
+      message = "Discard changes",
+      fn = function(winObj)
+        local winUIObj = hs.axuielement.windowElement(winObj)
+        local button = getAXChildren(winUIObj, "AXUnknown", 1, nil, 1, 'AXButton', 1)
+        if button ~= nil then
+          button:performAction("AXPress")
+        end
+      end
+    }
     ["minimize"] = specialCommonHotkeyConfigs["minimize"]
   },
 
