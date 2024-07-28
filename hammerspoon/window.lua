@@ -285,8 +285,6 @@ bindResizeWindow(winHK["leftShrink"], "Left Border Shrink",
 function()
   local win = hs.window.focusedWindow()
   local f = win:frame()
-  local screen = win:screen()
-  local max = screen:frame()
 
   local r = f.x + f.w
   f.w = math.max(resizeStep, f.w - resizeStep)
@@ -311,8 +309,6 @@ bindResizeWindow(winHK["rightShrink"], "Right Border Shrink",
 function()
   local win = hs.window.focusedWindow()
   local f = win:frame()
-  local screen = win:screen()
-  local max = screen:frame()
 
   f.w = math.max(resizeStep, f.w - resizeStep)
   win:setFrame(f)
@@ -337,8 +333,6 @@ bindResizeWindow(winHK["topShrink"], "Top Border Shrink",
 function()
   local win = hs.window.focusedWindow()
   local f = win:frame()
-  local screen = win:screen()
-  local max = screen:frame()
 
   local b = f.y + f.h
   f.h = math.max(resizeStep, f.h - resizeStep)
@@ -363,8 +357,6 @@ bindResizeWindow(winHK["bottomShrink"], "Bottom Border Shrink",
 function()
   local win = hs.window.focusedWindow()
   local f = win:frame()
-  local screen = win:screen()
-  local max = screen:frame()
 
   f.h = math.max(resizeStep, f.h - resizeStep)
   win:setFrame(f)
