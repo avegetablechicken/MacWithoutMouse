@@ -546,10 +546,10 @@
         "key": "K",
         "bundleID": "org.klatexformula.klatexformula"
       },
-      "Texifier": {
+      "JabRef": {
         "mods": "${hyper.hyper}",
         "key": "L",
-        "bundleID": "com.vallettaventures.Texpad"
+        "bundleID": "JabRef"
       },
       "System Preferences": {
         "mods": "${hyper.hyper}",
