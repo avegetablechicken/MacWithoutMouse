@@ -4270,6 +4270,7 @@ local function microsoftRemoteDesktopCallback(appObject)
     F_hotkeySuspendedByRemoteDesktop = nil
   end
 end
+execOnActivated("com.microsoft.rdc.macos", microsoftRemoteDesktopCallback)
 
 local microsoftRemoteDesktopObserver
 local function watchForMicrosoftRemoteDesktopWindow(appObject)
@@ -4286,6 +4287,8 @@ end
 local microsoftRemoteDesktopApp = findApplication("com.microsoft.rdc.macos")
 if microsoftRemoteDesktopApp ~= nil then
   watchForMicrosoftRemoteDesktopWindow(microsoftRemoteDesktopApp)
+else
+  execOnActivated("com.microsoft.rdc.macos", watchForMicrosoftRemoteDesktopWindow)
 end
 
 -- ## iOS apps
@@ -4425,9 +4428,11 @@ function App_applicationCallback(appName, eventType, appObject)
     if bundleID == "cn.better365.iShotProHelper" then
       unregisterInWinHotKeys("cn.better365.iShotPro")
       return
-    elseif bundleID == "com.microsoft.rdc.macos" then
-      microsoftRemoteDesktopCallback(appObject)
-      watchForMicrosoftRemoteDesktopWindow(appObject)
+    end
+    if bundleID then
+      for _, proc in ipairs(processesOnActivated[bundleID] or {}) do
+        proc(appObject)
+      end
     end
     deactivateCloseWindowForIOSApps(appObject)
     if bundleID then selectInputSourceInApp(bundleID) end
