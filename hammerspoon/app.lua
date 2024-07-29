@@ -4416,9 +4416,6 @@ local appLocales = {}  -- if app locale changes, it may change its menu bar item
 function App_applicationCallback(appName, eventType, appObject)
   local bundleID = appObject:bundleID()
   if eventType == hs.application.watcher.launched then
-    if bundleID == "com.apple.finder" then
-      selectMenuItem(appObject, { "File", "New Finder Window" })
-    end
     for _, proc in ipairs(processesOnLaunch[bundleID] or {}) do
       proc(appObject)
     end
