@@ -3234,17 +3234,16 @@ end
 
 -- basically aims to remap ctrl+` to shift+ctrl+tab to make it more convenient for fingers
 local remapPreviousTabHotkey
-local function remapPreviousTab(bundleID)
+local function remapPreviousTab(appObject)
   if remapPreviousTabHotkey then
     remapPreviousTabHotkey:delete()
     remapPreviousTabHotkey = nil
   end
-  if bundleID == nil then return end
+  local bundleID = appObject:bundleID()
   local spec = get(KeybindingConfigs.hotkeys.appCommon, "remapPreviousTab")
   if spec == nil or hs.fnutils.contains(spec.excluded or {}, bundleID) then
     return
   end
-  local appObject = hs.application.frontmostApplication()
   local menuItemPath = findMenuItemByKeyBinding(appObject, '⇧⌃', '⇥')
   if menuItemPath ~= nil then
     local cond = function(appObject)
@@ -3266,17 +3265,16 @@ local function remapPreviousTab(bundleID)
 end
 
 local frontmostApplication = hs.application.frontmostApplication()
-remapPreviousTab(frontmostApplication:bundleID())
+remapPreviousTab(frontmostApplication)
 
 -- register hotkey to open recent when it is available
 local openRecentHotkey
-local function registerOpenRecent(bundleID)
+local function registerOpenRecent(appObject)
   if openRecentHotkey then
     openRecentHotkey:delete()
     openRecentHotkey = nil
   end
-  if bundleID == nil then return end
-  local appObject = hs.application.frontmostApplication()
+  local bundleID = appObject:bundleID()
   local spec = get(KeybindingConfigs.hotkeys.appCommon, "openRecent")
   local specApp = get(appHotKeyCallbacks[bundleID], "openRecent")
   if (specApp ~= nil and (specApp.bindCondition == nil or specApp.bindCondition(appObject)))
@@ -3305,7 +3303,7 @@ local function registerOpenRecent(bundleID)
     openRecentHotkey.kind = HK.IN_APP
   end
 end
-registerOpenRecent(frontmostApplication:bundleID())
+registerOpenRecent(frontmostApplication)
 
 -- bind hotkeys for open or save panel that are similar in `Finder`
 -- & hotkeys to confirm delete or save
@@ -4316,8 +4314,8 @@ deactivateCloseWindowForIOSApps(frontmostApplication)
 
 -- specify input source for apps
 local appsInputSourceMap = applicationConfigs.inputSource or {}
-local function selectInputSourceInApp(bid)
-  local inputSource = appsInputSourceMap[bid]
+local function selectInputSourceInApp(appObject)
+  local inputSource = appsInputSourceMap[appObject:bundleID()]
   if inputSource ~= nil then
     local currentSourceID = hs.keycodes.currentSourceID()
     if type(inputSource) == 'string' then
@@ -4431,7 +4429,7 @@ function App_applicationCallback(appName, eventType, appObject)
       proc(appObject)
     end
     deactivateCloseWindowForIOSApps(appObject)
-    selectInputSourceInApp(bundleID)
+    selectInputSourceInApp(appObject)
     F_doNotReloadShowingKeybings = true
     hs.timer.doAfter(3, function()
       F_doNotReloadShowingKeybings = false
@@ -4451,8 +4449,8 @@ function App_applicationCallback(appName, eventType, appObject)
       hs.timer.doAfter(0, function()
         altMenuBarItem(appObject)
         hs.timer.doAfter(0, function()
-          remapPreviousTab(bundleID)
-          registerOpenRecent(bundleID)
+          remapPreviousTab(appObject)
+          registerOpenRecent(appObject)
           registerObserverForMenuBarChange(appObject)
           registerForOpenSavePanel(appObject)
           if HSKeybindings ~= nil and HSKeybindings.isShowing then
