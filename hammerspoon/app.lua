@@ -8,6 +8,8 @@ end
 hs.application.enableSpotlightForNameSearches(true)
 
 
+-- # appkeys
+
 -- launch or hide applications
 local function focusOrHideFinder(appObject)
   local windowFilter = hs.window.filter.new(false):setAppFilter(appObject:name())
@@ -63,80 +65,6 @@ local function focusOrHide(hint)
   else
     appObject:hide()
   end
-end
-
-local function toggleBarrierConnect()
-  local stdout, status = hs.execute("ps -ax | grep Barrier.app/Contents/MacOS/barrier | grep -v grep")
-  if status ~= true then
-    hs.application.launchOrFocusByBundleID("barrier")
-    hs.timer.doAfter(2, function()
-      local ok, ret = hs.osascript.applescript([[
-        tell application "System Events"
-          tell ]] .. aWinFor("barrier") .. [[
-            click button "Start"
-            delay 0.5
-            click button 4
-          end tell
-        end tell
-      ]])
-
-      if ok then
-        hs.alert("Barrier started")
-      else
-        hs.alert("Error occurred")
-      end
-    end)
-  else
-    local script = [[
-      tell application "System Events"
-        set popupMenu to menu 1 of menu bar item 1 of last menu bar of ¬
-            (first application process whose bundle identifier is "barrier")
-        if value of attribute "AXEnabled" of menu item "Start" of popupMenu is true then
-          set ret to 0
-          click menu item "Start" of popupMenu
-        else
-          click menu item "Stop" of popupMenu
-          set ret to 1
-        end if
-      end tell
-
-      return ret
-    ]]
-    local ok, ret = hs.osascript.applescript(script)
-    if ok then
-      if ret == 0 then
-        hs.alert("Barrier started")
-      else
-        hs.alert("Barrier stopped")
-      end
-    else
-      hs.alert("Error occurred")
-    end
-  end
-end
-
-local function toggleTopNotch()
-  local bundleID = "pl.maketheweb.TopNotch"
-  if findApplication(bundleID) == nil then
-    hs.application.open(bundleID)
-  end
-  local appObject = findApplication(bundleID)
-  clickRightMenuBarItem(bundleID)
-  local appUIObj = hs.axuielement.applicationElement(bundleID)
-  appUIObj:elementSearch(
-    function(msg, results, count)
-      local state = results[1].AXValue
-      results[1]:performAction("AXPress")
-      if state == 'off' then
-        hs.eventtap.keyStroke("", "Escape", nil, appObject)
-      else
-        hs.timer.usleep(0.05 * 1000000)
-        hs.eventtap.keyStroke("", "Space", nil, appObject)
-      end
-    end,
-    function(element)
-      return element.AXSubrole == "AXSwitch"
-    end)
 end
 
 local function getParallelsVMPath(osname)
@@ -222,6 +150,85 @@ registerAppHotkeys()
 -- # hotkeys in specific application
 local appHotKeyCallbacks
 
+-- ## function utilities for hotkey configs of specific application
+
+-- ### Barrier
+local function toggleBarrierConnect()
+  local stdout, status = hs.execute("ps -ax | grep Barrier.app/Contents/MacOS/barrier | grep -v grep")
+  if status ~= true then
+    hs.application.launchOrFocusByBundleID("barrier")
+    hs.timer.doAfter(2, function()
+      local ok, ret = hs.osascript.applescript([[
+        tell application "System Events"
+          tell ]] .. aWinFor("barrier") .. [[
+            click button "Start"
+            delay 0.5
+            click button 4
+          end tell
+        end tell
+      ]])
+
+      if ok then
+        hs.alert("Barrier started")
+      else
+        hs.alert("Error occurred")
+      end
+    end)
+  else
+    local script = [[
+      tell application "System Events"
+        set popupMenu to menu 1 of menu bar item 1 of last menu bar of ¬
+            (first application process whose bundle identifier is "barrier")
+        if value of attribute "AXEnabled" of menu item "Start" of popupMenu is true then
+          set ret to 0
+          click menu item "Start" of popupMenu
+        else
+          click menu item "Stop" of popupMenu
+          set ret to 1
+        end if
+      end tell
+
+      return ret
+    ]]
+    local ok, ret = hs.osascript.applescript(script)
+    if ok then
+      if ret == 0 then
+        hs.alert("Barrier started")
+      else
+        hs.alert("Barrier stopped")
+      end
+    else
+      hs.alert("Error occurred")
+    end
+  end
+end
+
+-- ### TopNotch
+local function toggleTopNotch()
+  local bundleID = "pl.maketheweb.TopNotch"
+  if findApplication(bundleID) == nil then
+    hs.application.open(bundleID)
+  end
+  local appObject = findApplication(bundleID)
+  clickRightMenuBarItem(bundleID)
+  local appUIObj = hs.axuielement.applicationElement(bundleID)
+  appUIObj:elementSearch(
+    function(msg, results, count)
+      local state = results[1].AXValue
+      results[1]:performAction("AXPress")
+      if state == 'off' then
+        hs.eventtap.keyStroke("", "Escape", nil, appObject)
+      else
+        hs.timer.usleep(0.05 * 1000000)
+        hs.eventtap.keyStroke("", "Space", nil, appObject)
+      end
+    end,
+    function(element)
+      return element.AXSubrole == "AXSwitch"
+    end)
+end
+
+-- ### klaxetformula
 -- pipeline of copying latex to `klatexformula` and rendering
 local function klatexformulaRender()
   hs.osascript.applescript([[
@@ -233,6 +240,7 @@ local function klatexformulaRender()
   ]])
 end
 
+-- ### Finder
 local function getFinderSidebarItemTitle(idx)
   return function(appObject)
     local appUIObj = hs.axuielement.applicationElement(appObject)
@@ -287,6 +295,7 @@ local function openFinderSidebarItem(cellUIObj, appObject)
   end
 end
 
+-- ### Messages
 local function deleteSelectedMessage(appObject, menuItem, force)
   if menuItem == nil then
     local appUIObj = hs.axuielement.applicationElement(appObject)
@@ -343,6 +352,7 @@ local function deleteAllMessages(appObject)
   )
 end
 
+-- ### FaceTime
 local function deleteMousePositionCall(appObject)
   local appUIObj = hs.axuielement.applicationElement(appObject)
   appUIObj:elementSearch(
@@ -419,6 +429,7 @@ local function deleteAllCalls(appObject)
   )
 end
 
+-- ### Visual Studio Code
 local function VSCodeToggleSideBarSection(sidebar, section)
   local focusedWindow = hs.application.frontmostApplication():focusedWindow()
   if focusedWindow == nil then return end
@@ -494,11 +505,12 @@ local function VSCodeToggleSideBarSection(sidebar, section)
   ]])
 end
 
+-- ### JabRef
 local function JabRefShowLibraryByIndex(idx)
   return function(appObject)
     local appUIObj = hs.axuielement.applicationElement(appObject)
     local tab = getAXChildren(appUIObj, "AXWindow", activatedWindowIndex(),
-        "AXTabGroup", 1, "AXRadioButton", idx)
+      "AXTabGroup", 1, "AXRadioButton", idx)
     if tab ~= nil then
       return true, { x = tab.AXPosition.x + 10, y = tab.AXPosition.y + 10 }
     else
@@ -507,44 +519,7 @@ local function JabRefShowLibraryByIndex(idx)
   end
 end
 
-local function parsePlistKeyBinding(mods, key)
-  mods = tonumber(mods) key = tonumber(key)
-  if mods == nil or key == nil then return end
-  key = hs.keycodes.map[key]
-  local modList = {}
-  if mods >= (1 << 17) then
-    if mods >= (1 << 23) then table.insert(modList, "fn") end
-    if (mods % (1 << 23)) >= (1 << 20) then table.insert(modList, "command") end
-    if (mods % (1 << 20)) >= (1 << 19) then table.insert(modList, "option") end
-    if (mods % (1 << 19)) >= (1 << 18) then table.insert(modList, "control") end
-    if (mods % (1 << 18)) >= (1 << 17) then table.insert(modList, "shift") end
-  else
-    if mods >= (1 << 12) then table.insert(modList, "control") end
-    if (mods % (1 << 12)) >= (1 << 11) then table.insert(modList, "option") end
-    if (mods % (1 << 11)) >= (1 << 9) then table.insert(modList, "shift") end
-    if (mods % (1 << 9)) >= (1 << 8) then table.insert(modList, "command") end
-  end
-  return modList, key
-end
-
-local function dumpPlistKeyBinding(mode, mods, key)
-  local modIdx = 0
-  if mode == 1 then
-    if hs.fnutils.contains(mods, "command") then modIdx = (1 << 8) end
-    if hs.fnutils.contains(mods, "option") then modIdx = modIdx + (1 << 11) end
-    if hs.fnutils.contains(mods, "control") then modIdx = modIdx + (1 << 12) end
-    if hs.fnutils.contains(mods, "shift") then modIdx = modIdx + (1 << 9) end
-  elseif mode == 2 then
-    if key:lower():match("^f(%d+)$") then modIdx = 1 << 23 end
-    if hs.fnutils.contains(mods, "command") then modIdx = modIdx + (1 << 20) end
-    if hs.fnutils.contains(mods, "option") then modIdx = modIdx + (1 << 19) end
-    if hs.fnutils.contains(mods, "control") then modIdx = modIdx + (1 << 18) end
-    if hs.fnutils.contains(mods, "shift") then modIdx = modIdx + (1 << 17) end
-  end
-  key = hs.keycodes.map[key]
-  return modIdx, key
-end
-
+-- ### iCopy
 local function iCopySelectHotkeyRemapRequired()
   local version = hs.execute(string.format('mdls -r -name kMDItemVersion "%s"',
       hs.application.pathForBundleID("cn.better365.iCopy")))
@@ -579,6 +554,50 @@ local function iCopySelectHotkeyRemap(winObj, idx)
   hs.eventtap.keyStroke(iCopyMod, tostring(idx), nil, winObj:application())
 end
 
+-- ## functin utilities for hotkey configs
+
+-- some apps save key bindings in plist files
+-- we need to parse them and remap specified key bindings to them
+local function parsePlistKeyBinding(mods, key)
+  mods = tonumber(mods) key = tonumber(key)
+  if mods == nil or key == nil then return end
+  key = hs.keycodes.map[key]
+  local modList = {}
+  if mods >= (1 << 17) then
+    if mods >= (1 << 23) then table.insert(modList, "fn") end
+    if (mods % (1 << 23)) >= (1 << 20) then table.insert(modList, "command") end
+    if (mods % (1 << 20)) >= (1 << 19) then table.insert(modList, "option") end
+    if (mods % (1 << 19)) >= (1 << 18) then table.insert(modList, "control") end
+    if (mods % (1 << 18)) >= (1 << 17) then table.insert(modList, "shift") end
+  else
+    if mods >= (1 << 12) then table.insert(modList, "control") end
+    if (mods % (1 << 12)) >= (1 << 11) then table.insert(modList, "option") end
+    if (mods % (1 << 11)) >= (1 << 9) then table.insert(modList, "shift") end
+    if (mods % (1 << 9)) >= (1 << 8) then table.insert(modList, "command") end
+  end
+  return modList, key
+end
+
+-- dump specified key bindings to plist files
+local function dumpPlistKeyBinding(mode, mods, key)
+  local modIdx = 0
+  if mode == 1 then
+    if hs.fnutils.contains(mods, "command") then modIdx = (1 << 8) end
+    if hs.fnutils.contains(mods, "option") then modIdx = modIdx + (1 << 11) end
+    if hs.fnutils.contains(mods, "control") then modIdx = modIdx + (1 << 12) end
+    if hs.fnutils.contains(mods, "shift") then modIdx = modIdx + (1 << 9) end
+  elseif mode == 2 then
+    if key:lower():match("^f(%d+)$") then modIdx = 1 << 23 end
+    if hs.fnutils.contains(mods, "command") then modIdx = modIdx + (1 << 20) end
+    if hs.fnutils.contains(mods, "option") then modIdx = modIdx + (1 << 19) end
+    if hs.fnutils.contains(mods, "control") then modIdx = modIdx + (1 << 18) end
+    if hs.fnutils.contains(mods, "shift") then modIdx = modIdx + (1 << 17) end
+  end
+  key = hs.keycodes.map[key]
+  return modIdx, key
+end
+
+-- fetch localized string as hotkey message after activating the app
 local function localizedMessage(message, params, sep)
   return function(appObject)
     local bundleID = appObject:bundleID()
@@ -595,6 +614,7 @@ local function localizedMessage(message, params, sep)
   end
 end
 
+-- fetch title of menu item as hotkey message by key binding
 local function menuItemMessage(mods, key, titleIndex, sep)
   return function(appObject)
     if type(titleIndex) == 'number' then
@@ -611,6 +631,8 @@ local function menuItemMessage(mods, key, titleIndex, sep)
   end
 end
 
+-- check if the menu item whose path is specified is enabled
+-- if so, return the path of the menu item
 local function checkMenuItem(menuItemTitle, params)
   return function(appObject)
     local menuItem, menuItemTitle = findMenuItem(appObject, menuItemTitle, params)
@@ -618,11 +640,14 @@ local function checkMenuItem(menuItemTitle, params)
   end
 end
 
+-- possible reasons for failure of hotkey condition
 local COND_FAIL = {
   MENU_ITEM_SELECTED = "MENU_ITEM_SELECTED",
   NO_MENU_ITEM_BY_KEYBINDING = "NO_MENU_ITEM_BY_KEYBINDING",
 }
 
+-- check whether the menu bar item is selected
+-- for when the left menu bar item is selected, hotkeys should be disabled
 local function noSelectedMenuBarItem(appObject)
   local appUIObj = hs.axuielement.applicationElement(appObject)
   local menuBar = appUIObj:childrenWithRole("AXMenuBar")[1]
@@ -645,6 +670,8 @@ local function noSelectedMenuBarItemFunc(fn)
   end
 end
 
+-- check if the menu item whose key binding is specified is enabled
+-- if so, return the path of the menu item
 local function checkMenuItemByKeybinding(mods, key)
   return function(appObject)
     local menuItem, enabled = findMenuItemByKeyBinding(appObject, mods, key)
@@ -656,14 +683,19 @@ local function checkMenuItemByKeybinding(mods, key)
   end
 end
 
+-- select the menu item returned by the condition
+-- work as hotkey callback
 local function receiveMenuItem(menuItemTitle, appObject)
   appObject:selectMenuItem(menuItemTitle)
 end
 
+-- click the position returned by the condition
+-- work as hotkey callback
 local function receivePosition(position, appObject)
   leftClickAndRestore(position, appObject:name())
 end
 
+-- send key strokes to the app. but if the key binding is found, select corresponding menu item
 ---@diagnostic disable-next-line: lowercase-global
 function selectMenuItemOrKeyStroke(appObject, mods, key)
   local menuItemPath, enabled = findMenuItemByKeyBinding(appObject, mods, key)
@@ -687,6 +719,7 @@ local function hotkeyIdx(mods, key)
   return idx
 end
 
+-- send key strokes to the system. but if the key binding is registered, disable it temporally
 local function safeGlobalKeyStroke(mods, key)
   local idx = hotkeyIdx(mods, key)
   local conflicted = hs.fnutils.filter(hs.hotkey.getHotkeys(), function(hk)
@@ -701,12 +734,18 @@ local function safeGlobalKeyStroke(mods, key)
   end
 end
 
+-- workaround for apps that is hard to fetch localized strings
+-- require locales of them to be set to English or Chinese
 local function ENOrZHSim(appObject)
   local appLocale = applicationLocales(appObject:bundleID())[1]
   return appLocale:match("^en[^%a]") ~= nil
       or (appLocale:match("^zh[^%a]") ~= nil and (appLocale:find("Hans") ~= nil or appLocale:find("CN") ~= nil))
 end
 
+
+-- ## hotkey configs for apps
+
+-- hotkey configs that cound be used in various application
 local specialCommonHotkeyConfigs = {
   ["closeWindow"] = {
     mods = "⌘", key = "W",
@@ -1478,7 +1517,7 @@ appHotKeyCallbacks = {
           button:performAction("AXPress")
         end
       end
-    }
+    },
     ["minimize"] = specialCommonHotkeyConfigs["minimize"]
   },
 
@@ -2606,6 +2645,8 @@ local function unregisterRunningAppHotKeys(bid, force)
 end
 
 -- record windows created and alive since last app switch
+-- we have to record them because key strokes must be sent to frontmost window instead of frontmost app
+-- and some windows may be make frontmost silently
 WindowCreatedSince = {}
 WindowCreatedSinceWatcher = hs.window.filter.new(true):subscribe(
 {hs.window.filter.windowCreated, hs.window.filter.windowFocused, hs.window.filter.windowDestroyed},
@@ -2625,7 +2666,7 @@ function(winObj, appName, eventType)
   end
 end)
 
--- key strokes must be sent to frontmost window instead of frontmost app
+-- send key strokes to frontmost window instead of frontmost app
 local function inAppHotKeysWrapper(appObject, mods, key, func)
   if func == nil then
     func = key key = mods.key mods = mods.mods
@@ -2711,8 +2752,10 @@ local function registerInAppHotKeys(appName, eventType, appObject)
               selectMenuItemOrKeyStroke(appObject, keyBinding.mods, keyBinding.key)
             end
           end
-          -- in current version of Hammerspoon, if condition function or callback function lasts too long,
+          -- in current version of Hammerspoon, if a callback lasts kind of too long,
           -- keeping pressing a hotkey may lead to unexpected repeated triggering of callback function
+          -- a workaround is to check if callback function is executing, if so, do nothing
+          -- note that this workaround may not work when the callback lasts really too long
           if cfg.repeatable ~= false then
             local oldFn = fn
             fn = function(appObject, appName, eventType)
@@ -2951,6 +2994,7 @@ local function unregisterInWinHotKeys(bid, delete)
   end
 end
 
+-- check if a window filter is the same as another
 local function sameFilter(a, b)
   for k, v in pairs(a) do
     if b[k] ~= v then
@@ -2965,6 +3009,7 @@ local function sameFilter(a, b)
   return true
 end
 
+-- hotkeys for frontmost window belonging to unactivated app
 local inWinOfUnactivatedAppHotKeys = {}
 local inWinOfUnactivatedAppWatchers = {}
 local function inWinOfUnactivatedAppWatcherEnableCallback(bid, filter, winObj, appName)
@@ -3031,7 +3076,6 @@ local function registerSingleWinFilterForDaemonApp(appObject, filter)
   inWinOfUnactivatedAppWatchers[bid][filter] = { filterEnable, filterDisable }
 end
 
--- hotkeys for frontmost window belonging to unactivated app
 local function registerWinFiltersForDaemonApp(appObject, appConfig)
   local bid = appObject:bundleID()
   for hkID, spec in pairs(appConfig) do
@@ -3070,7 +3114,11 @@ local function registerWinFiltersForDaemonApp(appObject, appConfig)
 end
 
 
+-- ## function utilities for process management on app switching
+
+-- for apps whose launching can be detected by Hammerspoon
 local processesOnLaunch = {}
+-- for apps that launch silently
 local processesOnLaunchMonitored = {}
 local hasLaunched = {}
 local appsLaunchSilently = applicationConfigs.launchSilently or {}
@@ -3147,9 +3195,9 @@ registerInAppHotKeys(hs.application.frontmostApplication():title(),
 -- register hotkeys for focused window of active app
 registerInWinHotKeys(hs.application.frontmostApplication())
 
+-- register hotkeys for frontmost window belonging to unactivated app
 local frontWin = hs.window.frontmostWindow()
 if frontWin ~= nil then
-  -- register hotkeys for frontmost window belonging to unactivated app
   local frontWinAppBid = frontWin:application():bundleID()
   if inWinOfUnactivatedAppWatchers[frontWinAppBid] ~= nil then
     local frontWinAppName = frontWin:application():title()
@@ -3181,8 +3229,10 @@ for bid, appConfig in pairs(appHotKeyCallbacks) do
   end
 end
 
--- hotkey shared by multiple apps
 
+-- ## hotkeys or configs shared by multiple apps
+
+-- basically aims to remap ctrl+` to shift+ctrl+tab to make it more convenient for fingers
 local remapPreviousTabHotkey
 local function remapPreviousTab(bundleID)
   if remapPreviousTabHotkey then
@@ -3218,6 +3268,7 @@ end
 local frontmostApplication = hs.application.frontmostApplication()
 remapPreviousTab(frontmostApplication:bundleID())
 
+-- register hotkey to open recent when it is available
 local openRecentHotkey
 local function registerOpenRecent(bundleID)
   if openRecentHotkey then
@@ -3256,6 +3307,10 @@ local function registerOpenRecent(bundleID)
 end
 registerOpenRecent(frontmostApplication:bundleID())
 
+-- bind hotkeys for open or save panel that are similar in `Finder`
+-- & hotkeys to confirm delete or save
+
+-- specialized for `WPS Office`
 local WPSCloseDialogHotkeys = {}
 local function WPSCloseDialog(winUIObj)
   for _, hotkey in ipairs(WPSCloseDialogHotkeys) do
@@ -3416,9 +3471,7 @@ local function registerForOpenSavePanel(appObject)
 end
 registerForOpenSavePanel(frontmostApplication)
 
-
--- bind `alt+?` hotkeys to menu bar 1 functions
--- to be registered in application callback
+-- bind `alt+?` hotkeys to select left menu bar items
 AltMenuBarItemHotkeys = {}
 
 local function bindAltMenu(appObject, mods, key, message, fn)
@@ -3580,6 +3633,7 @@ local function altMenuBarItem(appObject)
 end
 altMenuBarItem(frontmostApplication)
 
+-- some apps may change their menu bar items irregularly
 local appswatchMenuBarItems = get(applicationConfigs.menuBarItemsMayChange, 'basic') or {}
 local appsMenuBarItemsWatchers = {}
 
@@ -3612,6 +3666,7 @@ local function watchMenuBarItems(appObject)
       function(bundleID) appsMenuBarItemsWatchers[bundleID] = nil end)
 end
 
+-- some apps may change their menu bar items based on the focused window
 local appsMayChangeMenuBar = get(applicationConfigs.menuBarItemsMayChange, 'window') or {}
 
 local function appMenuBarChangeCallback(appObject)
@@ -3668,6 +3723,7 @@ local function registerObserverForMenuBarChange(appObject)
 end
 registerObserverForMenuBarChange(frontmostApplication)
 
+-- auto hide or quit apps with no windows (including pseudo windows suck as popover or sheet)
 local function processAppWithNoWindows(appObject, quit, delay)
   hs.timer.doAfter(delay or 0, function()
     if #appObject:visibleWindows() == 0
@@ -3766,8 +3822,10 @@ local appsAutoHideWithNoWindowsLoaded = applicationConfigs.autoHideWithNoWindow
 local appsAutoQuitWithNoWindowsLoaded = applicationConfigs.autoQuitWithNoWindow
 local appsAutoHideWithNoWindows = {}
 local appsAutoQuitWithNoWindows = {}
+-- account for pseudo windows such as popover or sheet
 local appsAutoHideWithNoPseudoWindows = {}
 local appsAutoQuitWithNoPseudoWindows = {}
+-- some apps may first close a window before create a targeted one, so delay is needed before checking
 local appsWithNoWindowsDelay = {}
 for _, item in ipairs(appsAutoHideWithNoWindowsLoaded or {}) do
   if type(item) == 'string' then
@@ -3819,7 +3877,7 @@ for _, item in ipairs(appsAutoQuitWithNoWindowsLoaded or {}) do
 end
 
 local windowFilterAutoHide = hs.window.filter.new(false)
-    :setAppFilter("Hammerspoon", true)
+    :setAppFilter("Hammerspoon", true)  -- Hammerspoon overlook itself by default, so add it here
 for bundleID, cfg in pairs(appsAutoHideWithNoWindows) do
   local func = function(appObject)
     windowFilterAutoHide:setAppFilter(appObject:name(), cfg)
@@ -3857,6 +3915,7 @@ windowFilterAutoQuit:subscribe(hs.window.filter.windowDestroyed,
     processAppWithNoWindows(winObj:application(), true, appsWithNoWindowsDelay[bundleID])
   end)
 
+-- Hammerspoon only account standard windows, so add watchers for pseudo windows here
 for bundleID, rules in pairs(appsAutoHideWithNoPseudoWindows) do
   local func = function(appObject)
     registerPseudoWindowDestroyWatcher(appObject, rules,
@@ -3883,8 +3942,10 @@ for bundleID, rules in pairs(appsAutoQuitWithNoPseudoWindows) do
 end
 
 
--- configure specific apps
+-- ## configure specific apps
 
+-- ### Mountain Duck
+-- connect to servers on launch
 local function connectMountainDuckEntries(appObject, connection)
   local script = string.format([[
     tell application "System Events"
@@ -3960,6 +4021,8 @@ if mountainDuckConfig ~= nil and mountainDuckConfig.connections ~= nil then
   end
 end
 
+-- ## Mathpix Snipping Tool
+-- close popover window when Escape is pressed
 local function watchForMathpixPopoverWindow(appObject)
   local appUIObj = hs.axuielement.applicationElement(appObject)
   local observer = hs.axuielement.observer.new(appObject:pid())
@@ -4013,6 +4076,8 @@ if mathpixApp ~= nil then
   watchForMathpixPopoverWindow(mathpixApp)
 end
 
+-- ## Lemon Monitor
+-- close popover window when specified key binding is pressed
 local function watchForLemonMonitorWindow(appObject)
   local spec = get(KeybindingConfigs.hotkeys, "com.tencent.LemonMonitor", "closeWindow")
       or get(appHotKeyCallbacks, "com.tencent.LemonMonitor", "closeWindow")
@@ -4064,10 +4129,14 @@ if lemonMonitorApp ~= nil then
   watchForLemonMonitorWindow(lemonMonitorApp)
 end
 
+-- ## Barrier
+-- barrier window may not be focused when it is created, so focus it
 local barrierWindowFilter = hs.window.filter.new(false):allowApp("Barrier"):subscribe(
   hs.window.filter.windowCreated, function(winObj) winObj:focus() end
 )
 
+-- ## remote desktop apps
+-- remap modifier keys for specified windows of remote desktop apps
 local remoteDesktopsMappingModifiers = get(KeybindingConfigs, 'remap') or {}
 local modifiersShort = {
   control = "ctrl",
@@ -4219,6 +4288,8 @@ if microsoftRemoteDesktopApp ~= nil then
   watchForMicrosoftRemoteDesktopWindow(microsoftRemoteDesktopApp)
 end
 
+-- ## iOS apps
+-- disable cmd+w to close window for iOS apps because it will quit them
 local iOSAppHotkey
 local function deactivateCloseWindowForIOSApps(appObject)
   if appObject:bundleID() == nil then return end
@@ -4235,10 +4306,12 @@ local function deactivateCloseWindowForIOSApps(appObject)
 end
 deactivateCloseWindowForIOSApps(frontmostApplication)
 
+
 -- # callbacks
 
--- application callbacks
+-- ## application callbacks
 
+-- specify input source for apps
 local appsInputSourceMap = applicationConfigs.inputSource or {}
 local function selectInputSourceInApp(bid)
   local inputSource = appsInputSourceMap[bid]
@@ -4261,6 +4334,7 @@ local function selectInputSourceInApp(bid)
   end
 end
 
+-- some apps may have slow launch time, so need to wait until fully launched to bind menu bar item hotkeys
 local appsLaunchSlow = {
   {
     bundleID = "com.jetbrains.CLion",
@@ -4335,7 +4409,7 @@ local function altMenuBarItemAfterLaunch(appObject)
   end
 end
 
-local appLocales = {}
+local appLocales = {}  -- if app locale changes, it may change its menu bar items, so need to rebind
 function App_applicationCallback(appName, eventType, appObject)
   local bundleID = appObject:bundleID()
   if eventType == hs.application.watcher.launched then
@@ -4469,7 +4543,7 @@ function App_applicationInstalledCallback(files, flagTables)
   registerAppHotkeys()
 end
 
--- monitor callbacks
+-- ## monitor callbacks
 
 -- launch applications automatically when connected to an external monitor
 local builtinMonitor = "Built-in Retina Display"
@@ -4505,7 +4579,7 @@ function App_monitorChangedCallback()
   end
 end
 
--- usb callbacks
+-- ## usb callbacks
 
 -- launch `MacDroid` automatically when connected to android phone
 local phones = {{"ANA-AN00", "HUAWEI"}}
