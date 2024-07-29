@@ -3342,7 +3342,7 @@ local function WPSCloseDialog(winUIObj)
       for hkID, btnName in pairs(btnNames) do
         if button.AXTitle == btnName then
           local spec = get(KeybindingConfigs.hotkeys, bundleID, hkID) or appConfig[hkID]
-          local hotkey = AppBindSpec(findApplication(bundleID), spec, btnName, function()
+          local hotkey = WinBindSpec(findApplication(bundleID), true, spec, btnName, function()
             local action = button:actionNames()[1]
             button:performAction(action)
           end)
@@ -3437,7 +3437,7 @@ local function registerForOpenSavePanel(appObject)
         local spec = get(KeybindingConfigs.hotkeys[bundleID], hkID)
         if spec ~= nil then
           local folder = cell:childrenWithRole("AXStaticText")[1].AXValue
-          local hotkey = AppBindSpec(appObject, spec, header .. ' > ' .. folder, function()
+          local hotkey = WinBindSpec(appObject, { allowSheet = true }, spec, header .. ' > ' .. folder, function()
             cell:performAction("AXOpen")
           end)
           hotkey.kind = HK.IN_APPWIN
@@ -3454,7 +3454,7 @@ local function registerForOpenSavePanel(appObject)
       spec = get(KeybindingConfigs.hotkeys[bundleID], "goToDownloads")
     end
     if spec ~= nil then
-      hotkey = AppBindSpec(appObject, spec, message, function()
+      hotkey = WinBindSpec(appObject, { allowSheet = true }, spec, message, function()
         local action = openSavePanelActor:actionNames()[1]
         openSavePanelActor:performAction(action)
       end)
@@ -4045,7 +4045,7 @@ local function watchForMathpixPopoverWindow(appObject)
     appUIObj:elementSearch(function(msg, results, count)
       if count > 0 then
         local hotkey, closeObserver
-        hotkey = AppBind(appObject, "", "Escape", "Hide Popover", function()
+        hotkey = WinBind(appObject, { allowPopover = true }, "", "Escape", "Hide Popover", function()
           clickRightMenuBarItem(appObject:bundleID())
           if hotkey ~= nil then
             hotkey:delete()
@@ -4056,6 +4056,7 @@ local function watchForMathpixPopoverWindow(appObject)
             closeObserver = nil
           end
         end)
+        hotkey.kind = HK.IN_APPWIN
         closeObserver = hs.axuielement.observer.new(appObject:pid())
         closeObserver:addWatcher(
           results[1],
