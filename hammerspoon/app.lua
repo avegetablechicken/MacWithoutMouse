@@ -4089,7 +4089,7 @@ local function watchForLemonMonitorWindow(appObject)
   local callback = function(_, element)
     if element.AXRole == "AXWindow" then
       local hotkey, closeObserver
-      hotkey = AppBindSpec(appObject, spec, spec.message or "Close Window", function()
+      hotkey = bindHotkeySpec(spec, spec.message or "Close Window", function()
         leftClickAndRestore({ x = element.AXPosition.x + element.AXSize.w/2,
                               y = element.AXPosition.y })
         if hotkey ~= nil then
@@ -4101,6 +4101,7 @@ local function watchForLemonMonitorWindow(appObject)
           closeObserver = nil
         end
       end)
+      hotkey.kind = HK.IN_WIN
       closeObserver = hs.axuielement.observer.new(appObject:pid())
       closeObserver:addWatcher(
         element,
