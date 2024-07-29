@@ -3342,12 +3342,14 @@ local function WPSCloseDialog(winUIObj)
       for hkID, btnName in pairs(btnNames) do
         if button.AXTitle == btnName then
           local spec = get(KeybindingConfigs.hotkeys, bundleID, hkID) or appConfig[hkID]
-          local hotkey = WinBindSpec(findApplication(bundleID), true, spec, btnName, function()
-            local action = button:actionNames()[1]
-            button:performAction(action)
-          end)
-          hotkey.kind = HK.IN_APPWIN
-          table.insert(WPSCloseDialogHotkeys, hotkey)
+          if spec ~= nil then
+            local hotkey = WinBindSpec(findApplication(bundleID), true, spec, btnName, function()
+              local action = button:actionNames()[1]
+              button:performAction(action)
+            end)
+            hotkey.kind = HK.IN_APPWIN
+            table.insert(WPSCloseDialogHotkeys, hotkey)
+          end
         end
       end
     end

@@ -246,6 +246,7 @@ toggleHotkey.kind = HK.PRIVELLEGE
 
 -- reload
 bindHotkeySpec(misc["reloadHammerspoon"], "Reload Hammerspoon", function()
+  hs.execute([[kill -9 $(ps -ax | grep com.apple.WebKit.WebContent | grep -v grep | awk '{print $1}' | tr '\n' ' ')]])
   hs.reload()
 end).kind = HK.PRIVELLEGE
 
