@@ -4425,35 +4425,32 @@ function App_applicationCallback(appName, eventType, appObject)
     altMenuBarItemAfterLaunch(appObject)
   elseif eventType == hs.application.watcher.activated then
     WindowCreatedSince = {}
+    if bundleID == nil then return end
     if bundleID == "cn.better365.iShotProHelper" then
       unregisterInWinHotKeys("cn.better365.iShotPro")
       return
     end
-    if bundleID then
-      for _, proc in ipairs(processesOnActivated[bundleID] or {}) do
-        proc(appObject)
-      end
+    for _, proc in ipairs(processesOnActivated[bundleID] or {}) do
+      proc(appObject)
     end
     deactivateCloseWindowForIOSApps(appObject)
-    if bundleID then selectInputSourceInApp(bundleID) end
+    selectInputSourceInApp(bundleID)
     F_doNotReloadShowingKeybings = true
     hs.timer.doAfter(3, function()
       F_doNotReloadShowingKeybings = false
     end)
     hs.timer.doAfter(0, function()
-      if bundleID then
-        local locales = applicationLocales(bundleID)
-        local appLocale = locales[1]
-        if appLocales[bundleID] ~= nil and appLocales[bundleID] ~= appLocale then
-          unregisterRunningAppHotKeys(bundleID, true)
-          registerRunningAppHotKeys(bundleID)
-          unregisterInAppHotKeys(bundleID, eventType, true)
-          unregisterInWinHotKeys(bundleID, true)
-        end
-        appLocales[bundleID] = appLocale
-        registerInAppHotKeys(appName, eventType, appObject)
-        registerInWinHotKeys(appObject)
+      local locales = applicationLocales(bundleID)
+      local appLocale = locales[1]
+      if appLocales[bundleID] ~= nil and appLocales[bundleID] ~= appLocale then
+        unregisterRunningAppHotKeys(bundleID, true)
+        registerRunningAppHotKeys(bundleID)
+        unregisterInAppHotKeys(bundleID, eventType, true)
+        unregisterInWinHotKeys(bundleID, true)
       end
+      appLocales[bundleID] = appLocale
+      registerInAppHotKeys(appName, eventType, appObject)
+      registerInWinHotKeys(appObject)
       hs.timer.doAfter(0, function()
         altMenuBarItem(appObject)
         hs.timer.doAfter(0, function()
