@@ -2827,12 +2827,25 @@ local function inWinHotKeysWrapper(appObject, filter, mods, key, message, fn)
   if InWinHotkeyInfoChain[bid] == nil then InWinHotkeyInfoChain[bid] = {} end
   local prevCallback = inWinCallbackChain[bid][hotkeyIdx(mods, key)]
   local prevHotkeyInfo = InWinHotkeyInfoChain[bid][hotkeyIdx(mods, key)]
+  local actualFilter
+  if type(filter) == 'table' then
+    actualFilter = {}
+    for k, v in pairs(filter) do
+      actualFilter[k] = v
+    end
+    actualFilter.allowSheet = nil
+    actualFilter.allowPopover = nil
+  else
+    actualFilter = filter
+  end
   local wrapper = function(winObj)
     if winObj == nil then winObj = appObject:focusedWindow() end
     if winObj == nil then return end
     local windowFilter = hs.window.filter.new(false):setAppFilter(
-        appObject:name(), filter)
-    if windowFilter:isWindowAllowed(winObj) then
+        appObject:name(), actualFilter)
+    if windowFilter:isWindowAllowed(winObj)
+        or (type(filter) == 'table' and filter.allowSheet and winObj:role() == "AXSheet")
+        or (type(filter) == 'table' and filter.allowPopover and winObj:role() == "AXPopover") then
       fn(winObj)
     elseif prevCallback ~= nil then
       prevCallback(winObj)
