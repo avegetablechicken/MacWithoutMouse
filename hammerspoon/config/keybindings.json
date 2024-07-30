@@ -1096,7 +1096,7 @@
       }
     },
     "net.xmind.vana.app": {
-      "export": {
+      "exportToPDF": {
         "mods": "command",
         "key": "E"
       },

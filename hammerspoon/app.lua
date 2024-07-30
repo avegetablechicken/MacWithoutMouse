@@ -1372,16 +1372,17 @@ appHotKeyCallbacks = {
 
   ["net.xmind.vana.app"] =
   {
-    ["export"] = {
+    ["exportToPDF"] = {
       message = function(appObject)
         local appLocale = applicationLocales(appObject:bundleID())[1]
-        return appLocale:sub(1, 2) == "en" and "Export" or "导出"
+        return (appLocale:sub(1, 2) == "en" and "Export" or "导出") .. ' > PDF'
       end,
       bindCondition = ENOrZHSim,
-      fn = function(appObject)
-        local thisSpec = appHotKeyCallbacks[appObject:bundleID()]["export"]
-        selectMenuItem(appObject, { "File", thisSpec.message(appObject) }, true)
-      end
+      condition = function(appObject)
+        local appLocale = applicationLocales(appObject:bundleID())[1]
+        return checkMenuItem({ "File", appLocale:sub(1, 2) == "en" and "Export" or "导出", "PDF" })(appObject)
+      end,
+      fn = receiveMenuItem
     },
     ["insertEquation"] = {
       message = function(appObject)
