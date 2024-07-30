@@ -508,9 +508,9 @@ end
 -- ### JabRef
 local function JabRefShowLibraryByIndex(idx)
   return function(appObject)
-    local appUIObj = hs.axuielement.applicationElement(appObject)
-    local tab = getAXChildren(appUIObj, "AXWindow", activatedWindowIndex(),
-      "AXTabGroup", 1, "AXRadioButton", idx)
+    if appObject:focusedWindow() == nil then return false end
+    local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
+    local tab = getAXChildren(winUIObj, "AXTabGroup", 1, "AXRadioButton", idx)
     if tab ~= nil then
       return true, { x = tab.AXPosition.x + 10, y = tab.AXPosition.y + 10 }
     else
@@ -1204,13 +1204,15 @@ appHotKeyCallbacks = {
     },
     ["openFileLocation"] = {
       message = "打开文件位置",
-      fn = function(appObject)
-        local aWin = activatedWindowIndex()
-        local appUIObj = hs.axuielement.applicationElement(appObject)
-        local buttons = appUIObj:childrenWithRole("AXWindow")[aWin]
-            :childrenWithRole("AXButton")
+      condition = function(appObject)
+        return appObject:focusedWindow() ~= nil, appObject:focusedWindow()
+      end,
+      fn = function(winObj)
+        local winUIObj = hs.axuielement.windowElement(winObj)
+        local buttons = winUIObj:childrenWithRole("AXButton")
         if #buttons == 0 then return end
         local mousePosition = hs.mouse.absolutePosition()
+        local appObject = winObj:application()
         local ok, position = hs.osascript.applescript([[
           tell application "System Events"
             tell ]] .. aWinFor(appObject) .. [[
@@ -1414,15 +1416,13 @@ appHotKeyCallbacks = {
   {
     ["preferences"] = {
       message = "Preferences",
-      fn = function(appObject)
-        selectMenuItem(appObject, { "File", "Preferences" })
-      end
+      condition = checkMenuItem({ "File", "Preferences" }),
+      fn = receiveMenuItem
     },
     ["newLibrary"] = {
       message = "New Library",
-      fn = function(appObject)
-        selectMenuItem(appObject, { "File", "New library" })
-      end
+      condition = checkMenuItem({ "File", "New library" }),
+      fn = receiveMenuItem
     },
     ["recentLibraries"] = {
       message = "Recent Libraries",
