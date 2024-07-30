@@ -1533,7 +1533,9 @@ appHotKeyCallbacks = {
 
         klatexformulaRender()
       end
-    }
+    },
+    ["closeWindow"] = specialCommonHotkeyConfigs["closeWindow"],
+    ["minimize"] = specialCommonHotkeyConfigs["minimize"]
   },
 
   ["com.apple.iMovieApp"] =
