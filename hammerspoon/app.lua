@@ -1438,7 +1438,6 @@ appHotKeyCallbacks = {
       mods = get(KeybindingConfigs.hotkeys.appCommon, "remapPreviousTab", "mods"),
       key = get(KeybindingConfigs.hotkeys.appCommon, "remapPreviousTab", "key"),
       message = "Previous Library",
-      repeatable = true,
       condition = JabRefShowLibraryByIndex(2),
       fn = function(appObject) hs.eventtap.keyStroke('⇧⌃', 'Tab', nil, appObject) end
     },
@@ -1446,7 +1445,6 @@ appHotKeyCallbacks = {
       mods = specialCommonHotkeyConfigs["showPrevTab"].mods,
       key = specialCommonHotkeyConfigs["showPrevTab"].key,
       message = "Previous Library",
-      repeatable = true,
       condition = JabRefShowLibraryByIndex(2),
       fn = function(appObject) hs.eventtap.keyStroke('⇧⌃', 'Tab', nil, appObject) end
     },
@@ -1454,7 +1452,6 @@ appHotKeyCallbacks = {
       mods = specialCommonHotkeyConfigs["showNextTab"].mods,
       key = specialCommonHotkeyConfigs["showNextTab"].key,
       message = "Next Library",
-      repeatable = true,
       condition = JabRefShowLibraryByIndex(2),
       fn = function(appObject) hs.eventtap.keyStroke('⌃', 'Tab', nil, appObject) end
     },
