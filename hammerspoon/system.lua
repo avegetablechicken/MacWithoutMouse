@@ -1933,7 +1933,7 @@ function registerControlCenterHotKeys(panel)
               if ok then
                 local appObject = findApplication(bundleID)
                 local hotkey, observer
-                hotkey = AppBind(appObject, "⌘", "Return", "Relaunch", function()
+                hotkey = WinBind(appObject, true, "⌘", "Return", "Relaunch", function()
                   hs.osascript.applescript([[
                     tell application "System Events"
                       set win to ]] .. aWinFor(bundleID) .. [[
@@ -1952,7 +1952,7 @@ function registerControlCenterHotKeys(panel)
                     observer = nil
                   end
                 end)
-                hotkey.kind = HK.IN_APP
+                hotkey.kind = HK.IN_APPWIN
                 local appUIObj = hs.axuielement.applicationElement(appObject)
                 local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
                 observer = hs.axuielement.observer.new(appObject:pid())
