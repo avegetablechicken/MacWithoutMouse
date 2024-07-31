@@ -1387,10 +1387,13 @@ appHotKeyCallbacks = {
     ["insertEquation"] = {
       message = function(appObject)
         local appLocale = applicationLocales(appObject:bundleID())[1]
-        return appLocale:sub(1, 2) == "en" and "Insert Equation" or "插入方程"
+        return localizedMessage({ 'Insert', appLocale:sub(1, 2) == "en" and "Equation" or "方程" })(appObject)
       end,
       bindCondition = ENOrZHSim,
-      condition = checkMenuItem({ en = {"Insert", "Equation"}, zh = {"插入", "方程"} }),
+      condition = function(appObject)
+        local appLocale = applicationLocales(appObject:bundleID())[1]
+        return checkMenuItem({ 'Insert', appLocale:sub(1, 2) == "en" and "Equation" or "方程" })(appObject)
+      end,
       fn = receiveMenuItem
     },
     ["openRecent"] = {
