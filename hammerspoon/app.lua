@@ -605,9 +605,9 @@ local function localizedMessage(message, params, sep)
       return localizedString(message, bundleID, params)
     else
       if sep == nil then sep = ' > ' end
-      local str = localizedMenuBarItem(message[1], bundleID, params)
+      local str = localizedMenuBarItem(message[1], bundleID, params) or message[1]
       for i=2,#message do
-        str = str .. sep .. localizedString(message[i], bundleID, params)
+        str = str .. sep .. (localizedString(message[i], bundleID, params) or message[i])
       end
       return str
     end
