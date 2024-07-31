@@ -1519,7 +1519,7 @@ function registerControlCenterHotKeys(panel)
             hs.osascript.applescript([[
               tell application "System Events"
                 set sa to scroll area 1 of ]] .. pane .. [[ of application process "ControlCenter"
-                set cb to item ]] .. tostring(i) .. [[ (checkboxes whose value of attribute "AXEnabled" is true) of sa
+                set cb to item ]] .. tostring(i) .. [[ of (checkboxes whose value of attribute "AXEnabled" is true) of sa
                 perform action 1 of cb
               end tell
             ]])
