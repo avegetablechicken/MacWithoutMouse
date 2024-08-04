@@ -1226,6 +1226,15 @@
         }
       }
     },
+    "com.runningwithcrayons.Alfred-Preferences": {
+      "saveInSheet": {
+        "mods": "command",
+        "key": "Return",
+        "windowFilter": {
+          "allowSheet": true
+        }
+      }
+    },
     "com.surteesstudios.Bartender": {
       "toggleMenuBar": {
         "mods": "${hyper.daemon}",

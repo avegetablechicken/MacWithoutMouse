@@ -1801,6 +1801,22 @@ appHotKeyCallbacks = {
     }
   },
 
+  ["com.runningwithcrayons.Alfred-Preferences"] =
+  {
+    ["saveInSheet"] = {
+      message = "Save",
+      fn = function(winUIObj)
+        hs.osascript.applescript([[
+          tell application "System Events"
+            tell ]] .. aWinFor(winUIObj:application()) .. [[
+              click button "Save" of sheet 1
+            end tell
+          end tell
+        ]])
+      end
+    }
+  },
+
   ["com.surteesstudios.Bartender"] =
   {
     ["toggleMenuBar"] = {
