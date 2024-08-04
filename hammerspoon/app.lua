@@ -2832,12 +2832,13 @@ local function inWinHotKeysWrapper(appObject, filter, mods, key, message, fn)
   local prevHotkeyInfo = InWinHotkeyInfoChain[bid][hotkeyIdx(mods, key)]
   local actualFilter
   if type(filter) == 'table' then
-    actualFilter = {}
     for k, v in pairs(filter) do
-      actualFilter[k] = v
+      if k ~= "allowSheet" and k ~= "allowPopover" then
+        if actualFilter == nil then actualFilter = {} end
+        actualFilter[k] = v
+      end
     end
-    actualFilter.allowSheet = nil
-    actualFilter.allowPopover = nil
+    if actualFilter == nil then actualFilter = false end
   else
     actualFilter = filter
   end

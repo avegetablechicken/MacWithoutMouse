@@ -265,14 +265,14 @@ local function getValidMessage(hotkeyInfo)
   local filter = hotkeyInfo.filter
   local actualFilter
   if type(filter) == 'table' then
-    actualFilter = {}
     for k, v in pairs(filter) do
+      if actualFilter == nil then actualFilter = {} end
       actualFilter[k] = v
     end
-    actualFilter.allowSheet = nil
-    actualFilter.allowPopover = nil
-  else
-    actualFilter = filter
+    if actualFilter ~= nil then
+      actualFilter.allowSheet = nil
+      actualFilter.allowPopover = nil
+    end
   end
   local windowFilter = hs.window.filter.new(false):setAppFilter(
       hotkeyInfo.appName, actualFilter)
