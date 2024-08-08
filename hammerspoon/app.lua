@@ -3576,17 +3576,43 @@ local function altMenuBarItem(appObject)
       table.insert(menuBarItemTitles, 1, "MATLAB")
     end
   end
+  local menuBarItemActualIndices = {}
   if menuBarItemTitles == nil then
     local menuItems = getMenuItems(appObject)
     if menuItems == nil then return end
-    menuBarItemTitles = hs.fnutils.map(menuItems, function(item)
-      return item.AXChildren ~= nil and item.AXTitle or nil
-    end)
+    local ignoredItems = {}
+    menuBarItemTitles = {}
+    for i, item in ipairs(menuItems) do
+      if ignoredItems[item.AXTitle] then
+        menuBarItemActualIndices[item.AXTitle] = i + 1
+      end
+      if i == 1 or item.AXChildren == nil then
+        ignoredItems[item.AXTitle] = true
+      end
+      if item.AXChildren ~= nil then
+        table.insert(menuBarItemTitles, item.AXTitle)
+      end
+    end
     menuBarItemTitles = hs.fnutils.filter(menuBarItemTitles, function(item)
       return item ~= nil and item ~= ""
     end)
   end
   if menuBarItemTitles == nil or #menuBarItemTitles == 0 then return end
+
+  local clickMenuCallback = function(title)
+    local index = menuBarItemActualIndices[title]
+    if index then
+      hs.osascript.applescript(string.format([[
+        tell application "System Events"
+          tell first application process whose bundle identifier is "%s"
+            click menu bar item %d of menu bar 1
+          end tell
+        end tell
+      ]], appObject:bundleID(), index))
+    else
+      appObject:selectMenuItem({ title })
+    end
+  end
 
   -- by initial or otherwise second letter in title
   local alreadySetHotkeys = {}
@@ -3640,7 +3666,7 @@ local function altMenuBarItem(appObject)
             targetMenuObj:performAction("AXPick")
           end
         else
-          fn = function() appObject:selectMenuItem({ menuBarItemTitles[i] }) end
+          fn = hs.fnutils.partial(clickMenuCallback, menuBarItemTitles[i])
         end
         local hotkeyObject = bindAltMenu(appObject, "⌥", spec[1], spec[2], fn)
         table.insert(AltMenuBarItemHotkeys, hotkeyObject)
@@ -3659,7 +3685,7 @@ local function altMenuBarItem(appObject)
     local maxMenuBarItemHotkey = #itemTitles > 11 and 10 or (#itemTitles - 1)
     for i=1,maxMenuBarItemHotkey do
       hotkeyObject = bindAltMenu(appObject, "⌥", tostring(i % 10), itemTitles[i+1] .. " Menu",
-          function() appObject:selectMenuItem({itemTitles[i+1]}) end)
+          hs.fnutils.partial(clickMenuCallback, itemTitles[i+1]))
       table.insert(AltMenuBarItemHotkeys, hotkeyObject)
     end
   end
