@@ -3030,13 +3030,25 @@ end
 -- check if a window filter is the same as another
 local function sameFilter(a, b)
   for k, v in pairs(a) do
-    if b[k] ~= v then
-      return false
+    if type(b[k]) == 'table' then
+      if not sameFilter(v, b[k]) then
+        return false
+      end
+    else
+      if b[k] ~= v then
+        return false
+      end
     end
   end
   for k, v in pairs(b) do
-    if a[k] ~= v then
-      return false
+    if type(a[k]) == 'table' then
+      if not sameFilter(v, a[k]) then
+        return false
+      end
+    else
+      if a[k] ~= v then
+        return false
+      end
     end
   end
   return true
@@ -3052,14 +3064,19 @@ local function inWinOfUnactivatedAppWatcherEnableCallback(bid, filter, winObj, a
   for hkID, spec in pairs(appHotKeyCallbacks[bid]) do
     if type(hkID) ~= 'number' then  -- usual situation
       local filterCfg = get(KeybindingConfigs.hotkeys[bid], hkID) or spec
-      if (spec.bindCondition == nil or spec.bindCondition(winObj:application())) and sameFilter(filterCfg.windowFilter, filter) then
+      local notActivateApp = filterCfg.notActivateApp or spec.notActivateApp
+      local windowFilter = filterCfg.windowFilter or spec.windowFilter
+      if notActivateApp
+          and (spec.bindCondition == nil or spec.bindCondition(winObj:application()))
+          and sameFilter(windowFilter, filter) then
         local msg = type(spec.message) == 'string' and spec.message or spec.message(winObj:application())
         if msg ~= nil then
           local keyBinding = get(KeybindingConfigs.hotkeys[bid], hkID) or spec
-          local hotkey = bindHotkeySpec(keyBinding, msg, spec.fn, nil,
-                                         spec.repeatable and spec.fn or nil)
+          local fn = hs.fnutils.partial(spec.fn, winObj)
+          local hotkey = bindHotkeySpec(keyBinding, msg, fn, nil,
+                                        spec.repeatable and fn or nil)
           hotkey.kind = HK.IN_WIN
-          hotkey.notActivateApp = spec.notActivateApp
+          hotkey.notActivateApp = notActivateApp
           table.insert(inWinOfUnactivatedAppHotKeys[bid], hotkey)
         end
       end
@@ -3070,8 +3087,9 @@ local function inWinOfUnactivatedAppWatcherEnableCallback(bid, filter, winObj, a
           if (spec.bindCondition == nil or spec.bindCondition(winObj:application())) then
             local msg = type(spec.message) == 'string' and spec.message or spec.message(winObj:application())
             if msg ~= nil then
+              local fn = hs.fnutils.partial(spec.fn, winObj)
               local hotkey = AppBindSpec(findApplication(bid), spec, msg,
-                                         spec.fn, nil, spec.repeatable and spec.fn or nil)
+                                         fn, nil, spec.repeatable and fn or nil)
               hotkey.kind = HK.IN_WIN
               hotkey.notActivateApp = cfg.notActivateApp
               table.insert(inWinOfUnactivatedAppHotKeys[bid], hotkey)
@@ -3112,33 +3130,36 @@ end
 local function registerWinFiltersForDaemonApp(appObject, appConfig)
   local bid = appObject:bundleID()
   for hkID, spec in pairs(appConfig) do
-    if spec.notActivateApp then
-      local filter
-      if type(hkID) ~= 'number' then  -- usual situation
-        local cfg = get(KeybindingConfigs.hotkeys[bid], hkID) or spec
-        filter = cfg.windowFilter
-      else  -- now only for `iCopy`
-        local cfg = spec[1]
-        filter = cfg.filter
-      end
+    local filter, notActivateApp
+    if type(hkID) ~= 'number' then  -- usual situation
+      local cfg = get(KeybindingConfigs.hotkeys[bid], hkID) or spec
+      filter = cfg.windowFilter or spec.windowFilter
+      notActivateApp = cfg.notActivateApp or spec.notActivateApp
+    else  -- now only for `iCopy`
+      local cfg = spec[1]
+      filter = cfg.filter
+    end
+    if notActivateApp then
       for k, v in pairs(filter) do
         -- window filter specified in code can be in function format
         if type(v) == 'function' then
           filter[k] = v(appObject)
         end
       end
-      if inWinOfUnactivatedAppWatchers[bid] == nil
-          or inWinOfUnactivatedAppWatchers[bid][filter] == nil then
+      if inWinOfUnactivatedAppWatchers[bid] == nil then
         if inWinOfUnactivatedAppWatchers[bid] == nil then
           inWinOfUnactivatedAppWatchers[bid] = {}
         end
-        if type(hkID) ~= 'number' then  -- usual situation
-          -- a window filter can be shared by multiple hotkeys
-          registerSingleWinFilterForDaemonApp(appObject, filter)
-        else  -- now only for `iCopy`
-          local cfg = spec[1]
-          for _, spec in ipairs(cfg) do
+        if #hs.fnutils.filter(inWinOfUnactivatedAppWatchers[bid],
+            function(f) return sameFilter(f, filter) end) == 0 then
+          if type(hkID) ~= 'number' then  -- usual situation
+            -- a window filter can be shared by multiple hotkeys
             registerSingleWinFilterForDaemonApp(appObject, filter)
+          else  -- now only for `iCopy`
+            local cfg = spec[1]
+            for _, spec in ipairs(cfg) do
+              registerSingleWinFilterForDaemonApp(appObject, filter)
+            end
           end
         end
       end
