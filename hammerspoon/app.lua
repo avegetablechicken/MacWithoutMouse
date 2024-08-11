@@ -519,6 +519,131 @@ local function JabRefShowLibraryByIndex(idx)
   end
 end
 
+-- ### Bartender
+local bartenderBarItemNames
+local bartenderBarItemIDs
+local bartenderBarTitle = "Bartender Bar"
+local bartenderBarFilter
+local function getBartenderBarItemTitle(index, rightClick)
+  return function(appObject)
+    if bartenderBarItemNames == nil then
+      local bundleID = appObject:bundleID()
+      local ok, appNames = hs.osascript.applescript(string.format([[
+        tell application "System Events"
+          tell (first process whose bundle identifier is "%s")
+            set icons to window "%s"'s scroll area 1's list 1's list 1
+            return value of attribute "AXDescription" of image 1 of groups of icons
+          end tell
+        end tell
+      ]], bundleID, bartenderBarTitle))
+      if ok and #appNames > 0 then
+        local _, items = hs.osascript.applescript(string.format([[
+          tell application id "%s" to list menu bar items
+        ]], bundleID))
+        local itemList = hs.fnutils.split(items, "\n")
+        local splitterIndex = hs.fnutils.indexOf(itemList, bundleID .. "-statusItem")
+        local barSplitterIndex = hs.fnutils.indexOf(appNames, appObject:name())
+        if barSplitterIndex ~= nil then
+          splitterIndex = splitterIndex - (#appNames - (barSplitterIndex - 1))
+        end
+        bartenderBarItemNames = {}
+        bartenderBarItemIDs = {}
+        local missedItemCnt = 0
+        local plistPath = hs.fs.pathToAbsolute(string.format(
+            "~/Library/Preferences/%s.plist", bundleID))
+        if plistPath ~= nil then
+          local plist = hs.plist.read(plistPath)
+          local allwaysHidden = get(plist, "ProfileSettings", "activeProfile", "AlwaysHide")
+          local itemIDIdx = splitterIndex + #appNames
+          while hs.fnutils.contains(allwaysHidden, itemList[itemIDIdx]) and itemIDIdx > splitterIndex do
+            itemIDIdx = itemIDIdx - 1
+          end
+          missedItemCnt = #appNames - (itemIDIdx - splitterIndex)
+        end
+        if missedItemCnt == 0 then
+          for i = 1, #appNames do
+            local appName = appNames[i]
+            local itemID = itemList[splitterIndex + 1 + #appNames - i]
+            local bid, idx = string.match(itemID, "(.-)%-Item%-(%d+)$")
+            if bid ~= nil then
+              if idx == "0" then
+                table.insert(bartenderBarItemNames, appName)
+              else
+                table.insert(bartenderBarItemNames, string.format("%s (Item %s)", appName, idx))
+              end
+              table.insert(bartenderBarItemIDs, itemID)
+            else
+              local app = findApplication(appName)
+              if app == nil or app:bundleID() ~= itemID:sub(1, #app:bundleID()) then
+                table.insert(bartenderBarItemNames, appName)
+                table.insert(bartenderBarItemIDs, itemID)
+              elseif app ~= nil then
+                local itemShortName = itemID:sub(#app:bundleID() + 2)
+                table.insert(bartenderBarItemNames, string.format("%s (%s)", appName, itemShortName))
+                table.insert(bartenderBarItemIDs, itemID)
+              end
+            end
+          end
+        else
+          for i = 1, #appNames do
+            table.insert(bartenderBarItemNames, appNames[i])
+            table.insert(bartenderBarItemIDs, i)
+          end
+        end
+        bartenderBarFilter = hs.window.filter.new(false):setAppFilter(
+            appObject:name(), { allowTitles = bartenderBarTitle })
+        bartenderBarFilter:subscribe(
+            { hs.window.filter.windowDestroyed, hs.window.filter.windowUnfocused },
+            function()
+              bartenderBarItemNames = nil
+              bartenderBarItemIDs = nil
+              bartenderBarFilter:unsubscribeAll()
+              bartenderBarFilter = nil
+            end)
+      end
+    end
+    if bartenderBarItemNames ~= nil and index <= #bartenderBarItemNames then
+      return (rightClick and "Right-click " or "Click ") .. bartenderBarItemNames[index]
+    end
+  end
+end
+
+local function clickBartenderBarItem(index, rightClick)
+  return function(winObj)
+    local bundleID = winObj:application():bundleID()
+    local itemID = bartenderBarItemIDs[index]
+    if type(itemID) == 'string' then
+      local script = string.format('tell application id "%s" to activate "%s"',
+          bundleID, bartenderBarItemIDs[index])
+      if rightClick then
+        script = script .. " with right click"
+      end
+      script = script .. '\n' .. string.format([[
+        tell application id "%s" to toggle bartender
+      ]], bundleID)
+      hs.osascript.applescript(script)
+    else
+      local ok, position = hs.osascript.applescript(string.format([[
+        tell application "System Events"
+          tell (first process whose bundle identifier is "%s")
+            set icons to window "%s"'s scroll area 1's list 1's list 1
+            return value of attribute "AXPosition" of image 1 of group %d of icons
+          end tell
+        end tell
+      ]], bundleID, bartenderBarTitle, itemID))
+      if ok then
+        position[1] = position[1] + 10
+        position[2] = position[2] + 10
+        if rightClick then
+          rightClickAndRestore(position, winObj:application():name())
+        else
+          leftClickAndRestore(position, winObj:application():name())
+        end
+      end
+    end
+  end
+end
+
 -- ### iCopy
 local function iCopySelectHotkeyRemapRequired()
   local version = hs.execute(string.format('mdls -r -name kMDItemVersion "%s"',
@@ -1824,83 +1949,170 @@ appHotKeyCallbacks = {
       kind = HK.MENUBAR,
       fn = function(appObject)
         local bundleID = appObject:bundleID()
-        local hasShowed = hs.fnutils.some(appObject:allWindows(), function(w) return w:title() == "Bartender Bar" end)
-        local script = string.format([[
+        hs.osascript.applescript(string.format([[
           tell application id "%s" to toggle bartender
-        ]], bundleID)
-        if not hasShowed then
-          script = script .. string.format([[
-            tell application "System Events"
-              tell (first process whose bundle identifier is "%s")
-                set icons to window "Bartender Bar"'s scroll area 1's list 1's list 1
-                return {value of attribute "AXPosition", value of attribute "AXDescription"} of image 1 of groups of icons
-              end tell
-            end tell
-          ]], bundleID)
-        end
-        local ok, ret = hs.osascript.applescript(script)
-        if not hasShowed and ok and #ret[1] > 0 then
-          local positions, appNames = ret[1], ret[2]
-          if bartenderBarHotkeys == nil then bartenderBarHotkeys = {} end
-          local icon = hs.image.imageFromAppBundle(bundleID)
-          local maxCnt = math.min(#positions, 10)
-          local _, items = hs.osascript.applescript([[
-            tell application id "com.surteesstudios.Bartender" to list menu bar items
-          ]])
-          local itemList = hs.fnutils.split(items, "\n")
-          local splitterIndex = hs.fnutils.indexOf(itemList, "com.surteesstudios.Bartender-statusItem")
-          local itemNames = {}
-          local barSplitterIndex = hs.fnutils.indexOf(appNames, "Bartender 5") or hs.fnutils.indexOf(appNames, "Bartender 4")
-          if barSplitterIndex ~= nil then
-            splitterIndex = splitterIndex - (#appNames - (barSplitterIndex - 1))
-          end
-          for i = 1,maxCnt do
-            local itemID = itemList[splitterIndex + 1 + #appNames - i]
-            local bid, idx = string.match(itemID, "(.-)%-Item%-(%d+)$")
-            if bid ~= nil then
-              if idx == "0" then
-                table.insert(itemNames, appNames[i])
-              else
-                table.insert(itemNames, string.format("%s (Item %s)", appNames[i], idx))
-              end
-            else
-              local app = findApplication(appNames[i])
-              if app == nil or app:bundleID() ~= itemID:sub(1, #app:bundleID()) then
-                table.insert(itemNames, appNames[i])
-              elseif app ~= nil then
-                local itemShortName = itemID:sub(#app:bundleID() + 2)
-                local itemName = string.format("%s (%s)", appNames[i], itemShortName)
-                table.insert(itemNames, itemName)
-              end
-            end
-          end
-          for i = 1, maxCnt do
-            local hotkey = AppBind(appObject, "", i == 10 and "0" or tostring(i), "Click " .. itemNames[i], function()
-              leftClickAndRestore({ positions[i][1] + 10, positions[i][2] + 10 })
-            end)
-            hotkey.kind = HK.MENUBAR
-            hotkey.icon = icon
-            table.insert(bartenderBarHotkeys, hotkey)
-          end
-          for i = 1, maxCnt do
-            local hotkey = AppBind(appObject, "⌥", i == 10 and "0" or tostring(i), "Right-click " .. itemNames[i], function()
-              rightClickAndRestore({ positions[i][1] + 10, positions[i][2] + 10 })
-            end)
-            hotkey.kind = HK.MENUBAR
-            hotkey.icon = icon
-            table.insert(bartenderBarHotkeys, hotkey)
-          end
-          if bartenderBarFilter == nil then
-            bartenderBarFilter = hs.window.filter.new(false):setAppFilter(appObject:name(),
-                { allowTitles = "Bartender Bar" })
-          end
-          bartenderBarFilter:subscribe(hs.window.filter.windowDestroyed, function()
-            for _, v in ipairs(bartenderBarHotkeys) do v:delete() end
-            bartenderBarHotkeys = nil
-            bartenderBarFilter:unsubscribeAll()
-          end)
-        end
+        ]], bundleID))
       end
+    },
+    ["click1stBartenderBarItem"] = {
+      message = getBartenderBarItemTitle(1),
+      windowFilter = {
+        allowTitles = { bartenderBarTitle }
+      },
+      notActivateApp = true,
+      fn = clickBartenderBarItem(1)
+    },
+    ["rightClick1stBartenderBarItem"] = {
+      message = getBartenderBarItemTitle(1, true),
+      windowFilter = {
+        allowTitles = { bartenderBarTitle }
+      },
+      notActivateApp = true,
+      fn = clickBartenderBarItem(1, true)
+    },
+    ["click2ndBartenderBarItem"] = {
+      message = getBartenderBarItemTitle(2),
+      windowFilter = {
+        allowTitles = { bartenderBarTitle }
+      },
+      notActivateApp = true,
+      fn = clickBartenderBarItem(2)
+    },
+    ["rightClick2ndBartenderBarItem"] = {
+      message = getBartenderBarItemTitle(2, true),
+      windowFilter = {
+        allowTitles = { bartenderBarTitle }
+      },
+      notActivateApp = true,
+      fn = clickBartenderBarItem(2, true)
+    },
+    ["click3rdBartenderBarItem"] = {
+      message = getBartenderBarItemTitle(3),
+      windowFilter = {
+        allowTitles = { bartenderBarTitle }
+      },
+      notActivateApp = true,
+      fn = clickBartenderBarItem(3)
+    },
+    ["rightClick3rdBartenderBarItem"] = {
+      message = getBartenderBarItemTitle(3, true),
+      windowFilter = {
+        allowTitles = { bartenderBarTitle }
+      },
+      notActivateApp = true,
+      fn = clickBartenderBarItem(3, true)
+    },
+    ["click4thBartenderBarItem"] = {
+      message = getBartenderBarItemTitle(4),
+      windowFilter = {
+        allowTitles = { bartenderBarTitle }
+      },
+      notActivateApp = true,
+      fn = clickBartenderBarItem(4)
+    },
+    ["rightClick4thBartenderBarItem"] = {
+      message = getBartenderBarItemTitle(4, true),
+      windowFilter = {
+        allowTitles = { bartenderBarTitle }
+      },
+      notActivateApp = true,
+      fn = clickBartenderBarItem(4, true)
+    },
+    ["click5thBartenderBarItem"] = {
+      message = getBartenderBarItemTitle(5),
+      windowFilter = {
+        allowTitles = { bartenderBarTitle }
+      },
+      notActivateApp = true,
+      fn = clickBartenderBarItem(5)
+    },
+    ["rightClick5thBartenderBarItem"] = {
+      message = getBartenderBarItemTitle(5, true),
+      windowFilter = {
+        allowTitles = { bartenderBarTitle }
+      },
+      notActivateApp = true,
+      fn = clickBartenderBarItem(5, true)
+    },
+    ["click6thBartenderBarItem"] = {
+      message = getBartenderBarItemTitle(6),
+      windowFilter = {
+        allowTitles = { bartenderBarTitle }
+      },
+      notActivateApp = true,
+      fn = clickBartenderBarItem(6)
+    },
+    ["rightClick6thBartenderBarItem"] = {
+      message = getBartenderBarItemTitle(6, true),
+      windowFilter = {
+        allowTitles = { bartenderBarTitle }
+      },
+      notActivateApp = true,
+      fn = clickBartenderBarItem(6, true)
+    },
+    ["click7thBartenderBarItem"] = {
+      message = getBartenderBarItemTitle(7),
+      windowFilter = {
+        allowTitles = { bartenderBarTitle }
+      },
+      notActivateApp = true,
+      fn = clickBartenderBarItem(7)
+    },
+    ["rightClick7thBartenderBarItem"] = {
+      message = getBartenderBarItemTitle(7, true),
+      windowFilter = {
+        allowTitles = { bartenderBarTitle }
+      },
+      notActivateApp = true,
+      fn = clickBartenderBarItem(7, true)
+    },
+    ["click8thBartenderBarItem"] = {
+      message = getBartenderBarItemTitle(8),
+      windowFilter = {
+        allowTitles = { bartenderBarTitle }
+      },
+      notActivateApp = true,
+      fn = clickBartenderBarItem(8)
+    },
+    ["rightClick8thBartenderBarItem"] = {
+      message = getBartenderBarItemTitle(8, true),
+      windowFilter = {
+        allowTitles = { bartenderBarTitle }
+      },
+      notActivateApp = true,
+      fn = clickBartenderBarItem(8, true)
+    },
+    ["click9thBartenderBarItem"] = {
+      message = getBartenderBarItemTitle(9),
+      windowFilter = {
+        allowTitles = { bartenderBarTitle }
+      },
+      notActivateApp = true,
+      fn = clickBartenderBarItem(9)
+    },
+    ["rightClick9thBartenderBarItem"] = {
+      message = getBartenderBarItemTitle(9, true),
+      windowFilter = {
+        allowTitles = { bartenderBarTitle }
+      },
+      notActivateApp = true,
+      fn = clickBartenderBarItem(9, true)
+    },
+    ["click10thBartenderBarItem"] = {
+      message = getBartenderBarItemTitle(10),
+      windowFilter = {
+        allowTitles = { bartenderBarTitle }
+      },
+      notActivateApp = true,
+      fn = clickBartenderBarItem(10)
+    },
+    ["rightClick10thBartenderBarItem"] = {
+      message = getBartenderBarItemTitle(10, true),
+      windowFilter = {
+        allowTitles = { bartenderBarTitle }
+      },
+      notActivateApp = true,
+      fn = clickBartenderBarItem(10, true)
     },
     ["searchMenuBar"] = {
       message = "Search Menu Bar",

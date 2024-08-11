@@ -1241,6 +1241,86 @@
         "key": "E",
         "background": true
       },
+      "click1stBartenderBarItem": {
+        "mods": "",
+        "key": "1"
+      },
+      "rightClick1stBartenderBarItem": {
+        "mods": "option",
+        "key": "1"
+      },
+      "click2ndBartenderBarItem": {
+        "mods": "",
+        "key": "2"
+      },
+      "rightClick2ndBartenderBarItem": {
+        "mods": "option",
+        "key": "2"
+      },
+      "click3rdBartenderBarItem": {
+        "mods": "",
+        "key": "3"
+      },
+      "rightClick3rdBartenderBarItem": {
+        "mods": "option",
+        "key": "3"
+      },
+      "click4thBartenderBarItem": {
+        "mods": "",
+        "key": "4"
+      },
+      "rightClick4thBartenderBarItem": {
+        "mods": "option",
+        "key": "4"
+      },
+      "click5thBartenderBarItem": {
+        "mods": "",
+        "key": "5"
+      },
+      "rightClick5thBartenderBarItem": {
+        "mods": "option",
+        "key": "5"
+      },
+      "click6thBartenderBarItem": {
+        "mods": "",
+        "key": "6"
+      },
+      "rightClick6thBartenderBarItem": {
+        "mods": "option",
+        "key": "6"
+      },
+      "click7thBartenderBarItem": {
+        "mods": "",
+        "key": "7"
+      },
+      "rightClick7thBartenderBarItem": {
+        "mods": "option",
+        "key": "7"
+      },
+      "click8thBartenderBarItem": {
+        "mods": "",
+        "key": "8"
+      },
+      "rightClick8thBartenderBarItem": {
+        "mods": "option",
+        "key": "8"
+      },
+      "click9thBartenderBarItem": {
+        "mods": "",
+        "key": "9"
+      },
+      "rightClick9thBartenderBarItem": {
+        "mods": "option",
+        "key": "9"
+      },
+      "click10thBartenderBarItem": {
+        "mods": "",
+        "key": "0"
+      },
+      "rightClick10thBartenderBarItem": {
+        "mods": "option",
+        "key": "0"
+      },
       "searchMenuBar": {
         "mods": "${hyper.daemon}",
         "key": "space",
