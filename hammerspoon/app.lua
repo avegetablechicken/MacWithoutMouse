@@ -1889,6 +1889,19 @@ appHotKeyCallbacks = {
     }
   },
 
+  ["com.tencent.LemonMonitor"] =
+  {
+    ["closeWindow"] = {
+      message = "Close Window",
+      windowFilter = {},
+      notActivateApp = true,
+      fn = function(winUIObj)
+        leftClickAndRestore({ x = winUIObj.AXPosition.x + winUIObj.AXSize.w/2,
+                              y = winUIObj.AXPosition.y })
+      end
+    }
+  },
+
   ["barrier"] =
   {
     ["toggleBarrierConnect"] = {
@@ -3285,14 +3298,15 @@ local function inWinOfUnactivatedAppWatcherEnableCallback(bid, filter, winObj, a
     inWinOfUnactivatedAppHotKeys[bid] = {}
   end
   for hkID, spec in pairs(appHotKeyCallbacks[bid]) do
+    local appObject = findApplication(bid)
     if type(hkID) ~= 'number' then  -- usual situation
       local filterCfg = get(KeybindingConfigs.hotkeys[bid], hkID) or spec
       local notActivateApp = filterCfg.notActivateApp or spec.notActivateApp
       local windowFilter = filterCfg.windowFilter or spec.windowFilter
       if notActivateApp
-          and (spec.bindCondition == nil or spec.bindCondition(winObj:application()))
+          and (spec.bindCondition == nil or spec.bindCondition(appObject))
           and sameFilter(windowFilter, filter) then
-        local msg = type(spec.message) == 'string' and spec.message or spec.message(winObj:application())
+        local msg = type(spec.message) == 'string' and spec.message or spec.message(appObject)
         if msg ~= nil then
           local keyBinding = get(KeybindingConfigs.hotkeys[bid], hkID) or spec
           local fn = hs.fnutils.partial(spec.fn, winObj)
@@ -3307,8 +3321,8 @@ local function inWinOfUnactivatedAppWatcherEnableCallback(bid, filter, winObj, a
       local cfg = spec[1]
       if sameFilter(cfg.filter, filter) then
         for _, spec in ipairs(cfg) do
-          if (spec.bindCondition == nil or spec.bindCondition(winObj:application())) then
-            local msg = type(spec.message) == 'string' and spec.message or spec.message(winObj:application())
+          if (spec.bindCondition == nil or spec.bindCondition(appObject)) then
+            local msg = type(spec.message) == 'string' and spec.message or spec.message(appObject)
             if msg ~= nil then
               local fn = hs.fnutils.partial(spec.fn, winObj)
               local hotkey = AppBindSpec(findApplication(bid), spec, msg,
@@ -3326,6 +3340,41 @@ end
 local function registerSingleWinFilterForDaemonApp(appObject, filter)
   local bid = appObject:bundleID()
   local appName = appObject:name()
+  if filter.allowSheet or filter.allowPopover or bid == "com.tencent.LemonMonitor" then
+    local appUIObj = hs.axuielement.applicationElement(appObject)
+    local observer = hs.axuielement.observer.new(appObject:pid())
+    observer:addWatcher(
+      appUIObj,
+      hs.axuielement.observer.notifications.focusedWindowChanged
+    )
+    observer:callback(function(observer, element, notification)
+      inWinOfUnactivatedAppWatcherEnableCallback(bid, filter, element, appName)
+      local closeObserver = hs.axuielement.observer.new(appObject:pid())
+      closeObserver:addWatcher(
+        element,
+        hs.axuielement.observer.notifications.uIElementDestroyed
+      )
+      closeObserver:callback(function(obs)
+        if inWinOfUnactivatedAppHotKeys[bid] ~= nil then -- fix weird bug
+          for i, hotkey in ipairs(inWinOfUnactivatedAppHotKeys[bid]) do
+            if hotkey.idx ~= nil then
+              hotkey:delete()
+              inWinOfUnactivatedAppHotKeys[bid][i] = nil
+            end
+          end
+          if #inWinOfUnactivatedAppHotKeys[bid] == 0 then
+            inWinOfUnactivatedAppHotKeys[bid] = nil
+          end
+        end
+        obs:stop()
+        obs = nil
+      end)
+      closeObserver:start()
+    end)
+    observer:start()
+    inWinOfUnactivatedAppWatchers[bid][filter] = { observer }
+    return
+  end
   local filterEnable = hs.window.filter.new(false):setAppFilter(appName, filter):subscribe(
       {hs.window.filter.windowCreated, hs.window.filter.windowFocused},
       hs.fnutils.partial(inWinOfUnactivatedAppWatcherEnableCallback, bid, filter)
@@ -4322,60 +4371,6 @@ if mountainDuckConfig ~= nil and mountainDuckConfig.connections ~= nil then
       connectMountainDuckEntries(mountainDuckObject, connection)
     end
   end
-end
-
--- ## Lemon Monitor
--- close popover window when specified key binding is pressed
-local function watchForLemonMonitorWindow(appObject)
-  local spec = get(KeybindingConfigs.hotkeys, "com.tencent.LemonMonitor", "closeWindow")
-      or get(appHotKeyCallbacks, "com.tencent.LemonMonitor", "closeWindow")
-  if spec == nil then return end
-  local appUIObj = hs.axuielement.applicationElement(appObject)
-  local observer = hs.axuielement.observer.new(appObject:pid())
-  observer:addWatcher(
-    appUIObj,
-    hs.axuielement.observer.notifications.focusedWindowChanged
-  )
-  local callback = function(_, element)
-    if element.AXRole == "AXWindow" then
-      local hotkey, closeObserver
-      hotkey = bindHotkeySpec(spec, spec.message or "Close Window", function()
-        leftClickAndRestore({ x = element.AXPosition.x + element.AXSize.w/2,
-                              y = element.AXPosition.y })
-        if hotkey ~= nil then
-          hotkey:delete()
-          hotkey = nil
-        end
-        if closeObserver ~= nil then
-          closeObserver:stop()
-          closeObserver = nil
-        end
-      end)
-      hotkey.kind = HK.IN_WIN
-      closeObserver = hs.axuielement.observer.new(appObject:pid())
-      closeObserver:addWatcher(
-        element,
-        hs.axuielement.observer.notifications.uIElementDestroyed
-      )
-      closeObserver:callback(function()
-        if hotkey ~= nil then
-          hotkey:delete()
-          hotkey = nil
-        end
-        closeObserver:stop()
-        closeObserver = nil
-      end)
-      closeObserver:start()
-    end
-  end
-  observer:callback(callback)
-  observer:start()
-  stopOnQuit(appObject:bundleID(), observer)
-end
-execOnLaunch("com.tencent.LemonMonitor", watchForLemonMonitorWindow)
-local lemonMonitorApp = findApplication("com.tencent.LemonMonitor")
-if lemonMonitorApp ~= nil then
-  watchForLemonMonitorWindow(lemonMonitorApp)
 end
 
 -- ## Barrier
