@@ -2981,7 +2981,9 @@ local function registerInAppHotKeys(appName, eventType, appObject)
           key = cfg.key,
         }
       end
-      if (cfg.bindCondition == nil or cfg.bindCondition(appObject)) and keyBinding.background ~= true then
+      if (keyBinding.windowFilter == nil and cfg.windowFilter == nil)
+          and (cfg.bindCondition == nil or cfg.bindCondition(appObject))
+          and keyBinding.background ~= true then
         local fn = cfg.fn
         local cond = cfg.condition
         if cond ~= nil then
