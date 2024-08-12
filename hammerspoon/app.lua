@@ -2244,6 +2244,17 @@ appHotKeyCallbacks = {
       end
     },
     ["closeWindow"] = specialCommonHotkeyConfigs["closeWindow"],
+    ["hidePopover"] = {
+      mods = "", key = "Escape",
+      message = "Hide Popover",
+      windowFilter = {
+        allowPopover = true
+      },
+      fn = function()
+        clickRightMenuBarItem("com.mathpix.snipping-tool-noappstore")
+      end,
+      deleteOnDisable = true
+    }
   },
 
   ["com.macosgame.iwallpaper"] =
@@ -4311,62 +4322,6 @@ if mountainDuckConfig ~= nil and mountainDuckConfig.connections ~= nil then
       connectMountainDuckEntries(mountainDuckObject, connection)
     end
   end
-end
-
--- ## Mathpix Snipping Tool
--- close popover window when Escape is pressed
-local function watchForMathpixPopoverWindow(appObject)
-  local appUIObj = hs.axuielement.applicationElement(appObject)
-  local observer = hs.axuielement.observer.new(appObject:pid())
-  observer:addWatcher(
-    appUIObj,
-    hs.axuielement.observer.notifications.focusedUIElementChanged
-  )
-  local callback = function()
-    appUIObj:elementSearch(function(msg, results, count)
-      if count > 0 then
-        local hotkey, closeObserver
-        hotkey = WinBind(appObject, { allowPopover = true }, "", "Escape", "Hide Popover", function()
-          clickRightMenuBarItem(appObject:bundleID())
-          if hotkey ~= nil then
-            hotkey:delete()
-            hotkey = nil
-          end
-          if closeObserver ~= nil then
-            closeObserver:stop()
-            closeObserver = nil
-          end
-        end)
-        hotkey.kind = HK.IN_APPWIN
-        closeObserver = hs.axuielement.observer.new(appObject:pid())
-        closeObserver:addWatcher(
-          results[1],
-          hs.axuielement.observer.notifications.uIElementDestroyed
-        )
-        closeObserver:callback(function()
-          if hotkey ~= nil then
-            hotkey:delete()
-            hotkey = nil
-          end
-          closeObserver:stop()
-          closeObserver = nil
-        end)
-        closeObserver:start()
-      end
-    end,
-    function(element)
-      return element.AXRole == "AXPopover"
-    end,
-    { count = 1, depth = 2 })
-  end
-  observer:callback(callback)
-  observer:start()
-  stopOnQuit(appObject:bundleID(), observer)
-end
-execOnLaunch("com.mathpix.snipping-tool-noappstore", watchForMathpixPopoverWindow)
-local mathpixApp = findApplication("com.mathpix.snipping-tool-noappstore")
-if mathpixApp ~= nil then
-  watchForMathpixPopoverWindow(mathpixApp)
 end
 
 -- ## Lemon Monitor
