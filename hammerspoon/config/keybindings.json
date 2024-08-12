@@ -1364,7 +1364,10 @@
     "org.klatexformula.klatexformula": {
       "render": {
         "mods": "command",
-        "key": "return"
+        "key": "return",
+        "windowFilter": {
+          "allowTitles": "^KLatexFormula$"
+        }
       },
       "renderClipboardInKlatexformula": {
         "mods": "${hyper.daemon}",
