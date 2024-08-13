@@ -4739,9 +4739,6 @@ function App_applicationCallback(appName, eventType, appObject)
       if bundleID then
         unregisterInAppHotKeys(bundleID, eventType)
         unregisterInWinHotKeys(bundleID)
-        if appsMenuBarItemsWatchers[bundleID] ~= nil then
-          appsMenuBarItemsWatchers[bundleID][1]:stop()
-        end
         for _, ob in ipairs(observersStopOnDeactivated[bundleID] or {}) do
           local observer, func = ob[1], ob[2]
           observer:stop()
