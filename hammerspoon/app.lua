@@ -4810,14 +4810,7 @@ function App_monitorChangedCallback()
   if (builtinMonitorEnable and #screens > 1)
     or (not builtinMonitorEnable and #screens > 0) then
     if findApplication("me.guillaumeb.MonitorControl") == nil then
-      hs.application.launchOrFocusByBundleID("me.guillaumeb.MonitorControl")
-      hs.timer.waitUntil(
-        function()
-          return findApplication("me.guillaumeb.MonitorControl") ~= nil
-        end,
-        function()
-          findApplication("me.guillaumeb.MonitorControl"):hide()
-        end)
+      hs.execute([[open -g -b "me.guillaumeb.MonitorControl"]])
     end
   elseif builtinMonitorEnable and #screens == 1 then
     quitApplication("me.guillaumeb.MonitorControl")
