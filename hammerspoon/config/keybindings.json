@@ -969,6 +969,10 @@
       "showInFinder": {
         "mods": ["shift", "option", "command"],
         "key": "F"
+      },
+      "remapPreviousTab": {
+        "mods": "control",
+        "key": "`"
       }
     },
     "com.vallettaventures.Texpad": {

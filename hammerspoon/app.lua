@@ -1220,6 +1220,11 @@ appHotKeyCallbacks = {
       message = localizedMessage("Show in Finder"),
       condition = checkMenuItem({ "File", "Show in Finder" }),
       fn = receiveMenuItem
+    },
+    ["remapPreviousTab"] = {
+      message = localizedMessage("Go to Previous Tab"),
+      condition = checkMenuItem({ "Window", "Go to Previous Tab" }),
+      fn = receiveMenuItem
     }
   },
 
