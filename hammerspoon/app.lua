@@ -4526,14 +4526,17 @@ execOnActivated("com.microsoft.rdc.macos", microsoftRemoteDesktopCallback)
 local microsoftRemoteDesktopObserver
 local function watchForMicrosoftRemoteDesktopWindow(appObject)
   local appUIObj = hs.axuielement.applicationElement(appObject)
-  microsoftRemoteDesktopObserver = hs.axuielement.observer.new(appObject:pid())
-  microsoftRemoteDesktopObserver:addWatcher(
+  local observer = hs.axuielement.observer.new(appObject:pid())
+  observer:addWatcher(
     appUIObj,
     hs.axuielement.observer.notifications.focusedWindowChanged
   )
-  microsoftRemoteDesktopObserver:callback(
+  observer:callback(
       hs.fnutils.partial(microsoftRemoteDesktopCallback, appObject))
-  microsoftRemoteDesktopObserver:start()
+  observer:start()
+  stopOnDeactivated("com.microsoft.rdc.macos", observer)
+  stopOnQuit("com.microsoft.rdc.macos", observer)
+  microsoftRemoteDesktopObserver = observer
 end
 local microsoftRemoteDesktopApp = findApplication("com.microsoft.rdc.macos")
 if microsoftRemoteDesktopApp ~= nil then
@@ -4725,11 +4728,6 @@ function App_applicationCallback(appName, eventType, appObject)
     end
   elseif eventType == hs.application.watcher.deactivated then
     if microsoftRemoteDesktopObserver ~= nil then
-      if bundleID == "com.microsoft.rdc.macos"
-          or findApplication("com.microsoft.rdc.macos") == nil then
-        microsoftRemoteDesktopObserver:stop()
-        microsoftRemoteDesktopObserver = nil
-      end
       if F_hotkeySuspendedByRemoteDesktop ~= nil then
         F_hotkeySuspended = not F_hotkeySuspendedByRemoteDesktop
         F_hotkeySuspendedByRemoteDesktop = nil
