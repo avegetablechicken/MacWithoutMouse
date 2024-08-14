@@ -3659,6 +3659,7 @@ local function registerForOpenSavePanel(appObject)
       finderSibebarHotkeys = {}
     end
 
+    local windowFilter = winUIObj.AXRole == "AXSheet" and { allowSheet = true } or true
     local cellUIObj, openSavePanelActor, message = getUIObj(winUIObj)
     local header
     local i = 1
@@ -3676,7 +3677,7 @@ local function registerForOpenSavePanel(appObject)
         local spec = get(KeybindingConfigs.hotkeys[bundleID], hkID)
         if spec ~= nil then
           local folder = cell:childrenWithRole("AXStaticText")[1].AXValue
-          local hotkey = WinBindSpec(appObject, { allowSheet = true }, spec, header .. ' > ' .. folder, function()
+          local hotkey = WinBindSpec(appObject, windowFilter, spec, header .. ' > ' .. folder, function()
             cell:performAction("AXOpen")
           end)
           hotkey.kind = HK.IN_APPWIN
@@ -3693,7 +3694,7 @@ local function registerForOpenSavePanel(appObject)
       spec = get(KeybindingConfigs.hotkeys[bundleID], "goToDownloads")
     end
     if spec ~= nil then
-      hotkey = WinBindSpec(appObject, { allowSheet = true }, spec, message, function()
+      hotkey = WinBindSpec(appObject, windowFilter, spec, message, function()
         local action = openSavePanelActor:actionNames()[1]
         openSavePanelActor:performAction(action)
       end)
