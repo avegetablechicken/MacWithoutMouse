@@ -618,10 +618,12 @@ local function clickBartenderBarItem(index, rightClick)
       if rightClick then
         script = script .. " with right click"
       end
-      script = script .. '\n' .. string.format([[
-        tell application id "%s" to toggle bartender
-      ]], bundleID)
       hs.osascript.applescript(script)
+      hs.timer.doAfter(0.1, function()
+        hs.osascript.applescript(string.format([[
+          tell application id "%s" to toggle bartender
+        ]], bundleID))
+      end)
     else
       local ok, position = hs.osascript.applescript(string.format([[
         tell application "System Events"
