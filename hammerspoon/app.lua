@@ -3656,8 +3656,8 @@ local function registerForOpenSavePanel(appObject)
     if hotkey ~= nil then hotkey:delete() hotkey = nil end
     for _, hotkey in ipairs(finderSibebarHotkeys) do
       hotkey:delete()
-      finderSibebarHotkeys = {}
     end
+    finderSibebarHotkeys = {}
 
     local windowFilter = winUIObj.AXRole == "AXSheet" and { allowSheet = true } or true
     local cellUIObj, openSavePanelActor, message = getUIObj(winUIObj)
@@ -3718,7 +3718,17 @@ local function registerForOpenSavePanel(appObject)
     actionFunc(element)
   end)
   observer:start()
-  stopOnDeactivated(appObject:bundleID(), observer)
+  stopOnDeactivated(appObject:bundleID(), observer, function()
+    if hotkey ~= nil then hotkey:delete() hotkey = nil end
+    for _, hotkey in ipairs(finderSibebarHotkeys) do
+      hotkey:delete()
+    end
+    finderSibebarHotkeys = {}
+    for _, hotkey in ipairs(WPSCloseDialogHotkeys) do
+      hotkey:delete()
+    end
+    WPSCloseDialogHotkeys = {}
+  end)
 end
 registerForOpenSavePanel(frontmostApplication)
 
