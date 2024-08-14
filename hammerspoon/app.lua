@@ -1308,7 +1308,7 @@ appHotKeyCallbacks = {
             break
           end
         end
-        if not rightClick(position, appObject:name()) then return end
+        if not rightClickAndRestore(position, appObject:name()) then return end
         hs.osascript.applescript([[
           tell application "System Events"
             tell first application process whose bundle identifier is "]] .. appObject:bundleID() .. [["
@@ -1327,7 +1327,6 @@ appHotKeyCallbacks = {
             end tell
           end tell
         ]])
-        hs.mouse.absolutePosition(mousePosition)
       end
     },
     ["openRecent"] = {
