@@ -2563,25 +2563,25 @@ appHotKeyCallbacks = {
 
   ["com.jetbrains.intellij"] =
   {
-      ["newProject"] = {
-        message = "New Project",
-        fn = function(winObj)
-          local winUIObj = hs.axuielement.windowElement(winObj)
-          local button = getAXChildren(winUIObj, "AXButton", 2, "AXButton", 1)
-          if button == nil then
-            button = getAXChildren(winUIObj, "AXGroup", 2, "AXButton", 1, "AXButton", 1)
-          end
-          if button ~= nil then
-            leftClickAndRestore(button.AXPosition, winObj:application():name())
-          end
+    ["newProject"] = {
+      message = "New Project",
+      fn = function(winObj)
+        local winUIObj = hs.axuielement.windowElement(winObj)
+        local button = getAXChildren(winUIObj, "AXButton", 2, "AXButton", 1)
+        if button == nil then
+          button = getAXChildren(winUIObj, "AXGroup", 2, "AXButton", 1, "AXButton", 1)
         end
-      },
-      ["open..."] = {
-        message = "Open...",
-        fn = function(winObj)
-          winObj:application():selectMenuItem({"File", "Open..."})
+        if button ~= nil then
+          leftClickAndRestore(button.AXPosition, winObj:application():name())
         end
-      }
+      end
+    },
+    ["open..."] = {
+      message = "Open...",
+      fn = function(winObj)
+        winObj:application():selectMenuItem({"File", "Open..."})
+      end
+    }
   },
 
   ["com.jetbrains.pycharm"] =
