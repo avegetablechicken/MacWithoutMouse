@@ -154,11 +154,11 @@ local appHotKeyCallbacks
 
 -- ### Barrier
 local function toggleBarrierConnect()
-  local stdout, status = hs.execute("ps -ax | grep Barrier.app/Contents/MacOS/barrier | grep -v grep")
+  local _, status = hs.execute("ps -ax | grep Barrier.app/Contents/MacOS/barrier | grep -v grep")
   if status ~= true then
     hs.application.launchOrFocusByBundleID("barrier")
     hs.timer.doAfter(2, function()
-      local ok, ret = hs.osascript.applescript([[
+      local ok = hs.osascript.applescript([[
         tell application "System Events"
           tell ]] .. aWinFor("barrier") .. [[
             click button "Start"
@@ -167,7 +167,6 @@ local function toggleBarrierConnect()
           end tell
         end tell
       ]])
-
       if ok then
         hs.alert("Barrier started")
       else
@@ -180,15 +179,13 @@ local function toggleBarrierConnect()
         set popupMenu to menu 1 of menu bar item 1 of last menu bar of ¬
             (first application process whose bundle identifier is "barrier")
         if value of attribute "AXEnabled" of menu item "Start" of popupMenu is true then
-          set ret to 0
           click menu item "Start" of popupMenu
+          return 0
         else
           click menu item "Stop" of popupMenu
-          set ret to 1
+          return 1
         end if
       end tell
-
-      return ret
     ]]
     local ok, ret = hs.osascript.applescript(script)
     if ok then
