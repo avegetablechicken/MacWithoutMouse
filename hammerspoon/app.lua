@@ -228,18 +228,6 @@ local function toggleTopNotch()
     end)
 end
 
--- ### klaxetformula
--- pipeline of copying latex to `klatexformula` and rendering
-local function klatexformulaRender()
-  hs.osascript.applescript([[
-    tell application "System Events"
-      tell ]] .. aWinFor("org.klatexformula.klatexformula") .. [[
-        click button 2 of splitter group 1
-      end tell
-    end tell
-  ]])
-end
-
 -- ### Finder
 local function getFinderSidebarItemTitle(idx)
   return function(appObject)
@@ -1658,7 +1646,13 @@ appHotKeyCallbacks = {
   {
     ["render"] = {
       message = "Render",
-      fn = klatexformulaRender
+      fn = function(winObj)
+        local winUIObj = hs.axuielement.windowElement(winObj)
+        local button = getAXChildren(winUIObj, "AXSplitGroup", 1, "AXButton", 2)
+        if button ~= nil then
+          button:performAction("AXPress")
+        end
+      end
     },
     ["renderClipboardInKlatexformula"] = {
       message = "Render Clipboard in klatexformula",
@@ -1667,7 +1661,11 @@ appHotKeyCallbacks = {
         appObject:selectMenuItem({"Shortcuts", "Activate Editor and Select All"})
         hs.eventtap.keyStroke("⌘", "V", nil, appObject)
 
-        klatexformulaRender()
+        local winUIObj = hs.axuielement.windowElement(appObject:mainWindow())
+        local button = getAXChildren(winUIObj, "AXSplitGroup", 1, "AXButton", 2)
+        if button ~= nil then
+          button:performAction("AXPress")
+        end
       end
     },
     ["closeWindow"] = specialCommonHotkeyConfigs["closeWindow"],
