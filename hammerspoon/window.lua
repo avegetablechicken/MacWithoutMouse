@@ -1270,19 +1270,14 @@ local function PDFChooser()
         local appObject = findApplication(choice.app)
         local isFullScreen = allWindowsPDFExpert[choice.winID]:isFullScreen()
         if not isFullScreen or findMenuItem(appObject, { 'View', 'Always Show Toolbar' }).ticked then
-          local locationExtra = isFullScreen and " of group 1\n" or "\n"
-          local ok, result = hs.osascript.applescript([[
-            tell application "System Events"
-              tell ]] .. aWinFor(choice.app) .. [[
-                set tabList to the value of attribute "AXChildren" of ¬
-                    scroll area 1 of tab group 1 of group 1 of toolbar 1]] .. locationExtra .. [[
-                set atab to item ]] .. choice.id .. [[ of tabList
-                return the value of attribute "AXPosition" of atab
-              end tell
-            end tell
-          ]])
-          if ok then
-            if leftClickAndRestore({ x = result.x + 10, y = result.y }, appObject:name()) then
+          local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
+          if isFullScreen then
+            winUIObj = winUIObj:childrenWithRole("AXGroup")[1]
+          end
+          local aTab = getAXChildren(winUIObj, "AXToolbar", 1, "AXGroup", 1, "AXTabGroup", 1, "AXScrollArea", 1, nil, choice.id)
+          if aTab ~= nil then
+            local position = aTab.AXPosition
+            if leftClickAndRestore({ x = position.x + 10, y = position.y }, appObject:name()) then
               return
             end
           end

@@ -512,16 +512,13 @@ local bartenderBarFilter
 local function getBartenderBarItemTitle(index, rightClick)
   return function(appObject)
     if bartenderBarItemNames == nil then
-      local bundleID = appObject:bundleID()
-      local ok, appNames = hs.osascript.applescript(string.format([[
-        tell application "System Events"
-          tell (first process whose bundle identifier is "%s")
-            set icons to window "%s"'s scroll area 1's list 1's list 1
-            return value of attribute "AXDescription" of image 1 of groups of icons
-          end tell
-        end tell
-      ]], bundleID, bartenderBarTitle))
-      if ok and #appNames > 0 then
+      local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
+      local icons = getAXChildren(winUIObj, "AXScrollArea", 1, "AXList", 1, "AXList", 1)
+      local appNames = hs.fnutils.map(icons:childrenWithRole("AXGroup"), function(g)
+        return getAXChildren(g, "AXImage", 1).AXDescription
+      end)
+      if #appNames > 0 then
+        local bundleID = appObject:bundleID()
         local _, items = hs.osascript.applescript(string.format([[
           tell application id "%s" to list menu bar items
         ]], bundleID))
@@ -610,17 +607,10 @@ local function clickBartenderBarItem(index, rightClick)
         ]], bundleID))
       end)
     else
-      local ok, position = hs.osascript.applescript(string.format([[
-        tell application "System Events"
-          tell (first process whose bundle identifier is "%s")
-            set icons to window "%s"'s scroll area 1's list 1's list 1
-            return value of attribute "AXPosition" of image 1 of group %d of icons
-          end tell
-        end tell
-      ]], bundleID, bartenderBarTitle, itemID))
-      if ok then
-        position[1] = position[1] + 10
-        position[2] = position[2] + 10
+      local winUIObj = hs.axuielement.windowElement(findApplication(bundleID):focusedWindow())
+      local icon = getAXChildren(winUIObj, "AXScrollArea", 1, "AXList", 1, "AXList", 1, "AXGroup", itemID, "AXImage", 1)
+      if icon ~= nil then
+        local position = { icon.AXPosition.x + 10, icon.AXPosition.y + 10 }
         if rightClick then
           rightClickAndRestore(position, winObj:application():name())
         else
@@ -1055,45 +1045,26 @@ appHotKeyCallbacks = {
         if menuItem ~= nil and menuItem.enabled then
           return true, menuItemTitle
         else
-          local ok, result = hs.osascript.applescript([[
-            tell application "System Events"
-              tell ]] .. aWinFor(appObject) .. [[
-                if exists button 1 of last group of splitter group 1 then
-                  return 1
-                else if exists (button 1 of group 1 ¬
-                    whose value of attribute "AXIdentifier" is "UIA.AppStore.NavigationBackButton") then
-                  return 2
-                else if exists (button 1 of group 1 ¬
-                    whose value of attribute "AXIdentifier" is "AppStore.backButton") then
-                  return 2
-                else
-                  return 0
-                end if
-              end tell
-            end tell
-          ]])
-          return ok and (result ~= 0), result
+          if appObject:focusedWindow() == nil then return false end
+          local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
+          local button
+          button = getAXChildren(winUIObj, "AXSplitGroup", 1, "AXGroup", 2, "AXButton", 1)
+          if button ~= nil then return true, button end
+          local g = getAXChildren(winUIObj, "AXGroup", 1)
+          if g == nil then return false end
+          button = hs.fnutils.find(g:childrenWithRole("AXButton"), function(b)
+            return b.AXIdentifier == "UIA.AppStore.NavigationBackButton"
+                or b.AXIdentifier == "AppStore.backButton"
+          end)
+          return button ~= nil, button
         end
       end,
       fn = function(result, appObject)
         if type(result) == 'table' then
           appObject:selectMenuItem(result)
-        elseif result == 1 then
-          hs.osascript.applescript([[
-            tell application "System Events"
-              tell ]] .. aWinFor(appObject) .. [[
-                perform action "AXPress" of button 1 of last group of splitter group 1
-              end tell
-            end tell
-          ]])
         else
-          hs.osascript.applescript([[
-            tell application "System Events"
-              tell ]] .. aWinFor(appObject) .. [[
-                perform action "AXPress" of button 1 of group 1
-              end tell
-            end tell
-          ]])
+          local button = result
+          button:performAction("AXPress")
         end
       end
     }
@@ -1330,18 +1301,13 @@ appHotKeyCallbacks = {
         if #buttons == 0 then return end
         local mousePosition = hs.mouse.absolutePosition()
         local appObject = winObj:application()
-        local ok, position = hs.osascript.applescript([[
-          tell application "System Events"
-            tell ]] .. aWinFor(appObject) .. [[
-              repeat with i from 1 to count (UI elements)
-                if value of attribute "AXRole" of UI element i is "AXGroup" then
-                  return position of UI element (i-1)
-                end if
-              end repeat
-            end tell
-          end tell
-        ]])
-        if not ok then return end
+        local position
+        for i, ele in ipairs(winUIObj.AXChildren) do
+          if ele.AXRole == "AXGroup" then
+            position = winUIObj.AXChildren[i - 1].AXPosition
+            break
+          end
+        end
         if not rightClick(position, appObject:name()) then return end
         hs.osascript.applescript([[
           tell application "System Events"
@@ -1751,14 +1717,10 @@ appHotKeyCallbacks = {
     ["openInDefaultBrowser"] = {
       message = localizedMessage("Open in Default Browser"),
       condition = function(appObject)
-        local status, result = hs.osascript.applescript([[
-          tell application "System Events"
-            tell ]] .. aWinFor(appObject) .. [[
-              return exists attribute "AXDOMClassList" of group 1
-            end tell
-          end tell
-        ]])
-        return status and result
+        if appObject:focusedWindow() == nil then return false end
+        local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
+        local g = getAXChildren(winUIObj, "AXGroup", 1)
+        return g ~= nil and g.AXDOMClassList ~= nil
       end,
       fn = function(appObject)
         local frame = appObject:focusedWindow():frame()
@@ -1825,6 +1787,7 @@ appHotKeyCallbacks = {
     ["exitSongDetails"] = {
       message = "关闭歌曲详情",
       condition = function(appObject)
+        if appObject:focusedWindow() == nil then return false end
         local bundleID = appObject:bundleID()
         local version = hs.execute(string.format('mdls -r -name kMDItemVersion "%s"',
             hs.application.pathForBundleID(bundleID)))
@@ -1834,49 +1797,23 @@ appHotKeyCallbacks = {
                                       { localeDir = false, key = true })
           local detail = localizedString("COMMON_DETAIL", bundleID,
                                         { localeDir = false, key = true })
-          local ok, valid = hs.osascript.applescript([[
-            tell application "System Events"
-              tell ]] .. aWinFor(appObject) .. [[
-                set btCnt to count (every button)
-                return (exists button "]] .. song .. detail .. [[") and btCnt > 4
-              end tell
-            end tell
-          ]])
-          return ok and valid
+          local btnName = song .. detail
+          local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
+          local buttons = winUIObj:childrenWithRole("AXButton")
+          return #buttons > 4 and getAXChildren(winUIObj, "AXButton", btnName) ~= nil
         else
-          local ok, valid = hs.osascript.applescript([[
-              tell application "System Events"
-                tell (first process whose bundle identifier is "]] .. appObject:bundleID() .. [[")
-                  if number of windows is greater than or equal to 2 then
-                    set aWin to window 1
-                    set mWin to (window 1 whose value of attribute "AXMain" is true)
-                    if aWin is not mWin then
-                      set aWinPos to value of attribute "AXPosition" of aWin
-                      set mWinPos to value of attribute "AXPosition" of mWin
-                      set aWinSz to value of attribute "AXSize" of aWin
-                      set mWinSz to value of attribute "AXSize" of mWin
-                      if aWinPos is equal to mWinPos ¬
-                          and aWinSz is equal to mWinSz then
-                        return true
-                      end if
-                    end if
-                  end if
-                  return false
-                end tell
-              end tell
-          ]])
-          return ok and valid
+          if #appObject:visibleWindows() < 2 then return false end
+          local fWin, mWin = appObject:focusedWindow(), appObject:mainWindow()
+          local fFrame, mFrame = fWin:frame(), mWin:frame()
+          return fWin:id() ~= mWin:id()
+              and fFrame.x == mFrame.x and fFrame.y == mFrame.y
+              and fFrame.w == mFrame.w and fFrame.h == mFrame.h
         end
       end,
       fn = function(appObject)
-        hs.osascript.applescript([[
-          tell application "System Events"
-            tell ]] .. aWinFor(appObject) .. [[
-              set btCnt to count (every button)
-              click button (btCnt - 2)
-            end tell
-          end tell
-        ]])
+        local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
+        local buttons = winUIObj:childrenWithRole("AXButton")
+        buttons[#buttons - 2]:performAction("AXPress")
       end
     }
   },
@@ -1918,25 +1855,21 @@ appHotKeyCallbacks = {
     ["allowConnection"] = {
       message = "Allow Connection",
       fn = function(winObj)
-        hs.osascript.applescript([[
-          tell application "System Events"
-            tell ]] .. aWinFor(winObj:application()) .. [[
-              click button "Allow"
-            end tell
-          end tell
-        ]])
+        local winUIObj = hs.axuielement.windowElement(winObj)
+        local button = getAXChildren(winUIObj, "AXButton", "Allow")
+        if button ~= nil then
+          button:performAction("AXPress")
+        end
       end
     },
     ["blockConnection"] = {
       message = "Block Connection",
       fn = function(winObj)
-        hs.osascript.applescript([[
-          tell application "System Events"
-            tell ]] .. aWinFor(winObj:application()) .. [[
-              click button "Block"
-            end tell
-          end tell
-        ]])
+        local winUIObj = hs.axuielement.windowElement(winObj)
+        local button = getAXChildren(winUIObj, "AXButton", "Block")
+        if button ~= nil then
+          button:performAction("AXPress")
+        end
       end
     }
   },
@@ -1945,14 +1878,12 @@ appHotKeyCallbacks = {
   {
     ["saveInSheet"] = {
       message = "Save",
-      fn = function(winUIObj)
-        hs.osascript.applescript([[
-          tell application "System Events"
-            tell ]] .. aWinFor(winUIObj:application()) .. [[
-              click button "Save" of sheet 1
-            end tell
-          end tell
-        ]])
+      fn = function(winObj)
+        local winUIObj = hs.axuielement.windowElement(winObj)
+        local button = getAXChildren(winUIObj, "AXButton", "Save")
+        if button ~= nil then
+          button:performAction("AXPress")
+        end
       end
     }
   },
@@ -2589,18 +2520,14 @@ appHotKeyCallbacks = {
     ["newProject"] = {
       message = "New Project",
       fn = function(winObj)
-        local ok, pos = hs.osascript.applescript([[
-          tell application "System Events"
-            tell ]] .. aWinFor(winObj:application()) .. [[
-              if exists button 1 of button 2 then
-                return position of button 1 of button 2
-              else
-                return position of button 1 of button 1 of group 2
-              end if
-            end tell
-          end tell
-        ]])
-        leftClickAndRestore(pos, winObj:application():name())
+        local winUIObj = hs.axuielement.windowElement(winObj)
+        local button = getAXChildren(winUIObj, "AXButton", 2, "AXButton", 1)
+        if button == nil then
+          button = getAXChildren(winUIObj, "AXGroup", 2, "AXButton", 1, "AXButton", 1)
+        end
+        if button ~= nil then
+          leftClickAndRestore(button.AXPosition, winObj:application():name())
+        end
       end
     },
     ["open..."] = {
@@ -2616,18 +2543,14 @@ appHotKeyCallbacks = {
     ["newProject"] = {
       message = "New Project",
       fn = function(winObj)
-        local ok, pos = hs.osascript.applescript([[
-          tell application "System Events"
-            tell ]] .. aWinFor(winObj:application()) .. [[
-              if exists button 1 of button 2 then
-                return position of button 1 of button 2
-              else
-                return position of button 1 of button 1 of group 2
-              end if
-            end tell
-          end tell
-        ]])
-        leftClickAndRestore(pos, winObj:application():name())
+        local winUIObj = hs.axuielement.windowElement(winObj)
+        local button = getAXChildren(winUIObj, "AXButton", 2, "AXButton", 1)
+        if button == nil then
+          button = getAXChildren(winUIObj, "AXGroup", 2, "AXButton", 1, "AXButton", 1)
+        end
+        if button ~= nil then
+          leftClickAndRestore(button.AXPosition, winObj:application():name())
+        end
       end
     },
     ["open..."] = {
@@ -2643,15 +2566,14 @@ appHotKeyCallbacks = {
       ["newProject"] = {
         message = "New Project",
         fn = function(winObj)
-          local ok, pos = hs.osascript.applescript([[
-            tell application "System Events"
-              tell ]] .. aWinFor(winObj:application()) .. [[
-                set bt to button 1 of button 2
-                return position of bt
-              end tell
-            end tell
-          ]])
-          leftClickAndRestore(pos, winObj:application():name())
+          local winUIObj = hs.axuielement.windowElement(winObj)
+          local button = getAXChildren(winUIObj, "AXButton", 2, "AXButton", 1)
+          if button == nil then
+            button = getAXChildren(winUIObj, "AXGroup", 2, "AXButton", 1, "AXButton", 1)
+          end
+          if button ~= nil then
+            leftClickAndRestore(button.AXPosition, winObj:application():name())
+          end
         end
       },
       ["open..."] = {
@@ -2667,15 +2589,14 @@ appHotKeyCallbacks = {
     ["newProject"] = {
       message = "New Project",
       fn = function(winObj)
-        local ok, pos = hs.osascript.applescript([[
-          tell application "System Events"
-            tell ]] .. aWinFor(winObj:application()) .. [[
-              set bt to button 1 of button 2
-              return position of bt
-            end tell
-          end tell
-        ]])
-        leftClickAndRestore(pos, winObj:application():name())
+        local winUIObj = hs.axuielement.windowElement(winObj)
+        local button = getAXChildren(winUIObj, "AXButton", 2, "AXButton", 1)
+        if button == nil then
+          button = getAXChildren(winUIObj, "AXGroup", 2, "AXButton", 1, "AXButton", 1)
+        end
+        if button ~= nil then
+          leftClickAndRestore(button.AXPosition, winObj:application():name())
+        end
       end
     },
     ["open..."] = {
@@ -3899,13 +3820,11 @@ local function altMenuBarItem(appObject)
   local clickMenuCallback = function(title)
     local index = menuBarItemActualIndices[title]
     if index then
-      hs.osascript.applescript(string.format([[
-        tell application "System Events"
-          tell first application process whose bundle identifier is "%s"
-            click menu bar item %d of menu bar 1
-          end tell
-        end tell
-      ]], appObject:bundleID(), index))
+      local appUIObj = hs.axuielement.applicationElement(appObject)
+      local menubarItem = getAXChildren(appUIObj, "AXMenuBar", 1, "AXMenuBarItem", index)
+      if menubarItem then
+        menubarItem:performAction("AXPress")
+      end
     else
       appObject:selectMenuItem({ title })
     end

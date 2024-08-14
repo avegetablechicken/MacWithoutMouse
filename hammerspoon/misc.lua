@@ -130,19 +130,15 @@ if hs.fs.attributes("config/misc.json") ~= nil then
   verificationPatterns = hs.json.read("config/misc.json").verificationFilter or {}
 end
 local function parseVerificationCodeFromFirstMessage()
-  local ok, content = hs.osascript.applescript([[
-    tell application "System Events"
-      tell window 1 of (first application process ¬
-          whose bundle identifier is "com.apple.notificationcenterui")
-        if exists scroll area 1 then
-          return value of static text 2 of group 1 of UI element 1 of scroll area 1
-        else -- since some version of Sonoma
-          return value of static text 2 of group 1 of UI element 1 of scroll area 1 of group 1
-        end if
-      end tell
-    end tell
-  ]])
-  if ok then
+  local appObject = findApplication("com.apple.notificationcenterui")
+  if appObject == nil or appObject:focusedWindow() == nil then return end
+  local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
+  local ele = getAXChildren(winUIObj, "AXScrollArea", 1, nil, 1, "AXGroup", 1, "AXStaticText", 2)
+  if ele == nil then
+    ele = getAXChildren(winUIObj, "AXGroup", 1, "AXScrollArea", 1, nil, 1, "AXGroup", 1, "AXStaticText", 2)
+  end
+  if ele ~= nil then
+    local content = ele.AXValue
     for _, pattern in ipairs(verificationPatterns) do
       if type(pattern.filter) == 'string' then
         if string.find(content, pattern.filter) then
@@ -266,13 +262,12 @@ local function getValidMessage(hotkeyInfo)
   local actualFilter
   if type(filter) == 'table' then
     for k, v in pairs(filter) do
-      if actualFilter == nil then actualFilter = {} end
-      actualFilter[k] = v
+      if k ~= "allowSheet" and k ~= "allowPopover" then
+        if actualFilter == nil then actualFilter = {} end
+        actualFilter[k] = v
+      end
     end
-    if actualFilter ~= nil then
-      actualFilter.allowSheet = nil
-      actualFilter.allowPopover = nil
-    end
+    if actualFilter == nil then actualFilter = false end
   end
   local windowFilter = hs.window.filter.new(false):setAppFilter(
       hotkeyInfo.appName, actualFilter)

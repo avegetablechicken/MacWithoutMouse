@@ -42,13 +42,20 @@ end
 
 function getAXChildren(element, role, index, ...)
   if element == nil or (role == nil and index == nil) then return element end
-  local children
+  local children, child
   if role == nil and element.AXChildren ~= nil then
-    children = element.AXChildren[index]
+    children = element.AXChildren
   else
-    children = element:childrenWithRole(role)[index]
+    children = element:childrenWithRole(role)
   end
-  return getAXChildren(children, ...)
+  if type(index) == 'number' then
+    child = children[index]
+  else
+    child = hs.fnutils.find(children, function(c)
+      return c.AXTitle == index
+    end)
+  end
+  return getAXChildren(child, ...)
 end
 
 function inFullscreenWindow()
