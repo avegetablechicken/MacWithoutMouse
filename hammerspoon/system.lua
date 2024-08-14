@@ -949,22 +949,22 @@ local menubarHK = KeybindingConfigs.hotkeys.global
 local proxyHotkey = bindHotkeySpec(menubarHK["showProxyMenu"], "Show Proxy Menu",
 function()
   if findApplication("com.surteesstudios.Bartender") ~= nil then
-    hs.osascript.applescript([[
+    hs.osascript.applescript(string.format([[
       tell application id "com.surteesstudios.Bartender"
-        activate "org.hammerspoon.Hammerspoon-PROXY"
+        activate "org.hammerspoon.Hammerspoon-%s"
       end tell
-    ]])
+    ]], proxy:autosaveName()))
   else
-    hs.osascript.applescript([[
+    hs.osascript.applescript(string.format([[
       ignoring application responses
         tell application "System Events"
-          click menu bar item "PROXY" of last menu bar of application process "Hammerspoon"
+          click menu bar item "%s" of last menu bar of application process "Hammerspoon"
         end tell
       end ignoring
 
       delay 0.2
       do shell script "killall System\\ Events"
-    ]])
+    ]], proxy:title()))
   end
 end)
 proxyHotkey.kind = HK.MENUBAR
