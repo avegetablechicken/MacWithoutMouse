@@ -1083,11 +1083,12 @@ end
 
 local function PDFChooser()
   local choices = {}
+  local appObject
 
   -- `PDF Expert`
   local allWindowsPDFExpert, winTabTitlesPDFExpert
-  if findApplication("com.readdle.PDFExpert-Mac") ~= nil then
-    local appObject = findApplication("com.readdle.PDFExpert-Mac")
+  appObject = findApplication("com.readdle.PDFExpert-Mac")
+  if appObject ~= nil then
     local allWindows = hs.window.filter.new(false):allowApp(appObject:name()):getWindows()
     local winTabTitles = {}
     local winTitles = {}
@@ -1124,7 +1125,7 @@ local function PDFChooser()
               image = hs.image.imageFromAppBundle(appObject:bundleID()),
               id = tabID,
               winID = winID,
-              app = "com.readdle.PDFExpert-Mac"
+              app = appObject:bundleID()
             }
         if winTitle == tabTitle then
           choice.subText = winPaths[winID]
@@ -1140,13 +1141,13 @@ local function PDFChooser()
 
   -- `UPDF`
   local allWindowsUPDF
-  if findApplication("com.superace.updf.mac") ~= nil then
-    local appObject = findApplication("com.superace.updf.mac")
+  appObject = findApplication("com.superace.updf.mac")
+  if appObject ~= nil then
     local allWindows = hs.window.filter.new(false):allowApp(appObject:name()):getWindows()
     local winTabTitles = {}
     local menuItems = getMenuItems(appObject)
     for _, menuItem in ipairs(menuItems or {}) do
-      if menuItem.AXTitle == localizedMenuBarItem('Tab', "com.superace.updf.mac") then
+      if menuItem.AXTitle == localizedMenuBarItem('Tab', appObject:bundleID()) then
         local subMenuItems = menuItem.AXChildren[1]
         local winTitles = {}
         local tabTitles = {}
@@ -1171,7 +1172,7 @@ local function PDFChooser()
                 text = tabTitle,
                 image = hs.image.imageFromAppBundle(appObject:bundleID()),
                 winTitle = winTitle,
-                app = "com.superace.updf.mac"
+                app = appObject:bundleID()
               }
           if winTitle ~= tabTitle then
             choice.subText = 'INACTIVE in WINDOW: "' .. winTitle .. '"'
@@ -1185,18 +1186,19 @@ local function PDFChooser()
   end
 
   -- `Preview`
-  if findApplication("com.apple.Preview") ~= nil then
+  appObject = findApplication("com.apple.Preview")
+  if appObject ~= nil then
     local ok, results = hs.osascript.applescript([[
-      tell application id "com.apple.Preview" to get {id, name} of (every window whose name ends with ".pdf")
+      tell application id "]] .. appObject:bundleID() .. [[" to get {id, name} of (every window whose name ends with ".pdf")
     ]])
     if ok and #results[1] > 0 then
       for i=1,#results[1] do
         table.insert(choices,
             {
               text = results[2][i],
-              image = hs.image.imageFromAppBundle("com.apple.Preview"),
+              image = hs.image.imageFromAppBundle(appObject:bundleID()),
               id = results[1][i],
-              app = "com.apple.Preview"
+              app = appObject:bundleID()
             })
       end
     end
@@ -1205,7 +1207,7 @@ local function PDFChooser()
   -- browsers
   for _, browser in ipairs({"com.apple.Safari", "com.google.Chrome",
                             "com.microsoft.edgemac", "com.microsoft.edgemac.Dev"}) do
-    local appObject = findApplication(browser)
+    appObject = findApplication(browser)
     if appObject ~= nil then
       local title, tabIDCmd
       if browser == "com.apple.Safari" then
@@ -1243,7 +1245,7 @@ local function PDFChooser()
               {
                 text = title,
                 subText = url,
-                image = hs.image.imageFromAppBundle(appObject:bundleID()),
+                image = hs.image.imageFromAppBundle(browser),
                 id = id,
                 winID = winID,
                 app = browser
@@ -1253,6 +1255,7 @@ local function PDFChooser()
     end
   end
 
+  appObject = nil
   if #choices == 0 then
     hs.alert.show("NO VALID TABS")
     return
@@ -1310,7 +1313,7 @@ local function PDFChooser()
       end)
     elseif choice.app == "com.apple.Preview" then
       local ok, result = hs.osascript.applescript([[
-        tell application id "com.apple.Preview"
+        tell application id "]] .. choice.app .. [["
           activate
           set aWindow to window id ]] .. choice.id .. [[
 
@@ -1368,16 +1371,16 @@ end
 -- use it to switch to a tab
 bindWindowMisc(misc["searchTab"], 'Switch to Tab',
 function()
-  if hs.fnutils.contains({ "com.readdle.PDFExpert-Mac", "com.superace.updf.mac" },
-      hs.application.frontmostApplication():bundleID()) then
+  local bundleID = hs.application.frontmostApplication():bundleID()
+  if hs.fnutils.contains({ "com.readdle.PDFExpert-Mac", "com.superace.updf.mac" }, bundleID) then
     PDFChooser()
     return
   end
 
-  if hs.application.frontmostApplication():bundleID() == "com.apple.Preview" then
+  if bundleID == "com.apple.Preview" then
     local aWin = activatedWindowIndex()
     local ok, results = hs.osascript.applescript([[
-      tell application id "com.apple.Preview" to get name of window ]] .. aWin .. [[ ends with ".pdf"
+      tell application id "]] .. bundleID .. [[" to get name of window ]] .. aWin .. [[ ends with ".pdf"
     ]])
     if ok and results == true then
       PDFChooser()

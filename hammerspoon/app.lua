@@ -42,8 +42,10 @@ local function focusOrHide(hint)
       appObject = findApplication(h)
       if appObject ~= nil then break end
     end
-  else
+  elseif type(hint) == "string" then
     appObject = findApplication(hint)
+  else
+    appObject = hint
   end
 
   if appObject ~= nil and appObject:bundleID() == "com.apple.finder" then
@@ -415,9 +417,7 @@ local function deleteAllCalls(appObject)
 end
 
 -- ### Visual Studio Code
-local function VSCodeToggleSideBarSection(sidebar, section)
-  local focusedWindow = hs.application.frontmostApplication():focusedWindow()
-  if focusedWindow == nil then return end
+local function VSCodeToggleSideBarSection(appObject, sidebar, section)
   local commonPath = [[group 2 of group 1 of group 2 of group 2 of ¬
     group 1 of group 1 of group 1 of group 1 of UI element 1 of ¬
     group 1 of group 1 of group 1 of UI element 1]]
@@ -459,7 +459,7 @@ local function VSCodeToggleSideBarSection(sidebar, section)
   ]]
   hs.osascript.applescript([[
     tell application "System Events"
-      tell ]] .. aWinFor("com.microsoft.VSCode") .. [[
+      tell ]] .. aWinFor(appObject) .. [[
         if (exists UI element 1 of group 1 of group 1 of group 2 of ¬
               ]] .. commonPath .. [[) ¬
             and (title of UI element 1 of group 1 of group 1 of group 2 of ¬
@@ -622,9 +622,8 @@ local function clickBartenderBarItem(index, rightClick)
 end
 
 -- ### iCopy
-local function iCopySelectHotkeyRemapRequired()
-  local version = hs.execute(string.format('mdls -r -name kMDItemVersion "%s"',
-      hs.application.pathForBundleID("cn.better365.iCopy")))
+local function iCopySelectHotkeyRemapRequired(appObject)
+  local version = hs.execute(string.format('mdls -r -name kMDItemVersion "%s"', appObject:path()))
   local major, minor, patch = string.match(version, "(%d+)%.(%d+)%.(%d+)")
   major = tonumber(major)
   minor = tonumber(minor)
@@ -632,9 +631,8 @@ local function iCopySelectHotkeyRemapRequired()
   return major < 1 or (major == 1 and minor < 1) or (major == 1 and minor == 1 and patch < 3)
 end
 
-local function iCopySelectHotkeyMod()
-  local version = hs.execute(string.format('mdls -r -name kMDItemVersion "%s"',
-      hs.application.pathForBundleID("cn.better365.iCopy")))
+local function iCopySelectHotkeyMod(appObject)
+  local version = hs.execute(string.format('mdls -r -name kMDItemVersion "%s"', appObject:path()))
   local major, minor, patch = string.match(version, "(%d+)%.(%d+)%.(%d+)")
   major = tonumber(major)
   minor = tonumber(minor)
@@ -651,7 +649,7 @@ local iCopyMod
 
 local function iCopySelectHotkeyRemap(winObj, idx)
   if iCopyMod == nil then
-    iCopyMod = iCopySelectHotkeyMod()
+    iCopyMod = iCopySelectHotkeyMod(winObj:application())
   end
   hs.eventtap.keyStroke(iCopyMod, tostring(idx), nil, winObj:application())
 end
@@ -1144,7 +1142,9 @@ appHotKeyCallbacks = {
           return winUIObj:attributeValue("AXIdentifier") ~= "open-panel"
         end
       end,
-      fn = function() VSCodeToggleSideBarSection("EXPLORER", "OUTLINE") end
+      fn = function(appObject)
+        VSCodeToggleSideBarSection(appObject, "EXPLORER", "OUTLINE")
+      end
     },
     ["toggleSearchEditorWholeWord"] = {
       message = "Search Editor: Toggle Match Whole Word",
@@ -1888,10 +1888,9 @@ appHotKeyCallbacks = {
       message = "Toggle Menu Bar",
       kind = HK.MENUBAR,
       fn = function(appObject)
-        local bundleID = appObject:bundleID()
         hs.osascript.applescript(string.format([[
           tell application id "%s" to toggle bartender
-        ]], bundleID))
+        ]], appObject:bundleID()))
       end
     },
     ["click1stBartenderBarItem"] = {
@@ -2057,8 +2056,10 @@ appHotKeyCallbacks = {
     ["searchMenuBar"] = {
       message = "Search Menu Bar",
       kind = HK.MENUBAR,
-      fn = function()
-        hs.osascript.applescript([[tell application id "com.surteesstudios.Bartender" to quick search]])
+      fn = function(appObject)
+        hs.osascript.applescript(string.format([[
+          tell application id "%s" to quick search
+        ]], appObject:bundleID()))
       end
     },
     ["keyboardNavigate"] = {
@@ -2150,7 +2151,7 @@ appHotKeyCallbacks = {
   {
     ["toggleJetbrainsToolbox"] = {
       message = "Toggle Jetbrains Toolbox",
-      fn = hs.fnutils.partial(focusOrHide, "com.jetbrains.toolbox"),
+      fn = focusOrHide
     }
   },
 
@@ -2190,8 +2191,8 @@ appHotKeyCallbacks = {
       windowFilter = {
         allowPopover = true
       },
-      fn = function()
-        clickRightMenuBarItem("com.mathpix.snipping-tool-noappstore")
+      fn = function(winObj)
+        clickRightMenuBarItem(winObj:application():bundleID())
       end,
       deleteOnDisable = true
     }
@@ -4231,7 +4232,7 @@ local function connectMountainDuckEntries(appObject, connection)
     tell application "System Events"
       tell first application process whose bundle identifier is "%s"
         set li to menu 1 of last menu bar
-  ]], appObject:bundleID(), appObject:bundleID())
+  ]], appObject:bundleID())
 
   if type(connection) == 'string' then
     script = script .. string.format([[
@@ -4256,7 +4257,7 @@ local function connectMountainDuckEntries(appObject, connection)
           if exists menu item "%s" of li then
             click menu item "%s" of menu 1 of menu item "%s" of li
           end
-      ]], item, localizedString('Disconnect', 'io.mountainduck'), item)
+      ]], item, localizedString('Disconnect', appObject:bundleID()), item)
     end
   end
 
@@ -4455,8 +4456,8 @@ local function watchForMicrosoftRemoteDesktopWindow(appObject)
   observer:callback(
       hs.fnutils.partial(microsoftRemoteDesktopCallback, appObject))
   observer:start()
-  stopOnDeactivated("com.microsoft.rdc.macos", observer)
-  stopOnQuit("com.microsoft.rdc.macos", observer)
+  stopOnDeactivated(appObject:bundleID(), observer)
+  stopOnQuit(appObject:bundleID(), observer)
   microsoftRemoteDesktopObserver = observer
 end
 local microsoftRemoteDesktopApp = findApplication("com.microsoft.rdc.macos")
