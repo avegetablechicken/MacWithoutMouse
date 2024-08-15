@@ -1297,10 +1297,6 @@ appHotKeyCallbacks = {
       end,
       fn = function(winObj)
         local winUIObj = hs.axuielement.windowElement(winObj)
-        local buttons = winUIObj:childrenWithRole("AXButton")
-        if #buttons == 0 then return end
-        local mousePosition = hs.mouse.absolutePosition()
-        local appObject = winObj:application()
         local position
         for i, ele in ipairs(winUIObj.AXChildren) do
           if ele.AXRole == "AXGroup" then
@@ -1308,6 +1304,7 @@ appHotKeyCallbacks = {
             break
           end
         end
+        local appObject = winObj:application()
         if not rightClickAndRestore(position, appObject:name()) then return end
         hs.osascript.applescript([[
           tell application "System Events"
@@ -1787,14 +1784,12 @@ appHotKeyCallbacks = {
       message = "关闭歌曲详情",
       condition = function(appObject)
         if appObject:focusedWindow() == nil then return false end
-        local bundleID = appObject:bundleID()
-        local version = hs.execute(string.format('mdls -r -name kMDItemVersion "%s"',
-            hs.application.pathForBundleID(bundleID)))
+        local version = hs.execute(string.format('mdls -r -name kMDItemVersion "%s"', appObject:path()))
         local major, minor, patch = string.match(version, "(%d+)%.(%d+)%.(%d+)")
         if tonumber(major) < 9 then
-          local song = localizedString("COMMON_SONG", bundleID,
+          local song = localizedString("COMMON_SONG", appObject:bundleID(),
                                       { localeDir = false, key = true })
-          local detail = localizedString("COMMON_DETAIL", bundleID,
+          local detail = localizedString("COMMON_DETAIL", appObject:bundleID(),
                                         { localeDir = false, key = true })
           local btnName = song .. detail
           local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
