@@ -211,20 +211,17 @@ local function toggleTopNotch()
   local appObject = findApplication(bundleID)
   clickRightMenuBarItem(bundleID)
   local appUIObj = hs.axuielement.applicationElement(bundleID)
-  appUIObj:elementSearch(
-    function(msg, results, count)
-      local state = results[1].AXValue
-      results[1]:performAction("AXPress")
-      if state == 'off' then
-        hs.eventtap.keyStroke("", "Escape", nil, appObject)
-      else
-        hs.timer.usleep(0.05 * 1000000)
-        hs.eventtap.keyStroke("", "Space", nil, appObject)
-      end
-    end,
-    function(element)
-      return element.AXSubrole == "AXSwitch"
-    end)
+  hs.timer.usleep(1 * 1000000)
+  local switch = getAXChildren(appUIObj, "AXMenuBar", 1, "AXMenuBarItem", 1,
+      "AXPopover", 1, "AXGroup", 3, "AXButton", 1)
+  local state = switch.AXValue
+  switch:performAction("AXPress")
+  if state == 'off' then
+    hs.eventtap.keyStroke("", "Escape", nil, appObject)
+  else
+    hs.timer.usleep(0.05 * 1000000)
+    hs.eventtap.keyStroke("", "Space", nil, appObject)
+  end
 end
 
 -- ### Finder
