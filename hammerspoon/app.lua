@@ -154,76 +154,6 @@ local appHotKeyCallbacks
 
 -- ## function utilities for hotkey configs of specific application
 
--- ### Barrier
-local function toggleBarrierConnect()
-  local _, status = hs.execute("ps -ax | grep Barrier.app/Contents/MacOS/barrier | grep -v grep")
-  if status ~= true then
-    hs.application.launchOrFocusByBundleID("barrier")
-    hs.timer.doAfter(2, function()
-      local ok = hs.osascript.applescript([[
-        tell application "System Events"
-          tell ]] .. aWinFor("barrier") .. [[
-            click button "Start"
-            delay 0.5
-            click button 4
-          end tell
-        end tell
-      ]])
-      if ok then
-        hs.alert("Barrier started")
-      else
-        hs.alert("Error occurred")
-      end
-    end)
-  else
-    local script = [[
-      tell application "System Events"
-        set popupMenu to menu 1 of menu bar item 1 of last menu bar of ¬
-            (first application process whose bundle identifier is "barrier")
-        if value of attribute "AXEnabled" of menu item "Start" of popupMenu is true then
-          click menu item "Start" of popupMenu
-          return 0
-        else
-          click menu item "Stop" of popupMenu
-          return 1
-        end if
-      end tell
-    ]]
-    local ok, ret = hs.osascript.applescript(script)
-    if ok then
-      if ret == 0 then
-        hs.alert("Barrier started")
-      else
-        hs.alert("Barrier stopped")
-      end
-    else
-      hs.alert("Error occurred")
-    end
-  end
-end
-
--- ### TopNotch
-local function toggleTopNotch()
-  local bundleID = "pl.maketheweb.TopNotch"
-  if findApplication(bundleID) == nil then
-    hs.application.open(bundleID)
-  end
-  local appObject = findApplication(bundleID)
-  clickRightMenuBarItem(bundleID)
-  local appUIObj = hs.axuielement.applicationElement(bundleID)
-  hs.timer.usleep(1 * 1000000)
-  local switch = getAXChildren(appUIObj, "AXMenuBar", 1, "AXMenuBarItem", 1,
-      "AXPopover", 1, "AXGroup", 3, "AXButton", 1)
-  local state = switch.AXValue
-  switch:performAction("AXPress")
-  if state == 'off' then
-    hs.eventtap.keyStroke("", "Escape", nil, appObject)
-  else
-    hs.timer.usleep(0.05 * 1000000)
-    hs.eventtap.keyStroke("", "Space", nil, appObject)
-  end
-end
-
 -- ### Finder
 local function getFinderSidebarItemTitle(idx)
   return function(appObject)
@@ -1836,7 +1766,47 @@ appHotKeyCallbacks = {
   {
     ["toggleBarrierConnect"] = {
       message = "Toggle Barrier Connect",
-      fn = toggleBarrierConnect,
+      fn = function(appObject)
+        local script = [[
+          tell application "System Events"
+            set popupMenu to menu 1 of menu bar item 1 of last menu bar of ¬
+                (first application process whose bundle identifier is "]] .. appObject:bundleID() .. [[")
+            if value of attribute "AXEnabled" of menu item "Start" of popupMenu is true then
+              click menu item "Start" of popupMenu
+              return 0
+            else
+              click menu item "Stop" of popupMenu
+              return 1
+            end if
+          end tell
+        ]]
+        local ok, ret = hs.osascript.applescript(script)
+        if ok then
+          if ret == 0 then
+            hs.alert("Barrier started")
+          else
+            hs.alert("Barrier stopped")
+          end
+        else
+          hs.alert("Error occurred")
+        end
+      end,
+      fnOnLaunch = function(appObject)
+        local ok = hs.osascript.applescript([[
+          tell application "System Events"
+            tell ]] .. aWinFor(appObject) .. [[
+              click button "Start"
+              delay 0.5
+              click button 4
+            end tell
+          end tell
+        ]])
+        if ok then
+          hs.alert("Barrier started")
+        else
+          hs.alert("Error occurred")
+        end
+      end
     },
     ["closeWindow"] = specialCommonHotkeyConfigs["closeWindow"]
   },
@@ -2140,7 +2110,21 @@ appHotKeyCallbacks = {
   {
     ["toggleTopNotch"] = {
       message = "Toggle Top Notch",
-      fn = toggleTopNotch,
+      fn = function(appObject)
+        clickRightMenuBarItem(appObject:bundleID())
+        local appUIObj = hs.axuielement.applicationElement(appObject)
+        hs.timer.usleep(1 * 1000000)
+        local switch = getAXChildren(appUIObj, "AXMenuBar", 1, "AXMenuBarItem", 1,
+            "AXPopover", 1, "AXGroup", 3, "AXButton", 1)
+        local state = switch.AXValue
+        switch:performAction("AXPress")
+        if state == 'off' then
+          hs.eventtap.keyStroke("", "Escape", nil, appObject)
+        else
+          hs.timer.usleep(0.05 * 1000000)
+          hs.eventtap.keyStroke("", "Space", nil, appObject)
+        end
+      end
     }
   },
 
@@ -2162,23 +2146,14 @@ appHotKeyCallbacks = {
             "defaults read '%s' getLatexShortcutEnabledKey | tr -d '\\n'", bundleID))
         return enabled == "1"
       end,
-      fn = function()
-        local bundleID = "com.mathpix.snipping-tool-noappstore"
+      fn = function(appObject)
         local mods = hs.execute(string.format(
-            "defaults read '%s' getLatexHotKeyModifiersKey | tr -d '\\n'", bundleID))
+            "defaults read '%s' getLatexHotKeyModifiersKey | tr -d '\\n'", appObject:bundleID()))
         local key = hs.execute(string.format(
-            "defaults read '%s' getLatexHotKeyKey | tr -d '\\n'", bundleID))
+            "defaults read '%s' getLatexHotKeyKey | tr -d '\\n'", appObject:bundleID()))
         mods, key = parsePlistKeyBinding(mods, key)
         if mods == nil or key == nil then return end
-        local action = function()
-          safeGlobalKeyStroke(mods, key)
-        end
-        if findApplication(bundleID) == nil then
-          hs.application.open(bundleID)
-          hs.timer.doAfter(1, action)
-        else
-          action()
-        end
+        safeGlobalKeyStroke(mods, key)
       end
     },
     ["closeWindow"] = specialCommonHotkeyConfigs["closeWindow"],
@@ -2618,16 +2593,7 @@ appHotKeyCallbacks = {
         local key = string.match(spec[4], "keyCode = (%d+);")
         mods, key = parsePlistKeyBinding(mods, key)
         if mods == nil or key == nil then return end
-        local action = function()
-          safeGlobalKeyStroke(mods, key)
-        end
-        local bundleID = "cn.better365.iShotPro"
-        if findApplication(bundleID) == nil then
-          hs.application.open(bundleID)
-          hs.timer.doAfter(1, action)
-        else
-          action()
-        end
+        safeGlobalKeyStroke(mods, key)
       end
     }
   },
@@ -2771,7 +2737,25 @@ local function registerRunningAppHotKeys(bid, appObject)
         -- bindable
         and (cfg.bindCondition == nil or ((appObject ~= nil and cfg.bindCondition(appObject))
             or (appObject == nil and keyBinding.persist == true and cfg.bindCondition()))) then
-      local fn = hs.fnutils.partial(cfg.fn, appObject)
+      local fn
+      if keyBinding.persist == true then
+        fn = function()
+          local newAppObject = findApplication(bid)
+          if newAppObject then
+            cfg.fn(newAppObject)
+          else
+            newAppObject = hs.application.open(bid)
+            hs.timer.doAfter(1, function()
+              if newAppObject then
+                local cb = cfg.fnOnLaunch or cfg.fn
+                cb(newAppObject)
+              end
+            end)
+          end
+        end
+      else
+        fn = hs.fnutils.partial(cfg.fn, appObject)
+      end
       local repeatedFn = cfg.repeatable and fn or nil
       local msg
       if type(cfg.message) == 'string' then
