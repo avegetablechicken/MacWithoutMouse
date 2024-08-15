@@ -1755,7 +1755,7 @@ appHotKeyCallbacks = {
     ["closeWindow"] = {
       message = "Close Window",
       windowFilter = {},
-      notActivateApp = true,
+      background = true,
       fn = function(winUIObj)
         leftClickAndRestore({ x = winUIObj.AXPosition.x + winUIObj.AXSize.w/2,
                               y = winUIObj.AXPosition.y })
@@ -1903,7 +1903,7 @@ appHotKeyCallbacks = {
       windowFilter = {
         allowTitles = { bartenderBarTitle }
       },
-      notActivateApp = true,
+      background = true,
       fn = clickBartenderBarItem(1)
     },
     ["rightClick1stBartenderBarItem"] = {
@@ -1911,7 +1911,7 @@ appHotKeyCallbacks = {
       windowFilter = {
         allowTitles = { bartenderBarTitle }
       },
-      notActivateApp = true,
+      background = true,
       fn = clickBartenderBarItem(1, true)
     },
     ["click2ndBartenderBarItem"] = {
@@ -1919,7 +1919,7 @@ appHotKeyCallbacks = {
       windowFilter = {
         allowTitles = { bartenderBarTitle }
       },
-      notActivateApp = true,
+      background = true,
       fn = clickBartenderBarItem(2)
     },
     ["rightClick2ndBartenderBarItem"] = {
@@ -1927,7 +1927,7 @@ appHotKeyCallbacks = {
       windowFilter = {
         allowTitles = { bartenderBarTitle }
       },
-      notActivateApp = true,
+      background = true,
       fn = clickBartenderBarItem(2, true)
     },
     ["click3rdBartenderBarItem"] = {
@@ -1935,7 +1935,7 @@ appHotKeyCallbacks = {
       windowFilter = {
         allowTitles = { bartenderBarTitle }
       },
-      notActivateApp = true,
+      background = true,
       fn = clickBartenderBarItem(3)
     },
     ["rightClick3rdBartenderBarItem"] = {
@@ -1943,7 +1943,7 @@ appHotKeyCallbacks = {
       windowFilter = {
         allowTitles = { bartenderBarTitle }
       },
-      notActivateApp = true,
+      background = true,
       fn = clickBartenderBarItem(3, true)
     },
     ["click4thBartenderBarItem"] = {
@@ -1951,7 +1951,7 @@ appHotKeyCallbacks = {
       windowFilter = {
         allowTitles = { bartenderBarTitle }
       },
-      notActivateApp = true,
+      background = true,
       fn = clickBartenderBarItem(4)
     },
     ["rightClick4thBartenderBarItem"] = {
@@ -1959,7 +1959,7 @@ appHotKeyCallbacks = {
       windowFilter = {
         allowTitles = { bartenderBarTitle }
       },
-      notActivateApp = true,
+      background = true,
       fn = clickBartenderBarItem(4, true)
     },
     ["click5thBartenderBarItem"] = {
@@ -1967,7 +1967,7 @@ appHotKeyCallbacks = {
       windowFilter = {
         allowTitles = { bartenderBarTitle }
       },
-      notActivateApp = true,
+      background = true,
       fn = clickBartenderBarItem(5)
     },
     ["rightClick5thBartenderBarItem"] = {
@@ -1975,7 +1975,7 @@ appHotKeyCallbacks = {
       windowFilter = {
         allowTitles = { bartenderBarTitle }
       },
-      notActivateApp = true,
+      background = true,
       fn = clickBartenderBarItem(5, true)
     },
     ["click6thBartenderBarItem"] = {
@@ -1983,7 +1983,7 @@ appHotKeyCallbacks = {
       windowFilter = {
         allowTitles = { bartenderBarTitle }
       },
-      notActivateApp = true,
+      background = true,
       fn = clickBartenderBarItem(6)
     },
     ["rightClick6thBartenderBarItem"] = {
@@ -1991,7 +1991,7 @@ appHotKeyCallbacks = {
       windowFilter = {
         allowTitles = { bartenderBarTitle }
       },
-      notActivateApp = true,
+      background = true,
       fn = clickBartenderBarItem(6, true)
     },
     ["click7thBartenderBarItem"] = {
@@ -1999,7 +1999,7 @@ appHotKeyCallbacks = {
       windowFilter = {
         allowTitles = { bartenderBarTitle }
       },
-      notActivateApp = true,
+      background = true,
       fn = clickBartenderBarItem(7)
     },
     ["rightClick7thBartenderBarItem"] = {
@@ -2007,7 +2007,7 @@ appHotKeyCallbacks = {
       windowFilter = {
         allowTitles = { bartenderBarTitle }
       },
-      notActivateApp = true,
+      background = true,
       fn = clickBartenderBarItem(7, true)
     },
     ["click8thBartenderBarItem"] = {
@@ -2015,7 +2015,7 @@ appHotKeyCallbacks = {
       windowFilter = {
         allowTitles = { bartenderBarTitle }
       },
-      notActivateApp = true,
+      background = true,
       fn = clickBartenderBarItem(8)
     },
     ["rightClick8thBartenderBarItem"] = {
@@ -2023,7 +2023,7 @@ appHotKeyCallbacks = {
       windowFilter = {
         allowTitles = { bartenderBarTitle }
       },
-      notActivateApp = true,
+      background = true,
       fn = clickBartenderBarItem(8, true)
     },
     ["click9thBartenderBarItem"] = {
@@ -2031,7 +2031,7 @@ appHotKeyCallbacks = {
       windowFilter = {
         allowTitles = { bartenderBarTitle }
       },
-      notActivateApp = true,
+      background = true,
       fn = clickBartenderBarItem(9)
     },
     ["rightClick9thBartenderBarItem"] = {
@@ -2039,7 +2039,7 @@ appHotKeyCallbacks = {
       windowFilter = {
         allowTitles = { bartenderBarTitle }
       },
-      notActivateApp = true,
+      background = true,
       fn = clickBartenderBarItem(9, true)
     },
     ["click10thBartenderBarItem"] = {
@@ -2047,7 +2047,7 @@ appHotKeyCallbacks = {
       windowFilter = {
         allowTitles = { bartenderBarTitle }
       },
-      notActivateApp = true,
+      background = true,
       fn = clickBartenderBarItem(10)
     },
     ["rightClick10thBartenderBarItem"] = {
@@ -2055,7 +2055,7 @@ appHotKeyCallbacks = {
       windowFilter = {
         allowTitles = { bartenderBarTitle }
       },
-      notActivateApp = true,
+      background = true,
       fn = clickBartenderBarItem(10, true)
     },
     ["searchMenuBar"] = {
@@ -3081,7 +3081,7 @@ local function registerInWinHotKeys(appObject)
     -- prefer properties specified in configuration file than in code
     local keyBinding = keyBindings[hkID] or { mods = cfg.mods, key = cfg.key }
     local isForWindow = keyBinding.windowFilter ~= nil or cfg.windowFilter ~= nil
-    local notActivateApp = cfg.notActivateApp
+    local isBackground = cfg.background
     local windowFilter = keyBinding.windowFilter or cfg.windowFilter
     -- window filter specified in code can be in function format
     for k, v in pairs(windowFilter or {}) do
@@ -3094,7 +3094,7 @@ local function registerInWinHotKeys(appObject)
         local bindable = function()
           return cfg.bindCondition == nil or cfg.bindCondition(appObject)
         end
-        if isForWindow and not notActivateApp and bindable() then  -- only consider windows of active app
+        if isForWindow and not isBackground and bindable() then  -- only consider windows of active app
           local msg = type(cfg.message) == 'string' and cfg.message or cfg.message(appObject)
           if msg ~= nil then
             local repeatedFn = cfg.repeatable ~= false and cfg.fn or nil
@@ -3111,7 +3111,7 @@ local function registerInWinHotKeys(appObject)
           local bindable = function()
             return spec.bindCondition == nil or spec.bindCondition(appObject)
           end
-          if not notActivateApp and bindable() then
+          if not isBackground and bindable() then
             local msg = type(spec.message) == 'string' and spec.message or spec.message(appObject)
             if msg ~= nil then
               local repeatedFn = spec.repeatable ~= false and spec.fn or nil
@@ -3226,12 +3226,13 @@ local function inWinOfUnactivatedAppWatcherEnableCallback(bid, filter, winObj, a
     local appObject = findApplication(bid)
     if type(hkID) ~= 'number' then  -- usual situation
       local filterCfg = get(KeybindingConfigs.hotkeys[bid], hkID) or spec
-      local notActivateApp = filterCfg.notActivateApp or spec.notActivateApp
+      local isBackground = filterCfg.background or spec.background
       local windowFilter = filterCfg.windowFilter or spec.windowFilter
+      local isForWindow = windowFilter ~= nil
       local bindable = function()
         return spec.bindCondition == nil or spec.bindCondition(appObject)
       end
-      if notActivateApp and bindable() and sameFilter(windowFilter, filter) then
+      if isForWindow and isBackground and bindable() and sameFilter(windowFilter, filter) then
         local msg = type(spec.message) == 'string' and spec.message or spec.message(appObject)
         if msg ~= nil then
           local keyBinding = get(KeybindingConfigs.hotkeys[bid], hkID) or spec
@@ -3239,7 +3240,7 @@ local function inWinOfUnactivatedAppWatcherEnableCallback(bid, filter, winObj, a
           local hotkey = bindHotkeySpec(keyBinding, msg, fn, nil,
                                         spec.repeatable and fn or nil)
           hotkey.kind = HK.IN_WIN
-          hotkey.notActivateApp = notActivateApp
+          hotkey.background = isBackground
           table.insert(inWinOfUnactivatedAppHotKeys[bid], hotkey)
         end
       end
@@ -3254,7 +3255,7 @@ local function inWinOfUnactivatedAppWatcherEnableCallback(bid, filter, winObj, a
               local hotkey = AppBindSpec(findApplication(bid), spec, msg,
                                          fn, nil, spec.repeatable and fn or nil)
               hotkey.kind = HK.IN_WIN
-              hotkey.notActivateApp = cfg.notActivateApp
+              hotkey.background = cfg.background
               table.insert(inWinOfUnactivatedAppHotKeys[bid], hotkey)
             end
           end
@@ -3336,11 +3337,11 @@ local function registerWinFiltersForDaemonApp(appObject, appConfig)
       windowFilter = cfg[1].filter
     end
     local isForWindow = windowFilter ~= nil
-    local notActivateApp = keybinding.notActivateApp or cfg.notActivateApp
+    local isBackground = keybinding.background or cfg.background
     local bindable = function()
       return cfg.bindCondition == nil or cfg.bindCondition(appObject)
     end
-    if isForWindow and notActivateApp and bindable() then
+    if isForWindow and isBackground and bindable() then
       for k, v in pairs(windowFilter) do
         -- window filter specified in code can be in function format
         if type(v) == 'function' then
@@ -3476,8 +3477,8 @@ for bid, appConfig in pairs(appHotKeyCallbacks) do
     for hkID, cfg in pairs(appConfig) do
       local keyBinding = keyBindings[hkID] or {}
       local isForWindow = keyBinding.windowFilter ~= nil or cfg.windowFilter ~= nil
-      local notActivateApp = keyBinding.notActivateApp or cfg.notActivateApp
-      if type(cfg) ~= 'number' and isForWindow and notActivateApp then
+      local isBackground = keyBinding.background or cfg.background
+      if type(cfg) ~= 'number' and isForWindow and isBackground then
         execOnLaunch(bid, function(appObject)
           registerWinFiltersForDaemonApp(appObject, appConfig)
         end)

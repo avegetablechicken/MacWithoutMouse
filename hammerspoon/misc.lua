@@ -412,7 +412,7 @@ local function testValid(entry)
         if hotkeyInfo then
           valid, actualMsg = getValidMessage(hotkeyInfo)
         end
-      elseif not entry.notActivateApp then
+      elseif not entry.background then
         valid = false
       end
     end
@@ -439,7 +439,7 @@ local function processHotkeys(validOnly, showHS, showKara, showApp, evFlags, rel
     table.insert(allKeys, { idx = modal.idx, msg = modal.msg,
                             condition = modal.condition, enabled = modal.enabled,
                             kind = modal.kind, subkind = modal.subkind,
-                            notActivateApp = modal.notActivateApp,
+                            background = modal.background,
                             suspendable = modal.suspendable, source = 0 })
   end
 
@@ -449,7 +449,7 @@ local function processHotkeys(validOnly, showHS, showKara, showApp, evFlags, rel
         table.insert(allKeys, { idx = hotkey.idx, msg = hotkey.msg,
                                 condition = hotkey.condition,
                                 kind = hotkey.kind, subkind = hotkey.subkind,
-                                notActivateApp = modal.notActivateApp,
+                                background = modal.background,
                                 suspendable = hotkey.suspendable, source = 0 })
       end
     end
@@ -466,7 +466,7 @@ local function processHotkeys(validOnly, showHS, showKara, showApp, evFlags, rel
       local newEntry = { idx = entry.idx, msg = entry.msg,
                          condition = entry.condition,
                          kind = entry.kind, subkind = entry.subkind,
-                         notActivateApp = entry.notActivateApp,
+                         background = entry.background,
                          suspendable = entry.suspendable, source = 0 }
       if entry.kind ~= HK.APP_MENU then
         table.insert(allKeys, newEntry)
