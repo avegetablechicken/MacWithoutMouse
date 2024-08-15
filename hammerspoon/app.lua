@@ -686,6 +686,7 @@ local function noSelectedMenuBarItem(appObject)
   return true
 end
 
+-- if a menu is extended, hotkeys with no modifiers are disabled
 local function noSelectedMenuBarItemFunc(fn)
   return function(appObject)
     local result = noSelectedMenuBarItem(appObject)
@@ -2918,7 +2919,7 @@ local function registerInAppHotKeys(appName, eventType, appObject)
         local fn = cfg.fn
         local cond = cfg.condition
         if cond ~= nil then
-          -- if a menu is extended, hotkeys are disabled
+          -- if a menu is extended, hotkeys with no modifiers are disabled
           if keyBinding.mods == nil or keyBinding.mods == "" or #keyBinding.mods == 0 then
             cond = noSelectedMenuBarItemFunc(cond)
           end
