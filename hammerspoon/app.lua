@@ -1767,44 +1767,37 @@ appHotKeyCallbacks = {
     ["toggleBarrierConnect"] = {
       message = "Toggle Barrier Connect",
       fn = function(appObject)
-        local script = [[
-          tell application "System Events"
-            set popupMenu to menu 1 of menu bar item 1 of last menu bar of ¬
-                (first application process whose bundle identifier is "]] .. appObject:bundleID() .. [[")
-            if value of attribute "AXEnabled" of menu item "Start" of popupMenu is true then
-              click menu item "Start" of popupMenu
-              return 0
-            else
-              click menu item "Stop" of popupMenu
-              return 1
-            end if
-          end tell
-        ]]
-        local ok, ret = hs.osascript.applescript(script)
-        if ok then
-          if ret == 0 then
-            hs.alert("Barrier started")
-          else
-            hs.alert("Barrier stopped")
-          end
+        local appUIObj = hs.axuielement.applicationElement(appObject)
+        local menu = getAXChildren(appUIObj, "AXMenuBar", 2, "AXMenuBarItem", 1, "AXMenu", 1)
+        if menu == nil then
+          clickRightMenuBarItem(appObject:bundleID())
+          menu = getAXChildren(appUIObj, "AXMenuBar", 2, "AXMenuBarItem", 1, "AXMenu", 1)
+        end
+        local start = getAXChildren(menu, "AXMenuItem", "Start")
+        assert(start)
+        if start.AXEnabled then
+          start:performAction("AXPress")
+          hs.alert("Barrier started")
         else
-          hs.alert("Error occurred")
+          local stop = getAXChildren(menu, "AXMenuItem", "Stop")
+          assert(stop)
+          stop:performAction("AXPress")
+          hs.alert("Barrier stopped")
         end
       end,
       fnOnLaunch = function(appObject)
-        local ok = hs.osascript.applescript([[
-          tell application "System Events"
-            tell ]] .. aWinFor(appObject) .. [[
-              click button "Start"
-              delay 0.5
-              click button 4
-            end tell
-          end tell
-        ]])
-        if ok then
-          hs.alert("Barrier started")
-        else
+        if appObject:focusedWindow() == nil then
           hs.alert("Error occurred")
+        else
+          local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
+          local start = getAXChildren(winUIObj, "AXButton", "Start")
+          assert(start)
+          start:performAction("AXPress")
+          hs.alert("Barrier started")
+          hs.timer.usleep(0.5 * 1000000)
+          local close = getAXChildren(winUIObj, "AXButton", 4)
+          assert(close)
+          close:performAction("AXPress")
         end
       end
     },
