@@ -1385,6 +1385,34 @@
         "key": "B",
         "background": true,
         "persist": true
+      },
+      "reload": {
+        "mods": "option",
+        "key": "R",
+        "windowFilter": {
+          "allowTitles": "Barrier"
+        }
+      },
+      "startStop": {
+        "mods": "option",
+        "key": "S",
+        "windowFilter": {
+          "allowTitles": "Barrier"
+        }
+      },
+      "configureServer": {
+        "mods": "option",
+        "key": "C",
+        "windowFilter": {
+          "allowTitles": "Barrier"
+        }
+      },
+      "browse": {
+        "mods": "command",
+        "key": "O",
+        "windowFilter": {
+          "allowTitles": "Barrier"
+        }
       }
     },
     "pl.maketheweb.TopNotch": {

@@ -1801,6 +1801,50 @@ appHotKeyCallbacks = {
         end
       end
     },
+    ["reload"] = {
+      message = "Reload",
+      fn = function(winObj)
+        local winUIObj = hs.axuielement.windowElement(winObj)
+        local reload = getAXChildren(winUIObj, "AXButton", "Reload")
+        if reload ~= nil and #reload:actionNames() > 0 then
+          reload:performAction("AXPress")
+        end
+      end
+    },
+    ["startStop"] = {
+      message = "Start / Stop",
+      fn = function(winObj)
+        local winUIObj = hs.axuielement.windowElement(winObj)
+        local start = getAXChildren(winUIObj, "AXButton", "Start")
+        if start ~= nil and #start:actionNames() > 0 then
+          start:performAction("AXPress")
+        end
+        local stop = getAXChildren(winUIObj, "AXButton", "Stop")
+        if stop ~= nil and #stop:actionNames() > 0 then
+          stop:performAction("AXPress")
+        end
+      end
+    },
+    ["configureServer"] = {
+      message = "Configure Server...",
+      fn = function(winObj)
+        local winUIObj = hs.axuielement.windowElement(winObj)
+        local configure = getAXChildren(winUIObj, "AXCheckBox", 1, "AXButton", "Configure Server...")
+        if configure ~= nil and #configure:actionNames() > 0 then
+          configure:performAction("AXPress")
+        end
+      end
+    },
+    ["browse"] = {
+      message = "Browse",
+      fn = function(winObj)
+        local winUIObj = hs.axuielement.windowElement(winObj)
+        local browse = getAXChildren(winUIObj, "AXCheckBox", 1, "AXButton", "Browse...")
+        if browse ~= nil and #browse:actionNames() > 0 then
+          browse:performAction("AXPress")
+        end
+      end
+    },
     ["closeWindow"] = specialCommonHotkeyConfigs["closeWindow"]
   },
 
