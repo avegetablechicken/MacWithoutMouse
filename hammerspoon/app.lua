@@ -3184,35 +3184,6 @@ local function registerInWinHotKeys(appObject)
       end
     else
       inWinHotKeys[bid][hkID]:enable()
-      if type(hkID) ~= 'number' then  -- usual situation
-        -- multiple window-specified hotkeys may share a common keybinding
-        -- append current hotkey to the linked list
-        local hkIdx = hotkeyIdx(keyBinding.mods, keyBinding.key)
-        local prevHotkeyInfo = InWinHotkeyInfoChain[bid][hkIdx]
-        local msg = type(cfg.message) == 'string' and cfg.message or cfg.message(appObject)
-        if msg ~= nil then
-          InWinHotkeyInfoChain[bid][hkIdx] = {
-            appName = appObject:name(),
-            filter = windowFilter,
-            message = msg,
-            previous = prevHotkeyInfo
-          }
-        end
-      else  -- now only for `iCopy`
-        for _, spec in ipairs(cfg.hotkeys) do
-          local hkIdx = hotkeyIdx(spec.mods, spec.key)
-          local prevHotkeyInfo = InWinHotkeyInfoChain[bid][hkIdx]
-          local msg = type(spec.message) == 'string' and spec.message or spec.message(appObject)
-          if msg ~= nil then
-            InWinHotkeyInfoChain[bid][hkIdx] = {
-              appName = appObject:name(),
-              filter = cfg.filter,
-              message = msg,
-              previous = prevHotkeyInfo
-            }
-          end
-        end
-      end
     end
   end
 end
@@ -3220,7 +3191,10 @@ end
 local function unregisterInWinHotKeys(bid, delete)
   if appHotKeyCallbacks[bid] == nil or inWinHotKeys[bid] == nil then return end
 
-  if delete then
+  local hasDeleteOnDisable = hs.fnutils.some(inWinHotKeys[bid], function(_, hotkey)
+    return hotkey.deleteOnDisable
+  end)
+  if delete or hasDeleteOnDisable then
     for _, hotkey in pairs(inWinHotKeys[bid]) do
       hotkey:delete()
     end
@@ -3228,20 +3202,8 @@ local function unregisterInWinHotKeys(bid, delete)
     inWinCallbackChain[bid] = nil
     InWinHotkeyInfoChain[bid] = nil
   else
-    local allDeleted = true
-    for hkID, hotkey in pairs(inWinHotKeys[bid]) do
+    for _, hotkey in pairs(inWinHotKeys[bid]) do
       hotkey:disable()
-      if hotkey.deleteOnDisable then
-        hotkey:delete()
-        inWinHotKeys[bid][hkID] = nil
-      else
-        allDeleted = false
-      end
-    end
-    if allDeleted then
-      inWinHotKeys[bid] = nil
-      inWinCallbackChain[bid] = nil
-      InWinHotkeyInfoChain[bid] = nil
     end
   end
 end
