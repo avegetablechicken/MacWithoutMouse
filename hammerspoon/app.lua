@@ -742,12 +742,28 @@ end
 local function hotkeyIdx(mods, key)
   local idx = string.upper(key)
   if type(mods) == 'string' then
-    mods = {mods}
+    if mods == "shift" then idx = "⇧" .. idx
+    elseif mods == "option" or mods == "alt" then idx = "⌥" .. idx
+    elseif mods == "control" or mods == "ctrl" then idx = "⌃" .. idx
+    elseif mods == "command" or mods == "cmd" then idx = "⌘" .. idx
+    else
+      if string.find(mods, "⇧") then idx = "⇧" .. idx end
+      if string.find(mods, "⌥") then idx = "⌥" .. idx end
+      if string.find(mods, "⌃") then idx = "⌃" .. idx end
+      if string.find(mods, "⌘") then idx = "⌘" .. idx end
+    end
+  else
+    if hs.fnutils.contains(mods, "shift") then idx = "⇧" .. idx end
+    if hs.fnutils.contains(mods, "option") or hs.fnutils.contains(mods, "alt") then
+      idx = "⌥" .. idx
+    end
+    if hs.fnutils.contains(mods, "control") or hs.fnutils.contains(mods, "ctrl") then
+      idx = "⌃" .. idx
+    end
+    if hs.fnutils.contains(mods, "command") or hs.fnutils.contains(mods, "cmd") then
+      idx = "⌘" .. idx
+    end
   end
-  if hs.fnutils.contains(mods, "shift") then idx = "⇧" .. idx end
-  if hs.fnutils.contains(mods, "option") then idx = "⌥" .. idx end
-  if hs.fnutils.contains(mods, "control") then idx = "⌃" .. idx end
-  if hs.fnutils.contains(mods, "command") then idx = "⌘" .. idx end
   return idx
 end
 
