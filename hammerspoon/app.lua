@@ -3061,8 +3061,8 @@ local function inWinHotKeysWrapper(appObject, filter, mods, key, message, fn)
   else
     actualFilter = filter
   end
-  local wrapper = function(winObj)
-    if winObj == nil then winObj = appObject:focusedWindow() end
+  local wrapper = function()
+    local winObj = appObject:focusedWindow()
     if winObj == nil then return end
     local windowFilter = hs.window.filter.new(false):setAppFilter(
         appObject:name(), actualFilter)
@@ -3071,7 +3071,7 @@ local function inWinHotKeysWrapper(appObject, filter, mods, key, message, fn)
         or (type(filter) == 'table' and filter.allowPopover and winObj:role() == "AXPopover") then
       fn(winObj)
     elseif prevCallback ~= nil then
-      prevCallback(winObj)
+      prevCallback()
     else
       selectMenuItemOrKeyStroke(winObj:application(), mods, key)
     end
