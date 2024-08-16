@@ -234,7 +234,7 @@ local function loadKarabinerKeyBindings(filePath)
       if hs.fnutils.contains(mods, mod) then modsRepr = modsRepr .. modifierSymbolMap[mod] end
     end
     local key = string.upper(item.key) == HYPER and 'hyper' or item.key
-    local key = modifierSymbolMap[key] or string.upper(key)
+    key = modifierSymbolMap[key] or string.upper(key)
     local idx = modsRepr .. key
     local msg = idx .. ": " .. item.message
     local kind = HK[item.kind]
