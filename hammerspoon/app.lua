@@ -1522,6 +1522,9 @@ appHotKeyCallbacks = {
     },
     ["discardChanges"] = {
       message = "Discard changes",
+      windowFilter = {
+        allowTitles = "^Save before closing$"
+      },
       fn = function(winObj)
         local winUIObj = hs.axuielement.windowElement(winObj)
         local button = getAXChildren(winUIObj, "AXUnknown", 1, nil, 1, 'AXButton', 1)
@@ -1537,6 +1540,9 @@ appHotKeyCallbacks = {
   {
     ["render"] = {
       message = "Render",
+      windowFilter = {
+        allowTitles = "^KLatexFormula$"
+      },
       fn = function(winObj)
         local winUIObj = hs.axuielement.windowElement(winObj)
         local button = getAXChildren(winUIObj, "AXSplitGroup", 1, "AXButton", 2)
@@ -1808,6 +1814,9 @@ appHotKeyCallbacks = {
     },
     ["reload"] = {
       message = "Reload",
+      windowFilter = {
+        allowTitles = "Barrier"
+      },
       fn = function(winObj)
         local winUIObj = hs.axuielement.windowElement(winObj)
         local reload = getAXChildren(winUIObj, "AXButton", "Reload")
@@ -1818,6 +1827,9 @@ appHotKeyCallbacks = {
     },
     ["startStop"] = {
       message = "Start / Stop",
+      windowFilter = {
+        allowTitles = "Barrier"
+      },
       fn = function(winObj)
         local winUIObj = hs.axuielement.windowElement(winObj)
         local start = getAXChildren(winUIObj, "AXButton", "Start")
@@ -1832,6 +1844,9 @@ appHotKeyCallbacks = {
     },
     ["configureServer"] = {
       message = "Configure Server...",
+      windowFilter = {
+        allowTitles = "Barrier"
+      },
       fn = function(winObj)
         local winUIObj = hs.axuielement.windowElement(winObj)
         local configure = getAXChildren(winUIObj, "AXCheckBox", 1, "AXButton", "Configure Server...")
@@ -1842,6 +1857,9 @@ appHotKeyCallbacks = {
     },
     ["browse"] = {
       message = "Browse",
+      windowFilter = {
+        allowTitles = "Barrier"
+      },
       fn = function(winObj)
         local winUIObj = hs.axuielement.windowElement(winObj)
         local browse = getAXChildren(winUIObj, "AXCheckBox", 1, "AXButton", "Browse...")
@@ -1857,6 +1875,9 @@ appHotKeyCallbacks = {
   {
     ["allowConnection"] = {
       message = "Allow Connection",
+      windowFilter = {
+        allowTitles = "^LuLu Alert$"
+      },
       fn = function(winObj)
         local winUIObj = hs.axuielement.windowElement(winObj)
         local button = getAXChildren(winUIObj, "AXButton", "Allow")
@@ -1867,6 +1888,9 @@ appHotKeyCallbacks = {
     },
     ["blockConnection"] = {
       message = "Block Connection",
+      windowFilter = {
+        allowTitles = "^LuLu Alert$"
+      },
       fn = function(winObj)
         local winUIObj = hs.axuielement.windowElement(winObj)
         local button = getAXChildren(winUIObj, "AXButton", "Block")
@@ -1881,6 +1905,9 @@ appHotKeyCallbacks = {
   {
     ["saveInSheet"] = {
       message = "Save",
+      windowFilter = {
+        allowSheet = true
+      },
       fn = function(winObj)
         local winUIObj = hs.axuielement.windowElement(winObj)
         local button = getAXChildren(winUIObj, "AXButton", "Save")

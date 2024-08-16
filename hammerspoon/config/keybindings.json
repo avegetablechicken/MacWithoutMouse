@@ -1168,10 +1168,7 @@
       },
       "discardChanges": {
         "mods": "",
-        "key": "N",
-        "windowFilter": {
-          "allowTitles": "^Save before closing$"
-        }
+        "key": "N"
       }
     },
     "com.apple.iMovieApp": {
@@ -1217,26 +1214,17 @@
     "com.objective-see.lulu.app": {
       "allowConnection": {
         "mods": "option",
-        "key": "A",
-        "windowFilter": {
-          "allowTitles": "^LuLu Alert$"
-        }
+        "key": "A"
       },
       "blockConnection": {
         "mods": "option",
-        "key": "B",
-        "windowFilter": {
-          "allowTitles": "^LuLu Alert$"
-        }
+        "key": "B"
       }
     },
     "com.runningwithcrayons.Alfred-Preferences": {
       "saveInSheet": {
         "mods": "command",
-        "key": "Return",
-        "windowFilter": {
-          "allowSheet": true
-        }
+        "key": "Return"
       }
     },
     "com.surteesstudios.Bartender": {
@@ -1368,10 +1356,7 @@
     "org.klatexformula.klatexformula": {
       "render": {
         "mods": "command",
-        "key": "return",
-        "windowFilter": {
-          "allowTitles": "^KLatexFormula$"
-        }
+        "key": "return"
       },
       "renderClipboardInKlatexformula": {
         "mods": "${hyper.daemon}",
@@ -1388,31 +1373,19 @@
       },
       "reload": {
         "mods": "option",
-        "key": "R",
-        "windowFilter": {
-          "allowTitles": "Barrier"
-        }
+        "key": "R"
       },
       "startStop": {
         "mods": "option",
-        "key": "S",
-        "windowFilter": {
-          "allowTitles": "Barrier"
-        }
+        "key": "S"
       },
       "configureServer": {
         "mods": "option",
-        "key": "C",
-        "windowFilter": {
-          "allowTitles": "Barrier"
-        }
+        "key": "C"
       },
       "browse": {
         "mods": "command",
-        "key": "O",
-        "windowFilter": {
-          "allowTitles": "Barrier"
-        }
+        "key": "O"
       }
     },
     "pl.maketheweb.TopNotch": {
