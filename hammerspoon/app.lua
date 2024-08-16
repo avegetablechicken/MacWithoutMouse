@@ -2795,7 +2795,8 @@ local function registerRunningAppHotKeys(bid, appObject)
       else
         fn = hs.fnutils.partial(cfg.fn, appObject)
       end
-      local repeatedFn = cfg.repeatable and fn or nil
+      local repeatable = keyBinding.repeatable or cfg.repeatable
+      local repeatedFn = repeatable and fn or nil
       local msg
       if type(cfg.message) == 'string' then
         msg = cfg.message
@@ -2916,6 +2917,7 @@ local function registerInAppHotKeys(appName, eventType, appObject)
         return cfg.bindCondition == nil or cfg.bindCondition(appObject)
       end
       if not isBackground and not isForWindow and bindable() then
+        local repeatable = keyBinding.repeatable or cfg.repeatable
         local fn = cfg.fn
         local cond = cfg.condition
         if cond ~= nil then
@@ -2945,7 +2947,7 @@ local function registerInAppHotKeys(appName, eventType, appObject)
           -- keeping pressing a hotkey may lead to unexpected repeated triggering of callback function
           -- a workaround is to check if callback function is executing, if so, do nothing
           -- note that this workaround may not work when the callback lasts really too long
-          if cfg.repeatable ~= false then
+          if repeatable ~= false then
             local oldFn = fn
             fn = function(appObject, appName, eventType)
               if callBackExecuting then return end
@@ -2961,7 +2963,7 @@ local function registerInAppHotKeys(appName, eventType, appObject)
         local repeatedFn
         -- hotkey with condition function is repeatable by defaults
         -- because when its condition is not satisfied it will be re-stroked
-        if cfg.repeatable or (cfg.repeatable ~= false and cfg.condition ~= nil) then
+        if repeatable or (repeatable ~= false and cfg.condition ~= nil) then
           repeatedFn = fn
         end
         local msg = type(cfg.message) == 'string' and cfg.message or cfg.message(appObject)
@@ -3095,9 +3097,10 @@ local function registerInWinHotKeys(appObject)
           return cfg.bindCondition == nil or cfg.bindCondition(appObject)
         end
         if isForWindow and not isBackground and bindable() then  -- only consider windows of active app
+          local repeatable = keyBinding.repeatable or cfg.repeatable
           local msg = type(cfg.message) == 'string' and cfg.message or cfg.message(appObject)
           if msg ~= nil then
-            local repeatedFn = cfg.repeatable ~= false and cfg.fn or nil
+            local repeatedFn = repeatable ~= false and cfg.fn or nil
             local hotkey = WinBindSpec(appObject, windowFilter,
                                        keyBinding, msg, cfg.fn, nil, repeatedFn)
             hotkey.kind = HK.IN_APPWIN
@@ -3236,9 +3239,10 @@ local function inWinOfUnactivatedAppWatcherEnableCallback(bid, filter, winObj, a
         local msg = type(spec.message) == 'string' and spec.message or spec.message(appObject)
         if msg ~= nil then
           local keyBinding = get(KeybindingConfigs.hotkeys[bid], hkID) or spec
+          local repeatable = keyBinding.repeatable or spec.repeatable
           local fn = hs.fnutils.partial(spec.fn, winObj)
           local hotkey = bindHotkeySpec(keyBinding, msg, fn, nil,
-                                        spec.repeatable and fn or nil)
+                                        repeatable and fn or nil)
           hotkey.kind = HK.IN_WIN
           hotkey.background = isBackground
           table.insert(inWinOfUnactivatedAppHotKeys[bid], hotkey)
