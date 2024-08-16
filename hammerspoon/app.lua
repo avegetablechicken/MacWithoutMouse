@@ -3040,9 +3040,9 @@ end
 -- each window filter will be tested until one matched target window
 local inWinCallbackChain = {}
 InWinHotkeyInfoChain = {}
-local function inWinHotKeysWrapper(appObject, filter, mods, key, message, fn)
+local function inWinHotKeysWrapper(appObject, filter, mods, key, mode, message, fn)
   if fn == nil then
-    fn = message message = key key = mods.key mods = mods.mods
+    fn = message message = mode mode = key key = mods.key mods = mods.mods
   end
   local bid = appObject:bundleID()
   if inWinCallbackChain[bid] == nil then inWinCallbackChain[bid] = {} end
@@ -3071,12 +3071,20 @@ local function inWinHotKeysWrapper(appObject, filter, mods, key, message, fn)
         or (type(filter) == 'table' and filter.allowPopover and winObj:role() == "AXPopover") then
       fn(winObj)
     elseif prevCallback ~= nil then
-      prevCallback()
+      prevCallback(mode)
     else
-      selectMenuItemOrKeyStroke(winObj:application(), mods, key)
+      selectMenuItemOrKeyStroke(appObject, mods, key)
     end
   end
-  inWinCallbackChain[bid][hotkeyIdx(mods, key)] = wrapper
+  inWinCallbackChain[bid][hotkeyIdx(mods, key)] = function(m)
+    if mode == m then
+      wrapper()
+    elseif prevCallback ~= nil then
+      prevCallback(m)
+    else
+      selectMenuItemOrKeyStroke(appObject, mods, key)
+    end
+  end
   InWinHotkeyInfoChain[bid][hotkeyIdx(mods, key)] = {
     appName = appObject:name(),
     filter = filter,
@@ -3087,12 +3095,12 @@ local function inWinHotKeysWrapper(appObject, filter, mods, key, message, fn)
 end
 
 function WinBind(appObject, filter, mods, key, message, pressedfn, releasedfn, repeatedfn, ...)
-  pressedfn = inWinHotKeysWrapper(appObject, filter, mods, key, message, pressedfn)
+  pressedfn = inWinHotKeysWrapper(appObject, filter, mods, key, 1, message, pressedfn)
   if releasedfn ~= nil then
-    releasedfn = inWinHotKeysWrapper(appObject, filter, mods, key, message, releasedfn)
+    releasedfn = inWinHotKeysWrapper(appObject, filter, mods, key, 2, message, releasedfn)
   end
   if repeatedfn ~= nil then
-    repeatedfn = inWinHotKeysWrapper(appObject, filter, mods, key, message, repeatedfn)
+    repeatedfn = inWinHotKeysWrapper(appObject, filter, mods, key, 3, message, repeatedfn)
   end
   return bindHotkey(mods, key, message, pressedfn, releasedfn, repeatedfn, ...)
 end
