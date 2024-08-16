@@ -2907,6 +2907,73 @@ function(winObj, appName, eventType)
   end
 end)
 
+local function wrapCondition(keyBinding, func, cond, filter, prevCallback, mode)
+  local oldCond = cond
+  if filter ~= nil then
+    local actualFilter
+    if type(filter) == 'table' then
+      for k, v in pairs(filter) do
+        if k ~= "allowSheet" and k ~= "allowPopover" then
+          if actualFilter == nil then actualFilter = {} end
+          actualFilter[k] = v
+        end
+      end
+      if actualFilter == nil then actualFilter = false end
+    else
+      actualFilter = filter
+    end
+    cond = function(winObj)
+      if winObj == nil then return false end
+      local windowFilter = hs.window.filter.new(false):setAppFilter(
+        winObj:application():name(), actualFilter)
+      if windowFilter:isWindowAllowed(winObj)
+          or (type(filter) == 'table' and filter.allowSheet and winObj:role() == "AXSheet")
+          or (type(filter) == 'table' and filter.allowPopover and winObj:role() == "AXPopover") then
+        if oldCond ~= nil then
+          local satisfied, result = oldCond(winObj)
+          if not satisfied then
+            result = COND_FAIL.WINDOW_FILTER_NOT_SATISFIED
+          end
+          return satisfied, result
+        else
+          return true
+        end
+      else
+        return false, COND_FAIL.WINDOW_FILTER_NOT_SATISFIED
+      end
+    end
+  end
+  -- if a menu is extended, hotkeys with no modifiers are disabled
+  if keyBinding.mods == nil or keyBinding.mods == "" or #keyBinding.mods == 0 then
+    cond = noSelectedMenuBarItemFunc(cond)
+  end
+  local fn = func
+  if cond ~= nil then
+    fn = function(appObject, ...)
+      local obj = filter == nil and appObject or appObject:focusedWindow()
+      local satisfied, result = cond(obj)
+      if satisfied then
+        if result ~= nil then  -- condition function can pass result to callback function
+          ---@diagnostic disable-next-line: redundant-parameter
+          func(result, obj, ...)
+        else
+          ---@diagnostic disable-next-line: redundant-parameter
+          func(obj, ...)
+        end
+      elseif result == COND_FAIL.NO_MENU_ITEM_BY_KEYBINDING
+          or result == COND_FAIL.MENU_ITEM_SELECTED then
+        hs.eventtap.keyStroke(keyBinding.mods, keyBinding.key, nil, appObject)
+      elseif result == COND_FAIL.WINDOW_FILTER_NOT_SATISFIED and prevCallback ~= nil then
+        prevCallback(mode)
+      else
+        -- most of the time, directly selecting menu item costs less time than key strokes
+        selectMenuItemOrKeyStroke(appObject, keyBinding.mods, keyBinding.key)
+      end
+    end
+  end
+  return fn, cond
+end
+
 -- send key strokes to frontmost window instead of frontmost app
 local function inAppHotKeysWrapper(appObject, mods, key, func)
   if func == nil then
@@ -2962,45 +3029,21 @@ local function registerInAppHotKeys(appName, eventType, appObject)
       end
       if not isBackground and not isForWindow and bindable() then
         local repeatable = keyBinding.repeatable ~= nil and keyBinding.repeatable or cfg.repeatable
-        local fn = cfg.fn
-        local cond = cfg.condition
-        -- if a menu is extended, hotkeys with no modifiers are disabled
-        if keyBinding.mods == nil or keyBinding.mods == "" or #keyBinding.mods == 0 then
-          cond = noSelectedMenuBarItemFunc(cond)
-        end
-        if cond ~= nil then
-          fn = function(appObject, appName, eventType)
-            local satisfied, result = cond(appObject)
-            if satisfied then
-              if result ~= nil then -- condition function can pass result to callback function
-                ---@diagnostic disable-next-line: redundant-parameter
-                cfg.fn(result, appObject, appName, eventType)
-              else
-                ---@diagnostic disable-next-line: redundant-parameter
-                cfg.fn(appObject, appName, eventType)
-              end
-            elseif result == COND_FAIL.NO_MENU_ITEM_BY_KEYBINDING
-                or result == COND_FAIL.MENU_ITEM_SELECTED then
-              hs.eventtap.keyStroke(keyBinding.mods, keyBinding.key, nil, appObject)
-            else
-              -- most of the time, directly selecting menu item costs less time than key strokes
-              selectMenuItemOrKeyStroke(appObject, keyBinding.mods, keyBinding.key)
-            end
-          end
+        local fn, cond = wrapCondition(keyBinding, cfg.fn, cfg.condition)
+        if repeatable ~= false and cfg.condition ~= nil then
           -- in current version of Hammerspoon, if a callback lasts kind of too long,
           -- keeping pressing a hotkey may lead to unexpected repeated triggering of callback function
           -- a workaround is to check if callback function is executing, if so, do nothing
           -- note that this workaround may not work when the callback lasts really too long
-          if repeatable ~= false then
-            local oldFn = fn
-            fn = function(appObject, appName, eventType)
-              if callBackExecuting then return end
-              hs.timer.doAfter(0, function()
-                callBackExecuting = true
-                oldFn(appObject, appName, eventType)
-                callBackExecuting = false
-              end)
-            end
+          local oldFn = fn
+          fn = function(...)
+            if callBackExecuting then return end
+            oldFn = hs.fnutils.partial(oldFn, ...)
+            hs.timer.doAfter(0, function()
+              callBackExecuting = true
+              oldFn()
+              callBackExecuting = false
+            end)
           end
         end
         fn = hs.fnutils.partial(fn, appObject, appName, eventType)
@@ -3053,8 +3096,8 @@ end
 -- each window filter will be tested until one matched target window
 local inWinCallbackChain = {}
 InWinHotkeyInfoChain = {}
-local function inWinHotKeysWrapper(appObject, filter, mods, key, mode, message, fn)
-  if fn == nil then
+local function inWinHotKeysWrapper(appObject, filter, cond, mods, key, mode, message, fn)
+  if mods.key ~= nil then
     fn = message message = mode mode = key key = mods.key mods = mods.mods
   end
   local bid = appObject:bundleID()
@@ -3062,36 +3105,12 @@ local function inWinHotKeysWrapper(appObject, filter, mods, key, mode, message, 
   if InWinHotkeyInfoChain[bid] == nil then InWinHotkeyInfoChain[bid] = {} end
   local prevCallback = inWinCallbackChain[bid][hotkeyIdx(mods, key)]
   local prevHotkeyInfo = InWinHotkeyInfoChain[bid][hotkeyIdx(mods, key)]
-  local actualFilter
-  if type(filter) == 'table' then
-    for k, v in pairs(filter) do
-      if k ~= "allowSheet" and k ~= "allowPopover" then
-        if actualFilter == nil then actualFilter = {} end
-        actualFilter[k] = v
-      end
-    end
-    if actualFilter == nil then actualFilter = false end
-  else
-    actualFilter = filter
-  end
-  local wrapper = function()
-    local winObj = appObject:focusedWindow()
-    if winObj == nil then return end
-    local windowFilter = hs.window.filter.new(false):setAppFilter(
-        appObject:name(), actualFilter)
-    if windowFilter:isWindowAllowed(winObj)
-        or (type(filter) == 'table' and filter.allowSheet and winObj:role() == "AXSheet")
-        or (type(filter) == 'table' and filter.allowPopover and winObj:role() == "AXPopover") then
-      fn(winObj)
-    elseif prevCallback ~= nil then
-      prevCallback(mode)
-    else
-      selectMenuItemOrKeyStroke(appObject, mods, key)
-    end
-  end
+  fn, cond = wrapCondition({ mods = mods, key = key }, fn, cond,
+                           filter, prevCallback, mode)
+  fn = hs.fnutils.partial(fn, appObject)
   inWinCallbackChain[bid][hotkeyIdx(mods, key)] = function(m)
     if mode == m then
-      wrapper()
+      fn()
     elseif prevCallback ~= nil then
       prevCallback(m)
     else
@@ -3100,23 +3119,23 @@ local function inWinHotKeysWrapper(appObject, filter, mods, key, mode, message, 
   end
   InWinHotkeyInfoChain[bid][hotkeyIdx(mods, key)] = {
     appName = appObject:name(),
-    filter = filter,
+    condition = cond,
     message = message,
     previous = prevHotkeyInfo
   }
-  return inAppHotKeysWrapper(appObject, mods, key, wrapper)
+  return inAppHotKeysWrapper(appObject, mods, key, fn)
 end
 
-function WinBind(appObject, filter, mods, key, message, pressedfn, repeatedfn, ...)
-  pressedfn = inWinHotKeysWrapper(appObject, filter, mods, key, 1, message, pressedfn)
+function WinBind(appObject, filter, cond, mods, key, message, pressedfn, repeatedfn, ...)
+  pressedfn = inWinHotKeysWrapper(appObject, filter, cond, mods, key, 1, message, pressedfn)
   if repeatedfn ~= nil then
-    repeatedfn = inWinHotKeysWrapper(appObject, filter, mods, key, 2, message, repeatedfn)
+    repeatedfn = inWinHotKeysWrapper(appObject, filter, cond, mods, key, 2, message, repeatedfn)
   end
   return bindHotkey(mods, key, message, pressedfn, nil, repeatedfn, ...)
 end
 
-function WinBindSpec(appObject, filter, spec, ...)
-  return WinBind(appObject, filter, spec.mods, spec.key, ...)
+function WinBindSpec(appObject, filter, cond, spec, ...)
+  return WinBind(appObject, filter, cond, spec.mods, spec.key, ...)
 end
 
 -- hotkeys for focused window of active app
@@ -3150,8 +3169,8 @@ local function registerInWinHotKeys(appObject)
           local msg = type(cfg.message) == 'string' and cfg.message or cfg.message(appObject)
           if msg ~= nil then
             local repeatedFn = repeatable ~= false and cfg.fn or nil
-            local hotkey = WinBindSpec(appObject, windowFilter,
-                                       keyBinding, msg, cfg.fn, nil, repeatedFn)
+            local hotkey = WinBindSpec(appObject, windowFilter, cfg.condition,
+                                       keyBinding, msg, cfg.fn, repeatedFn)
             hotkey.kind = HK.IN_APPWIN
             hotkey.deleteOnDisable = cfg.deleteOnDisable
             inWinHotKeys[bid][hkID] = hotkey
@@ -3167,7 +3186,7 @@ local function registerInWinHotKeys(appObject)
             local msg = type(spec.message) == 'string' and spec.message or spec.message(appObject)
             if msg ~= nil then
               local repeatedFn = spec.repeatable ~= false and spec.fn or nil
-              local hotkey = WinBindSpec(appObject, cfg.filter,
+              local hotkey = WinBindSpec(appObject, cfg.filter, cfg.condition,
                                          spec, msg, spec.fn, repeatedFn)
               hotkey.kind = HK.IN_APPWIN
               hotkey.deleteOnDisable = spec.deleteOnDisable
@@ -3603,7 +3622,7 @@ local function WPSCloseDialog(winUIObj)
         if button.AXTitle == btnName then
           local spec = get(KeybindingConfigs.hotkeys, bundleID, hkID) or appConfig[hkID]
           if spec ~= nil then
-            local hotkey = WinBindSpec(findApplication(bundleID), true, spec, btnName, function()
+            local hotkey = WinBindSpec(findApplication(bundleID), true, nil, spec, btnName, function()
               local action = button:actionNames()[1]
               button:performAction(action)
             end)
@@ -3700,7 +3719,7 @@ local function registerForOpenSavePanel(appObject)
         local spec = get(KeybindingConfigs.hotkeys[bundleID], hkID)
         if spec ~= nil then
           local folder = cell:childrenWithRole("AXStaticText")[1].AXValue
-          local hotkey = WinBindSpec(appObject, windowFilter, spec, header .. ' > ' .. folder, function()
+          local hotkey = WinBindSpec(appObject, windowFilter, nil, spec, header .. ' > ' .. folder, function()
             cell:performAction("AXOpen")
           end)
           hotkey.kind = HK.IN_APPWIN
@@ -3717,7 +3736,7 @@ local function registerForOpenSavePanel(appObject)
       spec = get(KeybindingConfigs.hotkeys[bundleID], "goToDownloads")
     end
     if spec ~= nil then
-      hotkey = WinBindSpec(appObject, windowFilter, spec, message, function()
+      hotkey = WinBindSpec(appObject, windowFilter, nil, spec, message, function()
         local action = openSavePanelActor:actionNames()[1]
         openSavePanelActor:performAction(action)
       end)

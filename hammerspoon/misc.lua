@@ -258,23 +258,8 @@ local function loadKarabinerKeyBindings(filePath)
 end
 
 local function getValidMessage(hotkeyInfo)
-  local filter = hotkeyInfo.filter
-  local actualFilter
-  if type(filter) == 'table' then
-    for k, v in pairs(filter) do
-      if k ~= "allowSheet" and k ~= "allowPopover" then
-        if actualFilter == nil then actualFilter = {} end
-        actualFilter[k] = v
-      end
-    end
-    if actualFilter == nil then actualFilter = false end
-  end
-  local windowFilter = hs.window.filter.new(false):setAppFilter(
-      hotkeyInfo.appName, actualFilter)
   local winObj = hs.application.frontmostApplication():focusedWindow()
-  if windowFilter:isWindowAllowed(winObj)
-      or (type(filter) == 'table' and filter.allowSheet and winObj:role() == "AXSheet")
-      or (type(filter) == 'table' and filter.allowPopover and winObj:role() == "AXPopover") then
+  if hotkeyInfo.condition(winObj) then
     return true, hotkeyInfo.message
   else
     if hotkeyInfo.previous then
