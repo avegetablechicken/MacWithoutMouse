@@ -1815,7 +1815,7 @@ appHotKeyCallbacks = {
     ["reload"] = {
       message = "Reload",
       windowFilter = {
-        allowTitles = "Barrier"
+        allowTitles = "^Barrier$"
       },
       fn = function(winObj)
         local winUIObj = hs.axuielement.windowElement(winObj)
@@ -1828,7 +1828,7 @@ appHotKeyCallbacks = {
     ["startStop"] = {
       message = "Start / Stop",
       windowFilter = {
-        allowTitles = "Barrier"
+        allowTitles = "^Barrier$"
       },
       fn = function(winObj)
         local winUIObj = hs.axuielement.windowElement(winObj)
@@ -1845,7 +1845,7 @@ appHotKeyCallbacks = {
     ["configureServer"] = {
       message = "Configure Server...",
       windowFilter = {
-        allowTitles = "Barrier"
+        allowTitles = "^Barrier$"
       },
       fn = function(winObj)
         local winUIObj = hs.axuielement.windowElement(winObj)
@@ -1858,7 +1858,7 @@ appHotKeyCallbacks = {
     ["browse"] = {
       message = "Browse",
       windowFilter = {
-        allowTitles = "Barrier"
+        allowTitles = "^Barrier$"
       },
       fn = function(winObj)
         local winUIObj = hs.axuielement.windowElement(winObj)
