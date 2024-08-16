@@ -2926,15 +2926,12 @@ local function inAppHotKeysWrapper(appObject, mods, key, func)
   end
 end
 
-function AppBind(appObject, mods, key, message, pressedfn, releasedfn, repeatedfn, ...)
+function AppBind(appObject, mods, key, message, pressedfn, repeatedfn, ...)
   pressedfn = inAppHotKeysWrapper(appObject, mods, key, pressedfn)
-  if releasedfn ~= nil then
-    releasedfn = inAppHotKeysWrapper(appObject, mods, key, releasedfn)
-  end
   if repeatedfn ~= nil then
     repeatedfn = inAppHotKeysWrapper(appObject, mods, key, repeatedfn)
   end
-  return bindHotkey(mods, key, message, pressedfn, releasedfn, repeatedfn, ...)
+  return bindHotkey(mods, key, message, pressedfn, nil, repeatedfn, ...)
 end
 
 function AppBindSpec(appObject, spec, ...)
@@ -3015,7 +3012,7 @@ local function registerInAppHotKeys(appName, eventType, appObject)
         end
         local msg = type(cfg.message) == 'string' and cfg.message or cfg.message(appObject)
         if msg ~= nil then
-          local hotkey = AppBindSpec(appObject, keyBinding, msg, fn, nil, repeatedFn)
+          local hotkey = AppBindSpec(appObject, keyBinding, msg, fn, repeatedFn)
           hotkey.kind = HK.IN_APP
           hotkey.condition = cond
           hotkey.deleteOnDisable = cfg.deleteOnDisable
@@ -3110,15 +3107,12 @@ local function inWinHotKeysWrapper(appObject, filter, mods, key, mode, message, 
   return inAppHotKeysWrapper(appObject, mods, key, wrapper)
 end
 
-function WinBind(appObject, filter, mods, key, message, pressedfn, releasedfn, repeatedfn, ...)
+function WinBind(appObject, filter, mods, key, message, pressedfn, repeatedfn, ...)
   pressedfn = inWinHotKeysWrapper(appObject, filter, mods, key, 1, message, pressedfn)
-  if releasedfn ~= nil then
-    releasedfn = inWinHotKeysWrapper(appObject, filter, mods, key, 2, message, releasedfn)
-  end
   if repeatedfn ~= nil then
-    repeatedfn = inWinHotKeysWrapper(appObject, filter, mods, key, 3, message, repeatedfn)
+    repeatedfn = inWinHotKeysWrapper(appObject, filter, mods, key, 2, message, repeatedfn)
   end
-  return bindHotkey(mods, key, message, pressedfn, releasedfn, repeatedfn, ...)
+  return bindHotkey(mods, key, message, pressedfn, nil, repeatedfn, ...)
 end
 
 function WinBindSpec(appObject, filter, spec, ...)
@@ -3174,7 +3168,7 @@ local function registerInWinHotKeys(appObject)
             if msg ~= nil then
               local repeatedFn = spec.repeatable ~= false and spec.fn or nil
               local hotkey = WinBindSpec(appObject, cfg.filter,
-                                         spec, msg, spec.fn, nil, repeatedFn)
+                                         spec, msg, spec.fn, repeatedFn)
               hotkey.kind = HK.IN_APPWIN
               hotkey.deleteOnDisable = spec.deleteOnDisable
               inWinHotKeys[bid][hkID .. tostring(i)] = hotkey
@@ -3274,7 +3268,7 @@ local function inWinOfUnactivatedAppWatcherEnableCallback(bid, filter, winObj, a
             if msg ~= nil then
               local fn = hs.fnutils.partial(spec.fn, winObj)
               local hotkey = AppBindSpec(findApplication(bid), spec, msg,
-                                         fn, nil, spec.repeatable and fn or nil)
+                                         fn, spec.repeatable and fn or nil)
               hotkey.kind = HK.IN_WIN
               hotkey.background = cfg.background
               table.insert(inWinOfUnactivatedAppHotKeys[bid], hotkey)
@@ -3537,7 +3531,7 @@ local function remapPreviousTab(appObject)
       else hs.eventtap.keyStroke(spec.mods, spec.key, nil, appObject) end
     end
     remapPreviousTabHotkey = AppBindSpec(appObject, spec, menuItemPath[#menuItemPath],
-                                         fn, nil, fn)
+                                         fn, fn)
     remapPreviousTabHotkey.condition = cond
     remapPreviousTabHotkey.kind = HK.IN_APP
   end
