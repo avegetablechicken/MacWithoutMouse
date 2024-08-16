@@ -1927,7 +1927,7 @@ appHotKeyCallbacks = {
       fn = function(winObj)
         local winUIObj = hs.axuielement.windowElement(winObj)
         local button = getAXChildren(winUIObj, "AXButton", "Save")
-        if button ~= nil then
+        if button ~= nil and button.AXEnabled == true then
           button:performAction("AXPress")
         end
       end
