@@ -671,6 +671,7 @@ end
 local COND_FAIL = {
   MENU_ITEM_SELECTED = "MENU_ITEM_SELECTED",
   NO_MENU_ITEM_BY_KEYBINDING = "NO_MENU_ITEM_BY_KEYBINDING",
+  WINDOW_FILTER_NOT_SATISFIED = "WINDOW_FILTER_NOT_SATISFIED",
 }
 
 -- check whether the menu bar item is selected
@@ -725,6 +726,11 @@ end
 -- work as hotkey callback
 local function receivePosition(position, appObject)
   leftClickAndRestore(position, appObject:name())
+end
+
+-- click the button returned by the condition
+local function receiveButton(button)
+  button:performAction("AXPress")
 end
 
 -- send key strokes to the app. but if the key binding is found, select corresponding menu item
@@ -1833,56 +1839,60 @@ appHotKeyCallbacks = {
       windowFilter = {
         allowTitles = "^Barrier$"
       },
-      fn = function(winObj)
+      condition = function(winObj)
         local winUIObj = hs.axuielement.windowElement(winObj)
         local reload = getAXChildren(winUIObj, "AXButton", "Reload")
-        if reload ~= nil and #reload:actionNames() > 0 then
-          reload:performAction("AXPress")
-        end
-      end
+        return reload ~= nil and #reload:actionNames() > 0, reload
+      end,
+      fn = receiveButton
     },
-    ["startStop"] = {
-      message = "Start / Stop",
+    ["start"] = {
+      message = "Start",
       windowFilter = {
         allowTitles = "^Barrier$"
       },
-      fn = function(winObj)
+      condition = function(winObj)
         local winUIObj = hs.axuielement.windowElement(winObj)
         local start = getAXChildren(winUIObj, "AXButton", "Start")
-        if start ~= nil and #start:actionNames() > 0 then
-          start:performAction("AXPress")
-        end
+        return start ~= nil and #start:actionNames() > 0, start
+      end,
+      fn = receiveButton
+    },
+    ["stop"] = {
+      message = "Stop",
+      windowFilter = {
+        allowTitles = "^Barrier$"
+      },
+      condition = function(winObj)
+        local winUIObj = hs.axuielement.windowElement(winObj)
         local stop = getAXChildren(winUIObj, "AXButton", "Stop")
-        if stop ~= nil and #stop:actionNames() > 0 then
-          stop:performAction("AXPress")
-        end
-      end
+        return stop ~= nil and #stop:actionNames() > 0, stop
+      end,
+      fn = receiveButton
     },
     ["configureServer"] = {
       message = "Configure Server...",
       windowFilter = {
         allowTitles = "^Barrier$"
       },
-      fn = function(winObj)
+      condition = function(winObj)
         local winUIObj = hs.axuielement.windowElement(winObj)
         local configure = getAXChildren(winUIObj, "AXCheckBox", 1, "AXButton", "Configure Server...")
-        if configure ~= nil and #configure:actionNames() > 0 then
-          configure:performAction("AXPress")
-        end
-      end
+        return configure ~= nil and #configure:actionNames() > 0, configure
+      end,
+      fn = receiveButton
     },
     ["browse"] = {
       message = "Browse",
       windowFilter = {
         allowTitles = "^Barrier$"
       },
-      fn = function(winObj)
+      condition = function(winObj)
         local winUIObj = hs.axuielement.windowElement(winObj)
         local browse = getAXChildren(winUIObj, "AXCheckBox", 1, "AXButton", "Browse...")
-        if browse ~= nil and #browse:actionNames() > 0 then
-          browse:performAction("AXPress")
-        end
-      end
+        return browse ~= nil and #browse:actionNames() > 0, browse
+      end,
+      fn = receiveButton
     },
     ["closeWindow"] = specialCommonHotkeyConfigs["closeWindow"]
   },
@@ -1894,26 +1904,24 @@ appHotKeyCallbacks = {
       windowFilter = {
         allowTitles = "^LuLu Alert$"
       },
-      fn = function(winObj)
+      condition = function(winObj)
         local winUIObj = hs.axuielement.windowElement(winObj)
         local button = getAXChildren(winUIObj, "AXButton", "Allow")
-        if button ~= nil then
-          button:performAction("AXPress")
-        end
-      end
+        return button ~= nil, button
+      end,
+      fn = receiveButton
     },
     ["blockConnection"] = {
       message = "Block Connection",
       windowFilter = {
         allowTitles = "^LuLu Alert$"
       },
-      fn = function(winObj)
+      condition = function(winObj)
         local winUIObj = hs.axuielement.windowElement(winObj)
         local button = getAXChildren(winUIObj, "AXButton", "Block")
-        if button ~= nil then
-          button:performAction("AXPress")
-        end
-      end
+        return button ~= nil, button
+      end,
+      fn = receiveButton
     }
   },
 
@@ -1924,13 +1932,12 @@ appHotKeyCallbacks = {
       windowFilter = {
         allowSheet = true
       },
-      fn = function(winObj)
+      condition = function(winObj)
         local winUIObj = hs.axuielement.windowElement(winObj)
         local button = getAXChildren(winUIObj, "AXButton", "Save")
-        if button ~= nil and button.AXEnabled == true then
-          button:performAction("AXPress")
-        end
-      end
+        return button ~= nil and button.AXEnabled == true, button
+      end,
+      fn = receiveButton
     }
   },
 
