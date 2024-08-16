@@ -689,9 +689,13 @@ end
 -- if a menu is extended, hotkeys with no modifiers are disabled
 local function noSelectedMenuBarItemFunc(fn)
   return function(appObject)
-    local result = noSelectedMenuBarItem(appObject)
-    if result then
-      return fn(appObject)
+    local satisfied = noSelectedMenuBarItem(appObject)
+    if satisfied then
+      if fn ~= nil then
+        return fn(appObject)
+      else
+        return true
+      end
     else
       return false, COND_FAIL.MENU_ITEM_SELECTED
     end
@@ -2920,11 +2924,11 @@ local function registerInAppHotKeys(appName, eventType, appObject)
         local repeatable = keyBinding.repeatable or cfg.repeatable
         local fn = cfg.fn
         local cond = cfg.condition
+        -- if a menu is extended, hotkeys with no modifiers are disabled
+        if keyBinding.mods == nil or keyBinding.mods == "" or #keyBinding.mods == 0 then
+          cond = noSelectedMenuBarItemFunc(cond)
+        end
         if cond ~= nil then
-          -- if a menu is extended, hotkeys with no modifiers are disabled
-          if keyBinding.mods == nil or keyBinding.mods == "" or #keyBinding.mods == 0 then
-            cond = noSelectedMenuBarItemFunc(cond)
-          end
           fn = function(appObject, appName, eventType)
             local satisfied, result = cond(appObject)
             if satisfied then
@@ -2963,7 +2967,7 @@ local function registerInAppHotKeys(appName, eventType, appObject)
         local repeatedFn
         -- hotkey with condition function is repeatable by defaults
         -- because when its condition is not satisfied it will be re-stroked
-        if repeatable or (repeatable ~= false and cfg.condition ~= nil) then
+        if repeatable or (repeatable ~= false and cond ~= nil) then
           repeatedFn = fn
         end
         local msg = type(cfg.message) == 'string' and cfg.message or cfg.message(appObject)
