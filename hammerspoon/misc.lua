@@ -418,7 +418,7 @@ local function testValid(entry)
     end
     entry.valid = valid
     if actualMsg ~= nil then
-      entry.msg = string.sub(entry.msg, 1, pos - 1) .. ": " .. string.sub(entry.msg, pos + 2)
+      entry.msg = string.sub(entry.msg, 1, pos - 1) .. ": " .. actualMsg
     end
   else
     entry.valid = false
