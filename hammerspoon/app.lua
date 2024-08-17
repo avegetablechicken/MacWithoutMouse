@@ -3188,18 +3188,11 @@ local function registerInWinHotKeys(appObject)
     inWinHotKeys[bid] = {}
   end
   for hkID, cfg in pairs(appHotKeyCallbacks[bid]) do
-    -- prefer properties specified in configuration file than in code
-    local keybinding = keybindings[hkID] or { mods = cfg.mods, key = cfg.key }
-    local isForWindow = keybinding.windowFilter ~= nil or cfg.windowFilter ~= nil
-    local isBackground = keybinding.background ~= nil and keybinding.background or cfg.background
-    local windowFilter = keybinding.windowFilter or cfg.windowFilter
-    -- window filter specified in code can be in function format
-    for k, v in pairs(windowFilter or {}) do
-      if type(v) == 'function' then
-        windowFilter[k] = v(appObject)
-      end
-    end
     if inWinHotKeys[bid][hkID] == nil then
+      -- prefer properties specified in configuration file than in code
+      local keybinding = keybindings[hkID] or { mods = cfg.mods, key = cfg.key }
+      local isForWindow = keybinding.windowFilter ~= nil or cfg.windowFilter ~= nil
+      local isBackground = keybinding.background ~= nil and keybinding.background or cfg.background
       local bindable = function()
         return cfg.bindCondition == nil or cfg.bindCondition(appObject)
       end
@@ -3207,6 +3200,15 @@ local function registerInWinHotKeys(appObject)
         local repeatable = keybinding.repeatable ~= nil and keybinding.repeatable or cfg.repeatable
         local msg = type(cfg.message) == 'string' and cfg.message or cfg.message(appObject)
         if msg ~= nil then
+          local windowFilter = keybinding.windowFilter or cfg.windowFilter
+          if type(windowFilter) == 'table' then
+            for k, v in pairs(windowFilter) do
+              -- window filter specified in code can be in function format
+              if type(v) == 'function' then
+                windowFilter[k] = v(appObject)
+              end
+            end
+          end
           local repeatedFn = repeatable ~= false and cfg.fn or nil
           local hotkey = WinBindSpec(appObject, windowFilter, cfg.condition,
                                       keybinding, msg, cfg.fn, repeatedFn)
@@ -3283,6 +3285,14 @@ local function inWinOfUnactivatedAppWatcherEnableCallback(bid, filter, winObj, a
     local filterCfg = get(KeybindingConfigs.hotkeys[bid], hkID) or cfg
     local isBackground = filterCfg.background ~= nil and filterCfg.background or cfg.background
     local windowFilter = filterCfg.windowFilter or cfg.windowFilter
+    if type(windowFilter) == 'table' then
+      for k, v in pairs(windowFilter) do
+        -- window filter specified in code can be in function format
+        if type(v) == 'function' then
+          windowFilter[k] = v(appObject)
+        end
+      end
+    end
     local isForWindow = windowFilter ~= nil
     local bindable = function()
       return cfg.bindCondition == nil or cfg.bindCondition(appObject)
@@ -3368,22 +3378,24 @@ local function registerWinFiltersForDaemonApp(appObject, appConfig)
   local bid = appObject:bundleID()
   for hkID, cfg in pairs(appConfig) do
     local keybinding = get(KeybindingConfigs.hotkeys[bid], hkID) or {}
-    local windowFilter = keybinding.windowFilter or cfg.windowFilter
-    local isForWindow = windowFilter ~= nil
+    local isForWindow = keybinding.windowFilter ~= nil or cfg.windowFilter ~= nil
     local isBackground = keybinding.background ~= nil and keybinding.background or cfg.background
     local bindable = function()
       return cfg.bindCondition == nil or cfg.bindCondition(appObject)
     end
     if isForWindow and isBackground and bindable() then
-      for k, v in pairs(windowFilter) do
-        -- window filter specified in code can be in function format
-        if type(v) == 'function' then
-          windowFilter[k] = v(appObject)
-        end
-      end
       if inWinOfUnactivatedAppWatchers[bid] == nil then
         if inWinOfUnactivatedAppWatchers[bid] == nil then
           inWinOfUnactivatedAppWatchers[bid] = {}
+        end
+        local windowFilter = keybinding.windowFilter or cfg.windowFilter
+        if type(windowFilter) == 'table' then
+          for k, v in pairs(windowFilter) do
+            -- window filter specified in code can be in function format
+            if type(v) == 'function' then
+              windowFilter[k] = v(appObject)
+            end
+          end
         end
         if #hs.fnutils.filter(inWinOfUnactivatedAppWatchers[bid],
             function(f) return sameFilter(f, windowFilter) end) == 0 then
