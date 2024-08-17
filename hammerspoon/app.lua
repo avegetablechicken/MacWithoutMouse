@@ -435,6 +435,7 @@ end
 local bartenderBarItemNames
 local bartenderBarItemIDs
 local bartenderBarTitle = "Bartender Bar"
+local bartenderBarWindowFilter = { allowTitles = bartenderBarTitle }
 local bartenderBarFilter
 local function getBartenderBarItemTitle(index, rightClick)
   return function(appObject)
@@ -500,7 +501,7 @@ local function getBartenderBarItemTitle(index, rightClick)
           end
         end
         bartenderBarFilter = hs.window.filter.new(false):setAppFilter(
-            appObject:name(), { allowTitles = bartenderBarTitle })
+            appObject:name(), bartenderBarWindowFilter)
         bartenderBarFilter:subscribe(
             { hs.window.filter.windowDestroyed, hs.window.filter.windowUnfocused },
             function()
@@ -1975,161 +1976,121 @@ appHotKeyCallbacks = {
     },
     ["click1stBartenderBarItem"] = {
       message = getBartenderBarItemTitle(1),
-      windowFilter = {
-        allowTitles = { bartenderBarTitle }
-      },
+      windowFilter = bartenderBarWindowFilter,
       background = true,
       fn = clickBartenderBarItem(1)
     },
     ["rightClick1stBartenderBarItem"] = {
       message = getBartenderBarItemTitle(1, true),
-      windowFilter = {
-        allowTitles = { bartenderBarTitle }
-      },
+      windowFilter = bartenderBarWindowFilter,
       background = true,
       fn = clickBartenderBarItem(1, true)
     },
     ["click2ndBartenderBarItem"] = {
       message = getBartenderBarItemTitle(2),
-      windowFilter = {
-        allowTitles = { bartenderBarTitle }
-      },
+      windowFilter = bartenderBarWindowFilter,
       background = true,
       fn = clickBartenderBarItem(2)
     },
     ["rightClick2ndBartenderBarItem"] = {
       message = getBartenderBarItemTitle(2, true),
-      windowFilter = {
-        allowTitles = { bartenderBarTitle }
-      },
+      windowFilter = bartenderBarWindowFilter,
       background = true,
       fn = clickBartenderBarItem(2, true)
     },
     ["click3rdBartenderBarItem"] = {
       message = getBartenderBarItemTitle(3),
-      windowFilter = {
-        allowTitles = { bartenderBarTitle }
-      },
+      windowFilter = bartenderBarWindowFilter,
       background = true,
       fn = clickBartenderBarItem(3)
     },
     ["rightClick3rdBartenderBarItem"] = {
       message = getBartenderBarItemTitle(3, true),
-      windowFilter = {
-        allowTitles = { bartenderBarTitle }
-      },
+      windowFilter = bartenderBarWindowFilter,
       background = true,
       fn = clickBartenderBarItem(3, true)
     },
     ["click4thBartenderBarItem"] = {
       message = getBartenderBarItemTitle(4),
-      windowFilter = {
-        allowTitles = { bartenderBarTitle }
-      },
+      windowFilter = bartenderBarWindowFilter,
       background = true,
       fn = clickBartenderBarItem(4)
     },
     ["rightClick4thBartenderBarItem"] = {
       message = getBartenderBarItemTitle(4, true),
-      windowFilter = {
-        allowTitles = { bartenderBarTitle }
-      },
+      windowFilter = bartenderBarWindowFilter,
       background = true,
       fn = clickBartenderBarItem(4, true)
     },
     ["click5thBartenderBarItem"] = {
       message = getBartenderBarItemTitle(5),
-      windowFilter = {
-        allowTitles = { bartenderBarTitle }
-      },
+      windowFilter = bartenderBarWindowFilter,
       background = true,
       fn = clickBartenderBarItem(5)
     },
     ["rightClick5thBartenderBarItem"] = {
       message = getBartenderBarItemTitle(5, true),
-      windowFilter = {
-        allowTitles = { bartenderBarTitle }
-      },
+      windowFilter = bartenderBarWindowFilter,
       background = true,
       fn = clickBartenderBarItem(5, true)
     },
     ["click6thBartenderBarItem"] = {
       message = getBartenderBarItemTitle(6),
-      windowFilter = {
-        allowTitles = { bartenderBarTitle }
-      },
+      windowFilter = bartenderBarWindowFilter,
       background = true,
       fn = clickBartenderBarItem(6)
     },
     ["rightClick6thBartenderBarItem"] = {
       message = getBartenderBarItemTitle(6, true),
-      windowFilter = {
-        allowTitles = { bartenderBarTitle }
-      },
+      windowFilter = bartenderBarWindowFilter,
       background = true,
       fn = clickBartenderBarItem(6, true)
     },
     ["click7thBartenderBarItem"] = {
       message = getBartenderBarItemTitle(7),
-      windowFilter = {
-        allowTitles = { bartenderBarTitle }
-      },
+      windowFilter = bartenderBarWindowFilter,
       background = true,
       fn = clickBartenderBarItem(7)
     },
     ["rightClick7thBartenderBarItem"] = {
       message = getBartenderBarItemTitle(7, true),
-      windowFilter = {
-        allowTitles = { bartenderBarTitle }
-      },
+      windowFilter = bartenderBarWindowFilter,
       background = true,
       fn = clickBartenderBarItem(7, true)
     },
     ["click8thBartenderBarItem"] = {
       message = getBartenderBarItemTitle(8),
-      windowFilter = {
-        allowTitles = { bartenderBarTitle }
-      },
+      windowFilter = bartenderBarWindowFilter,
       background = true,
       fn = clickBartenderBarItem(8)
     },
     ["rightClick8thBartenderBarItem"] = {
       message = getBartenderBarItemTitle(8, true),
-      windowFilter = {
-        allowTitles = { bartenderBarTitle }
-      },
+      windowFilter = bartenderBarWindowFilter,
       background = true,
       fn = clickBartenderBarItem(8, true)
     },
     ["click9thBartenderBarItem"] = {
       message = getBartenderBarItemTitle(9),
-      windowFilter = {
-        allowTitles = { bartenderBarTitle }
-      },
+      windowFilter = bartenderBarWindowFilter,
       background = true,
       fn = clickBartenderBarItem(9)
     },
     ["rightClick9thBartenderBarItem"] = {
       message = getBartenderBarItemTitle(9, true),
-      windowFilter = {
-        allowTitles = { bartenderBarTitle }
-      },
+      windowFilter = bartenderBarWindowFilter,
       background = true,
       fn = clickBartenderBarItem(9, true)
     },
     ["click10thBartenderBarItem"] = {
       message = getBartenderBarItemTitle(10),
-      windowFilter = {
-        allowTitles = { bartenderBarTitle }
-      },
+      windowFilter = bartenderBarWindowFilter,
       background = true,
       fn = clickBartenderBarItem(10)
     },
     ["rightClick10thBartenderBarItem"] = {
       message = getBartenderBarItemTitle(10, true),
-      windowFilter = {
-        allowTitles = { bartenderBarTitle }
-      },
+      windowFilter = bartenderBarWindowFilter,
       background = true,
       fn = clickBartenderBarItem(10, true)
     },
