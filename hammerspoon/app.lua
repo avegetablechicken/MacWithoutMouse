@@ -3201,14 +3201,6 @@ local function registerInWinHotKeys(appObject)
         local msg = type(cfg.message) == 'string' and cfg.message or cfg.message(appObject)
         if msg ~= nil then
           local windowFilter = keybinding.windowFilter or cfg.windowFilter
-          if type(windowFilter) == 'table' then
-            for k, v in pairs(windowFilter) do
-              -- window filter specified in code can be in function format
-              if type(v) == 'function' then
-                windowFilter[k] = v(appObject)
-              end
-            end
-          end
           local repeatedFn = repeatable ~= false and cfg.fn or nil
           local hotkey = WinBindSpec(appObject, windowFilter, cfg.condition,
                                       keybinding, msg, cfg.fn, repeatedFn)
@@ -3285,14 +3277,6 @@ local function inWinOfUnactivatedAppWatcherEnableCallback(bid, filter, winObj, a
     local filterCfg = get(KeybindingConfigs.hotkeys[bid], hkID) or cfg
     local isBackground = filterCfg.background ~= nil and filterCfg.background or cfg.background
     local windowFilter = filterCfg.windowFilter or cfg.windowFilter
-    if type(windowFilter) == 'table' then
-      for k, v in pairs(windowFilter) do
-        -- window filter specified in code can be in function format
-        if type(v) == 'function' then
-          windowFilter[k] = v(appObject)
-        end
-      end
-    end
     local isForWindow = windowFilter ~= nil
     local bindable = function()
       return cfg.bindCondition == nil or cfg.bindCondition(appObject)
@@ -3389,14 +3373,6 @@ local function registerWinFiltersForDaemonApp(appObject, appConfig)
           inWinOfUnactivatedAppWatchers[bid] = {}
         end
         local windowFilter = keybinding.windowFilter or cfg.windowFilter
-        if type(windowFilter) == 'table' then
-          for k, v in pairs(windowFilter) do
-            -- window filter specified in code can be in function format
-            if type(v) == 'function' then
-              windowFilter[k] = v(appObject)
-            end
-          end
-        end
         if #hs.fnutils.filter(inWinOfUnactivatedAppWatchers[bid],
             function(f) return sameFilter(f, windowFilter) end) == 0 then
           -- a window filter can be shared by multiple hotkeys
