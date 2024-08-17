@@ -678,7 +678,17 @@ local COND_FAIL = {
 -- for when the left menu bar item is selected, hotkeys should be disabled
 local function noSelectedMenuBarItem(appObject)
   local appUIObj = hs.axuielement.applicationElement(appObject)
-  local menuBar = appUIObj:childrenWithRole("AXMenuBar")[1]
+  local menuBar
+  local maxTryTime = 3
+  local tryInterval = 0.05
+  local tryTimes = 1
+  while tryTimes <= maxTryTime / tryInterval do
+    menuBar = appUIObj:childrenWithRole("AXMenuBar")[1]
+    if menuBar ~= nil then break end
+    hs.timer.usleep(tryInterval * 1000000)
+    tryTimes = tryTimes + 1
+  end
+  if menuBar == nil then return true end
   for i, menuBarItem in ipairs(menuBar:childrenWithRole("AXMenuBarItem")) do
     if i > 1 and menuBarItem.AXSelected then
       return false
