@@ -3998,7 +3998,7 @@ local function watchMenuBarItems(appObject)
   end
   appsMenuBarItemsWatchers[appObject:bundleID()][1]:start()
   stopOnDeactivated(appObject:bundleID(), appsMenuBarItemsWatchers[appObject:bundleID()][1],
-      function(bundleID) appsMenuBarItemsWatchers[bundleID] = nil end)
+      function(bundleID) appsMenuBarItemsWatchers[bundleID][2] = nil end)
 end
 
 -- some apps may change their menu bar items based on the focused window
@@ -4637,8 +4637,6 @@ local function altMenuBarItemAfterLaunch(appObject)
         end)
       end
     end
-  else
-    altMenuBarItem(appObject)
   end
 end
 
