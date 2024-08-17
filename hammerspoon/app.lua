@@ -675,7 +675,7 @@ local COND_FAIL = {
 }
 
 -- check whether the menu bar item is selected
--- for when the left menu bar item is selected, hotkeys should be disabled
+-- if a menu is extended, hotkeys with no modifiers are disabled
 local function noSelectedMenuBarItem(appObject)
   local appUIObj = hs.axuielement.applicationElement(appObject)
   local menuBar
@@ -697,7 +697,6 @@ local function noSelectedMenuBarItem(appObject)
   return true
 end
 
--- if a menu is extended, hotkeys with no modifiers are disabled
 local function noSelectedMenuBarItemFunc(fn)
   return function(appObject)
     local satisfied = noSelectedMenuBarItem(appObject)
@@ -739,6 +738,7 @@ local function receivePosition(position, appObject)
 end
 
 -- click the button returned by the condition
+-- work as hotkey callback
 local function receiveButton(button)
   button:performAction("AXPress")
 end
