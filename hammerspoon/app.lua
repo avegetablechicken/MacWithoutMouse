@@ -4042,7 +4042,7 @@ local function registerObserverForMenuBarChange(appObject)
   observer:callback(hs.fnutils.partial(appMenuBarChangeCallback, appObject))
   observer:start()
 
-  windowFilter = hs.window.filter.new(frontmostApplication:name())
+  windowFilter = hs.window.filter.new(appObject:name())
       :subscribe(hs.window.filter.windowDestroyed,
         function(winObj)
           if winObj == nil or winObj:application() == nil then return end
@@ -4465,7 +4465,7 @@ function(ev)
   return false
 end)
 
-if remoteDesktopsMappingModifiers[hs.application.frontmostApplication():bundleID()] then
+if remoteDesktopsMappingModifiers[frontmostApplication:bundleID()] then
   remoteDesktopModifierTapper:start()
 end
 
