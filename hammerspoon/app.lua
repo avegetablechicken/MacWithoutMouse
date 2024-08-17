@@ -3475,7 +3475,8 @@ local function remapPreviousTab(appObject)
   end
   local bundleID = appObject:bundleID()
   local spec = get(KeybindingConfigs.hotkeys.appCommon, "remapPreviousTab")
-  if spec == nil or hs.fnutils.contains(spec.excluded or {}, bundleID) then
+  local specApp = get(appHotKeyCallbacks[bundleID], "remapPreviousTab")
+  if specApp ~= nil or spec == nil or hs.fnutils.contains(spec.excluded or {}, bundleID) then
     return
   end
   local menuItemPath = findMenuItemByKeyBinding(appObject, '⇧⌃', '⇥')
@@ -3508,8 +3509,7 @@ local function registerOpenRecent(appObject)
   local bundleID = appObject:bundleID()
   local spec = get(KeybindingConfigs.hotkeys.appCommon, "openRecent")
   local specApp = get(appHotKeyCallbacks[bundleID], "openRecent")
-  if (specApp ~= nil and (specApp.bindCondition == nil or specApp.bindCondition(appObject)))
-      or spec == nil or hs.fnutils.contains(spec.excluded or {}, bundleID) then
+  if specApp ~= nil or spec == nil or hs.fnutils.contains(spec.excluded or {}, bundleID) then
     return
   end
   local menuItem, menuItemPath = findMenuItem(appObject, { "File",  "Open Recent" })
