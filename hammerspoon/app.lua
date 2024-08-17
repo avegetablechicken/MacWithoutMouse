@@ -3555,17 +3555,14 @@ local function remapPreviousTab(appObject)
   end
   local menuItemPath = findMenuItemByKeyBinding(appObject, '⇧⌃', '⇥')
   if menuItemPath ~= nil then
-    local cond = function(appObject)
+    local fn, cond = wrapCondition(spec, function()
+      appObject:selectMenuItem(menuItemPath)
+    end,
+    function()
       local menuItemCond = appObject:findMenuItem(menuItemPath)
       return menuItemCond ~= nil and menuItemCond.enabled
-    end
-    if spec.mods == nil or spec.mods == "" or #spec.mods == 0 then
-      cond = noSelectedMenuBarItemFunc(cond)
-    end
-    local fn = function()
-      if cond(appObject) then appObject:selectMenuItem(menuItemPath)
-      else hs.eventtap.keyStroke(spec.mods, spec.key, nil, appObject) end
-    end
+    end)
+    fn = hs.fnutils.partial(fn, appObject)
     remapPreviousTabHotkey = AppBindSpec(appObject, spec, menuItemPath[#menuItemPath],
                                          fn, fn)
     remapPreviousTabHotkey.condition = cond
@@ -3592,21 +3589,15 @@ local function registerOpenRecent(appObject)
   end
   local menuItem, menuItemPath = findMenuItem(appObject, { "File",  "Open Recent" })
   if menuItem ~= nil then
-    local cond = function(appObject)
+    local fn, cond = wrapCondition(spec, showMenuItemWrapper(function()
+        appObject:selectMenuItem({ menuItemPath[1] })
+        appObject:selectMenuItem(menuItemPath)
+    end),
+    function()
       local menuItemCond = appObject:findMenuItem(menuItemPath)
       return menuItemCond ~= nil and menuItemCond.enabled
-    end
-    if spec.mods == nil or spec.mods == "" or #spec.mods == 0 then
-      cond = noSelectedMenuBarItemFunc(cond)
-    end
-    local fn = function()
-      if cond(appObject) then
-        showMenuItemWrapper(function()
-          appObject:selectMenuItem({menuItemPath[1]})
-          appObject:selectMenuItem(menuItemPath)
-        end)()
-      else hs.eventtap.keyStroke(spec.mods, spec.key, nil, appObject) end
-    end
+    end)
+    fn = hs.fnutils.partial(fn, appObject)
     openRecentHotkey = AppBindSpec(appObject, spec, menuItemPath[2], fn)
     openRecentHotkey.condition = cond
     openRecentHotkey.kind = HK.IN_APP
