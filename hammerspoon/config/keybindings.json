@@ -389,7 +389,7 @@
     "appkeys": {
       "LaunchPad": {
         "mods": "${hyper.app}",
-        "key": "Tab",
+        "key": "tab",
         "bundleID": "com.apple.launchpad.launcher"
       },
       "QQ": {
@@ -1224,7 +1224,7 @@
     "com.runningwithcrayons.Alfred-Preferences": {
       "saveInSheet": {
         "mods": "command",
-        "key": "Return"
+        "key": "return"
       }
     },
     "com.surteesstudios.Bartender": {
@@ -1419,7 +1419,7 @@
     "com.tencent.LemonMonitor": {
       "closeWindow": {
         "mods": "",
-        "key": "Escape"
+        "key": "escape"
       }
     },
     "com.torusknot.SourceTreeNotMAS": {
