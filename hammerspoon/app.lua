@@ -698,11 +698,12 @@ local function noSelectedMenuBarItem(appObject)
 end
 
 local function noSelectedMenuBarItemFunc(fn)
-  return function(appObject)
+  return function(obj)
+    local appObject = obj.application ~= nil and obj:application() or obj
     local satisfied = noSelectedMenuBarItem(appObject)
     if satisfied then
       if fn ~= nil then
-        return fn(appObject)
+        return fn(obj)
       else
         return true
       end
