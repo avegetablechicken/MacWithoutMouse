@@ -3239,28 +3239,31 @@ local function unregisterInWinHotKeys(bid, delete)
 end
 
 -- check if a window filter is the same as another
+-- if a value is a list, the order of elements matters
 local function sameFilter(a, b)
-  for k, v in pairs(a) do
-    if type(b[k]) == 'table' then
-      if not sameFilter(v, b[k]) then
-        return false
+  if type(a) ~= "table" then return a == b end
+  if a == b then return true end
+  for k, av in pairs(a) do
+    local bv = b[k]
+    if type(av) == 'table' then
+      if type(bv) ~= 'table' then return false end
+      for i=1,#av do
+        if av[i].equals then
+          if not av[i]:equals(bv[i]) then return false end
+        else
+          if av[i] ~= bv[i] then return false end
+        end
       end
     else
-      if b[k] ~= v then
-        return false
+      if av.equals then
+        if not av:equals(bv) then return false end
+      else
+        if av ~= bv then return false end
       end
     end
   end
-  for k, v in pairs(b) do
-    if type(a[k]) == 'table' then
-      if not sameFilter(v, a[k]) then
-        return false
-      end
-    else
-      if a[k] ~= v then
-        return false
-      end
-    end
+  for k, _ in pairs(b) do
+    if a[k] == nil then return false end
   end
   return true
 end
