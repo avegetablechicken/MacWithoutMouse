@@ -574,12 +574,22 @@ local function iCopySelectHotkeyMod(appObject)
 end
 local iCopyMod
 
-local function iCopySelectHotkeyRemap(winObj, idx)
-  if iCopyMod == nil then
-    iCopyMod = iCopySelectHotkeyMod(winObj:application())
+local function iCopySelectHotkeyRemap(idx)
+  return function(winObj)
+    if iCopyMod == nil then
+      iCopyMod = iCopySelectHotkeyMod(winObj:application())
+    end
+    hs.eventtap.keyStroke(iCopyMod, tostring(idx), nil, winObj:application())
   end
-  hs.eventtap.keyStroke(iCopyMod, tostring(idx), nil, winObj:application())
 end
+
+local iCopyWindowFilter = {
+  allowRegions = {
+    hs.geometry.rect(
+        0, hs.screen.mainScreen():fullFrame().y + hs.screen.mainScreen():fullFrame().h - 400,
+        hs.screen.mainScreen():fullFrame().w, 400)
+  }
+}
 
 -- ## functin utilities for hotkey configs
 
@@ -2703,105 +2713,117 @@ appHotKeyCallbacks = {
 
   ["cn.better365.iCopy"] =
   {
-    {
-      filter = { allowRegions = {
-        hs.geometry.rect(
-          0, hs.screen.mainScreen():fullFrame().y + hs.screen.mainScreen():fullFrame().h - 400,
-          hs.screen.mainScreen():fullFrame().w, 400)
-        }
-      },
-      hotkeys =
-      {
-        {
-          mods = "⌘", key = "1",
-          message = "Select 1st Item",
-          fn = function(winObj) iCopySelectHotkeyRemap(winObj, 1) end,
-          bindCondition = iCopySelectHotkeyRemapRequired
-        },
-        {
-          mods = "⌘", key = "2",
-          message = "Select 2nd Item",
-          fn = function(winObj) iCopySelectHotkeyRemap(winObj, 2) end,
-          bindCondition = iCopySelectHotkeyRemapRequired
-        },
-        {
-          mods = "⌘", key = "3",
-          message = "Select 3rd Item",
-          fn = function(winObj) iCopySelectHotkeyRemap(winObj, 3) end,
-          bindCondition = iCopySelectHotkeyRemapRequired
-        },
-        {
-          mods = "⌘", key = "4",
-          message = "Select 4th Item",
-          fn = function(winObj) iCopySelectHotkeyRemap(winObj, 4) end,
-          bindCondition = iCopySelectHotkeyRemapRequired
-        },
-        {
-          mods = "⌘", key = "5",
-          message = "Select 5th Item",
-          fn = function(winObj) iCopySelectHotkeyRemap(winObj, 5) end,
-          bindCondition = iCopySelectHotkeyRemapRequired
-        },
-        {
-          mods = "⌘", key = "6",
-          message = "Select 6th Item",
-          fn = function(winObj) iCopySelectHotkeyRemap(winObj, 6) end,
-          bindCondition = iCopySelectHotkeyRemapRequired
-        },
-        {
-          mods = "⌘", key = "7",
-          message = "Select 7th Item",
-          fn = function(winObj) iCopySelectHotkeyRemap(winObj, 7) end,
-          bindCondition = iCopySelectHotkeyRemapRequired
-        },
-        {
-          mods = "⌘", key = "8",
-          message = "Select 8th Item",
-          fn = function(winObj) iCopySelectHotkeyRemap(winObj, 8) end,
-          bindCondition = iCopySelectHotkeyRemapRequired
-        },
-        {
-          mods = "⌘", key = "9",
-          message = "Select 9th Item",
-          fn = function(winObj) iCopySelectHotkeyRemap(winObj, 9) end,
-          bindCondition = iCopySelectHotkeyRemapRequired
-        },
-        {
-          mods = "⌘", key = "[",
-          message = "Next Category",
-          fn = function(winObj) hs.eventtap.keyStroke("", "Left", nil, winObj:application()) end
-        },
-        {
-          mods = "⌘", key = "]",
-          message = "Previous Category",
-          fn = function(winObj) hs.eventtap.keyStroke("", "Right", nil, winObj:application()) end
-        },
-        {
-          mods = "", key = "Left",
-          message = "Previous Item",
-          fn = function(winObj) hs.eventtap.keyStroke("", "Up", nil, winObj:application()) end
-        },
-        {
-          mods = "", key = "Right",
-          message = "Next Item",
-          fn = function(winObj) hs.eventtap.keyStroke("", "Down", nil, winObj:application()) end
-        },
-        {
-          mods = "", key = "Up",
-          message = "Cancel Up",
-          fn = function() end
-        },
-        {
-          mods = "", key = "Down",
-          message = "Cancel Down",
-          fn = function() end
-        },
-        {
-          mods = "", key = "Tab",
-          message = "Cancel Tab",
-          fn = function() end
-        },
-      }
+    ["select1stItem"] = {
+      mods = "⌘", key = "1",
+      message = "Select 1st Item",
+      bindCondition = iCopySelectHotkeyRemapRequired,
+      windowFilter = iCopyWindowFilter,
+      fn = iCopySelectHotkeyRemap(1)
+    },
+    ["select2ndItem"] = {
+      mods = "⌘", key = "2",
+      message = "Select 2nd Item",
+      bindCondition = iCopySelectHotkeyRemapRequired,
+      windowFilter = iCopyWindowFilter,
+      fn = iCopySelectHotkeyRemap(2)
+    },
+    ["select3rdItem"] = {
+      mods = "⌘", key = "3",
+      message = "Select 3rd Item",
+      bindCondition = iCopySelectHotkeyRemapRequired,
+      windowFilter = iCopyWindowFilter,
+      fn = iCopySelectHotkeyRemap(3)
+    },
+    ["select4thItem"] = {
+      mods = "⌘", key = "4",
+      message = "Select 4th Item",
+      bindCondition = iCopySelectHotkeyRemapRequired,
+      windowFilter = iCopyWindowFilter,
+      fn = iCopySelectHotkeyRemap(4)
+    },
+    ["select5thItem"] = {
+      mods = "⌘", key = "5",
+      message = "Select 5th Item",
+      bindCondition = iCopySelectHotkeyRemapRequired,
+      windowFilter = iCopyWindowFilter,
+      fn = iCopySelectHotkeyRemap(5)
+    },
+    ["select6thItem"] = {
+      mods = "⌘", key = "6",
+      message = "Select 6th Item",
+      bindCondition = iCopySelectHotkeyRemapRequired,
+      windowFilter = iCopyWindowFilter,
+      fn = iCopySelectHotkeyRemap(6)
+    },
+    ["select7thItem"] = {
+      mods = "⌘", key = "7",
+      message = "Select 7th Item",
+      bindCondition = iCopySelectHotkeyRemapRequired,
+      windowFilter = iCopyWindowFilter,
+      fn = iCopySelectHotkeyRemap(7)
+    },
+    ["select8thItem"] = {
+      mods = "⌘", key = "8",
+      message = "Select 8th Item",
+      bindCondition = iCopySelectHotkeyRemapRequired,
+      windowFilter = iCopyWindowFilter,
+      fn = iCopySelectHotkeyRemap(8)
+    },
+    ["select9thItem"] = {
+      mods = "⌘", key = "9",
+      message = "Select 9th Item",
+      bindCondition = iCopySelectHotkeyRemapRequired,
+      windowFilter = iCopyWindowFilter,
+      fn = iCopySelectHotkeyRemap(9)
+    },
+    ["select10thItem"] = {
+      mods = "⌘", key = "0",
+      message = "Select 10th Item",
+      bindCondition = iCopySelectHotkeyRemapRequired,
+      windowFilter = iCopyWindowFilter,
+      fn = iCopySelectHotkeyRemap(10)
+    },
+    ["previousCategory"] = {
+      mods = "⌘", key = "]",
+      message = "Previous Category",
+      windowFilter = iCopyWindowFilter,
+      fn = function(winObj) hs.eventtap.keyStroke("", "Right", nil, winObj:application()) end
+    },
+    ["nextCategory"] = {
+      mods = "⌘", key = "[",
+      message = "Next Category",
+      windowFilter = iCopyWindowFilter,
+      fn = function(winObj) hs.eventtap.keyStroke("", "Left", nil, winObj:application()) end
+    },
+    ["previousItem"] = {
+      mods = "", key = "Left",
+      message = "Previous Item",
+      windowFilter = iCopyWindowFilter,
+      fn = function(winObj) hs.eventtap.keyStroke("", "Up", nil, winObj:application()) end
+    },
+    ["nextItem"] = {
+      mods = "", key = "Right",
+      message = "Next Item",
+      windowFilter = iCopyWindowFilter,
+      fn = function(winObj) hs.eventtap.keyStroke("", "Down", nil, winObj:application()) end
+    },
+    ["cancelUp"] = {
+      mods = "", key = "Up",
+      message = "Cancel Up",
+      windowFilter = iCopyWindowFilter,
+      fn = function() end
+    },
+    ["cancelDown"] = {
+      mods = "", key = "Down",
+      message = "Cancel Down",
+      windowFilter = iCopyWindowFilter,
+      fn = function() end
+    },
+    ["cancelTap"] = {
+      mods = "", key = "Tab",
+      message = "Cancel Tab",
+      windowFilter = iCopyWindowFilter,
+      fn = function() end
     }
   }
 }
@@ -3178,39 +3200,19 @@ local function registerInWinHotKeys(appObject)
       end
     end
     if inWinHotKeys[bid][hkID] == nil then
-      if type(hkID) ~= 'number' then  -- usual situation
-        local bindable = function()
-          return cfg.bindCondition == nil or cfg.bindCondition(appObject)
-        end
-        if isForWindow and not isBackground and bindable() then  -- only consider windows of active app
-          local repeatable = keybinding.repeatable ~= nil and keybinding.repeatable or cfg.repeatable
-          local msg = type(cfg.message) == 'string' and cfg.message or cfg.message(appObject)
-          if msg ~= nil then
-            local repeatedFn = repeatable ~= false and cfg.fn or nil
-            local hotkey = WinBindSpec(appObject, windowFilter, cfg.condition,
-                                       keybinding, msg, cfg.fn, repeatedFn)
-            hotkey.kind = HK.IN_APPWIN
-            hotkey.deleteOnDisable = cfg.deleteOnDisable
-            inWinHotKeys[bid][hkID] = hotkey
-          end
-        end
-      else  -- now only for `iCopy`
-        for i, spec in ipairs(cfg.hotkeys) do
-          ---@diagnostic disable-next-line: redundant-parameter
-          local bindable = function()
-            return spec.bindCondition == nil or spec.bindCondition(appObject)
-          end
-          if not isBackground and bindable() then
-            local msg = type(spec.message) == 'string' and spec.message or spec.message(appObject)
-            if msg ~= nil then
-              local repeatedFn = spec.repeatable ~= false and spec.fn or nil
-              local hotkey = WinBindSpec(appObject, cfg.filter, cfg.condition,
-                                         spec, msg, spec.fn, repeatedFn)
-              hotkey.kind = HK.IN_APPWIN
-              hotkey.deleteOnDisable = spec.deleteOnDisable
-              inWinHotKeys[bid][hkID .. tostring(i)] = hotkey
-            end
-          end
+      local bindable = function()
+        return cfg.bindCondition == nil or cfg.bindCondition(appObject)
+      end
+      if isForWindow and not isBackground and bindable() then  -- only consider windows of active app
+        local repeatable = keybinding.repeatable ~= nil and keybinding.repeatable or cfg.repeatable
+        local msg = type(cfg.message) == 'string' and cfg.message or cfg.message(appObject)
+        if msg ~= nil then
+          local repeatedFn = repeatable ~= false and cfg.fn or nil
+          local hotkey = WinBindSpec(appObject, windowFilter, cfg.condition,
+                                      keybinding, msg, cfg.fn, repeatedFn)
+          hotkey.kind = HK.IN_APPWIN
+          hotkey.deleteOnDisable = cfg.deleteOnDisable
+          inWinHotKeys[bid][hkID] = hotkey
         end
       end
     else
@@ -3278,43 +3280,24 @@ local function inWinOfUnactivatedAppWatcherEnableCallback(bid, filter, winObj, a
   end
   for hkID, cfg in pairs(appHotKeyCallbacks[bid]) do
     local appObject = findApplication(bid)
-    if type(hkID) ~= 'number' then  -- usual situation
-      local filterCfg = get(KeybindingConfigs.hotkeys[bid], hkID) or cfg
-      local isBackground = filterCfg.background ~= nil and filterCfg.background or cfg.background
-      local windowFilter = filterCfg.windowFilter or cfg.windowFilter
-      local isForWindow = windowFilter ~= nil
-      local bindable = function()
-        return cfg.bindCondition == nil or cfg.bindCondition(appObject)
-      end
-      if isForWindow and isBackground and bindable() and sameFilter(windowFilter, filter) then
-        local msg = type(cfg.message) == 'string' and cfg.message or cfg.message(appObject)
-        if msg ~= nil then
-          local keybinding = get(KeybindingConfigs.hotkeys[bid], hkID) or cfg
-          local repeatable = keybinding.repeatable ~= nil and keybinding.repeatable or cfg.repeatable
-          local fn = hs.fnutils.partial(cfg.fn, winObj)
-          local hotkey = bindHotkeySpec(keybinding, msg, fn, nil,
-                                        repeatable and fn or nil)
-          hotkey.kind = HK.IN_WIN
-          hotkey.background = isBackground
-          table.insert(inWinOfUnactivatedAppHotKeys[bid], hotkey)
-        end
-      end
-    else  -- now only for `iCopy`
-      cfg = cfg[1]
-      if sameFilter(cfg.filter, filter) then
-        for _, spec in ipairs(cfg) do
-          if (spec.bindCondition == nil or spec.bindCondition(appObject)) then
-            local msg = type(spec.message) == 'string' and spec.message or spec.message(appObject)
-            if msg ~= nil then
-              local fn = hs.fnutils.partial(spec.fn, winObj)
-              local hotkey = AppBindSpec(findApplication(bid), spec, msg,
-                                         fn, spec.repeatable and fn or nil)
-              hotkey.kind = HK.IN_WIN
-              hotkey.background = cfg.background
-              table.insert(inWinOfUnactivatedAppHotKeys[bid], hotkey)
-            end
-          end
-        end
+    local filterCfg = get(KeybindingConfigs.hotkeys[bid], hkID) or cfg
+    local isBackground = filterCfg.background ~= nil and filterCfg.background or cfg.background
+    local windowFilter = filterCfg.windowFilter or cfg.windowFilter
+    local isForWindow = windowFilter ~= nil
+    local bindable = function()
+      return cfg.bindCondition == nil or cfg.bindCondition(appObject)
+    end
+    if isForWindow and isBackground and bindable() and sameFilter(windowFilter, filter) then
+      local msg = type(cfg.message) == 'string' and cfg.message or cfg.message(appObject)
+      if msg ~= nil then
+        local keybinding = get(KeybindingConfigs.hotkeys[bid], hkID) or cfg
+        local repeatable = keybinding.repeatable ~= nil and keybinding.repeatable or cfg.repeatable
+        local fn = hs.fnutils.partial(cfg.fn, winObj)
+        local hotkey = bindHotkeySpec(keybinding, msg, fn, nil,
+                                      repeatable and fn or nil)
+        hotkey.kind = HK.IN_WIN
+        hotkey.background = isBackground
+        table.insert(inWinOfUnactivatedAppHotKeys[bid], hotkey)
       end
     end
   end
@@ -3385,12 +3368,7 @@ local function registerWinFiltersForDaemonApp(appObject, appConfig)
   local bid = appObject:bundleID()
   for hkID, cfg in pairs(appConfig) do
     local keybinding = get(KeybindingConfigs.hotkeys[bid], hkID) or {}
-    local windowFilter
-    if type(hkID) ~= 'number' then  -- usual situation
-      windowFilter = keybinding.windowFilter or cfg.windowFilter
-    else  -- now only for `iCopy`
-      windowFilter = cfg[1].filter
-    end
+    local windowFilter = keybinding.windowFilter or cfg.windowFilter
     local isForWindow = windowFilter ~= nil
     local isBackground = keybinding.background ~= nil and keybinding.background or cfg.background
     local bindable = function()
@@ -3409,14 +3387,8 @@ local function registerWinFiltersForDaemonApp(appObject, appConfig)
         end
         if #hs.fnutils.filter(inWinOfUnactivatedAppWatchers[bid],
             function(f) return sameFilter(f, windowFilter) end) == 0 then
-          if type(hkID) ~= 'number' then  -- usual situation
-            -- a window filter can be shared by multiple hotkeys
-            registerSingleWinFilterForDaemonApp(appObject, windowFilter)
-          else  -- now only for `iCopy`
-            for _, spec in ipairs(cfg[1]) do
-              registerSingleWinFilterForDaemonApp(appObject, windowFilter)
-            end
-          end
+          -- a window filter can be shared by multiple hotkeys
+          registerSingleWinFilterForDaemonApp(appObject, windowFilter)
         end
       end
     end
