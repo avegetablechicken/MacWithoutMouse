@@ -2908,11 +2908,20 @@ function(winObj, appName, eventType)
   end
 end)
 
-local function wrapCondition(keybinding, func, cond, filter, prevCallback, mode)
-  local oldCond = cond
+local function wrapCondition(keybinding, func, condition)
+  local cond, filter, prevCallback, mode, tabFilter
+  if type(condition) == 'table' then
+    cond = condition.condition
+    filter = condition.windowFilter
+    prevCallback = condition.prevCallback
+    mode = condition.mode
+    tabFilter = condition.tabFilter
+  else
+    cond = condition
+  end
   if filter ~= nil then
     local actualFilter
-    if type(filter) == 'table' then
+    if type(condition.windowFilter) == 'table' then
       for k, v in pairs(filter) do
         if k ~= "allowSheet" and k ~= "allowPopover" then
           if actualFilter == nil then actualFilter = {} end
@@ -2923,6 +2932,7 @@ local function wrapCondition(keybinding, func, cond, filter, prevCallback, mode)
     else
       actualFilter = filter
     end
+    local oldCond = cond
     cond = function(winObj)
       if winObj == nil then return false end
       local windowFilter = hs.window.filter.new(false):setAppFilter(
@@ -2944,6 +2954,29 @@ local function wrapCondition(keybinding, func, cond, filter, prevCallback, mode)
       end
     end
   end
+  if tabFilter ~= nil then
+    local oldCond = cond
+    cond = function(obj)
+      local appObject = mode == nil and obj or obj:application()
+      local url = getTabUrl(appObject)
+      if url ~= nil then
+        local allowURLs = tabFilter.allowURLs
+        if type(allowURLs) == 'string' then
+          allowURLs = { allowURLs }
+        end
+        for _, v in ipairs(allowURLs) do
+          if string.match(url, v) ~= nil then
+            if oldCond ~= nil then
+              return oldCond(obj)
+            else
+              return true
+            end
+          end
+        end
+        return false
+      end
+    end
+  end
   -- if a menu is extended, hotkeys with no modifiers are disabled
   if keybinding.mods == nil or keybinding.mods == "" or #keybinding.mods == 0 then
     cond = noSelectedMenuBarItemFunc(cond)
@@ -2951,7 +2984,7 @@ local function wrapCondition(keybinding, func, cond, filter, prevCallback, mode)
   local fn = func
   if cond ~= nil then
     fn = function(appObject, ...)
-      local obj = filter == nil and appObject or appObject:focusedWindow()
+      local obj = mode == nil and appObject or appObject:focusedWindow()
       local satisfied, result = cond(obj)
       if satisfied then
         if result ~= nil then  -- condition function can pass result to callback function
@@ -3030,7 +3063,9 @@ local function registerInAppHotKeys(appName, eventType, appObject)
       end
       if not isBackground and not isForWindow and bindable() then
         local repeatable = keybinding.repeatable ~= nil and keybinding.repeatable or cfg.repeatable
-        local fn, cond = wrapCondition(keybinding, cfg.fn, cfg.condition)
+        local tabFilter = keybinding.tabFilter or cfg.tabFilter
+        local fn, cond = wrapCondition(keybinding, cfg.fn,
+                                       { condition = cfg.condition, tabFilter = tabFilter })
         if repeatable ~= false and cfg.condition ~= nil then
           -- in current version of Hammerspoon, if a callback lasts kind of too long,
           -- keeping pressing a hotkey may lead to unexpected repeated triggering of callback function
@@ -3106,8 +3141,9 @@ local function inWinHotKeysWrapper(appObject, filter, cond, mods, key, mode, mes
   if InWinHotkeyInfoChain[bid] == nil then InWinHotkeyInfoChain[bid] = {} end
   local prevCallback = inWinCallbackChain[bid][hotkeyIdx(mods, key)]
   local prevHotkeyInfo = InWinHotkeyInfoChain[bid][hotkeyIdx(mods, key)]
-  fn, cond = wrapCondition({ mods = mods, key = key }, fn, cond,
-                           filter, prevCallback, mode)
+  fn, cond = wrapCondition({ mods = mods, key = key }, fn,
+                           { condition = cond,
+                             windowFilter = filter, prevCallback = prevCallback, mode = mode })
   fn = hs.fnutils.partial(fn, appObject)
   inWinCallbackChain[bid][hotkeyIdx(mods, key)] = function(m)
     if mode == m then
