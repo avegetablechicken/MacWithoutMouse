@@ -592,6 +592,105 @@ local iCopyWindowFilter = {
   }
 }
 
+-- ### browsers
+local function getTabSource(appObject)
+  local ok, source
+  if appObject:bundleID() == "com.apple.Safari" then
+    ok, source = hs.osascript.applescript([[
+      tell application id "com.apple.Safari"
+        do JavaScript "document.body.innerHTML" in front document
+      end tell
+    ]])
+  else  -- assume chromium-based browsers
+    ok, source = hs.osascript.applescript(string.format([[
+      tell application id "%s"
+        execute active tab of front window javascript "document.documentElement.outerHTML"
+      end tell
+    ]], appObject:bundleID()))
+  end
+  if ok then return source end
+end
+
+local function getTabUrl(appObject)
+  local ok, url
+  if appObject:bundleID() == "com.apple.Safari" then
+    ok, url = hs.osascript.applescript([[
+      tell application id "com.apple.Safari" to get URL of front document
+    ]])
+  else  -- assume chromium-based browsers
+    ok, url = hs.osascript.applescript(string.format([[
+      tell application id "%s" to get URL of active tab of front window
+    ]], appObject:bundleID()))
+  end
+  if ok then return url end
+end
+
+local function weiboNavigateToSideBarCondition(idx, isHome)
+  return function(appObject)
+    if idx == 1 and isHome then
+      return true, "/"
+    end
+    local source = getTabSource(appObject)
+    if source == nil then return end
+    local start, stop
+    if isHome then
+      start = source:find("Nav_title")
+      if start == nil then
+        hs.timer.usleep(1 * 1000000)
+        source = getTabSource(appObject)
+        start = source:find("Nav_title")
+      end
+      if start == nil then return false end
+      stop = source:find("自定义分组", start + 1)
+    else
+      start = source:find("自定义分组")
+      if start == nil then
+        hs.timer.usleep(1 * 1000000)
+        source = getTabSource(appObject)
+        if source == nil then return end
+        start = source:find("自定义分组")
+      end
+      if start == nil then return false end
+      stop = source:find([[<span class="woo-button-content"> 收起 </span>]], start + 1)
+      if stop == nil then
+        stop = source:find([[<span class="woo-button-content"> 展开 </span>]], start + 1)
+      end
+    end
+    source = source:sub(start, stop)
+    local cnt = isHome and 1 or 0
+    for url in string.gmatch(source, [[<a class="ALink_none.-href="(/mygroup.-)">]]) do
+      cnt = cnt + 1
+      if cnt == idx then return true, url end
+    end
+    return false
+  end
+end
+
+local function weiboNavigateToSideBar(url, appObject)
+  local fullUrl = "https://weibo.com" .. url
+  if appObject:bundleID() == "com.apple.Safari" then
+    hs.osascript.applescript(string.format([[
+      tell application id "com.apple.Safari"
+        set URL of front document to "%s"
+      end tell
+    ]], fullUrl))
+  else  -- assume chromium-based browsers
+    hs.osascript.applescript(string.format([[
+      tell application id "%s"
+        set URL of active tab of window %d to "%s"
+      end tell
+    ]], appObject:bundleID(), activatedWindowIndex(), fullUrl))
+  end
+end
+
+local function weiboNavigateToGroupCondition(idx)
+  return weiboNavigateToSideBarCondition(idx, false)
+end
+
+local function weiboNavigateToHomeGroupCondition(idx)
+  return weiboNavigateToSideBarCondition(idx, true)
+end
+
 -- ## functin utilities for hotkey configs
 
 -- some apps save key bindings in plist files
@@ -2788,6 +2887,97 @@ appHotKeyCallbacks = {
     }
   }
 }
+
+local browserTabHotKeyCallbacks = {
+  ["weiboNavigate1stHomeGroup"] = {
+    message = "首页组1",
+    condition = weiboNavigateToHomeGroupCondition(1),
+    fn = weiboNavigateToSideBar
+  },
+  ["weiboNavigate2ndHomeGroup"] = {
+    message = "首页组2",
+    condition = weiboNavigateToHomeGroupCondition(2),
+    fn = weiboNavigateToSideBar
+  },
+  ["weiboNavigate3rdHomeGroup"] = {
+    message = "首页组3",
+    condition = weiboNavigateToHomeGroupCondition(3),
+    fn = weiboNavigateToSideBar
+  },
+  ["weiboNavigate4thHomeGroup"] = {
+    message = "首页组4",
+    condition = weiboNavigateToHomeGroupCondition(4),
+    fn = weiboNavigateToSideBar
+  },
+  ["weiboNavigate1stGroup"] = {
+    message = "自定义分组1",
+    condition = weiboNavigateToGroupCondition(1),
+    fn = weiboNavigateToSideBar
+  },
+  ["weiboNavigate2ndGroup"] = {
+    message = "自定义分组2",
+    condition = weiboNavigateToGroupCondition(2),
+    fn = weiboNavigateToSideBar
+  },
+  ["weiboNavigate3rdGroup"] = {
+    message = "自定义分组3",
+    condition = weiboNavigateToGroupCondition(3),
+    fn = weiboNavigateToSideBar
+  },
+  ["weiboNavigate4thGroup"] = {
+    message = "自定义分组4",
+    condition = weiboNavigateToGroupCondition(4),
+    fn = weiboNavigateToSideBar
+  },
+  ["weiboNavigate5thGroup"] = {
+    message = "自定义分组5",
+    condition = weiboNavigateToGroupCondition(5),
+    fn = weiboNavigateToSideBar
+  },
+  ["weiboNavigate6thGroup"] = {
+    message = "自定义分组6",
+    condition = weiboNavigateToGroupCondition(6),
+    fn = weiboNavigateToSideBar
+  },
+  ["weiboNavigate7thGroup"] = {
+    message = "自定义分组7",
+    condition = weiboNavigateToGroupCondition(7),
+    fn = weiboNavigateToSideBar
+  },
+  ["weiboNavigate8thGroup"] = {
+    message = "自定义分组8",
+    condition = weiboNavigateToGroupCondition(8),
+    fn = weiboNavigateToSideBar
+  },
+  ["weiboNavigate9thGroup"] = {
+    message = "自定义分组9",
+    condition = weiboNavigateToGroupCondition(9),
+    fn = weiboNavigateToSideBar
+  },
+  ["weiboNavigate10thGroup"] = {
+    message = "自定义分组10",
+    condition = weiboNavigateToGroupCondition(10),
+    fn = weiboNavigateToSideBar
+  }
+}
+local supportedBrowsers = {
+  "com.apple.Safari", "com.google.Chrome",
+  "com.microsoft.edgemac", "com.microsoft.edgemac.Dev"
+}
+for _, bid in ipairs(supportedBrowsers) do
+  if appHotKeyCallbacks[bid] == nil then
+    appHotKeyCallbacks[bid] = {}
+  end
+  for k, v in pairs(browserTabHotKeyCallbacks) do
+    appHotKeyCallbacks[bid][k] = v
+  end
+  if KeybindingConfigs.hotkeys[bid] == nil then
+    KeybindingConfigs.hotkeys[bid] = {}
+  end
+  for k, v in pairs(KeybindingConfigs.hotkeys.browsers) do
+    KeybindingConfigs.hotkeys[bid][k] = v
+  end
+end
 
 local runningAppHotKeys = {}
 local inAppHotKeys = {}
