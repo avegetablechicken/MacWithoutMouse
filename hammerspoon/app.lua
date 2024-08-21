@@ -628,7 +628,7 @@ end
 local function weiboNavigateToSideBarCondition(idx, isHome)
   return function(appObject)
     if idx == 1 and isHome then
-      return true, "/"
+      return true, ""
     end
     local source = getTabSource(appObject)
     if source == nil then return end
@@ -658,7 +658,7 @@ local function weiboNavigateToSideBarCondition(idx, isHome)
     end
     source = source:sub(start, stop)
     local cnt = isHome and 1 or 0
-    for url in string.gmatch(source, [[<a class="ALink_none.-href="(/mygroup.-)">]]) do
+    for url in string.gmatch(source, [[<a class="ALink_none.-href="/(mygroup.-)">]]) do
       cnt = cnt + 1
       if cnt == idx then return true, url end
     end
@@ -666,8 +666,10 @@ local function weiboNavigateToSideBarCondition(idx, isHome)
   end
 end
 
-local function weiboNavigateToSideBar(url, appObject)
-  local fullUrl = "https://weibo.com" .. url
+local function weiboNavigateToSideBar(result, url, appObject)
+  local schemeEnd = url:find("//")
+  local domainEnd = url:find("/", schemeEnd + 2)
+  local fullUrl = url:sub(1, domainEnd) .. result
   if appObject:bundleID() == "com.apple.Safari" then
     hs.osascript.applescript(string.format([[
       tell application id "com.apple.Safari"
@@ -3099,13 +3101,13 @@ function(winObj, appName, eventType)
 end)
 
 local function wrapCondition(keybinding, func, condition)
-  local cond, filter, prevCallback, mode, tabFilter
+  local cond, filter, prevCallback, mode, websiteFilter
   if type(condition) == 'table' then
     cond = condition.condition
     filter = condition.windowFilter
     prevCallback = condition.prevCallback
     mode = condition.mode
-    tabFilter = condition.tabFilter
+    websiteFilter = condition.websiteFilter
   else
     cond = condition
   end
@@ -3144,22 +3146,29 @@ local function wrapCondition(keybinding, func, condition)
       end
     end
   end
-  if tabFilter ~= nil then
+  if websiteFilter ~= nil then
     local oldCond = cond
     cond = function(obj)
       local appObject = mode == nil and obj or obj:application()
       local url = getTabUrl(appObject)
       if url ~= nil then
-        local allowURLs = tabFilter.allowURLs
+        local allowURLs = websiteFilter.allowURLs
         if type(allowURLs) == 'string' then
           allowURLs = { allowURLs }
         end
         for _, v in ipairs(allowURLs) do
           if string.match(url, v) ~= nil then
             if oldCond ~= nil then
-              return oldCond(obj)
+              local satisfied, result = oldCond(obj)
+              if not satisfied then
+                return false, result
+              elseif result ~= nil then
+                return true, result, url
+              else
+                return true, url
+              end
             else
-              return true
+              return true, url
             end
           end
         end
@@ -3175,11 +3184,15 @@ local function wrapCondition(keybinding, func, condition)
   if cond ~= nil then
     fn = function(appObject, ...)
       local obj = mode == nil and appObject or appObject:focusedWindow()
-      local satisfied, result = cond(obj)
+      local satisfied, result, url = cond(obj)
       if satisfied then
         if result ~= nil then  -- condition function can pass result to callback function
           ---@diagnostic disable-next-line: redundant-parameter
-          func(result, obj, ...)
+          if url ~= nil then
+            func(result, url, obj, ...)
+          else
+            func(result, obj, ...)
+          end
         else
           ---@diagnostic disable-next-line: redundant-parameter
           func(obj, ...)
@@ -3253,9 +3266,9 @@ local function registerInAppHotKeys(appName, eventType, appObject)
       end
       if not isBackground and not isForWindow and bindable() then
         local repeatable = keybinding.repeatable ~= nil and keybinding.repeatable or cfg.repeatable
-        local tabFilter = keybinding.tabFilter or cfg.tabFilter
+        local websiteFilter = keybinding.websiteFilter or cfg.websiteFilter
         local fn, cond = wrapCondition(keybinding, cfg.fn,
-                                       { condition = cfg.condition, tabFilter = tabFilter })
+                                       { condition = cfg.condition, websiteFilter = websiteFilter })
         if repeatable ~= false and cfg.condition ~= nil then
           -- in current version of Hammerspoon, if a callback lasts kind of too long,
           -- keeping pressing a hotkey may lead to unexpected repeated triggering of callback function
