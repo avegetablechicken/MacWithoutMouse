@@ -693,6 +693,45 @@ local function weiboNavigateToHomeGroupCondition(idx)
   return weiboNavigateToSideBarCondition(idx, true)
 end
 
+local function douyinNavigateToTabCondition(idx)
+  return function(appObject)
+    local source = getTabSource(appObject)
+    if source == nil then return end
+    local cnt = 0
+    local lastURL = ""
+    for url in string.gmatch(source, [[<div class="tab\-.-><a href="(.-)"]]) do
+      print(url, lastURL)
+      if url ~= lastURL then cnt = cnt + 1 end
+      if cnt == idx then return true, url end
+      lastURL = url
+    end
+    return false
+  end
+end
+
+local function douyinNavigateToTab(result, url, appObject)
+  local fullUrl
+  if result:sub(1, 2) == '//' then
+    local schemeEnd = url:find("//")
+    fullUrl = url:sub(1, schemeEnd - 1) .. result
+  else
+    fullUrl = result
+  end
+  if appObject:bundleID() == "com.apple.Safari" then
+    hs.osascript.applescript(string.format([[
+      tell application id "com.apple.Safari"
+        set URL of front document to "%s"
+      end tell
+    ]], fullUrl))
+  else  -- assume chromium-based browsers
+    hs.osascript.applescript(string.format([[
+      tell application id "%s"
+        set URL of active tab of window %d to "%s"
+      end tell
+    ]], appObject:bundleID(), activatedWindowIndex(), fullUrl))
+  end
+end
+
 -- ## functin utilities for hotkey configs
 
 -- some apps save key bindings in plist files
@@ -2961,6 +3000,57 @@ local browserTabHotKeyCallbacks = {
     message = "自定义分组10",
     condition = weiboNavigateToGroupCondition(10),
     fn = weiboNavigateToSideBar
+  },
+
+  ["douyinNavigate1stTab"] = {
+    message = "Tab 1",
+    condition = douyinNavigateToTabCondition(1),
+    fn = douyinNavigateToTab
+  },
+  ["douyinNavigate2ndTab"] = {
+    message = "Tab 2",
+    condition = douyinNavigateToTabCondition(2),
+    fn = douyinNavigateToTab
+  },
+  ["douyinNavigate3rdTab"] = {
+    message = "Tab 3",
+    condition = douyinNavigateToTabCondition(3),
+    fn = douyinNavigateToTab
+  },
+  ["douyinNavigate4thTab"] = {
+    message = "Tab 4",
+    condition = douyinNavigateToTabCondition(4),
+    fn = douyinNavigateToTab
+  },
+  ["douyinNavigate5thTab"] = {
+    message = "Tab 5",
+    condition = douyinNavigateToTabCondition(5),
+    fn = douyinNavigateToTab
+  },
+  ["douyinNavigate6thTab"] = {
+    message = "Tab 6",
+    condition = douyinNavigateToTabCondition(6),
+    fn = douyinNavigateToTab
+  },
+  ["douyinNavigate7thTab"] = {
+    message = "Tab 7",
+    condition = douyinNavigateToTabCondition(7),
+    fn = douyinNavigateToTab
+  },
+  ["douyinNavigate8thTab"] = {
+    message = "Tab 8",
+    condition = douyinNavigateToTabCondition(8),
+    fn = douyinNavigateToTab
+  },
+  ["douyinNavigate9thTab"] = {
+    message = "Tab 9",
+    condition = douyinNavigateToTabCondition(9),
+    fn = douyinNavigateToTab
+  },
+  ["douyinNavigate10thTab"] = {
+    message = "Tab 10",
+    condition = douyinNavigateToTabCondition(10),
+    fn = douyinNavigateToTab
   }
 }
 local supportedBrowsers = {
