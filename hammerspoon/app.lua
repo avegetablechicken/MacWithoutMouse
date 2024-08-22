@@ -784,6 +784,7 @@ local COND_FAIL = {
   MENU_ITEM_SELECTED = "MENU_ITEM_SELECTED",
   NO_MENU_ITEM_BY_KEYBINDING = "NO_MENU_ITEM_BY_KEYBINDING",
   WINDOW_FILTER_NOT_SATISFIED = "WINDOW_FILTER_NOT_SATISFIED",
+  WEBSITE_FILTER_NOT_SATISFIED = "WEBSITE_FILTER_NOT_SATISFIED",
 }
 
 -- check whether the menu bar item is selected
@@ -3101,13 +3102,14 @@ function(winObj, appName, eventType)
 end)
 
 local function wrapCondition(keybinding, func, condition)
-  local cond, filter, prevCallback, mode, websiteFilter
+  local cond, filter, prevWindowCallback, mode, websiteFilter, prevWebsiteCallback
   if type(condition) == 'table' then
     cond = condition.condition
     filter = condition.windowFilter
-    prevCallback = condition.prevCallback
+    prevWindowCallback = condition.prevWindowCallback
     mode = condition.mode
     websiteFilter = condition.websiteFilter
+    prevWebsiteCallback = condition.prevWebsiteCallback
   else
     cond = condition
   end
@@ -3172,7 +3174,7 @@ local function wrapCondition(keybinding, func, condition)
             end
           end
         end
-        return false
+        return false, COND_FAIL.WEBSITE_FILTER_NOT_SATISFIED
       end
     end
   end
@@ -3200,8 +3202,10 @@ local function wrapCondition(keybinding, func, condition)
       elseif result == COND_FAIL.NO_MENU_ITEM_BY_KEYBINDING
           or result == COND_FAIL.MENU_ITEM_SELECTED then
         hs.eventtap.keyStroke(keybinding.mods, keybinding.key, nil, appObject)
-      elseif result == COND_FAIL.WINDOW_FILTER_NOT_SATISFIED and prevCallback ~= nil then
-        prevCallback(mode)
+      elseif result == COND_FAIL.WINDOW_FILTER_NOT_SATISFIED and prevWindowCallback ~= nil then
+        prevWindowCallback(mode)
+      elseif result == COND_FAIL.WEBSITE_FILTER_NOT_SATISFIED and prevWebsiteCallback ~= nil then
+        prevWebsiteCallback()
       else
         -- most of the time, directly selecting menu item costs less time than key strokes
         selectMenuItemOrKeyStroke(appObject, keybinding.mods, keybinding.key)
@@ -3243,11 +3247,14 @@ function AppBindSpec(appObject, spec, ...)
 end
 
 -- hotkeys for active app
+local inWebsiteCallbackChain = {}
+InWebsiteHotkeyInfoChain = {}
 local callBackExecuting
 local function registerInAppHotKeys(appName, eventType, appObject)
   local bid = appObject:bundleID()
   if appHotKeyCallbacks[bid] == nil then return end
   local keybindings = KeybindingConfigs.hotkeys[bid] or {}
+  inWebsiteCallbackChain = {}
 
   if not inAppHotKeys[bid] then
     inAppHotKeys[bid] = {}
@@ -3267,17 +3274,24 @@ local function registerInAppHotKeys(appName, eventType, appObject)
       if not isBackground and not isForWindow and bindable() then
         local repeatable = keybinding.repeatable ~= nil and keybinding.repeatable or cfg.repeatable
         local websiteFilter = keybinding.websiteFilter or cfg.websiteFilter
+        local hkIdx, prevWebsiteCallback, prevWebsiteHotkeyInfo
+        if websiteFilter ~= nil then
+          hkIdx = hotkeyIdx(keybinding.mods, keybinding.key)
+          prevWebsiteCallback = inWebsiteCallbackChain[hkIdx]
+          prevWebsiteHotkeyInfo = InWebsiteHotkeyInfoChain[hkIdx]
+        end
         local fn, cond = wrapCondition(keybinding, cfg.fn,
-                                       { condition = cfg.condition, websiteFilter = websiteFilter })
+                                       { condition = cfg.condition, websiteFilter = websiteFilter,
+                                         prevWebsiteCallback = prevWebsiteCallback })
+        fn = hs.fnutils.partial(fn, appObject, appName, eventType)
+        local oldFn = fn
         if repeatable ~= false and cfg.condition ~= nil then
           -- in current version of Hammerspoon, if a callback lasts kind of too long,
           -- keeping pressing a hotkey may lead to unexpected repeated triggering of callback function
           -- a workaround is to check if callback function is executing, if so, do nothing
           -- note that this workaround may not work when the callback lasts really too long
-          local oldFn = fn
-          fn = function(...)
+          fn = function()
             if callBackExecuting then return end
-            oldFn = hs.fnutils.partial(oldFn, ...)
             hs.timer.doAfter(0, function()
               callBackExecuting = true
               oldFn()
@@ -3285,7 +3299,6 @@ local function registerInAppHotKeys(appName, eventType, appObject)
             end)
           end
         end
-        fn = hs.fnutils.partial(fn, appObject, appName, eventType)
         local repeatedFn
         -- hotkey with condition function is repeatable by defaults
         -- because when its condition is not satisfied it will be re-stroked
@@ -3295,10 +3308,19 @@ local function registerInAppHotKeys(appName, eventType, appObject)
         local msg = type(cfg.message) == 'string' and cfg.message or cfg.message(appObject)
         if msg ~= nil then
           local hotkey = AppBindSpec(appObject, keybinding, msg, fn, repeatedFn)
-          hotkey.kind = HK.IN_APP
+          hotkey.kind = websiteFilter == nil and HK.IN_APP or HK.IN_WEBSITE
           hotkey.condition = cond
           hotkey.deleteOnDisable = cfg.deleteOnDisable
           inAppHotKeys[bid][hkID] = hotkey
+          if websiteFilter ~= nil then
+            inWebsiteCallbackChain[hkIdx] = oldFn
+            InWebsiteHotkeyInfoChain[hkIdx] = {
+              appName = appName,
+              condition = cond,
+              message = msg,
+              previous = prevWebsiteHotkeyInfo
+            }
+          end
         end
       end
     end
@@ -3346,7 +3368,7 @@ local function inWinHotKeysWrapper(appObject, filter, cond, mods, key, mode, mes
   local prevHotkeyInfo = InWinHotkeyInfoChain[bid][hotkeyIdx(mods, key)]
   fn, cond = wrapCondition({ mods = mods, key = key }, fn,
                            { condition = cond,
-                             windowFilter = filter, prevCallback = prevCallback, mode = mode })
+                             windowFilter = filter, prevWindowCallback = prevCallback, mode = mode })
   fn = hs.fnutils.partial(fn, appObject)
   inWinCallbackChain[bid][hotkeyIdx(mods, key)] = function(m)
     if mode == m then

@@ -257,13 +257,12 @@ local function loadKarabinerKeyBindings(filePath)
   return keyBindings
 end
 
-local function getValidMessage(hotkeyInfo)
-  local winObj = hs.application.frontmostApplication():focusedWindow()
-  if hotkeyInfo.condition(winObj) then
+local function getValidMessage(hotkeyInfo, obj)
+  if hotkeyInfo.condition(obj) then
     return true, hotkeyInfo.message
   else
     if hotkeyInfo.previous then
-      return getValidMessage(hotkeyInfo.previous)
+      return getValidMessage(hotkeyInfo.previous, obj)
     else
       return false, nil
     end
@@ -378,12 +377,23 @@ local function testValid(entry)
   local actualMsg
   if valid then
     valid = valid and (entry.enabled == nil or entry.enabled == true)
-        and (entry.condition == nil or entry.condition(hs.application.frontmostApplication()))
-    if valid and (entry.kind == HK.APP_MENU or entry.kind == HK.IN_APP) then
+    if valid and (entry.kind == HK.APP_MENU or entry.kind == HK.IN_APP or entry.kind == HK.IN_WEBSITE) then
       valid = hs.window.frontmostWindow() == nil or hs.application.frontmostApplication():focusedWindow() == nil
           or hs.window.frontmostWindow():application():bundleID() == hs.application.frontmostApplication():bundleID()
+      if valid and entry.kind ~= HK.IN_WEBSITE then
+        valid = valid and (entry.condition == nil or entry.condition(hs.application.frontmostApplication()))
+      end
     end
-    if valid and entry.kind == HK.IN_APPWIN then
+    if valid and entry.kind == HK.IN_WEBSITE then
+      if InWebsiteHotkeyInfoChain ~= nil and InWebsiteHotkeyInfoChain[entry.idx] ~= nil then
+        local hotkeyInfo = InWebsiteHotkeyInfoChain[entry.idx]
+        if hotkeyInfo then
+          valid, actualMsg = getValidMessage(hotkeyInfo, hs.application.frontmostApplication())
+        end
+      else
+        valid = false
+      end
+    elseif valid and entry.kind == HK.IN_APPWIN then
       local bundleID
       if hs.window.frontmostWindow() == nil
           or hs.window.frontmostWindow():application():bundleID() == hs.application.frontmostApplication():bundleID()
@@ -395,7 +405,7 @@ local function testValid(entry)
       if InWinHotkeyInfoChain ~= nil and InWinHotkeyInfoChain[bundleID] ~= nil then
         local hotkeyInfo = InWinHotkeyInfoChain[bundleID][entry.idx]
         if hotkeyInfo then
-          valid, actualMsg = getValidMessage(hotkeyInfo)
+          valid, actualMsg = getValidMessage(hotkeyInfo, hs.application.frontmostApplication():focusedWindow())
         end
       elseif not entry.background then
         valid = false
