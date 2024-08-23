@@ -3453,13 +3453,14 @@ local function inWinHotKeysWrapper(appObject, filter, cond, mods, key, mode, mes
   local bid = appObject:bundleID()
   if inWinCallbackChain[bid] == nil then inWinCallbackChain[bid] = {} end
   if InWinHotkeyInfoChain[bid] == nil then InWinHotkeyInfoChain[bid] = {} end
-  local prevCallback = inWinCallbackChain[bid][hotkeyIdx(mods, key)]
-  local prevHotkeyInfo = InWinHotkeyInfoChain[bid][hotkeyIdx(mods, key)]
+  local hkIdx = hotkeyIdx(mods, key)
+  local prevCallback = inWinCallbackChain[bid][hkIdx]
+  local prevHotkeyInfo = InWinHotkeyInfoChain[bid][hkIdx]
   fn, cond = wrapCondition({ mods = mods, key = key }, fn,
                            { condition = cond,
                              windowFilter = filter, prevWindowCallback = prevCallback, mode = mode })
   fn = hs.fnutils.partial(fn, appObject)
-  inWinCallbackChain[bid][hotkeyIdx(mods, key)] = function(m)
+  inWinCallbackChain[bid][hkIdx] = function(m)
     if mode == m then
       fn()
     elseif prevCallback ~= nil then
@@ -3468,7 +3469,7 @@ local function inWinHotKeysWrapper(appObject, filter, cond, mods, key, mode, mes
       selectMenuItemOrKeyStroke(appObject, mods, key)
     end
   end
-  InWinHotkeyInfoChain[bid][hotkeyIdx(mods, key)] = {
+  InWinHotkeyInfoChain[bid][hkIdx] = {
     condition = cond,
     message = message,
     previous = prevHotkeyInfo
