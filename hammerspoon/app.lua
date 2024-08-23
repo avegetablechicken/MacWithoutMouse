@@ -3405,7 +3405,6 @@ local function registerInAppHotKeys(appName, eventType, appObject)
           if websiteFilter ~= nil then
             inWebsiteCallbackChain[hkIdx] = oldFn
             InWebsiteHotkeyInfoChain[hkIdx] = {
-              appName = appName,
               condition = cond,
               message = msg,
               previous = prevWebsiteHotkeyInfo
@@ -3470,7 +3469,6 @@ local function inWinHotKeysWrapper(appObject, filter, cond, mods, key, mode, mes
     end
   end
   InWinHotkeyInfoChain[bid][hotkeyIdx(mods, key)] = {
-    appName = appObject:name(),
     condition = cond,
     message = message,
     previous = prevHotkeyInfo
