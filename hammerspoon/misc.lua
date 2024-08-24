@@ -939,8 +939,6 @@ function()
     hkKeybinding:enable()
   end
 
-  -- disable all modals activated by this modal
-  hkKeybinding:disable()
   local enteredModal = hs.fnutils.find(HyperModalList,
       function(modal) return modal.hyper == HYPER end)
   if enteredModal then
@@ -949,6 +947,7 @@ function()
   end
 
   HSKeybindings:show()
+  hkKeybinding:disable()
   hkKeybindingsLastModifier = {}
   local callback = function(ev)
     if F_doNotReloadShowingKeybings then return end
