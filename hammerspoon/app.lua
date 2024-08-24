@@ -968,7 +968,8 @@ local specialCommonHotkeyConfigs = {
     mods = "⌘", key = "W",
     message = "Close Window",
     condition = function(appObject)
-      return appObject:focusedWindow() ~= nil, appObject:focusedWindow()
+      local winObj = appObject:focusedWindow()
+      return winObj ~= nil and winObj:role() == "AXWindow", winObj
     end,
     fn = function(winObj) winObj:close() end
   },
@@ -976,7 +977,8 @@ local specialCommonHotkeyConfigs = {
     mods = "⌘", key = "M",
     message = "Minimize",
     condition = function(appObject)
-      return appObject:focusedWindow() ~= nil, appObject:focusedWindow()
+      local winObj = appObject:focusedWindow()
+      return winObj ~= nil and winObj:role() == "AXWindow", winObj
     end,
     fn = function(winObj) winObj:minimize() end
   },
