@@ -3603,7 +3603,6 @@ local function inWinOfUnactivatedAppWatcherEnableCallback(bid, filter, winObj, a
         local hotkey = bindHotkeySpec(keybinding, msg, fn, nil,
                                       repeatable and fn or nil)
         hotkey.kind = HK.IN_WIN
-        hotkey.background = isBackground
         table.insert(inWinOfUnactivatedAppHotKeys[bid], hotkey)
       end
     end

@@ -376,7 +376,6 @@ local function testValid(entry)
       and not (entry.suspendable and F_hotkeySuspended)
   local actualMsg
   if valid then
-    valid = valid and (entry.enabled == nil or entry.enabled == true)
     if valid and (entry.kind == HK.APP_MENU or entry.kind == HK.IN_APP or entry.kind == HK.IN_WEBSITE) then
       valid = hs.window.frontmostWindow() == nil or hs.application.frontmostApplication():focusedWindow() == nil
           or hs.window.frontmostWindow():application():bundleID() == hs.application.frontmostApplication():bundleID()
@@ -407,8 +406,6 @@ local function testValid(entry)
         if hotkeyInfo then
           valid, actualMsg = getValidMessage(hotkeyInfo, hs.application.frontmostApplication():focusedWindow())
         end
-      elseif not entry.background then
-        valid = false
       end
     end
     entry.valid = valid
@@ -430,11 +427,10 @@ local function processHotkeys(validOnly, showHS, showKara, showApp, evFlags, rel
     goto L_endCollect
   end
 
-  for i, modal in ipairs(DoubleTapModalList) do
+  for i, modal in ipairs(hs.fnutils.filter(DoubleTapModalList, function (m) return m:isEnabled() end)) do
     table.insert(allKeys, { idx = modal.idx, msg = modal.msg,
-                            condition = modal.condition, enabled = modal.enabled,
+                            condition = modal.condition,
                             kind = modal.kind, subkind = modal.subkind,
-                            background = modal.background,
                             suspendable = modal.suspendable, source = 0 })
   end
 
@@ -444,7 +440,6 @@ local function processHotkeys(validOnly, showHS, showKara, showApp, evFlags, rel
         table.insert(allKeys, { idx = hotkey.idx, msg = hotkey.msg,
                                 condition = hotkey.condition,
                                 kind = hotkey.kind, subkind = hotkey.subkind,
-                                background = modal.background,
                                 suspendable = hotkey.suspendable, source = 0 })
       end
     end
@@ -461,7 +456,6 @@ local function processHotkeys(validOnly, showHS, showKara, showApp, evFlags, rel
       local newEntry = { idx = entry.idx, msg = entry.msg,
                          condition = entry.condition,
                          kind = entry.kind, subkind = entry.subkind,
-                         background = entry.background,
                          suspendable = entry.suspendable, source = 0 }
       if entry.kind ~= HK.APP_MENU then
         table.insert(allKeys, newEntry)
@@ -1083,10 +1077,10 @@ local searchHotkey = bindHotkeySpec(misc["searchHotkeys"], "Search Hotkey", func
   local allKeys = {}
   local enabledAltMenuHotkeys = {}
 
-  for i, modal in ipairs(DoubleTapModalList) do
+  for i, modal in ipairs(hs.fnutils.filter(DoubleTapModalList, function(m) return m:isEnabled() end)) do
     table.insert(allKeys, { modalType = 2,
                             idx = modal.idx, msg = modal.msg,
-                            condition = modal.condition, enabled = modal.enabled,
+                            condition = modal.condition,
                             kind = modal.kind, subkind = modal.subkind,
                             icon = modal.icon })
   end
