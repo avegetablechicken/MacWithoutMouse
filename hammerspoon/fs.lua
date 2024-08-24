@@ -5,18 +5,17 @@ local function syncFiles(targetDir, watchedDir, changedPaths, beforeFunc, workFu
   end
 
   for i, path in ipairs(changedPaths) do
-    local output
-    local status
+    local _, status
 
     if beforeFunc ~= nil then
       beforeFunc(targetDir, watchedDir, path)
     end
     if workFunc ~= nil then
-      output, status = workFunc(targetDir, watchedDir, path)
+      _, status = workFunc(targetDir, watchedDir, path)
     else
       -- ignore git repo
       if not string.find(path, "/.git/") then
-        output, status = hs.execute(string.format("cp -rp '%s' '%s'", path, targetDir .. "/" .. relativePaths[i]))
+        _, status = hs.execute(string.format("cp -rp '%s' '%s'", path, targetDir .. "/" .. relativePaths[i]))
       end
     end
 

@@ -427,7 +427,7 @@ local function processHotkeys(validOnly, showHS, showKara, showApp, evFlags, rel
     goto L_endCollect
   end
 
-  for i, modal in ipairs(hs.fnutils.filter(DoubleTapModalList, function (m) return m:isEnabled() end)) do
+  for _, modal in ipairs(hs.fnutils.filter(DoubleTapModalList, function (m) return m:isEnabled() end)) do
     table.insert(allKeys, { idx = modal.idx, msg = modal.msg,
                             condition = modal.condition,
                             kind = modal.kind, subkind = modal.subkind,
@@ -436,7 +436,7 @@ local function processHotkeys(validOnly, showHS, showKara, showApp, evFlags, rel
 
   for _, modal in ipairs(HyperModalList) do
     if modal.hyperMode.Entered == false then
-      for i, hotkey in ipairs(modal.hyperMode.keys) do
+      for _, hotkey in ipairs(modal.hyperMode.keys) do
         table.insert(allKeys, { idx = hotkey.idx, msg = hotkey.msg,
                                 condition = hotkey.condition,
                                 kind = hotkey.kind, subkind = hotkey.subkind,
@@ -1076,7 +1076,7 @@ local searchHotkey = bindHotkeySpec(misc["searchHotkeys"], "Search Hotkey", func
   local allKeys = {}
   local enabledAltMenuHotkeys = {}
 
-  for i, modal in ipairs(hs.fnutils.filter(DoubleTapModalList, function(m) return m:isEnabled() end)) do
+  for _, modal in ipairs(hs.fnutils.filter(DoubleTapModalList, function(m) return m:isEnabled() end)) do
     table.insert(allKeys, { modalType = 2,
                             idx = modal.idx, msg = modal.msg,
                             condition = modal.condition,
@@ -1086,7 +1086,7 @@ local searchHotkey = bindHotkeySpec(misc["searchHotkeys"], "Search Hotkey", func
 
   for _, modal in ipairs(HyperModalList) do
     if modal.hyperMode.Entered == false then
-      for i, hotkey in ipairs(modal.hyperMode.keys) do
+      for _, hotkey in ipairs(modal.hyperMode.keys) do
         table.insert(allKeys, { modalType = 1, hyper = _,
                                 idx = hotkey.idx, msg = hotkey.msg,
                                 condition = hotkey.condition,

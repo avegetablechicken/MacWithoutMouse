@@ -516,7 +516,7 @@ end)
 bindWindow(winHK["hideAllWindows"], "Hide All Windows",
 function()
   local allWindows = hs.window.filter.new():getWindows()
-  for i, window in ipairs(allWindows) do
+  for _, window in ipairs(allWindows) do
     if window:isVisible() and not window:isFullScreen()
         and window:application() ~= nil
         and window:application():bundleID() ~= "com.apple.finder" then
@@ -524,7 +524,7 @@ function()
     end
   end
   local finderWindows = findApplication("com.apple.finder"):visibleWindows()
-  for i, window in ipairs(finderWindows) do
+  for _, window in ipairs(finderWindows) do
     if window:isFullScreen() then
       window:minimize()
     end
@@ -539,7 +539,7 @@ function()
   allWindows = hs.fnutils.filter(allWindows, function(window)
     return hs.fnutils.contains(hs.spaces.windowSpaces(window), space)
   end)
-  for i, window in ipairs(allWindows) do
+  for _, window in ipairs(allWindows) do
     if window:isVisible() and not window:isFullScreen()
         and window:application() ~= nil
         and window:application():bundleID() ~= "com.apple.finder" then
@@ -550,7 +550,7 @@ function()
   finderWindows = hs.fnutils.filter(finderWindows, function(window)
     return hs.fnutils.contains(hs.spaces.windowSpaces(window), space)
   end)
-  for i, window in ipairs(finderWindows) do
+  for _, window in ipairs(finderWindows) do
     if window:isFullScreen() then
       window:minimize()
     end
@@ -689,7 +689,7 @@ local function registerWindowSwitcher()
     switcher:next()
     if windowSwitcherWindowIdx == nil then
       windowSwitcherWindowNumber = 0
-      for k, v in pairs(switcher.wf.windows) do
+      for _, _ in pairs(switcher.wf.windows) do
         windowSwitcherWindowNumber = windowSwitcherWindowNumber + 1
       end
       if windowSwitcherWindowNumber > 1 then
@@ -733,7 +733,7 @@ local function registerWindowSwitcher()
     switcher:previous()
     if windowSwitcherWindowIdx == nil then
       windowSwitcherWindowNumber = 0
-      for k, v in pairs(switcher.wf.windows) do
+      for _, _ in pairs(switcher.wf.windows) do
         windowSwitcherWindowNumber = windowSwitcherWindowNumber + 1
       end
       windowSwitcherWindowIdx = windowSwitcherWindowNumber
@@ -876,7 +876,7 @@ if misc["switchBrowserWindow"] ~= nil then
     switcher_browsers:next()
     if windowSwitcherWindowIdx == nil then
       windowSwitcherWindowNumber = 0
-      for k, v in pairs(switcher_browsers.wf.windows) do
+      for _, _ in pairs(switcher_browsers.wf.windows) do
         windowSwitcherWindowNumber = windowSwitcherWindowNumber + 1
       end
       if windowSwitcherWindowNumber > 1 then
@@ -918,7 +918,7 @@ if misc["switchBrowserWindow"] ~= nil then
     switcher_browsers:previous()
     if windowSwitcherWindowIdx == nil then
       windowSwitcherWindowNumber = 0
-      for k, v in pairs(switcher_browsers.wf.windows) do
+      for _, _ in pairs(switcher_browsers.wf.windows) do
         windowSwitcherWindowNumber = windowSwitcherWindowNumber + 1
       end
       windowSwitcherWindowIdx = windowSwitcherWindowNumber
@@ -1288,11 +1288,11 @@ local function PDFChooser()
         local activeIdx = hs.fnutils.indexOf(winTabTitlesPDFExpert[choice.winID],
             allWindowsPDFExpert[choice.winID]:title()) or 0
         if activeIdx < choice.id then
-          for i=1,choice.id-activeIdx do
+          for _=1,choice.id-activeIdx do
             selectMenuItem(appObject, { "Window", "Go to Next Tab" })
           end
         else
-          for i=1,activeIdx-choice.id do
+          for _=1,activeIdx-choice.id do
             selectMenuItem(appObject, { "Window", "Go to Previous Tab" })
           end
         end

@@ -4070,7 +4070,7 @@ end
 
 local function searchHotkeyByNth(itemTitles, alreadySetHotkeys, index)
   local notSetItems = {}
-  for i, title in pairs(itemTitles) do
+  for _, title in pairs(itemTitles) do
     if index == nil then
       index = string.find(title[2], " ")
       if index ~= nil then
@@ -4183,7 +4183,7 @@ local function altMenuBarItem(appObject)
     itemTitles = delocalizeMenuBarItems(itemTitles, appObject:bundleID())
 
     local notSetItems = {}
-    for i, title in ipairs(itemTitles) do
+    for _, title in ipairs(itemTitles) do
       if hs.fnutils.contains({ 'File', 'Edit', 'View', 'Window', 'Help' }, title[2]) then
         local hotkey = string.sub(title[2], 1, 1)
         alreadySetHotkeys[hotkey] = title[1]
@@ -4648,7 +4648,7 @@ local modifiersShort = {
   shift = "shift",
   fn = "fn"
 }
-for bid, rules in pairs(remoteDesktopsMappingModifiers) do
+for _, rules in pairs(remoteDesktopsMappingModifiers) do
   for _, r in ipairs(rules) do
     local newMap = {}
     for k, v in pairs(r.map) do
@@ -4724,7 +4724,7 @@ function(ev)
       justModifiedRemoteDesktopModifiers = true
       local evFlags =	ev:getFlags()
       local newEvFlags = {}
-      for k, v in pairs(evFlags) do
+      for k, _ in pairs(evFlags) do
         if rule.map[k] == nil then
           newEvFlags[k] = true
         else

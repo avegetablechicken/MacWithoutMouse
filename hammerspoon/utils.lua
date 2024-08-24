@@ -1661,7 +1661,7 @@ function clickAppRightMenuBarItem(bundleID, menuItem, subMenuItem, show)
           click submenuitem
         ]], subMenuItem, menuItem)
       else
-        for lang, subitem in pairs(subMenuItem) do
+        for _, subitem in pairs(subMenuItem) do
           local else_ = ""
           if clickSubMenuItemCmd ~= "" then
             else_ = "else "
@@ -1696,7 +1696,7 @@ function clickAppRightMenuBarItem(bundleID, menuItem, subMenuItem, show)
     return status_code
   else
     local clickMenuItemCmd = ""
-    for lang, item in pairs(menuItem) do
+    for _, item in pairs(menuItem) do
       local clickSubMenuItemCmd = ""
       if subMenuItem ~= nil then
         if type(subMenuItem) ~= "table" then
@@ -1705,7 +1705,7 @@ function clickAppRightMenuBarItem(bundleID, menuItem, subMenuItem, show)
             click submenuitem
           ]], subMenuItem, item)
         else
-          for lang, subitem in pairs(subMenuItem) do
+          for _, subitem in pairs(subMenuItem) do
             local else_ = ""
             if clickSubMenuItemCmd ~= "" then
               else_ = "else "

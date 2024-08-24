@@ -322,7 +322,7 @@ local function parseProxyConfigurations(configs)
           end
         end
         ProxyConfigs[name].locations = config.locations
-        for i, loc in ipairs(config.locations) do
+        for _, loc in ipairs(config.locations) do
           ProxyConfigs[name][loc] = {}
           local spec = config[loc]
           ProxyConfigs[name][loc]["PAC"] = spec.pac
@@ -452,7 +452,7 @@ local function updateProxyWrapper(wrapped, appname)
   local fn = function(mod, item)
     wrapped.fn(mod, item)
     local newProxyMenu = {}
-    for i, _item in ipairs(proxyMenu) do
+    for _, _item in ipairs(proxyMenu) do
       _item.checked = false
       item.checked = true
       if not string.find(_item.title, "Proxy:")
