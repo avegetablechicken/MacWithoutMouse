@@ -112,12 +112,7 @@ function module:_new(mods, key, msg, func)
     func = msg
     msg = nil
   end
-  func = forgiveWrapper(func)
-  self.action = function()
-    if self.enabled then
-      func()
-    end
-  end
+  self.action = forgiveWrapper(func)
   if msg then self.msg = self.idx .. ": " .. msg end
 
   -- the actual workhorse
@@ -173,13 +168,17 @@ function module:_bind(mods, key, msg, func)
 end
 
 function module:enable()
-  self.enabled = true
+  self.eventWatcher:start()
   return self
 end
 
 function module:disable()
-  self.enabled = false
+  self.eventWatcher:stop()
   return self
+end
+
+function module:isEnabled()
+  return self.eventWatcher:isEnabled()
 end
 
 function module:_newInstance()
@@ -197,7 +196,6 @@ function module:_newInstance()
 
   -- what to do when the double tap of **KEY** occurs
   self.action = nil
-  self.enabled = false
 
   -- status
   self.timeFirstKeyDown, self.firstDown, self.secondDown = 0, false, false
