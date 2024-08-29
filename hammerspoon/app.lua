@@ -4762,15 +4762,15 @@ local function microsoftRemoteDesktopCallback(appObject)
         return child.AXTitle == "Cancel"
       end)
       if #cancel == 0 then
-        F_hotkeySuspendedByRemoteDesktop = not F_hotkeySuspended
-        F_hotkeySuspended = true
+        FLAGS["SUSPEND_IN_REMOTE_DESKTOP"] = not FLAGS["SUSPEND"]
+        FLAGS["SUSPEND"] = true
         return
       end
     end
   end
-  if F_hotkeySuspendedByRemoteDesktop ~= nil then
-    F_hotkeySuspended = not F_hotkeySuspendedByRemoteDesktop
-    F_hotkeySuspendedByRemoteDesktop = nil
+  if FLAGS["SUSPEND_IN_REMOTE_DESKTOP"] ~= nil then
+    FLAGS["SUSPEND"] = not FLAGS["SUSPEND_IN_REMOTE_DESKTOP"]
+    FLAGS["SUSPEND_IN_REMOTE_DESKTOP"] = nil
   end
 end
 execOnActivated("com.microsoft.rdc.macos", microsoftRemoteDesktopCallback)
@@ -4936,9 +4936,9 @@ function App_applicationCallback(appName, eventType, appObject)
     end
     deactivateCloseWindowForIOSApps(appObject)
     selectInputSourceInApp(appObject)
-    F_doNotReloadShowingKeybings = true
+    FLAGS["NO_RESHOW_KEYBINDING"] = true
     hs.timer.doAfter(3, function()
-      F_doNotReloadShowingKeybings = false
+      FLAGS["NO_RESHOW_KEYBINDING"] = false
     end)
     hs.timer.doAfter(0, function()
       local locales = applicationLocales(bundleID)
@@ -4967,7 +4967,7 @@ function App_applicationCallback(appName, eventType, appObject)
             HSKeybindings:reset()
             HSKeybindings:update(validOnly, showHS, showKara, showApp, true)
           end
-          F_doNotReloadShowingKeybings = false
+          FLAGS["NO_RESHOW_KEYBINDING"] = false
         end)
       end)
     end)
@@ -4978,9 +4978,9 @@ function App_applicationCallback(appName, eventType, appObject)
     end
   elseif eventType == hs.application.watcher.deactivated then
     if microsoftRemoteDesktopObserver ~= nil then
-      if F_hotkeySuspendedByRemoteDesktop ~= nil then
-        F_hotkeySuspended = not F_hotkeySuspendedByRemoteDesktop
-        F_hotkeySuspendedByRemoteDesktop = nil
+      if FLAGS["SUSPEND_IN_REMOTE_DESKTOP"] ~= nil then
+        FLAGS["SUSPEND"] = not FLAGS["SUSPEND_IN_REMOTE_DESKTOP"]
+        FLAGS["SUSPEND_IN_REMOTE_DESKTOP"] = nil
       end
     end
     if appName ~= nil then

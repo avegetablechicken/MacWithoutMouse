@@ -657,7 +657,7 @@ local function registerWindowSwitcher()
     local flags = event:getFlags()
     if not flags:contain(lastWindowMods) then
       hotkeyEnabledByWindowSwitcher = false
-      F_hotkeySuspended = false
+      FLAGS["SUSPEND"] = false
       if anotherLastWindowHotkey ~= nil then
         anotherLastWindowHotkey:disable()
       end
@@ -673,7 +673,7 @@ local function registerWindowSwitcher()
   function()
     if not anotherLastWindowModifierTap:isEnabled() then
       hotkeyEnabledByWindowSwitcher = true
-      F_hotkeySuspended = true
+      FLAGS["SUSPEND"] = true
       if anotherLastWindowHotkey ~= nil then
         anotherLastWindowHotkey:enable()
       end
@@ -717,7 +717,7 @@ local function registerWindowSwitcher()
   function()
     if not anotherLastWindowModifierTap:isEnabled() then
       hotkeyEnabledByWindowSwitcher = true
-      F_hotkeySuspended = true
+      FLAGS["SUSPEND"] = true
       if anotherLastWindowHotkey ~= nil then
         anotherLastWindowHotkey:enable()
       end
@@ -848,7 +848,7 @@ if misc["switchBrowserWindow"] ~= nil then
     local flags = event:getFlags()
     if not flags:contain(lastBrowserWindowMods) then
       hotkeyEnabledByWindowSwitcher = false
-      F_hotkeySuspended = false
+      FLAGS["SUSPEND"] = false
       if anotherLastBrowserHotkey ~= nil then
         anotherLastBrowserHotkey:disable()
       end
@@ -864,7 +864,7 @@ if misc["switchBrowserWindow"] ~= nil then
   function()
     if not anotherLastBrowserModifierTap:isEnabled() then
       hotkeyEnabledByWindowSwitcher = true
-      F_hotkeySuspended = true
+      FLAGS["SUSPEND"] = true
       if anotherLastBrowserHotkey ~= nil then
         anotherLastBrowserHotkey:enable()
       end
@@ -906,7 +906,7 @@ if misc["switchBrowserWindow"] ~= nil then
   function()
     if not anotherLastBrowserModifierTap:isEnabled() then
       hotkeyEnabledByWindowSwitcher = true
-      F_hotkeySuspended = true
+      FLAGS["SUSPEND"] = true
       if anotherLastBrowserHotkey ~= nil then
         anotherLastBrowserHotkey:enable()
       end

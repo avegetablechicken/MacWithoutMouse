@@ -373,7 +373,7 @@ end
 local function testValid(entry)
   local pos = string.find(entry.msg, ": ")
   local valid = pos ~= nil
-      and not (entry.suspendable and F_hotkeySuspended)
+      and not (entry.suspendable and FLAGS["SUSPEND"])
   local actualMsg
   if valid then
     if valid and (entry.kind == HK.APP_MENU or entry.kind == HK.IN_APP or entry.kind == HK.IN_WEBSITE) then
@@ -950,7 +950,7 @@ function()
   hkKeybinding:disable()
   hkKeybindingsLastModifier = {}
   local callback = function(ev)
-    if F_doNotReloadShowingKeybings then return end
+    if FLAGS["NO_RESHOW_KEYBINDING"] then return end
     local evFlags = ev:getFlags()
     if ev:getType() == hs.eventtap.event.types.gesture then
       if hkKeybindingsLastModifier.hyper then

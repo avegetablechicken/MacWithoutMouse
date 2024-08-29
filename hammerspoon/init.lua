@@ -14,6 +14,8 @@ HK = {
   WIN_OP_ = { MOVE = 1, RESIZE = 2, SPACE_SCREEN = 3 },
 }
 
+FLAGS = {}
+
 HYPER = nil
 KeybindingConfigs = nil
 local function loadKeybindings(filePath)
@@ -99,7 +101,7 @@ function suspendWrapper(fn, mods, key, predicates)
   if fn ~= nil then
     local oldFn = fn
     fn = function()
-      local enabled = not F_hotkeySuspended
+      local enabled = not FLAGS["SUSPEND"]
       if predicates ~= nil then
         if enabled and predicates.and_ == true then
           if not(predicates.fn)() then
@@ -224,11 +226,11 @@ end
 local misc = KeybindingConfigs.hotkeys.global
 
 -- toggle hotkeys
-F_hotkeySuspended = false
+FLAGS["SUSPEND"] = false
 HSKeybindings = nil
 local toggleHotkey = bindHotkeySpecImpl(misc["toggleHotkeys"], "Toggle Hotkeys", function()
-  F_hotkeySuspended = not F_hotkeySuspended
-  if F_hotkeySuspended then
+  FLAGS["SUSPEND"] = not FLAGS["SUSPEND"]
+  if FLAGS["SUSPEND"] then
     hs.alert.show("Hammerspoon Hotkeys Suspended")
   else
     hs.alert.show("Hammerspoon Hotkeys Resumed")
