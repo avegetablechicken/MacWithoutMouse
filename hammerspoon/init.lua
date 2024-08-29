@@ -226,7 +226,7 @@ local misc = KeybindingConfigs.hotkeys.global
 -- toggle hotkeys
 F_hotkeySuspended = false
 HSKeybindings = nil
-local toggleHotkey = bindHotkeySpecImpl(misc["toggleHotkeys"], function()
+local toggleHotkey = bindHotkeySpecImpl(misc["toggleHotkeys"], "Toggle Hotkeys", function()
   F_hotkeySuspended = not F_hotkeySuspended
   if F_hotkeySuspended then
     hs.alert.show("Hammerspoon Hotkeys Suspended")
@@ -242,7 +242,6 @@ local toggleHotkey = bindHotkeySpecImpl(misc["toggleHotkeys"], function()
     HSKeybindings:update(validOnly, showHS, showKara, showApp)
   end
 end)
-toggleHotkey.msg = toggleHotkey.idx .. ": Toggle Hotkeys"
 toggleHotkey.kind = HK.PRIVELLEGE
 
 -- reload
