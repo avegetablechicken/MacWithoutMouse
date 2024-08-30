@@ -363,7 +363,7 @@ local function loadAppHotkeys(t)
   end
   local insertIdx = 1
   for i, hotkey in ipairs(t) do
-    if hotkey.kind and hotkey.kind > HK.IN_APPWIN then insertIdx = i break end
+    if hotkey.kind and hotkey.kind > HK.IN_WEBSITE then insertIdx = i break end
   end
   for i=#appHotkeys,1,-1 do
     table.insert(t, insertIdx, appHotkeys[i])
@@ -625,9 +625,9 @@ local function processHotkeys(validOnly, showHS, showKara, showApp, evFlags, rel
         elseif entry.kind == HK.MENUBAR then
           msg = "Menu Bar Apps"
         elseif kind < HK.APP_MENU and (entry.kind == HK.APP_MENU
-            or entry.kind == HK.IN_APP or entry.kind == HK.IN_APPWIN) then
+            or entry.kind == HK.IN_APP or entry.kind == HK.IN_APPWIN or entry.kind == HK.IN_WEBSITE) then
           msg = hs.application.frontmostApplication():name()
-        elseif (entry.kind == HK.IN_APP or entry.kind == HK.IN_APPWIN) then
+        elseif entry.kind == HK.IN_APP or entry.kind == HK.IN_APPWIN or entry.kind == HK.IN_WEBSITE then
           msg = nil
         elseif entry.kind == HK.IN_WIN then
           msg = "Frontmost Window: " .. hs.window.frontmostWindow():application():name()
@@ -1220,7 +1220,7 @@ local searchHotkey = bindHotkeySpec(misc["searchHotkeys"], "Search Hotkey", func
   end
   local insertIdx
   for i, hotkey in ipairs(allKeys) do
-    if hotkey.kind > HK.IN_APP then insertIdx = i break end
+    if hotkey.kind > HK.IN_WEBSITE then insertIdx = i break end
   end
   for i=#appHotkeys,1,-1 do
     table.insert(allKeys, insertIdx, appHotkeys[i])
@@ -1265,7 +1265,8 @@ local searchHotkey = bindHotkeySpec(misc["searchHotkeys"], "Search Hotkey", func
             end
           end
         end
-      elseif entry.kind == HK.APP_MENU or entry.kind == HK.IN_APP or entry.kind == HK.IN_APPWIN then
+      elseif entry.kind == HK.APP_MENU or entry.kind == HK.IN_APP
+          or entry.kind == HK.IN_APPWIN or entry.kind == HK.IN_WEBSITE then
         image = hs.image.imageFromAppBundle(hs.application.frontmostApplication():bundleID())
       elseif entry.kind == HK.IN_WIN then
         if hs.window.frontmostWindow() then
@@ -1294,7 +1295,8 @@ local searchHotkey = bindHotkeySpec(misc["searchHotkeys"], "Search Hotkey", func
         msg = "for Background Apps"
       elseif kind == HK.MENUBAR then
         msg = "for Menu Bar Apps"
-      elseif kind == HK.APP_MENU or kind == HK.IN_APP or kind == HK.IN_APPWIN then
+      elseif kind == HK.APP_MENU or kind == HK.IN_APP
+          or kind == HK.IN_APPWIN or kind == HK.IN_WEBSITE then
         msg = "for Active App"
       elseif kind == HK.IN_WIN then
         msg = "for Frontmost Window"
