@@ -376,13 +376,7 @@ local function testValid(entry)
       and not (entry.suspendable and FLAGS["SUSPEND"])
   local actualMsg
   if valid then
-    if valid and entry.kind == HK.IN_APP then
-      valid = hs.window.frontmostWindow() == nil or hs.application.frontmostApplication():focusedWindow() == nil
-          or hs.window.frontmostWindow():application():bundleID() == hs.application.frontmostApplication():bundleID()
-      if valid and entry.subkind ~= HK.IN_APP_.WEBSITE then
-        valid = valid and (entry.condition == nil or entry.condition(hs.application.frontmostApplication()))
-      end
-    end
+    valid = entry.condition == nil or entry.condition(hs.application.frontmostApplication())
     if valid and entry.kind == HK.IN_APP and entry.subkind == HK.IN_APP_.WEBSITE then
       if InWebsiteHotkeyInfoChain ~= nil and InWebsiteHotkeyInfoChain[entry.idx] ~= nil then
         local hotkeyInfo = InWebsiteHotkeyInfoChain[entry.idx]

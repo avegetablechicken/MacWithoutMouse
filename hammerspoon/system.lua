@@ -1933,7 +1933,7 @@ function registerControlCenterHotKeys(panel)
               if ok then
                 local appObject = findApplication(bundleID)
                 local hotkey, observer
-                hotkey = WinBind(appObject, true, nil, "⌘", "Return", "Relaunch", function()
+                hotkey = WinBind(appObject, "⌘", "Return", "Relaunch", function()
                   hs.osascript.applescript([[
                     tell application "System Events"
                       set win to ]] .. aWinFor(bundleID) .. [[
