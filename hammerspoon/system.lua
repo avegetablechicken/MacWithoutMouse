@@ -1952,7 +1952,8 @@ function registerControlCenterHotKeys(panel)
                     observer = nil
                   end
                 end)
-                hotkey.kind = HK.IN_APPWIN
+                hotkey.kind = HK.IN_APP
+                hotkey.subkind = HK.IN_APP_.WINDOW
                 local appUIObj = hs.axuielement.applicationElement(appObject)
                 local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
                 observer = hs.axuielement.observer.new(appObject:pid())

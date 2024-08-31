@@ -3400,7 +3400,8 @@ local function registerInAppHotKeys(appName, eventType, appObject)
         local msg = type(cfg.message) == 'string' and cfg.message or cfg.message(appObject)
         if msg ~= nil then
           local hotkey = AppBindSpec(appObject, keybinding, msg, fn, repeatedFn)
-          hotkey.kind = websiteFilter == nil and HK.IN_APP or HK.IN_WEBSITE
+          hotkey.kind = HK.IN_APP
+          if websiteFilter ~= nil then hotkey.subkind = HK.IN_APP_.WEBSITE end
           hotkey.condition = cond
           hotkey.deleteOnDisable = cfg.deleteOnDisable
           inAppHotKeys[bid][hkID] = hotkey
@@ -3517,7 +3518,8 @@ local function registerInWinHotKeys(appObject)
           local repeatedFn = repeatable ~= false and cfg.fn or nil
           local hotkey = WinBindSpec(appObject, windowFilter, cfg.condition,
                                       keybinding, msg, cfg.fn, repeatedFn)
-          hotkey.kind = HK.IN_APPWIN
+          hotkey.kind = HK.IN_APP
+          hotkey.subkind = HK.IN_APP_.WINDOW
           hotkey.deleteOnDisable = cfg.deleteOnDisable
           inWinHotKeys[bid][hkID] = hotkey
         end
@@ -3844,6 +3846,7 @@ local function remapPreviousTab(appObject)
                                          fn, fn)
     remapPreviousTabHotkey.condition = cond
     remapPreviousTabHotkey.kind = HK.IN_APP
+    remapPreviousTabHotkey.subkind = HK.IN_APP_.APP
   end
 end
 
@@ -3877,6 +3880,7 @@ local function registerOpenRecent(appObject)
     openRecentHotkey = AppBindSpec(appObject, spec, menuItemPath[2], fn)
     openRecentHotkey.condition = cond
     openRecentHotkey.kind = HK.IN_APP
+    openRecentHotkey.subkind = HK.IN_APP_.APP
   end
 end
 registerOpenRecent(frontmostApplication)
@@ -3910,7 +3914,8 @@ local function WPSCloseDialog(winUIObj)
               local action = button:actionNames()[1]
               button:performAction(action)
             end)
-            hotkey.kind = HK.IN_APPWIN
+            hotkey.kind = HK.IN_APP
+            hotkey.subkind = HK.IN_APP_.WINDOW
             table.insert(WPSCloseDialogHotkeys, hotkey)
           end
         end
@@ -4006,7 +4011,8 @@ local function registerForOpenSavePanel(appObject)
           local hotkey = WinBindSpec(appObject, windowFilter, nil, spec, header .. ' > ' .. folder, function()
             cell:performAction("AXOpen")
           end)
-          hotkey.kind = HK.IN_APPWIN
+          hotkey.kind = HK.IN_APP
+          hotkey.subkind = HK.IN_APP_.WINDOW
           table.insert(finderSibebarHotkeys, hotkey)
           i = i + 1
         end
@@ -4024,7 +4030,8 @@ local function registerForOpenSavePanel(appObject)
         local action = openSavePanelActor:actionNames()[1]
         openSavePanelActor:performAction(action)
       end)
-      hotkey.kind = HK.IN_APPWIN
+      hotkey.kind = HK.IN_APP
+      hotkey.subkind = HK.IN_APP_.WINDOW
     end
   end
   if appObject:focusedWindow() ~= nil then
@@ -4064,7 +4071,8 @@ AltMenuBarItemHotkeys = {}
 local function bindAltMenu(appObject, mods, key, message, fn)
   fn = showMenuItemWrapper(fn)
   local hotkey = AppBind(appObject, mods, key, message, fn)
-  hotkey.kind = HK.APP_MENU
+  hotkey.kind = HK.IN_APP
+  hotkey.subkind = HK.IN_APP_.MENU
   return hotkey
 end
 
@@ -4807,6 +4815,7 @@ local function deactivateCloseWindowForIOSApps(appObject)
     if iOSAppHotkey == nil then
       iOSAppHotkey = newHotkey("⌘", "w", "Cancel ⌘W", function() end)
       iOSAppHotkey.kind = HK.IN_APP
+      iOSAppHotkey.subkind = HK.IN_APP_.APP
     end
     iOSAppHotkey:enable()
   elseif iOSAppHotkey ~= nil then

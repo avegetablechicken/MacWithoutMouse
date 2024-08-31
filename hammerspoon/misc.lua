@@ -363,7 +363,7 @@ local function loadAppHotkeys(t)
   end
   local insertIdx = 1
   for i, hotkey in ipairs(t) do
-    if hotkey.kind and hotkey.kind > HK.IN_WEBSITE then insertIdx = i break end
+    if hotkey.kind and hotkey.kind > HK.IN_APP then insertIdx = i break end
   end
   for i=#appHotkeys,1,-1 do
     table.insert(t, insertIdx, appHotkeys[i])
@@ -376,14 +376,14 @@ local function testValid(entry)
       and not (entry.suspendable and FLAGS["SUSPEND"])
   local actualMsg
   if valid then
-    if valid and (entry.kind == HK.APP_MENU or entry.kind == HK.IN_APP or entry.kind == HK.IN_WEBSITE) then
+    if valid and entry.kind == HK.IN_APP then
       valid = hs.window.frontmostWindow() == nil or hs.application.frontmostApplication():focusedWindow() == nil
           or hs.window.frontmostWindow():application():bundleID() == hs.application.frontmostApplication():bundleID()
-      if valid and entry.kind ~= HK.IN_WEBSITE then
+      if valid and entry.subkind ~= HK.IN_APP_.WEBSITE then
         valid = valid and (entry.condition == nil or entry.condition(hs.application.frontmostApplication()))
       end
     end
-    if valid and entry.kind == HK.IN_WEBSITE then
+    if valid and entry.kind == HK.IN_APP and entry.subkind == HK.IN_APP_.WEBSITE then
       if InWebsiteHotkeyInfoChain ~= nil and InWebsiteHotkeyInfoChain[entry.idx] ~= nil then
         local hotkeyInfo = InWebsiteHotkeyInfoChain[entry.idx]
         if hotkeyInfo then
@@ -392,7 +392,7 @@ local function testValid(entry)
       else
         valid = false
       end
-    elseif valid and entry.kind == HK.IN_APPWIN then
+    elseif valid and entry.kind == HK.IN_APP and entry.subkind == HK.IN_APP_.WINDOW then
       local bundleID
       if hs.window.frontmostWindow() == nil
           or hs.window.frontmostWindow():application():bundleID() == hs.application.frontmostApplication():bundleID()
@@ -457,10 +457,10 @@ local function processHotkeys(validOnly, showHS, showKara, showApp, evFlags, rel
                          condition = entry.condition,
                          kind = entry.kind, subkind = entry.subkind,
                          suspendable = entry.suspendable, source = 0 }
-      if entry.kind ~= HK.APP_MENU then
-        table.insert(allKeys, newEntry)
-      else
+      if entry.kind == HK.IN_APP and entry.subkind == HK.IN_APP_.MENU then
         table.insert(enabledAltMenuHotkeys, newEntry)
+      else
+        table.insert(allKeys, newEntry)
       end
     end
   end
@@ -531,7 +531,7 @@ local function processHotkeys(validOnly, showHS, showKara, showApp, evFlags, rel
   if #enabledAltMenuHotkeys ~= 0 then
     local insertIdx = 1
     for i, hotkey in ipairs(allKeys) do
-      if hotkey.kind > HK.APP_MENU then insertIdx = i break end
+      if hotkey.kind >= HK.IN_APP then insertIdx = i break end
     end
     for i, hk in ipairs(AltMenuBarItemHotkeys) do
       local entry = hs.fnutils.find(enabledAltMenuHotkeys, function(menuHK)
@@ -589,7 +589,7 @@ local function processHotkeys(validOnly, showHS, showKara, showApp, evFlags, rel
         end
       end
       if canShow then
-        if kind < HK.APP_MENU and showHS then
+        if kind < HK.IN_APP and showHS then
           ix = ix + 1
           if ((ix - 1) % 15) == 0 then
             if ix > 1 then
@@ -610,7 +610,7 @@ local function processHotkeys(validOnly, showHS, showKara, showApp, evFlags, rel
           menu = menu .. "<ul class='col col" .. col .. "'>"
         end
         menu = menu .. "<li><div class='menutext'>" .. " " .. entry .. "</div></li>"
-        kind = HK.APP_MENU
+        kind = HK.IN_APP
       end
     elseif ((entry.source == 0 and showHS) or (entry.source == 1 and showKara) or (entry.source == 2 and showApp))
         and (entry.valid or (not validOnly and string.find(entry.msg, ": ") ~= nil)) then
@@ -624,11 +624,8 @@ local function processHotkeys(validOnly, showHS, showKara, showApp, evFlags, rel
           msg = "Background Apps"
         elseif entry.kind == HK.MENUBAR then
           msg = "Menu Bar Apps"
-        elseif kind < HK.APP_MENU and (entry.kind == HK.APP_MENU
-            or entry.kind == HK.IN_APP or entry.kind == HK.IN_APPWIN or entry.kind == HK.IN_WEBSITE) then
+        elseif kind < HK.IN_APP and entry.kind == HK.IN_APP then
           msg = hs.application.frontmostApplication():name()
-        elseif entry.kind == HK.IN_APP or entry.kind == HK.IN_APPWIN or entry.kind == HK.IN_WEBSITE then
-          msg = nil
         elseif entry.kind == HK.IN_WIN then
           msg = "Frontmost Window: " .. hs.window.frontmostWindow():application():name()
         elseif entry.kind == HK.WIN_OP then
@@ -1108,10 +1105,10 @@ local searchHotkey = bindHotkeySpec(misc["searchHotkeys"], "Search Hotkey", func
                          kind = entry.kind, subkind = entry.subkind,
                          bundleID = entry.bundleID, appPath = entry.appPath,
                          icon = entry.icon }
-      if entry.kind ~= HK.APP_MENU then
-        table.insert(allKeys, newEntry)
-      else
+      if entry.kind == HK.IN_APP and entry.subkind == HK.IN_APP_.MENU then
         table.insert(enabledAltMenuHotkeys, newEntry)
+      else
+        table.insert(allKeys, newEntry)
       end
     end
   end
@@ -1178,7 +1175,7 @@ local searchHotkey = bindHotkeySpec(misc["searchHotkeys"], "Search Hotkey", func
   if #enabledAltMenuHotkeys ~= 0 then
     local insertIdx = 1
     for i, hotkey in ipairs(allKeys) do
-      if hotkey.kind > HK.APP_MENU then insertIdx = i break end
+      if hotkey.kind >= HK.IN_APP then insertIdx = i break end
     end
     for i, hk in ipairs(AltMenuBarItemHotkeys) do
       local entry = hs.fnutils.find(enabledAltMenuHotkeys, function(menuHK)
@@ -1223,7 +1220,7 @@ local searchHotkey = bindHotkeySpec(misc["searchHotkeys"], "Search Hotkey", func
   end
   local insertIdx
   for i, hotkey in ipairs(allKeys) do
-    if hotkey.kind > HK.IN_WEBSITE then insertIdx = i break end
+    if hotkey.kind > HK.IN_APP then insertIdx = i break end
   end
   for i=#appHotkeys,1,-1 do
     table.insert(allKeys, insertIdx, appHotkeys[i])
@@ -1268,8 +1265,7 @@ local searchHotkey = bindHotkeySpec(misc["searchHotkeys"], "Search Hotkey", func
             end
           end
         end
-      elseif entry.kind == HK.APP_MENU or entry.kind == HK.IN_APP
-          or entry.kind == HK.IN_APPWIN or entry.kind == HK.IN_WEBSITE then
+      elseif entry.kind == HK.IN_APP then
         image = hs.image.imageFromAppBundle(hs.application.frontmostApplication():bundleID())
       elseif entry.kind == HK.IN_WIN then
         if hs.window.frontmostWindow() then
@@ -1298,8 +1294,7 @@ local searchHotkey = bindHotkeySpec(misc["searchHotkeys"], "Search Hotkey", func
         msg = "for Background Apps"
       elseif kind == HK.MENUBAR then
         msg = "for Menu Bar Apps"
-      elseif kind == HK.APP_MENU or kind == HK.IN_APP
-          or kind == HK.IN_APPWIN or kind == HK.IN_WEBSITE then
+      elseif kind == kind == HK.IN_APP then
         msg = "for Active App"
       elseif kind == HK.IN_WIN then
         msg = "for Frontmost Window"
