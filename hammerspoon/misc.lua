@@ -258,6 +258,7 @@ local function loadKarabinerKeyBindings(filePath)
 end
 
 local function getValidMessage(hotkeyInfo, obj)
+  if obj == nil then return false, nil end
   if hotkeyInfo.condition(obj) then
     return true, hotkeyInfo.message
   else

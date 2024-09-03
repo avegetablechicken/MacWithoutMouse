@@ -3298,6 +3298,10 @@ local function wrapCondition(mods, key, func, condition)
   local fn = func
   fn = function(appObject, ...)
     local obj = mode == nil and appObject or appObject:focusedWindow()
+    if obj == nil then  -- no window focused when triggering window-specific hotkeys
+      selectMenuItemOrKeyStroke(appObject, mods, key)
+      return
+    end
     local satisfied, result, url = cond(obj)
     if satisfied then
       if result ~= nil then  -- condition function can pass result to callback function
