@@ -3413,8 +3413,8 @@ local function registerInAppHotKeys(appObject)
           local websiteFilter = keybinding.websiteFilter or cfg.websiteFilter
           local hotkey, cond = AppBindSpec(appObject, keybinding, msg, cfg.fn, repeatedfn, cfg.condition, websiteFilter)
           hotkey.kind = HK.IN_APP
-          if websiteFilter ~= nil then hotkey.subkind = HK.IN_APP_.WEBSITE end
-          hotkey.condition = cond
+          if websiteFilter ~= nil then hotkey.subkind = HK.IN_APP_.WEBSITE
+          else hotkey.condition = cond end
           hotkey.deleteOnDisable = cfg.deleteOnDisable
           inAppHotKeys[bid][hkID] = hotkey
         end
