@@ -3305,14 +3305,12 @@ local function wrapCondition(mods, key, func, condition)
     local satisfied, result, url = cond(obj)
     if satisfied then
       if result ~= nil then  -- condition function can pass result to callback function
-        ---@diagnostic disable-next-line: redundant-parameter
         if url ~= nil then
           func(result, url, obj, ...)
         else
           func(result, obj, ...)
         end
       else
-        ---@diagnostic disable-next-line: redundant-parameter
         func(obj, ...)
       end
     elseif result == COND_FAIL.NO_MENU_ITEM_BY_KEYBINDING
