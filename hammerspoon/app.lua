@@ -700,7 +700,6 @@ local function douyinNavigateToTabCondition(idx)
     local cnt = 0
     local lastURL = ""
     for url in string.gmatch(source, [[<div class="tab\-.-><a href="(.-)"]]) do
-      print(url, lastURL)
       if url ~= lastURL then cnt = cnt + 1 end
       if cnt == idx then return true, url end
       lastURL = url
