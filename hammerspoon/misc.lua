@@ -387,19 +387,14 @@ local function testValid(entry)
         valid = false
       end
     elseif valid and entry.kind == HK.IN_APP and entry.subkind == HK.IN_APP_.WINDOW then
-      local bundleID
-      if hs.window.frontmostWindow() == nil
-          or hs.window.frontmostWindow():application():bundleID() == hs.application.frontmostApplication():bundleID()
-      then
-        bundleID = hs.application.frontmostApplication():bundleID()
-      else
-        bundleID = hs.window.frontmostWindow():application():bundleID()
-      end
+      local bundleID = hs.application.frontmostApplication():bundleID()
       if InWinHotkeyInfoChain ~= nil and InWinHotkeyInfoChain[bundleID] ~= nil then
         local hotkeyInfo = InWinHotkeyInfoChain[bundleID][entry.idx]
         if hotkeyInfo then
           valid, actualMsg = getValidMessage(hotkeyInfo, hs.application.frontmostApplication():focusedWindow())
         end
+      else
+        valid = false
       end
     end
     entry.valid = valid
