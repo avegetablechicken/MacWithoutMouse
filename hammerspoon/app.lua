@@ -1009,12 +1009,6 @@ local specialCommonHotkeyConfigs = {
 appHotKeyCallbacks = {
   ["com.apple.finder"] =
   {
-    ["goToDownloads"] = {
-      message = localizedMessage({ "Go", "Downloads" }),
-      fn = function(appObject)
-        selectMenuItem(appObject, { "Go", "Downloads" })
-      end
-    },
     ["recentFolders"] = {
       message = localizedMessage("Recent Folders"),
       condition = checkMenuItem({ "Go", "Recent Folders" }),
@@ -3925,16 +3919,7 @@ local function registerForOpenSavePanel(appObject)
   local hotkey
   local finderSibebarHotkeys = {}
 
-  if appObject:bundleID() == nil then return end
-
-  local bundleID = "com.apple.finder"
-  if get(KeybindingConfigs.hotkeys.appCommon, "confirmDelete") == nil
-      and get(KeybindingConfigs.hotkeys[bundleID], "goToDownloads") == nil then
-    return
-  end
-
-  if appObject:bundleID() == bundleID then return end
-
+  if appObject:bundleID() == "com.apple.finder" then return end
   local appUIObj = hs.axuielement.applicationElement(appObject)
   if not appUIObj:isValid() then
     hs.timer.doAfter(0.1, function() registerForOpenSavePanel(appObject) end)
@@ -3942,41 +3927,22 @@ local function registerForOpenSavePanel(appObject)
   end
 
   local getUIObj = function(winUIObj)
-    if winUIObj:attributeValue("AXIdentifier") ~= "open-panel"
-        and winUIObj:attributeValue("AXIdentifier") ~= "save-panel" then
-      return
-    end
-
     if winUIObj:attributeValue("AXIdentifier") == "save-panel" then
       for _, button in ipairs(winUIObj:childrenWithRole("AXButton")) do
         if button.AXIdentifier == "DontSaveButton" then
-          return {}, button, button.AXTitle
+          return button
         end
       end
-    end
-
-    local outlineUIObj = getAXChildren(winUIObj,
-        "AXSplitGroup", 1, "AXScrollArea", 1, "AXOutline", 1)
-    if outlineUIObj == nil then return end
-    local params = {
-      locale = applicationLocales(appObject:bundleID())[1],
-    }
-    local goString = localizedString("Go", bundleID, params)
-    local downloadsString = localizedString("Downloads", bundleID, params)
-    local msg = string.format("%s > %s", goString, downloadsString)
-    local enMsg = string.format("Go > Downloads")
-    local cellUIObj = {}
-    for _, rowUIObj in ipairs(outlineUIObj:childrenWithRole("AXRow")) do
-      if rowUIObj.AXChildren == nil then hs.timer.usleep(0.3 * 1000000) end
-      table.insert(cellUIObj, rowUIObj.AXChildren[1])
-    end
-    for _, rowUIObj in ipairs(outlineUIObj:childrenWithRole("AXRow")) do
-      if rowUIObj.AXChildren[1]:childrenWithRole("AXStaticText")[1].AXValue == downloadsString then
-        return cellUIObj, rowUIObj.AXChildren[1], msg
+    elseif winUIObj:attributeValue("AXIdentifier") == "open-panel" then
+      local outlineUIObj = getAXChildren(winUIObj,
+          "AXSplitGroup", 1, "AXScrollArea", 1, "AXOutline", 1)
+      if outlineUIObj == nil then return end
+      local cellUIObj = {}
+      for _, rowUIObj in ipairs(outlineUIObj:childrenWithRole("AXRow")) do
+        if rowUIObj.AXChildren == nil then hs.timer.usleep(0.3 * 1000000) end
+        table.insert(cellUIObj, rowUIObj.AXChildren[1])
       end
-      if rowUIObj.AXChildren[1]:childrenWithRole("AXStaticText")[1].AXValue == "Downloads" then
-        return cellUIObj, rowUIObj.AXChildren[1], enMsg
-      end
+      return cellUIObj
     end
   end
 
@@ -3988,10 +3954,11 @@ local function registerForOpenSavePanel(appObject)
     finderSibebarHotkeys = {}
 
     local windowFilter = winUIObj.AXRole == "AXSheet" and { allowSheet = true } or true
-    local cellUIObj, openSavePanelActor, message = getUIObj(winUIObj)
+    local obj = getUIObj(winUIObj)
     local header
     local i = 1
-    for _, cell in ipairs(cellUIObj or {}) do
+    local cellUIObj = type(obj) == "table" and obj or {}
+    for _, cell in ipairs(cellUIObj) do
       if i > 10 then break end
       if cell:childrenWithRole("AXStaticText")[1].AXIdentifier ~= nil then
         header = cell:childrenWithRole("AXStaticText")[1].AXValue
@@ -4002,7 +3969,7 @@ local function registerForOpenSavePanel(appObject)
         elseif i == 3 then suffix = "rd"
         else suffix = "th" end
         local hkID = "open" .. tostring(i) .. suffix .. "SidebarItem"
-        local spec = get(KeybindingConfigs.hotkeys[bundleID], hkID)
+        local spec = get(KeybindingConfigs.hotkeys["com.apple.finder"], hkID)
         if spec ~= nil then
           local folder = cell:childrenWithRole("AXStaticText")[1].AXValue
           local hotkey = WinBindSpec(appObject, spec, header .. ' > ' .. folder,
@@ -4014,20 +3981,16 @@ local function registerForOpenSavePanel(appObject)
         end
       end
     end
-    if openSavePanelActor == nil then return end
-    local spec
-    if openSavePanelActor.AXRole == "AXButton" then
-      spec = get(KeybindingConfigs.hotkeys.appCommon, "confirmDelete")
-    else
-      spec = get(KeybindingConfigs.hotkeys[bundleID], "goToDownloads")
-    end
-    if spec ~= nil then
-      hotkey = WinBindSpec(appObject, spec, message, function()
-        local action = openSavePanelActor:actionNames()[1]
-        openSavePanelActor:performAction(action)
-      end, nil, windowFilter)
-      hotkey.kind = HK.IN_APP
-      hotkey.subkind = HK.IN_APP_.WINDOW
+    if obj ~= nil and obj.AXRole == "AXButton" then
+      local spec = get(KeybindingConfigs.hotkeys.appCommon, "confirmDelete")
+      if spec ~= nil then
+        hotkey = WinBindSpec(appObject, spec, obj.AXTitle, function()
+          local action = obj:actionNames()[1]
+          obj:performAction(action)
+        end, nil, windowFilter)
+        hotkey.kind = HK.IN_APP
+        hotkey.subkind = HK.IN_APP_.WINDOW
+      end
     end
   end
   if appObject:focusedWindow() ~= nil then

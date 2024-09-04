@@ -660,10 +660,6 @@
     },
 
     "com.apple.finder": {
-      "goToDownloads": {
-        "mods": ["shift", "command"],
-        "key": "L"
-      },
       "recentFolders": {
         "mods": "control",
         "key": "R"
