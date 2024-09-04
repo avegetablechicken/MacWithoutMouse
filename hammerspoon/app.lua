@@ -3093,7 +3093,7 @@ for _, bid in ipairs(supportedBrowsers) do
   if KeybindingConfigs.hotkeys[bid] == nil then
     KeybindingConfigs.hotkeys[bid] = {}
   end
-  for k, v in pairs(KeybindingConfigs.hotkeys.browsers) do
+  for k, v in pairs(KeybindingConfigs.hotkeys.browsers or {}) do
     KeybindingConfigs.hotkeys[bid][k] = v
   end
 end
