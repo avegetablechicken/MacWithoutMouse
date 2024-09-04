@@ -4006,7 +4006,7 @@ local function registerForOpenSavePanel(appObject)
         if spec ~= nil then
           local folder = cell:childrenWithRole("AXStaticText")[1].AXValue
           local hotkey = WinBindSpec(appObject, spec, header .. ' > ' .. folder,
-                                     function() cell:performAction("AXOpen") end, windowFilter)
+                                     function() cell:performAction("AXOpen") end, nil, windowFilter)
           hotkey.kind = HK.IN_APP
           hotkey.subkind = HK.IN_APP_.WINDOW
           table.insert(finderSibebarHotkeys, hotkey)
@@ -4025,7 +4025,7 @@ local function registerForOpenSavePanel(appObject)
       hotkey = WinBindSpec(appObject, spec, message, function()
         local action = openSavePanelActor:actionNames()[1]
         openSavePanelActor:performAction(action)
-      end, windowFilter)
+      end, nil, windowFilter)
       hotkey.kind = HK.IN_APP
       hotkey.subkind = HK.IN_APP_.WINDOW
     end
