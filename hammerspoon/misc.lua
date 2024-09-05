@@ -131,8 +131,8 @@ if hs.fs.attributes("config/misc.json") ~= nil then
 end
 local function parseVerificationCodeFromFirstMessage()
   local appObject = findApplication("com.apple.notificationcenterui")
-  if appObject == nil or appObject:focusedWindow() == nil then return end
-  local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
+  if appObject == nil or #appObject:visibleWindows() == 0 then return end
+  local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow() or appObject:visibleWindows()[1])
   local ele = getAXChildren(winUIObj, "AXScrollArea", 1, nil, 1, "AXGroup", 1, "AXStaticText", 2)
   if ele == nil then
     ele = getAXChildren(winUIObj, "AXGroup", 1, "AXScrollArea", 1, nil, 1, "AXGroup", 1, "AXStaticText", 2)
