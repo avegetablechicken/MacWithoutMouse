@@ -381,7 +381,7 @@ local function getResourceDir(bundleID, frameworkName)
   return resourceDir, framework
 end
 
-local function getMatchedLocale(appLocale, localeSource, mode)
+function getMatchedLocale(appLocale, localeSource, mode)
   local localDetails = hs.host.locale.details(appLocale)
   local language = localDetails.languageCode
   local script = localDetails.scriptCode

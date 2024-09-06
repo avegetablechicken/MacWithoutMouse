@@ -775,6 +775,36 @@ local function dumpPlistKeyBinding(mode, mods, key)
 end
 
 -- fetch localized string as hotkey message after activating the app
+local function commonLocalizedMessage(message)
+  if message == "Close Window" or message == "Minimise" then
+    return function(appObject)
+      local appLocale = applicationLocales(appObject:bundleID())[1]
+      local appLocalesSupported = hs.application.localizationsForBundleID(appObject:bundleID())
+      local locale = getMatchedLocale(appLocale, appLocalesSupported)
+      if locale ~= nil then
+        return localizedString(message, 'com.apple.finder', { locale = locale })
+      else
+        return message
+      end
+    end
+  elseif message == "Hide" or message == "Quit" then
+    return function(appObject)
+      local appLocale = applicationLocales(appObject:bundleID())[1]
+      local appLocalesSupported = hs.application.localizationsForBundleID(appObject:bundleID())
+      local locale = getMatchedLocale(appLocale, appLocalesSupported)
+      if locale ~= nil then
+        local menuItemTitle = localizedString(message .. ' App Store', 'com.apple.AppStore',
+                                              { locale = appLocale })
+        if menuItemTitle ~= nil then
+          return menuItemTitle:gsub('App Store', appObject:name())
+        end
+      else
+        return message .. ' ' .. appObject:name()
+      end
+    end
+  end
+end
+
 local function localizedMessage(message, params, sep)
   return function(appObject)
     local bundleID = appObject:bundleID()
@@ -966,7 +996,7 @@ end
 local specialCommonHotkeyConfigs = {
   ["closeWindow"] = {
     mods = "⌘", key = "W",
-    message = "Close Window",
+    message = commonLocalizedMessage("Close Window"),
     condition = function(appObject)
       local winObj = appObject:focusedWindow()
       return winObj ~= nil and winObj:role() == "AXWindow", winObj
@@ -975,7 +1005,7 @@ local specialCommonHotkeyConfigs = {
   },
   ["minimize"] = {
     mods = "⌘", key = "M",
-    message = "Minimize",
+    message = commonLocalizedMessage("Minimise"),
     condition = function(appObject)
       local winObj = appObject:focusedWindow()
       return winObj ~= nil and winObj:role() == "AXWindow", winObj
@@ -984,12 +1014,12 @@ local specialCommonHotkeyConfigs = {
   },
   ["hide"] = {
     mods = "⌘", key = "H",
-    message = "Hide",
+    message = commonLocalizedMessage("Hide"),
     fn = function(appObject) appObject:hide() end
   },
   ["quit"] = {
     mods = "⌘", key = "Q",
-    message = "Quit",
+    message = commonLocalizedMessage("Quit"),
     fn = function(appObject) appObject:kill() end
   },
   ["showPrevTab"] = {
