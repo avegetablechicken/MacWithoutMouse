@@ -3338,13 +3338,14 @@ local function wrapCondition(mods, key, func, condition)
         func(obj, ...)
       end
     elseif result == COND_FAIL.NO_MENU_ITEM_BY_KEYBINDING
-        or result == COND_FAIL.MENU_ITEM_SELECTED
-        or result == COND_FAIL.NOT_FRONTMOST_WINDOW then
+        or result == COND_FAIL.MENU_ITEM_SELECTED then
       hs.eventtap.keyStroke(mods, key, nil, appObject)
     elseif result == COND_FAIL.WINDOW_FILTER_NOT_SATISFIED and prevWindowCallback ~= nil then
       prevWindowCallback(mode)
     elseif result == COND_FAIL.WEBSITE_FILTER_NOT_SATISFIED and prevWebsiteCallback ~= nil then
       prevWebsiteCallback()
+    elseif result == COND_FAIL.NOT_FRONTMOST_WINDOW then
+      selectMenuItemOrKeyStroke(hs.window.frontmostWindow():application(), mods, key)
     else
       -- most of the time, directly selecting menu item costs less time than key strokes
       selectMenuItemOrKeyStroke(appObject, mods, key)
