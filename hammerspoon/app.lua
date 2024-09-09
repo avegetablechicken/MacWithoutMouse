@@ -83,7 +83,6 @@ local function getParallelsVMPath(osname)
   end
 end
 
-local appConfigs = KeybindingConfigs.hotkeys.appkeys or {}
 local appHotkeys = {}
 
 local function registerAppHotkeys()
@@ -94,7 +93,7 @@ local function registerAppHotkeys()
   HyperModal.hyperMode.keys = hs.fnutils.filter(HyperModal.hyperMode.keys,
       function(hotkey) return hotkey.idx ~= nil end)
 
-  for name, config in pairs(appConfigs) do
+  for name, config in pairs(KeybindingConfigs.hotkeys.appkeys or {}) do
     local appPath
     if config.bundleID then
       if type(config.bundleID) == "string" then
@@ -434,8 +433,7 @@ end
 -- ### Bartender
 local bartenderBarItemNames
 local bartenderBarItemIDs
-local bartenderBarTitle = "Bartender Bar"
-local bartenderBarWindowFilter = { allowTitles = bartenderBarTitle }
+local bartenderBarWindowFilter = { allowTitles = "^Bartender Bar$" }
 local bartenderBarFilter
 local function getBartenderBarItemTitle(index, rightClick)
   return function(appObject)
@@ -3191,7 +3189,7 @@ end
 -- we have to record them because key strokes must be sent to frontmost window instead of frontmost app
 -- and some windows may be make frontmost silently
 WindowCreatedSince = {}
-WindowCreatedSinceWatcher = hs.window.filter.new(true):subscribe(
+local windowCreatedSinceWatcher = hs.window.filter.new(true):subscribe(
 {hs.window.filter.windowCreated, hs.window.filter.windowFocused, hs.window.filter.windowDestroyed},
 function(winObj, appName, eventType)
   if winObj == nil or winObj:application() == nil
