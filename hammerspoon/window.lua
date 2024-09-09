@@ -1378,11 +1378,10 @@ function()
   end
 
   if bundleID == "com.apple.Preview" then
-    local aWin = activatedWindowIndex()
-    local ok, results = hs.osascript.applescript([[
-      tell application id "]] .. bundleID .. [[" to get name of window ]] .. aWin .. [[ ends with ".pdf"
+    local ok, name = hs.osascript.applescript([[
+      tell application id "]] .. bundleID .. [[" to get name of front document
     ]])
-    if ok and results == true then
+    if ok and name:sub(-4) == '.pdf' then
       PDFChooser()
       return
     end

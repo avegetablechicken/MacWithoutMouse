@@ -679,9 +679,9 @@ local function weiboNavigateToSideBar(result, url, appObject)
   else  -- assume chromium-based browsers
     hs.osascript.applescript(string.format([[
       tell application id "%s"
-        set URL of active tab of window %d to "%s"
+        set URL of active tab of front window to "%s"
       end tell
-    ]], appObject:bundleID(), activatedWindowIndex(), fullUrl))
+    ]], appObject:bundleID(), fullUrl))
   end
 end
 
@@ -725,9 +725,9 @@ local function douyinNavigateToTab(result, url, appObject)
   else  -- assume chromium-based browsers
     hs.osascript.applescript(string.format([[
       tell application id "%s"
-        set URL of active tab of window %d to "%s"
+        set URL of active tab of front window to "%s"
       end tell
-    ]], appObject:bundleID(), activatedWindowIndex(), fullUrl))
+    ]], appObject:bundleID(), fullUrl))
   end
 end
 
@@ -1216,12 +1216,8 @@ appHotKeyCallbacks = {
     ["revealInFinder"] = {
       message = "Reveal in Finder",
       condition = function(appObject)
-        local aWin = activatedWindowIndex()
         local ok, url = hs.osascript.applescript([[
-          tell application id "]] .. appObject:bundleID() .. [["
-            return URL of current tab of window ]] .. aWin .. [[
-
-          end tell
+          tell application id "]] .. appObject:bundleID() .. [[" to return URL of front document
         ]])
         if ok and string.sub(url, 1, 7) == "file://" then
           return true, url
@@ -1256,12 +1252,8 @@ appHotKeyCallbacks = {
     ["revealInFinder"] = {
       message = "Reveal in Finder",
       condition = function(appObject)
-        local aWin = activatedWindowIndex()
         local ok, url = hs.osascript.applescript([[
-          tell application id "]] .. appObject:bundleID() .. [["
-            return URL of active tab of window ]] .. aWin .. [[
-
-          end tell
+          tell application id "]] .. appObject:bundleID() .. [[" to return URL of active tab of front window
         ]])
         if ok and string.sub(url, 1, 7) == "file://" then
           return true, url

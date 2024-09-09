@@ -1868,30 +1868,25 @@ function registerControlCenterHotKeys(panel)
               else
                 optionList = "group 1 of group 3 of group 1 of group 2 of group 1 of exp"
               end
-              local aWin = activatedWindowIndex()
               local ok = hs.osascript.applescript([[
                 tell application id "]] .. bundleID .. [["
-                  set tabCount to count of tabs of window ]] .. aWin .. [[
-
+                  set tabCount to count of tabs of front window
                   set tabFound to false
                   repeat with i from 1 to tabCount
-                    set tabURL to URL of tab i of window ]] .. aWin .. [[
-
+                    set tabURL to URL of tab i of front window
                     if tabURL contains "]] .. scheme .. [[://flags/#enable-force-dark" then
                       set tabFound to true
                       exit repeat
                     end if
                   end repeat
                   if tabFound is false then
-                    tell window ]] .. aWin .. [[
-
+                    tell front window
                       set newTab to make new tab at the end of tabs ¬
                           with properties {URL:"]] .. scheme .. [[://flags/#enable-force-dark"}
                       delay 0.5
                     end tell
                   else
-                    tell window ]] .. aWin .. [[
-
+                    tell front window
                       set active tab index to i
                     end tell
                   end if
@@ -1967,7 +1962,7 @@ function registerControlCenterHotKeys(panel)
                 observer:callback(function()
                   local frontWinBundleID = hs.window.frontmostWindow():application():bundleID()
                   local ok, url = hs.osascript.applescript(
-                      [[tell application id "]] .. bundleID .. [[" to get URL of active tab of window ]] .. aWin)
+                      [[tell application id "]] .. bundleID .. [[" to get URL of active tab of front window]])
                   if frontWinBundleID ~= bundleID or not ok or url ~= scheme .. "://flags/#enable-force-dark" then
                     if hotkey ~= nil then
                       hotkey:delete()

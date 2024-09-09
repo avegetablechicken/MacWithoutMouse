@@ -73,7 +73,11 @@ end
 
 function activatedWindowIndex()
   if inFullscreenWindow() then
-    return #hs.application.frontmostApplication():visibleWindows()
+    local cnt = #hs.application.frontmostApplication():visibleWindows()
+    if hs.application.frontmostApplication():bundleID() == "com.apple.finder" then
+      cnt = cnt - 1
+    end
+    return cnt
   else
     return 1
   end
