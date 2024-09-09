@@ -1436,18 +1436,18 @@ appHotKeyCallbacks = {
     ["openFileLocation"] = {
       message = "打开文件位置",
       condition = function(appObject)
-        return appObject:focusedWindow() ~= nil, appObject:focusedWindow()
-      end,
-      fn = function(winObj)
+        if appObject:focusedWindow() == nil then return false end
+        local winObj = appObject:focusedWindow()
         local winUIObj = hs.axuielement.windowElement(winObj)
-        local position
-        for i, ele in ipairs(winUIObj.AXChildren) do
-          if ele.AXRole == "AXGroup" then
-            position = winUIObj.AXChildren[i - 1].AXPosition
-            break
+        for i=1,#winUIObj.AXChildren - 1 do
+          if winUIObj.AXChildren[i].AXRole == "AXButton"
+              and winUIObj.AXChildren[i + 1].AXRole == "AXGroup" then
+            return true, winUIObj.AXChildren[i].AXPosition
           end
         end
-        local appObject = winObj:application()
+        return false
+      end,
+      fn = function(position, appObject)
         if not rightClickAndRestore(position, appObject:name()) then return end
         hs.osascript.applescript([[
           tell application "System Events"
