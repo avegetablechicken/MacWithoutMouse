@@ -1,6 +1,5 @@
 {
-  "com.apple.Safari":
-  {
+  "com.apple.Safari": {
     "开发": "Develop"
   },
   "org.xquartz.X11": {
