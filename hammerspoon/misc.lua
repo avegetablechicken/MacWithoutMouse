@@ -913,7 +913,7 @@ function HSKeybindings:hide()
   self.isShowing = false
 end
 
-local doubletap = require('modal/doubletap')
+local doubletap = require('modal.doubletap')
 local hkKeybinding
 hkKeybinding = doubletap.bind("", HYPER, "Show Keybindings",
 function()

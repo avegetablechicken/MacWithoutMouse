@@ -70,7 +70,7 @@ loadKeybindings("config/keybindings.json")
 HyperModalList = {}
 DoubleTapModalList = {}
 
-local hyper = require('modal/hyper')
+local hyper = require('modal.hyper')
 HyperModal = hyper.install(HYPER)
 table.insert(HyperModalList, HyperModal)
 
