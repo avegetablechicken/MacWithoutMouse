@@ -1,3 +1,5 @@
+---@diagnostic disable: lowercase-global
+
 HK = {
   PRIVELLEGE = 0,
   SWITCH = 1,
@@ -79,7 +81,6 @@ FORGIVEN_APPS = {
   "com.parallels.macvm",
 }
 
----@diagnostic disable-next-line: lowercase-global
 function forgiveWrapper(fn, mods, key)
   if fn ~= nil then
     local oldFn = fn
@@ -94,7 +95,6 @@ function forgiveWrapper(fn, mods, key)
   return fn
 end
 
----@diagnostic disable-next-line: lowercase-global
 function suspendWrapper(fn, mods, key, predicates)
   if fn ~= nil then
     local oldFn = fn
@@ -134,7 +134,6 @@ local function getFunc(f)
   return nil
 end
 
----@diagnostic disable-next-line: lowercase-global
 function newHotkeyImpl(mods, key, message, pressedfn, releasedfn, repeatfn)
   if message == nil or getFunc(message) then
     repeatfn=releasedfn releasedfn=pressedfn pressedfn=message message=nil -- shift down arguments
@@ -164,7 +163,6 @@ function newHotkeyImpl(mods, key, message, pressedfn, releasedfn, repeatfn)
   return hotkey
 end
 
----@diagnostic disable-next-line: lowercase-global
 function newHotkey(mods, key, message, pressedfn, releasedfn, repeatfn, predicates)
   if message == nil or getFunc(message) then
     predicates = repeatfn
@@ -181,13 +179,11 @@ function newHotkey(mods, key, message, pressedfn, releasedfn, repeatfn, predicat
   return hotkey
 end
 
----@diagnostic disable-next-line: lowercase-global
 function newHotkeySpec(spec, ...)
   if spec == nil then return nil end
   return newHotkey(spec.mods, spec.key, ...)
 end
 
----@diagnostic disable-next-line: lowercase-global
 function bindHotkeySpecImpl(spec, ...)
   local hotkey = newHotkeyImpl(spec.mods, spec.key, ...)
   if hotkey ~= nil then
@@ -201,7 +197,6 @@ function bindHotkeySpecImpl(spec, ...)
   return hotkey
 end
 
----@diagnostic disable-next-line: lowercase-global
 function bindHotkey(mods, ...)
   local hotkey = newHotkey(mods, ...)
   if hotkey ~= nil then
@@ -215,7 +210,6 @@ function bindHotkey(mods, ...)
   return hotkey
 end
 
----@diagnostic disable-next-line: lowercase-global
 function bindHotkeySpec(spec, ...)
   if spec == nil then return nil end
   return bindHotkey(spec.mods, spec.key, ...)
