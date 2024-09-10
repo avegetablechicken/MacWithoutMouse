@@ -284,8 +284,7 @@ local function menuItemHotkeyIdx(mods, key)
   return idx
 end
 
-local localizedEnterFullScreen
-local commonLocalizedEnterFullScreen
+local localizedEnterFullScreen = {}
 local function getSubMenuHotkeys(t, menuItem, titleAsEntry, titlePrefix)
   if menuItem.AXChildren == nil then return end
   if titleAsEntry == true then
@@ -306,14 +305,12 @@ local function getSubMenuHotkeys(t, menuItem, titleAsEntry, titlePrefix)
           and #subItem.AXMenuItemCmdModifiers == 0 and subItem.AXMenuItemMarkChar == ""
           and subItem.AXChildren == nil
           and delocalizedMenuBarItem(menuItem.AXTitle, bundleID) == 'Edit' then
-        idx = "🌐︎" .. subItem.AXMenuItemCmdChar
-      elseif (subItem.AXTitle == "Enter Full Screen"
-          or subItem.AXTitle == localizedEnterFullScreen
-          or subItem.AXTitle == commonLocalizedEnterFullScreen)
-          and (subItem.AXMenuItemCmdGlyph == ""
-              and #subItem.AXMenuItemCmdModifiers == 0 and subItem.AXMenuItemMarkChar == ""
-              and subItem.AXChildren == nil) then
-        idx = "🌐︎" .. subItem.AXMenuItemCmdChar
+        idx = "🌐︎E"
+      elseif subItem.AXMenuItemCmdChar == 'F' and subItem.AXMenuItemCmdGlyph == ""
+          and #subItem.AXMenuItemCmdModifiers == 0 and subItem.AXMenuItemMarkChar == ""
+          and subItem.AXChildren == nil
+          and hs.fnutils.contains(localizedEnterFullScreen, subItem.AXTitle) then
+        idx = "🌐︎F"
       else
         idx = menuItemHotkeyIdx(subItem.AXMenuItemCmdModifiers or {}, subItem.AXMenuItemCmdChar)
       end
@@ -334,12 +331,13 @@ local function loadAppHotkeys(t)
   local appHotkeys = {}
   local appObject = hs.application.frontmostApplication()
   local menuItems = getMenuItems(appObject)
-  localizedEnterFullScreen = localizedString(
-      "Enter Full Screen", appObject:bundleID(),
-      { locale = applicationLocales(appObject:bundleID())[1] })
-  commonLocalizedEnterFullScreen = localizedString(
-    "Enter Full Screen", 'com.apple.finder',
-    { locale = applicationLocales(appObject:bundleID())[1] })
+  local locale = applicationLocales(appObject:bundleID())[1]
+  localizedEnterFullScreen = {
+    localizedString("Enter Full Screen", appObject:bundleID(), { locale = locale }),
+    localizedString("Enter Full Screen", 'com.apple.finder', { locale = locale }),
+    localizedString("Exit Full Screen", appObject:bundleID(), { locale = locale }),
+    localizedString("Exit Full Screen", 'com.apple.finder', { locale = locale })
+  }
   for _, menuItem in ipairs(menuItems) do
     getSubMenuHotkeys(appHotkeys, menuItem, true, true)
   end
@@ -1180,15 +1178,14 @@ local searchHotkey = bindHotkeySpec(misc["searchHotkeys"], "Search Hotkey", func
 
   local appHotkeys = {}
   local appObject = hs.application.frontmostApplication()
+  local locale = applicationLocales(appObject:bundleID())[1]
+  localizedEnterFullScreen = {
+    localizedString("Enter Full Screen", appObject:bundleID(), { locale = locale }),
+    localizedString("Enter Full Screen", 'com.apple.finder', { locale = locale }),
+    localizedString("Exit Full Screen", appObject:bundleID(), { locale = locale }),
+    localizedString("Exit Full Screen", 'com.apple.finder', { locale = locale })
+  }
   for _, menuItem in ipairs(hs.application.frontmostApplication():getMenuItems()) do
-    localizedEnterFullScreen = localizedString(
-        "Enter Full Screen", appObject:bundleID(),
-        { locale = applicationLocales(appObject:bundleID())[1] })
-    if localizedEnterFullScreen == nil then
-      localizedEnterFullScreen = localizedString(
-          "Enter Full Screen", 'com.apple.finder',
-          { locale = applicationLocales(appObject:bundleID())[1] })
-    end
     getSubMenuHotkeys(appHotkeys, menuItem, false, true)
   end
   for _, hotkey in ipairs(appHotkeys) do
