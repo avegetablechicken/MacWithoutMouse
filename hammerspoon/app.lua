@@ -3724,11 +3724,32 @@ local processesOnLaunch = {}
 local processesOnLaunchMonitored = {}
 local hasLaunched = {}
 local appsLaunchSilently = applicationConfigs.launchSilently or {}
-local function execOnLaunch(bundleID, action)
+local function execOnLaunch(bundleID, action, onlyFirstTime)
   if hs.fnutils.contains(appsLaunchSilently, bundleID) then
     if processesOnLaunchMonitored[bundleID] == nil then
       processesOnLaunchMonitored[bundleID] = {}
     end
+  else
+    if processesOnLaunch[bundleID] == nil then
+      processesOnLaunch[bundleID] = {}
+    end
+  end
+
+  if onlyFirstTime then
+    local idx
+    if hs.fnutils.contains(appsLaunchSilently, bundleID) then
+      idx = #processesOnLaunchMonitored[bundleID] + 1
+    else
+      idx = #processesOnLaunch[bundleID] + 1
+    end
+    local oldAction = action
+    action = function(appObject)
+      oldAction(appObject)
+      table.remove(processesOnLaunch[bundleID], idx)
+    end
+  end
+
+  if hs.fnutils.contains(appsLaunchSilently, bundleID) then
     table.insert(processesOnLaunchMonitored[bundleID], action)
     if ExtraAppLaunchWatcher == nil then
       ExtraAppLaunchWatcher = hs.timer.new(1, function()
@@ -3744,9 +3765,6 @@ local function execOnLaunch(bundleID, action)
       end, true):start()
     end
   else
-    if processesOnLaunch[bundleID] == nil then
-      processesOnLaunch[bundleID] = {}
-    end
     table.insert(processesOnLaunch[bundleID], action)
   end
 end
