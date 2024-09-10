@@ -4507,7 +4507,7 @@ for bundleID, cfg in pairs(appsAutoHideWithNoWindows) do
   if appObject ~= nil then
     func(appObject)
   else
-    execOnLaunch(bundleID, func)
+    execOnLaunch(bundleID, func, true)
   end
 end
 windowFilterAutoHide:subscribe(hs.window.filter.windowDestroyed,
@@ -4526,7 +4526,7 @@ for bundleID, cfg in pairs(appsAutoQuitWithNoWindows) do
   if appObject ~= nil then
     func(appObject)
   else
-    execOnLaunch(bundleID, func)
+    execOnLaunch(bundleID, func, true)
   end
 end
 windowFilterAutoQuit:subscribe(hs.window.filter.windowDestroyed,
@@ -4546,7 +4546,7 @@ for bundleID, rules in pairs(appsAutoHideWithNoPseudoWindows) do
   if appObject ~= nil then
     func(appObject)
   else
-    execOnLaunch(bundleID, func)
+    execOnLaunch(bundleID, func, true)
   end
 end
 for bundleID, rules in pairs(appsAutoQuitWithNoPseudoWindows) do
@@ -4558,7 +4558,7 @@ for bundleID, rules in pairs(appsAutoQuitWithNoPseudoWindows) do
   if appObject ~= nil then
     func(appObject)
   else
-    execOnLaunch(bundleID, func)
+    execOnLaunch(bundleID, func, true)
   end
 end
 
