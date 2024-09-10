@@ -1808,24 +1808,11 @@ appHotKeyCallbacks = {
           local detail = localizedString("SNS_Feed_Detail_Title", bundleID, { key = true })
           if string.find(appObject:focusedWindow():title(), album .. '-') == 1
               or appObject:focusedWindow():title() == moments .. '-' .. detail then
-            return true, { 3, winUIObj:childrenWithRole("AXButton")[1].AXPosition }
+            return true, { 2, winUIObj:childrenWithRole("AXButton")[1].AXPosition }
           end
           return false
         end
         local back = localizedString("Common.Navigation.Back", bundleID, { key = true })
-        -- Minimized Groups
-        local g = getAXChildren(winUIObj, "AXSplitGroup", 1)
-        if g ~= nil then
-          local cnt = 0
-          for _, bt in ipairs(g:childrenWithRole("AXButton")) do
-            if bt.AXDescription == back then
-              cnt = cnt + 1
-            end
-          end
-          if cnt > 2 then
-            return true, { 2 }
-          end
-        end
         -- Official Accounts
         local g = getAXChildren(winUIObj, "AXSplitGroup", 1, "AXSplitGroup", 1)
         if g ~= nil then
@@ -1843,8 +1830,6 @@ appHotKeyCallbacks = {
         elseif result[1] == 1 then
           result[2]:performAction("AXPress")
         elseif result[1] == 2 then
-          hs.eventtap.keyStroke("", "Left", nil, appObject)
-        elseif result[1] == 3 then
           leftClickAndRestore(result[2], appObject:name())
         end
       end
