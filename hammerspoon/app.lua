@@ -4957,8 +4957,6 @@ function App_applicationCallback(appName, eventType, appObject)
       if appLocales[bundleID] ~= nil and appLocales[bundleID] ~= appLocale then
         unregisterRunningAppHotKeys(bundleID, true)
         registerRunningAppHotKeys(bundleID)
-        unregisterInAppHotKeys(bundleID, true)
-        unregisterInWinHotKeys(bundleID, true)
       end
       appLocales[bundleID] = appLocale
       registerInAppHotKeys(appObject)
