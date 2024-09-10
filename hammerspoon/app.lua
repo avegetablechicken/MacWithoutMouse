@@ -3948,23 +3948,27 @@ local function registerForOpenSavePanel(appObject)
   end
 
   local getUIObj = function(winUIObj)
-    if winUIObj:attributeValue("AXIdentifier") == "save-panel" then
+    local windowIdent = winUIObj:attributeValue("AXIdentifier")
+    local dontSaveButton, sidebarCells = nil, {}
+    if windowIdent == "save-panel" then
       for _, button in ipairs(winUIObj:childrenWithRole("AXButton")) do
         if button.AXIdentifier == "DontSaveButton" then
-          return button
+          dontSaveButton = button
+          break
         end
       end
-    elseif winUIObj:attributeValue("AXIdentifier") == "open-panel" then
+    end
+    if windowIdent == "open-panel" or windowIdent == "save-panel" then
       local outlineUIObj = getAXChildren(winUIObj,
           "AXSplitGroup", 1, "AXScrollArea", 1, "AXOutline", 1)
-      if outlineUIObj == nil then return end
-      local cellUIObj = {}
-      for _, rowUIObj in ipairs(outlineUIObj:childrenWithRole("AXRow")) do
-        if rowUIObj.AXChildren == nil then hs.timer.usleep(0.3 * 1000000) end
-        table.insert(cellUIObj, rowUIObj.AXChildren[1])
+      if outlineUIObj ~= nil then
+        for _, rowUIObj in ipairs(outlineUIObj:childrenWithRole("AXRow")) do
+          if rowUIObj.AXChildren == nil then hs.timer.usleep(0.3 * 1000000) end
+          table.insert(sidebarCells, rowUIObj.AXChildren[1])
+        end
       end
-      return cellUIObj
     end
+    return dontSaveButton, sidebarCells
   end
 
   local actionFunc = function(winUIObj)
@@ -3975,11 +3979,10 @@ local function registerForOpenSavePanel(appObject)
     finderSibebarHotkeys = {}
 
     local windowFilter = winUIObj.AXRole == "AXSheet" and { allowSheet = true } or true
-    local obj = getUIObj(winUIObj)
+    local dontSaveButton, sidebarCells = getUIObj(winUIObj)
     local header
     local i = 1
-    local cellUIObj = type(obj) == "table" and obj or {}
-    for _, cell in ipairs(cellUIObj) do
+    for _, cell in ipairs(sidebarCells) do
       if i > 10 then break end
       if cell:childrenWithRole("AXStaticText")[1].AXIdentifier ~= nil then
         header = cell:childrenWithRole("AXStaticText")[1].AXValue
@@ -4002,12 +4005,12 @@ local function registerForOpenSavePanel(appObject)
         end
       end
     end
-    if obj ~= nil and obj.AXRole == "AXButton" then
+    if dontSaveButton ~= nil then
       local spec = get(KeybindingConfigs.hotkeys.appCommon, "confirmDelete")
       if spec ~= nil then
-        hotkey = WinBindSpec(appObject, spec, obj.AXTitle, function()
-          local action = obj:actionNames()[1]
-          obj:performAction(action)
+        hotkey = WinBindSpec(appObject, spec, dontSaveButton.AXTitle, function()
+          local action = dontSaveButton:actionNames()[1]
+          dontSaveButton:performAction(action)
         end, nil, windowFilter)
         hotkey.kind = HK.IN_APP
         hotkey.subkind = HK.IN_APP_.WINDOW
