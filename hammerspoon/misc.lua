@@ -615,7 +615,7 @@ local function processHotkeys(validOnly, showHS, showKara, showApp, evFlags, rel
         elseif kind < HK.IN_APP and entry.kind == HK.IN_APP then
           msg = hs.application.frontmostApplication():name()
         elseif entry.kind == HK.IN_WIN then
-          msg = "Frontmost Window: " .. hs.window.frontmostWindow():application():name()
+          msg = "Frontmost Window"
         elseif entry.kind == HK.WIN_OP then
           msg = "Window Operations"
         else
