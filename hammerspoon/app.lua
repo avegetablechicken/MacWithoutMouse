@@ -1229,6 +1229,8 @@ appHotKeyCallbacks = {
 
   ["com.apple.Preview"] =
   {
+    ["showPrevTab"] = specialCommonHotkeyConfigs["showPrevTab"],
+    ["showNextTab"] = specialCommonHotkeyConfigs["showNextTab"],
     ["revealInFinder"] = {
       message = "Reveal in Finder",
       condition = function(appObject)
