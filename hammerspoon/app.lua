@@ -3902,15 +3902,10 @@ registerOpenRecent(frontmostApplication)
 
 -- bind hotkeys for open or save panel that are similar in `Finder`
 -- & hotkeys to confirm delete or save
+local openSavePanelHotkeys = {}
 
 -- specialized for `WPS Office`
-local WPSCloseDialogHotkeys = {}
 local function WPSCloseDialog(winUIObj)
-  for _, hotkey in ipairs(WPSCloseDialogHotkeys) do
-    hotkey:delete()
-  end
-  WPSCloseDialogHotkeys = {}
-
   local btnNames = {
     closeDoNotSave = "不保存",
     closeCancel = "取消",
@@ -3931,7 +3926,7 @@ local function WPSCloseDialog(winUIObj)
             end)
             hotkey.kind = HK.IN_APP
             hotkey.subkind = HK.IN_APP_.WINDOW
-            table.insert(WPSCloseDialogHotkeys, hotkey)
+            table.insert(openSavePanelHotkeys, hotkey)
           end
         end
       end
@@ -3940,9 +3935,6 @@ local function WPSCloseDialog(winUIObj)
 end
 
 local function registerForOpenSavePanel(appObject)
-  local hotkey
-  local finderSibebarHotkeys = {}
-
   if appObject:bundleID() == "com.apple.finder" then return end
   local appUIObj = hs.axuielement.applicationElement(appObject)
   if not appUIObj:isValid() then
@@ -3975,12 +3967,6 @@ local function registerForOpenSavePanel(appObject)
   end
 
   local actionFunc = function(winUIObj)
-    if hotkey ~= nil then hotkey:delete() hotkey = nil end
-    for _, hotkey in ipairs(finderSibebarHotkeys) do
-      hotkey:delete()
-    end
-    finderSibebarHotkeys = {}
-
     local windowFilter = winUIObj.AXRole == "AXSheet" and { allowSheet = true } or true
     local dontSaveButton, sidebarCells = getUIObj(winUIObj)
     local header
@@ -4003,7 +3989,7 @@ local function registerForOpenSavePanel(appObject)
                                      function() cell:performAction("AXOpen") end, nil, windowFilter)
           hotkey.kind = HK.IN_APP
           hotkey.subkind = HK.IN_APP_.WINDOW
-          table.insert(finderSibebarHotkeys, hotkey)
+          table.insert(openSavePanelHotkeys, hotkey)
           i = i + 1
         end
       end
@@ -4011,12 +3997,13 @@ local function registerForOpenSavePanel(appObject)
     if dontSaveButton ~= nil then
       local spec = get(KeybindingConfigs.hotkeys.appCommon, "confirmDelete")
       if spec ~= nil then
-        hotkey = WinBindSpec(appObject, spec, dontSaveButton.AXTitle, function()
+        local hotkey = WinBindSpec(appObject, spec, dontSaveButton.AXTitle, function()
           local action = dontSaveButton:actionNames()[1]
           dontSaveButton:performAction(action)
         end, nil, windowFilter)
         hotkey.kind = HK.IN_APP
         hotkey.subkind = HK.IN_APP_.WINDOW
+        table.insert(openSavePanelHotkeys, hotkey)
       end
     end
   end
@@ -4030,6 +4017,10 @@ local function registerForOpenSavePanel(appObject)
     hs.axuielement.observer.notifications.focusedWindowChanged
   )
   observer:callback(function(observer, element, notifications)
+    for _, hotkey in ipairs(openSavePanelHotkeys) do
+      hotkey:delete()
+    end
+    openSavePanelHotkeys = {}
     if hs.application.frontmostApplication():bundleID()
         == "com.kingsoft.wpsoffice.mac" then
       WPSCloseDialog(element)
@@ -4038,15 +4029,10 @@ local function registerForOpenSavePanel(appObject)
   end)
   observer:start()
   stopOnDeactivated(appObject:bundleID(), observer, function()
-    if hotkey ~= nil then hotkey:delete() hotkey = nil end
-    for _, hotkey in ipairs(finderSibebarHotkeys) do
+    for _, hotkey in ipairs(openSavePanelHotkeys) do
       hotkey:delete()
     end
-    finderSibebarHotkeys = {}
-    for _, hotkey in ipairs(WPSCloseDialogHotkeys) do
-      hotkey:delete()
-    end
-    WPSCloseDialogHotkeys = {}
+    openSavePanelHotkeys = {}
   end)
 end
 registerForOpenSavePanel(frontmostApplication)
