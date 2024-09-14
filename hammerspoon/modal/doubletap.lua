@@ -187,18 +187,18 @@ function module:_newInstance()
   self.__index = self
 
   -- double tap this key to trigger the action
-  self.key = nil
-  self.mods = {}
-  self.idx = nil
+  o.key = nil
+  o.mods = {}
+  o.idx = nil
 
   -- how quickly must the two single **KEY** taps occur?
-  self.timeFrame = 0.5
+  o.timeFrame = 0.5
 
   -- what to do when the double tap of **KEY** occurs
-  self.action = nil
+  o.action = nil
 
   -- status
-  self.timeFirstKeyDown, self.firstDown, self.secondDown = 0, false, false
+  o.timeFirstKeyDown, o.firstDown, o.secondDown = 0, false, false
 
   return o
 end

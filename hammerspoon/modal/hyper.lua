@@ -49,15 +49,15 @@ function module:bind(...)
 end
 
 -- Binds the enter/exit functions of the Hyper modal to all combinations of modifiers
-function module:_new(hotKey)
+function module:_new(hyper)
   local o = {}
   setmetatable(o, self)
   self.__index = self
-  self.hyper = hotKey
-  self.hyperMode = hs.hotkey.modal.new()
-  self.hyperMode.Entered = false
-  self.trigger = hs.hotkey.bind("", hotKey,
-      function() self:enterHyperMode() end, function() self:exitHyperMode() end)
+  o.hyper = hyper
+  o.hyperMode = hs.hotkey.modal.new()
+  o.hyperMode.Entered = false
+  o.trigger = hs.hotkey.bind("", o.hyper,
+      function() o:enterHyperMode() end, function() o:exitHyperMode() end)
   return o
 end
 
