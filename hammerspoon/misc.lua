@@ -290,7 +290,10 @@ local function getSubMenuHotkeys(t, menuItem, titleAsEntry, titlePrefix)
   if titleAsEntry == true then
     table.insert(t, menuItem.AXTitle)
   end
-  for _, subItem in ipairs(menuItem.AXChildren[1]) do
+  for i, subItem in ipairs(menuItem.AXChildren[1]) do
+    if i > 1 and menuItem.AXChildren[1][i - 1] == subItem then
+      goto L_CONTINUE
+    end
     local title = subItem.AXTitle
     if titlePrefix ~= nil then
       if type(titlePrefix) == 'string' then
@@ -323,6 +326,7 @@ local function getSubMenuHotkeys(t, menuItem, titleAsEntry, titlePrefix)
                         kind = HK.IN_APP, valid = subItem.AXEnabled })
     end
     getSubMenuHotkeys(t, subItem, false, titlePrefix and title or nil)
+    ::L_CONTINUE::
   end
 end
 
