@@ -1024,6 +1024,11 @@ local controlCenterIdentifiers = hs.json.read("static/controlcenter-identifies.j
 local controlCenterSubPanelIdentifiers = controlCenterIdentifiers.subpanel
 local controlCenterMenuBarItemIdentifiers = controlCenterIdentifiers.menubar
 local controlCenterAccessibiliyIdentifiers = controlCenterIdentifiers.accessibility
+local defaultMusicAppForControlCenter
+if hs.fs.attributes("config/application.json") ~= nil then
+  local applicationConfigs = hs.json.read("config/application.json")
+  defaultMusicAppForControlCenter = applicationConfigs.defaultMusicAppForControlCenter
+end
 
 local function popupControlCenterSubPanel(panel, allowReentry)
   local ident = controlCenterSubPanelIdentifiers[panel]
@@ -2168,6 +2173,30 @@ function registerControlCenterHotKeys(panel)
       local hotkey
       hotkey = newControlCenter("", "Space", result[2],
         function()
+          if defaultMusicAppForControlCenter ~= nil then
+            local appleMusicAppPath = hs.application.pathForBundleID('com.apple.Music')
+            local appName, _ = hs.execute(string.format("mdls -name kMDItemDisplayName -raw '%s'", appleMusicAppPath))
+            local ok, isAppleMusic = hs.osascript.applescript([[
+              tell application "System Events"
+                set appTitle to static text 1 of ]] .. pane .. [[ of application process "ControlCenter"
+                return value of appTitle is "]] .. appName .. [["
+              end tell
+            ]])
+            if ok and isAppleMusic then
+              if type(defaultMusicAppForControlCenter) == 'string' then
+                hs.application.launchOrFocusByBundleID(defaultMusicAppForControlCenter)
+                return
+              else
+                for _, bid in ipairs(defaultMusicAppForControlCenter) do
+                  local appPath = hs.application.pathForBundleID(bid)
+                  if appPath ~= nil and appPath ~= "" then
+                    hs.application.launchOrFocusByBundleID(bid)
+                    return
+                  end
+                end
+              end
+            end
+          end
           hs.osascript.applescript([[
             tell application "System Events"
               set bt to button 2 of ]] .. pane .. [[ of application process "ControlCenter"

@@ -71,6 +71,8 @@
     "com.eusoft.freeeudic"
   ],
 
+  "defaultMusicAppForControlCenter": "com.tencent.QQMusicMac",
+
   "inputSource": {
     "com.apple.dt.Xcode": "com.apple.keylayout.ABC",
     "com.jetbrains.CLion": "com.apple.keylayout.ABC",
