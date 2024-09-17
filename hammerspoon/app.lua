@@ -999,6 +999,7 @@ local specialCommonHotkeyConfigs = {
       local winObj = appObject:focusedWindow()
       return winObj ~= nil and winObj:role() == "AXWindow", winObj
     end,
+    repeatable = true,
     fn = function(winObj) winObj:close() end
   },
   ["minimize"] = {
@@ -1008,6 +1009,7 @@ local specialCommonHotkeyConfigs = {
       local winObj = appObject:focusedWindow()
       return winObj ~= nil and winObj:role() == "AXWindow", winObj
     end,
+    repeatable = true,
     fn = function(winObj) winObj:minimize() end
   },
   ["hide"] = {
@@ -1024,12 +1026,14 @@ local specialCommonHotkeyConfigs = {
     mods = "⇧⌘", key = "[",
     message = menuItemMessage('⇧⌃', "⇥", 2),
     condition = checkMenuItemByKeybinding('⇧⌃', "⇥"),
+    repeatable = true,
     fn = receiveMenuItem
   },
   ["showNextTab"] = {
     mods = "⇧⌘", key = "]",
     message = menuItemMessage('⌃', "⇥", 2),
     condition = checkMenuItemByKeybinding('⌃', "⇥"),
+    repeatable = true,
     fn = receiveMenuItem
   },
 }
@@ -1155,11 +1159,13 @@ appHotKeyCallbacks = {
     ["goToPreviousConversation"] = {
       message = menuItemMessage('⇧⌃', "⇥", 2),
       condition = checkMenuItemByKeybinding('⇧⌃', "⇥"),
+      repeatable = true,
       fn = receiveMenuItem
     },
     ["goToNextConversation"] = {
       message = menuItemMessage('⌃', "⇥", 2),
       condition = checkMenuItemByKeybinding('⌃', "⇥"),
+      repeatable = true,
       fn = receiveMenuItem
     }
   },
@@ -1198,6 +1204,7 @@ appHotKeyCallbacks = {
           return button ~= nil, button
         end
       end,
+      repeatable = true,
       fn = function(result, appObject)
         if type(result) == 'table' then
           appObject:selectMenuItem(result)
@@ -1277,6 +1284,7 @@ appHotKeyCallbacks = {
           return winUIObj:attributeValue("AXIdentifier") ~= "open-panel"
         end
       end,
+      repeatable = true,
       fn = function(appObject)
         VSCodeToggleSideBarSection(appObject, "EXPLORER", "OUTLINE")
       end
@@ -1291,6 +1299,7 @@ appHotKeyCallbacks = {
           return winUIObj:attributeValue("AXIdentifier") ~= "open-panel"
         end
       end,
+      repeatable = true,
       fn = function(appObject) hs.eventtap.keyStroke("⌘⌥", "W", nil, appObject) end
     },
     ["toggleSearchEditorRegex"] = {
@@ -1303,6 +1312,7 @@ appHotKeyCallbacks = {
           return winUIObj:attributeValue("AXIdentifier") ~= "open-panel"
         end
       end,
+      repeatable = true,
       fn = function(appObject) hs.eventtap.keyStroke("⌘⌥", "R", nil, appObject) end
     }
   },
@@ -1317,6 +1327,7 @@ appHotKeyCallbacks = {
     ["remapPreviousTab"] = {
       message = localizedMessage("Go to Previous Tab"),
       condition = checkMenuItem({ "Window", "Go to Previous Tab" }),
+      repeatable = true,
       fn = receiveMenuItem
     }
   },
@@ -1376,6 +1387,7 @@ appHotKeyCallbacks = {
     ["goToFileTop"] = {
       mods = "", key = "Home",
       message = "将光标移动到文档的开头",
+      repeatable = true,
       fn = function(appObject) hs.eventtap.keyStroke("⌘", "Home", nil, appObject) end
     },
     ["goToFileBottom"] = {
@@ -1489,11 +1501,13 @@ appHotKeyCallbacks = {
     ["pasteAndMatchStyle"] = {  -- Edit > Paste and Match Style
       message = localizedMessage("Paste and Match Style"),
       condition = checkMenuItem({ "Edit", "Paste and Match Style" }),
+      repeatable = true,
       fn = receiveMenuItem
     },
     ["paste"] = {  -- Edit > Paste
       message = localizedMessage("Paste"),
       condition = checkMenuItem({ "Edit", "Paste" }),
+      repeatable = true,
       fn = receiveMenuItem
     },
     ["showBuildOrder"] = {  -- View > Show Build Order
@@ -1552,11 +1566,13 @@ appHotKeyCallbacks = {
     ["pasteAndMatchStyle"] = {  -- Edit > Paste and Match Style
       message = localizedMessage("Paste and Match Style"),
       condition = checkMenuItem({ "Edit", "Paste and Match Style" }),
+      repeatable = true,
       fn = receiveMenuItem
     },
     ["paste"] = {  -- Edit > Paste
       message = localizedMessage("Paste"),
       condition = checkMenuItem({ "Edit", "Paste" }),
+      repeatable = true,
       fn = receiveMenuItem
     },
     ["insertEquation"] = {  -- Insert > Equation…
@@ -1657,6 +1673,7 @@ appHotKeyCallbacks = {
       key = get(KeybindingConfigs.hotkeys.appCommon, "remapPreviousTab", "key"),
       message = "Previous Library",
       condition = JabRefShowLibraryByIndex(2),
+      repeatable = true,
       fn = function(appObject) hs.eventtap.keyStroke('⇧⌃', 'Tab', nil, appObject) end
     },
     ["showPrevLibrary"] = {
@@ -1664,6 +1681,7 @@ appHotKeyCallbacks = {
       key = specialCommonHotkeyConfigs["showPrevTab"].key,
       message = "Previous Library",
       condition = JabRefShowLibraryByIndex(2),
+      repeatable = true,
       fn = function(appObject) hs.eventtap.keyStroke('⇧⌃', 'Tab', nil, appObject) end
     },
     ["showNextLibrary"] = {
@@ -1671,6 +1689,7 @@ appHotKeyCallbacks = {
       key = specialCommonHotkeyConfigs["showNextTab"].key,
       message = "Next Library",
       condition = JabRefShowLibraryByIndex(2),
+      repeatable = true,
       fn = function(appObject) hs.eventtap.keyStroke('⌃', 'Tab', nil, appObject) end
     },
     ["1stLibrary"] = {
@@ -1776,7 +1795,6 @@ appHotKeyCallbacks = {
   {
     ["export"] = {
       message = "Export",
-      repeatable = false,
       condition = checkMenuItem({ "File", "Share", "File…" }),
       fn = receiveMenuItem
     }
@@ -1786,7 +1804,6 @@ appHotKeyCallbacks = {
   {
     ["back"] = {
       message = localizedMessage("Common.Navigation.Back", { key = true }),
-      repeatable = false,
       condition = function(appObject)
         local exBundleID = "com.tencent.xinWeChat.WeChatAppEx"
         local exAppObject = findApplication(exBundleID)
@@ -1868,6 +1885,7 @@ appHotKeyCallbacks = {
         end
         return false
       end,
+      repeatable = true,
       fn = receivePosition
     },
     ["forward"] = {
@@ -1884,6 +1902,7 @@ appHotKeyCallbacks = {
         end
         return false
       end,
+      repeatable = true,
       fn = receivePosition
     },
     ["refresh"] = {
@@ -2453,6 +2472,7 @@ appHotKeyCallbacks = {
           return false
         end
       end,
+      repeatable = true,
       fn = function(result, appObject)
         if type(result) == 'table' then
           appObject:selectMenuItem(result)
@@ -2892,24 +2912,28 @@ appHotKeyCallbacks = {
       mods = "⌘", key = "]",
       message = "Previous Category",
       windowFilter = iCopyWindowFilter,
+      repeatable = true,
       fn = function(winObj) hs.eventtap.keyStroke("", "Right", nil, winObj:application()) end
     },
     ["nextCategory"] = {
       mods = "⌘", key = "[",
       message = "Next Category",
       windowFilter = iCopyWindowFilter,
+      repeatable = true,
       fn = function(winObj) hs.eventtap.keyStroke("", "Left", nil, winObj:application()) end
     },
     ["previousItem"] = {
       mods = "", key = "Left",
       message = "Previous Item",
       windowFilter = iCopyWindowFilter,
+      repeatable = true,
       fn = function(winObj) hs.eventtap.keyStroke("", "Up", nil, winObj:application()) end
     },
     ["nextItem"] = {
       mods = "", key = "Right",
       message = "Next Item",
       windowFilter = iCopyWindowFilter,
+      repeatable = true,
       fn = function(winObj) hs.eventtap.keyStroke("", "Down", nil, winObj:application()) end
     },
     ["cancelUp"] = {
@@ -3363,6 +3387,9 @@ local callBackExecuting
 function AppBind(appObject, mods, key, message, pressedfn, repeatedfn, cond, websiteFilter, ...)
   local newCond
   pressedfn, newCond = inAppHotKeysWrapper(appObject, mods, key, message, pressedfn, cond, websiteFilter)
+  if repeatedfn == nil and cond ~= nil or websiteFilter ~= nil then
+    repeatedfn = function() end
+  end
   if repeatedfn ~= nil then
     repeatedfn = inAppHotKeysWrapper(appObject, mods, key, message, repeatedfn, cond, websiteFilter)
   end
@@ -3414,7 +3441,7 @@ local function registerInAppHotKeys(appObject)
         local msg = type(cfg.message) == 'string' and cfg.message or cfg.message(appObject)
         if msg ~= nil then
           local repeatable = keybinding.repeatable ~= nil and keybinding.repeatable or cfg.repeatable
-          local repeatedfn = repeatable ~= false and cfg.fn or nil
+          local repeatedfn = repeatable and cfg.fn or nil
           local websiteFilter = keybinding.websiteFilter or cfg.websiteFilter
           local hotkey, cond = AppBindSpec(appObject, keybinding, msg, cfg.fn, repeatedfn, cfg.condition, websiteFilter)
           hotkey.kind = HK.IN_APP
@@ -3489,9 +3516,10 @@ end
 
 function WinBind(appObject, mods, key, message, pressedfn, repeatedfn, windowFilter, cond, ...)
   pressedfn = inWinHotKeysWrapper(appObject, mods, key, 1, message, pressedfn, windowFilter, cond)
-  if repeatedfn ~= nil then
-    repeatedfn = inWinHotKeysWrapper(appObject, mods, key, 2, message, repeatedfn, windowFilter, cond)
+  if repeatedfn == nil then
+    repeatedfn = function() end
   end
+  repeatedfn = inWinHotKeysWrapper(appObject, mods, key, 2, message, repeatedfn, windowFilter, cond)
   return bindHotkey(mods, key, message, pressedfn, nil, repeatedfn, ...)
 end
 
@@ -3521,7 +3549,7 @@ local function registerInWinHotKeys(appObject)
         local msg = type(cfg.message) == 'string' and cfg.message or cfg.message(appObject)
         if msg ~= nil then
           local repeatable = keybinding.repeatable ~= nil and keybinding.repeatable or cfg.repeatable
-          local repeatedFn = repeatable ~= false and cfg.fn or nil
+          local repeatedFn = repeatable and cfg.fn or nil
           local windowFilter = keybinding.windowFilter or cfg.windowFilter
           local hotkey = WinBindSpec(appObject, keybinding, msg, cfg.fn, repeatedFn,
                                      windowFilter, cfg.condition)
@@ -3609,15 +3637,18 @@ local function inWinOfUnactivatedAppWatcherEnableCallback(bid, filter, winObj)
         local keybinding = get(KeybindingConfigs.hotkeys[bid], hkID) or cfg
         local repeatable = keybinding.repeatable ~= nil and keybinding.repeatable or cfg.repeatable
         local cond = resendToFrontmostWindow()
-        local fn = function()
-          if cond(winObj) then
-            cfg.fn(winObj)
-          else
-            selectMenuItemOrKeyStroke(hs.window.frontmostWindow():application(), keybinding.mods, keybinding.key)
+        local wrapper = function(func)
+          return function()
+            if cond(winObj) then
+              func(winObj)
+            else
+              selectMenuItemOrKeyStroke(hs.window.frontmostWindow():application(), keybinding.mods, keybinding.key)
+            end
           end
         end
-        local hotkey = bindHotkeySpec(keybinding, msg, fn, nil,
-                                      repeatable and fn or nil)
+        local fn = wrapper(cfg.fn)
+        local repeatedFn = wrapper(repeatable and cfg.fn or function() end)
+        local hotkey = bindHotkeySpec(keybinding, msg, fn, nil, repeatedFn)
         hotkey.kind = HK.IN_WIN
         hotkey.condition = hs.fnutils.partial(cond, winObj)
         table.insert(inWinOfUnactivatedAppHotKeys[bid], hotkey)
