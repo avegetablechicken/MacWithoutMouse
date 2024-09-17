@@ -3196,6 +3196,7 @@ end)
 
 local function resendToFrontmostWindow(cond)
   return function(obj)
+    if obj.application == nil and obj.focusedWindow == nil then return true end
     local appObject = obj.application ~= nil and obj:application() or obj
     local frontWin = hs.window.frontmostWindow()
     if frontWin ~= nil and appObject:focusedWindow() ~= nil
@@ -3607,10 +3608,18 @@ local function inWinOfUnactivatedAppWatcherEnableCallback(bid, filter, winObj)
       if msg ~= nil then
         local keybinding = get(KeybindingConfigs.hotkeys[bid], hkID) or cfg
         local repeatable = keybinding.repeatable ~= nil and keybinding.repeatable or cfg.repeatable
-        local fn = hs.fnutils.partial(cfg.fn, winObj)
+        local cond = resendToFrontmostWindow()
+        local fn = function()
+          if cond(winObj) then
+            cfg.fn(winObj)
+          else
+            selectMenuItemOrKeyStroke(hs.window.frontmostWindow():application(), keybinding.mods, keybinding.key)
+          end
+        end
         local hotkey = bindHotkeySpec(keybinding, msg, fn, nil,
                                       repeatable and fn or nil)
         hotkey.kind = HK.IN_WIN
+        hotkey.condition = hs.fnutils.partial(cond, winObj)
         table.insert(inWinOfUnactivatedAppHotKeys[bid], hotkey)
       end
     end
