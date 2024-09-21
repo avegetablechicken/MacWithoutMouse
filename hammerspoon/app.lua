@@ -1314,6 +1314,27 @@ appHotKeyCallbacks = {
       end,
       repeatable = true,
       fn = function(appObject) hs.eventtap.keyStroke("⌘⌥", "R", nil, appObject) end
+    },
+    ["openRecent"] = {
+      message = localizedMessage("Open Recent"),
+      condition = function(appObject)
+        local enabled, menuItem = checkMenuItem({ "File", "Open Recent", "More…" })(appObject)
+        if enabled then
+          return true, menuItem
+        else
+          return checkMenuItem({ "File", "Open Recent" })(appObject)
+        end
+      end,
+      fn = function(menuItem, appObject)
+        if #menuItem == 3 then
+          appObject:selectMenuItem(menuItem)
+        else
+          showMenuItemWrapper(function()
+            appObject:selectMenuItem({ menuItem[1] })
+            appObject:selectMenuItem(menuItem)
+          end)()
+        end
+      end
     }
   },
 

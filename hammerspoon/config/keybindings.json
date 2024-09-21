@@ -648,10 +648,7 @@
       },
       "openRecent": {
         "mods": "control",
-        "key": "R",
-        "excluded": [
-          "com.microsoft.VSCode"
-        ]
+        "key": "R"
       },
       "confirmDelete": {
         "mods": "option",
@@ -958,6 +955,10 @@
       },
       "toggleSearchEditorRegex": {
         "mods": ["shift", "option", "command"],
+        "key": "R"
+      },
+      "openRecent": {
+        "mods": "control",
         "key": "R"
       }
     },
