@@ -2461,16 +2461,14 @@ appHotKeyCallbacks = {
     ["new..."] = {
       mods = "⌘", key = "N",
       message = localizedMessage("New..."),
-      fn = function(appObject)
-        selectMenuItem(appObject, { "File", "New..." })
-      end
+      condition = checkMenuItem({ "File", "New..." }),
+      fn = receiveMenuItem
     },
     ["open..."] = {
       mods = "⌘", key = "O",
       message = localizedMessage("Open..."),
-      fn = function(appObject)
-        selectMenuItem(appObject, { "File", "Open..." })
-      end
+      condition = checkMenuItem({ "File", "Open..." }),
+      fn = receiveMenuItem
     },
     ["minimize"] = {
       mods = "⌘", key = "M",
