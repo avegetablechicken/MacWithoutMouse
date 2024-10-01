@@ -290,6 +290,7 @@ local function getSubMenuHotkeys(t, menuItem, titleAsEntry, titlePrefix)
   if titleAsEntry == true then
     table.insert(t, menuItem.AXTitle)
   end
+  local startIdx = #t
   for i, subItem in ipairs(menuItem.AXChildren[1]) do
     if i > 1 and menuItem.AXChildren[1][i - 1] == subItem then
       goto L_CONTINUE
@@ -301,7 +302,10 @@ local function getSubMenuHotkeys(t, menuItem, titleAsEntry, titlePrefix)
       end
     end
     local idx
-    if subItem.AXMenuItemCmdChar ~= ""
+    if subItem.AXMenuItemCmdGlyph ~= ""
+        and hs.application.menuGlyphs[subItem.AXMenuItemCmdGlyph] ~= nil then
+      idx = menuItemHotkeyIdx(subItem.AXMenuItemCmdModifiers or {}, hs.application.menuGlyphs[subItem.AXMenuItemCmdGlyph])
+    elseif subItem.AXMenuItemCmdChar ~= ""
         and string.byte(subItem.AXMenuItemCmdChar, 1) ~= 3 then
       local bundleID = hs.application.frontmostApplication():bundleID()
       if subItem.AXMenuItemCmdChar == 'E' and subItem.AXMenuItemCmdGlyph == ""
@@ -317,9 +321,6 @@ local function getSubMenuHotkeys(t, menuItem, titleAsEntry, titlePrefix)
       else
         idx = menuItemHotkeyIdx(subItem.AXMenuItemCmdModifiers or {}, subItem.AXMenuItemCmdChar)
       end
-    elseif subItem.AXMenuItemCmdGlyph ~= ""
-        and hs.application.menuGlyphs[subItem.AXMenuItemCmdGlyph] ~= nil then
-      idx = menuItemHotkeyIdx(subItem.AXMenuItemCmdModifiers or {}, hs.application.menuGlyphs[subItem.AXMenuItemCmdGlyph])
     end
     if idx ~= nil then
       table.insert(t, { idx = idx, msg = idx .. ": " .. title,
@@ -327,6 +328,28 @@ local function getSubMenuHotkeys(t, menuItem, titleAsEntry, titlePrefix)
     end
     getSubMenuHotkeys(t, subItem, false, titlePrefix and title or nil)
     ::L_CONTINUE::
+  end
+  if getOSVersion() >= OS.Sequoia and menuItem.AXRole == "AXMenuBarItem" then
+    local bundleID = hs.application.frontmostApplication():bundleID()
+    if delocalizedMenuBarItem(menuItem.AXTitle, bundleID) == 'Window' then
+      local startPatch = false
+      for i=startIdx+1,#t do
+        if not startPatch and i < #t
+            and t[i].idx == "⌃F" and t[i + 1].idx == "⌃C" then
+          startPatch = true
+        end
+        if startPatch then
+          local len = utf8.len(t[i].idx) assert(len)
+          local pos = utf8.offset(t[i].idx, len)
+          local idx = string.sub(t[i].idx, 1, pos - 1) .. "🌐︎" .. string.sub(t[i].idx, pos)
+          t[i].msg = idx .. ": " .. string.sub(t[i].msg, string.len(t[i].idx) + 2)
+          t[i].idx = idx
+        end
+        if startPatch and t[i].idx == "⌃🌐︎R" then
+          break
+        end
+      end
+    end
   end
 end
 
@@ -794,14 +817,14 @@ local function generateHtml(validOnly, showHS, showKara, showApp, evFlags, reloa
             overflow: hidden;
             white-space: nowrap;
             text-overflow: ellipsis;
-            width: 220px;
+            width: 210px;
             line-height: 1.3;
           }
           .modstext{
             float: left;
             text-align: right;
             overflow: hidden;
-            width: 50px;
+            width: 60px;
             line-height: 1.3;
           }
           .keytext{
