@@ -19,6 +19,10 @@
             "extract": "%d%d%d%d%d%d"
         },
         {
+            "filter": ["【Gitee】", "验证码"],
+            "extract": "%d%d%d%d%d%d"
+        },
+        {
             "filter": "验证码",
             "extract": "%d%d%d%d+"
         }
