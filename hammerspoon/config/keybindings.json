@@ -554,11 +554,6 @@
         "key": "V",
         "bundleID": "com.realvnc.vncviewer"
       },
-      "Notes": {
-        "mods": "${hyper.hyper}",
-        "key": "N",
-        "bundleID": "com.apple.Notes"
-      },
       "MATLAB": {
         "mods": "${hyper.hyper}",
         "key": "M",
