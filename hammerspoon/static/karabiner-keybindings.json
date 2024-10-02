@@ -137,12 +137,6 @@
     },
     {
         "mods": "fn",
-        "key": "F",
-        "message": "Toggle Full Screen",
-        "kind": "WIN_OP"
-    },
-    {
-        "mods": "fn",
         "key": "Tab",
         "message": "Forward"
     },
