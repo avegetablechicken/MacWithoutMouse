@@ -339,13 +339,10 @@ local function getSubMenuHotkeys(t, menuItem, titleAsEntry, titlePrefix)
           startPatch = true
         end
         if startPatch then
-          local len = utf8.len(t[i].idx) assert(len)
-          local pos = utf8.offset(t[i].idx, len)
-          local idx = string.sub(t[i].idx, 1, pos - 1) .. "🌐︎" .. string.sub(t[i].idx, pos)
-          t[i].msg = idx .. ": " .. string.sub(t[i].msg, string.len(t[i].idx) + 2)
-          t[i].idx = idx
+          t[i].msg = "🌐︎" .. t[i].msg
+          t[i].idx = "🌐︎" .. t[i].idx
         end
-        if startPatch and t[i].idx == "⌃🌐︎R" then
+        if startPatch and t[i].idx == "🌐︎⌃R" then
           break
         end
       end
