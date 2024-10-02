@@ -557,13 +557,6 @@ function()
   end
 end)
 
--- toggle full-screen
-bindWindow(winHK["toggleFullScreen"], "Toggle Full-Screen",
-function()
-  local win = hs.window.focusedWindow()
-  win:toggleFullScreen()
-end)
-
 -- window-based switcher like Windows
 
 local misc = KeybindingConfigs.hotkeys.global

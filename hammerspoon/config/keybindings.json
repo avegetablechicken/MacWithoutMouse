@@ -248,10 +248,6 @@
         "mods": ["control", "command"],
         "key": "D"
       },
-      "toggleFullScreen": {
-        "mods": ["control", "command"],
-        "key": "F"
-      },
       "moveToSpace1": {
         "mods": "${hyper.moveToSpace}",
         "key": "1"
