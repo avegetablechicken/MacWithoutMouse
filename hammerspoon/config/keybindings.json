@@ -486,14 +486,6 @@
         "key": "R",
         "bundleID": "com.microsoft.rdc.macos"
       },
-      "Termius": {
-        "mods": "${hyper.hyper}",
-        "key": "T",
-        "bundleID": [
-          "com.termius.mac",
-          "com.termius-dmg.mac"
-        ]
-      },
       "Ubuntu": {
         "mods": "${hyper.hyper}",
         "key": "U",
