@@ -144,36 +144,13 @@
                         ]
                     },
                     {
-                        "description": "Fn + Q/W/E/A/S/D/Z/X/C with delay to move window or emit original hotkeys",
+                        "description": "Fn + Control + W/S/A/D/Q/E/Z/X/C to move window",
                         "manipulators": [
-                            {
-                                "conditions": [
-                                    {
-                                        "name": "fn tapped",
-                                        "type": "variable_if",
-                                        "value": 0
-                                    }
-                                ],
-                                "from": {
-                                    "key_code": "q",
-                                    "modifiers": {
-                                        "mandatory": ["fn"],
-                                        "optional": ["left_shift"]
-                                    }
-                                },
-                                "to": [
-                                    {
-                                        "key_code": "1",
-                                        "modifiers": ["left_option", "left_command"]
-                                    }
-                                ],
-                                "type": "basic"
-                            },
                             {
                                 "from": {
                                     "key_code": "w",
                                     "modifiers": {
-                                        "mandatory": ["fn"],
+                                        "mandatory": ["fn", "left_control"],
                                         "optional": ["left_shift"]
                                     }
                                 },
@@ -186,40 +163,26 @@
                                 "type": "basic"
                             },
                             {
-                                "conditions": [
-                                    {
-                                        "name": "fn tapped",
-                                        "type": "variable_if",
-                                        "value": 0
-                                    }
-                                ],
                                 "from": {
-                                    "key_code": "e",
+                                    "key_code": "s",
                                     "modifiers": {
-                                        "mandatory": ["fn"],
+                                        "mandatory": ["fn", "left_control"],
                                         "optional": ["left_shift"]
                                     }
                                 },
                                 "to": [
                                     {
-                                        "key_code": "3",
+                                        "key_code": "8",
                                         "modifiers": ["left_option", "left_command"]
                                     }
                                 ],
                                 "type": "basic"
                             },
                             {
-                                "conditions": [
-                                    {
-                                        "name": "fn tapped",
-                                        "type": "variable_if",
-                                        "value": 0
-                                    }
-                                ],
                                 "from": {
                                     "key_code": "a",
                                     "modifiers": {
-                                        "mandatory": ["fn"],
+                                        "mandatory": ["fn", "left_control"],
                                         "optional": ["left_shift"]
                                     }
                                 },
@@ -233,25 +196,9 @@
                             },
                             {
                                 "from": {
-                                    "key_code": "s",
-                                    "modifiers": {
-                                        "mandatory": ["fn"],
-                                        "optional": ["left_shift"]
-                                    }
-                                },
-                                "to": [
-                                    {
-                                        "key_code": "5",
-                                        "modifiers": ["left_option", "left_command"]
-                                    }
-                                ],
-                                "type": "basic"
-                            },
-                            {
-                                "from": {
                                     "key_code": "d",
                                     "modifiers": {
-                                        "mandatory": ["fn"],
+                                        "mandatory": ["fn", "left_control"],
                                         "optional": ["left_shift"]
                                     }
                                 },
@@ -265,9 +212,41 @@
                             },
                             {
                                 "from": {
+                                    "key_code": "q",
+                                    "modifiers": {
+                                        "mandatory": ["fn", "left_control"],
+                                        "optional": ["left_shift"]
+                                    }
+                                },
+                                "to": [
+                                    {
+                                        "key_code": "1",
+                                        "modifiers": ["left_option", "left_command"]
+                                    }
+                                ],
+                                "type": "basic"
+                            },
+                            {
+                                "from": {
+                                    "key_code": "e",
+                                    "modifiers": {
+                                        "mandatory": ["fn", "left_control"],
+                                        "optional": ["left_shift"]
+                                    }
+                                },
+                                "to": [
+                                    {
+                                        "key_code": "3",
+                                        "modifiers": ["left_option", "left_command"]
+                                    }
+                                ],
+                                "type": "basic"
+                            },
+                            {
+                                "from": {
                                     "key_code": "z",
                                     "modifiers": {
-                                        "mandatory": ["fn"],
+                                        "mandatory": ["fn", "left_control"],
                                         "optional": ["left_shift"]
                                     }
                                 },
@@ -283,30 +262,7 @@
                                 "from": {
                                     "key_code": "x",
                                     "modifiers": {
-                                        "mandatory": ["fn"],
-                                        "optional": ["left_shift"]
-                                    }
-                                },
-                                "to": [
-                                    {
-                                        "key_code": "8",
-                                        "modifiers": ["left_option", "left_command"]
-                                    }
-                                ],
-                                "type": "basic"
-                            },
-                            {
-                                "conditions": [
-                                    {
-                                        "name": "fn tapped",
-                                        "type": "variable_if",
-                                        "value": 0
-                                    }
-                                ],
-                                "from": {
-                                    "key_code": "c",
-                                    "modifiers": {
-                                        "mandatory": ["fn"],
+                                        "mandatory": ["fn", "left_control"],
                                         "optional": ["left_shift"]
                                     }
                                 },
@@ -319,110 +275,19 @@
                                 "type": "basic"
                             },
                             {
-                                "conditions": [
-                                    {
-                                        "name": "fn tapped",
-                                        "type": "variable_if",
-                                        "value": 1
-                                    }
-                                ],
-                                "from": {
-                                    "key_code": "q",
-                                    "modifiers": { "mandatory": ["fn"] }
-                                },
-                                "to": {
-                                    "key_code": "q",
-                                    "modifiers": ["fn"]
-                                },
-                                "type": "basic"
-                            },
-                            {
-                                "conditions": [
-                                    {
-                                        "name": "fn tapped",
-                                        "type": "variable_if",
-                                        "value": 1
-                                    }
-                                ],
-                                "from": {
-                                    "key_code": "e",
-                                    "modifiers": { "mandatory": ["fn"] }
-                                },
-                                "to": {
-                                    "key_code": "e",
-                                    "modifiers": ["fn"]
-                                },
-                                "type": "basic"
-                            },
-                            {
-                                "conditions": [
-                                    {
-                                        "name": "fn tapped",
-                                        "type": "variable_if",
-                                        "value": 1
-                                    }
-                                ],
-                                "from": {
-                                    "key_code": "a",
-                                    "modifiers": { "mandatory": ["fn"] }
-                                },
-                                "to": {
-                                    "key_code": "a",
-                                    "modifiers": ["fn"]
-                                },
-                                "type": "basic"
-                            },
-                            {
-                                "conditions": [
-                                    {
-                                        "name": "fn tapped",
-                                        "type": "variable_if",
-                                        "value": 1
-                                    }
-                                ],
                                 "from": {
                                     "key_code": "c",
-                                    "modifiers": { "mandatory": ["fn"] }
+                                    "modifiers": {
+                                        "mandatory": ["fn", "left_control"],
+                                        "optional": ["left_shift"]
+                                    }
                                 },
-                                "to": {
-                                    "key_code": "c",
-                                    "modifiers": ["fn"]
-                                },
-                                "type": "basic"
-                            },
-                            {
-                                "from": {
-                                    "key_code": "fn",
-                                    "modifiers": { "optional": ["any"] }
-                                },
-                                "parameters": { "basic.to_delayed_action_delay_milliseconds": 100 },
                                 "to": [
                                     {
-                                        "set_variable": {
-                                            "name": "fn tapped",
-                                            "value": 1
-                                        }
-                                    },
-                                    { "key_code": "fn" }
+                                        "key_code": "5",
+                                        "modifiers": ["left_option", "left_command"]
+                                    }
                                 ],
-                                "to_delayed_action": {
-                                    "to_if_canceled": [
-                                        {
-                                            "set_variable": {
-                                                "name": "fn tapped",
-                                                "value": 0
-                                            }
-                                        }
-                                    ],
-                                    "to_if_invoked": [
-                                        {
-                                            "set_variable": {
-                                                "name": "fn tapped",
-                                                "value": 0
-                                            }
-                                        }
-                                    ]
-                                },
                                 "type": "basic"
                             }
                         ]
