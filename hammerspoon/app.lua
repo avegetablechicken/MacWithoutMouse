@@ -807,7 +807,7 @@ local function localizedMessage(message, params, sep)
   return function(appObject)
     local bundleID = appObject:bundleID()
     if type(message) == 'string' then
-      return localizedString(message, bundleID, params)
+      return localizedString(message, bundleID, params) or message
     else
       if sep == nil then sep = ' > ' end
       local str = localizedMenuBarItem(message[1], bundleID, params) or message[1]
