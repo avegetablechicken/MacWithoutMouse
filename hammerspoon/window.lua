@@ -512,51 +512,6 @@ function()
   win:setFrame(f)
 end)
 
--- hide all windows
-bindWindow(winHK["hideAllWindows"], "Hide All Windows",
-function()
-  local allWindows = hs.window.filter.new():getWindows()
-  for _, window in ipairs(allWindows) do
-    if window:isVisible() and not window:isFullScreen()
-        and window:application() ~= nil
-        and window:application():bundleID() ~= "com.apple.finder" then
-      window:application():hide()
-    end
-  end
-  local finderWindows = findApplication("com.apple.finder"):visibleWindows()
-  for _, window in ipairs(finderWindows) do
-    if window:isFullScreen() then
-      window:minimize()
-    end
-  end
-end)
-
--- hide all windows on current space
-bindWindow(winHK["hideAllWindowsCurrentSpace"], "Hide All Windows on Current Space",
-function()
-  local space = hs.spaces.focusedSpace()
-  local allWindows = hs.window.filter.new():getWindows()
-  allWindows = hs.fnutils.filter(allWindows, function(window)
-    return hs.fnutils.contains(hs.spaces.windowSpaces(window), space)
-  end)
-  for _, window in ipairs(allWindows) do
-    if window:isVisible() and not window:isFullScreen()
-        and window:application() ~= nil
-        and window:application():bundleID() ~= "com.apple.finder" then
-      window:application():hide()
-    end
-  end
-  local finderWindows = findApplication("com.apple.finder"):visibleWindows()
-  finderWindows = hs.fnutils.filter(finderWindows, function(window)
-    return hs.fnutils.contains(hs.spaces.windowSpaces(window), space)
-  end)
-  for _, window in ipairs(finderWindows) do
-    if window:isFullScreen() then
-      window:minimize()
-    end
-  end
-end)
-
 -- window-based switcher like Windows
 
 local misc = KeybindingConfigs.hotkeys.global

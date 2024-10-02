@@ -240,14 +240,6 @@
         "mods": ["shift", "option", "command"],
         "key": "'"
       },
-      "hideAllWindows": {
-        "mods": ["shift", "control", "command"],
-        "key": "D"
-      },
-      "hideAllWindowsCurrentSpace": {
-        "mods": ["control", "command"],
-        "key": "D"
-      },
       "moveToSpace1": {
         "mods": "${hyper.moveToSpace}",
         "key": "1"
