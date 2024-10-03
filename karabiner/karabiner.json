@@ -144,49 +144,86 @@
                         ]
                     },
                     {
-                        "description": "Fn + Control + W/S/A/D/Q/E/Z/X/C to move window",
+                        "description": "Fn + Control + W/S/A/D/Q/E/Z/X to move window",
                         "manipulators": [
                             {
+                                "conditions": [
+                                    {
+                                        "bundle_identifiers": [
+                                            "com.parallels.desktop.console",
+                                            "com.parallels.macvm"
+                                        ],
+                                        "type": "frontmost_application_unless"
+                                    }
+                                ],
                                 "from": {
                                     "key_code": "w",
-                                    "modifiers": {
-                                        "mandatory": ["fn", "left_control"]
-                                    }
+                                    "modifiers": { "mandatory": ["fn", "left_control"] }
                                 },
                                 "to": [{ "shell_command": "open -g 'hammerspoon://windowmove?mode=to&direction=top'" }],
                                 "type": "basic"
                             },
                             {
+                                "conditions": [
+                                    {
+                                        "bundle_identifiers": [
+                                            "com.parallels.desktop.console",
+                                            "com.parallels.macvm"
+                                        ],
+                                        "type": "frontmost_application_unless"
+                                    }
+                                ],
                                 "from": {
                                     "key_code": "s",
-                                    "modifiers": {
-                                        "mandatory": ["fn", "left_control"]
-                                    }
+                                    "modifiers": { "mandatory": ["fn", "left_control"] }
                                 },
                                 "to": [{ "shell_command": "open -g 'hammerspoon://windowmove?mode=to&direction=bottom'" }],
                                 "type": "basic"
                             },
                             {
+                                "conditions": [
+                                    {
+                                        "bundle_identifiers": [
+                                            "com.parallels.desktop.console",
+                                            "com.parallels.macvm"
+                                        ],
+                                        "type": "frontmost_application_unless"
+                                    }
+                                ],
                                 "from": {
                                     "key_code": "a",
-                                    "modifiers": {
-                                        "mandatory": ["fn", "left_control"]
-                                    }
+                                    "modifiers": { "mandatory": ["fn", "left_control"] }
                                 },
                                 "to": [{ "shell_command": "open -g 'hammerspoon://windowmove?mode=to&direction=left'" }],
                                 "type": "basic"
                             },
                             {
+                                "conditions": [
+                                    {
+                                        "bundle_identifiers": [
+                                            "com.parallels.desktop.console",
+                                            "com.parallels.macvm"
+                                        ],
+                                        "type": "frontmost_application_unless"
+                                    }
+                                ],
                                 "from": {
                                     "key_code": "d",
-                                    "modifiers": {
-                                        "mandatory": ["fn", "left_control"]
-                                    }
+                                    "modifiers": { "mandatory": ["fn", "left_control"] }
                                 },
                                 "to": [{ "shell_command": "open -g 'hammerspoon://windowmove?mode=to&direction=right'" }],
                                 "type": "basic"
                             },
                             {
+                                "conditions": [
+                                    {
+                                        "bundle_identifiers": [
+                                            "com.parallels.desktop.console",
+                                            "com.parallels.macvm"
+                                        ],
+                                        "type": "frontmost_application_unless"
+                                    }
+                                ],
                                 "from": {
                                     "key_code": "q",
                                     "modifiers": {
@@ -198,133 +235,279 @@
                                 "type": "basic"
                             },
                             {
+                                "conditions": [
+                                    {
+                                        "bundle_identifiers": [
+                                            "com.parallels.desktop.console",
+                                            "com.parallels.macvm"
+                                        ],
+                                        "type": "frontmost_application_unless"
+                                    }
+                                ],
                                 "from": {
                                     "key_code": "e",
-                                    "modifiers": {
-                                        "mandatory": ["fn", "left_control"]
-                                    }
+                                    "modifiers": { "mandatory": ["fn", "left_control"] }
                                 },
                                 "to": [{ "shell_command": "open -g 'hammerspoon://windowmove?mode=to&direction=top-right'" }],
                                 "type": "basic"
                             },
                             {
+                                "conditions": [
+                                    {
+                                        "bundle_identifiers": [
+                                            "com.parallels.desktop.console",
+                                            "com.parallels.macvm"
+                                        ],
+                                        "type": "frontmost_application_unless"
+                                    }
+                                ],
                                 "from": {
                                     "key_code": "z",
-                                    "modifiers": {
-                                        "mandatory": ["fn", "left_control"]
-                                    }
+                                    "modifiers": { "mandatory": ["fn", "left_control"] }
                                 },
                                 "to": [{ "shell_command": "open -g 'hammerspoon://windowmove?mode=to&direction=bottom-left'" }],
                                 "type": "basic"
                             },
                             {
+                                "conditions": [
+                                    {
+                                        "bundle_identifiers": [
+                                            "com.parallels.desktop.console",
+                                            "com.parallels.macvm"
+                                        ],
+                                        "type": "frontmost_application_unless"
+                                    }
+                                ],
                                 "from": {
                                     "key_code": "x",
-                                    "modifiers": {
-                                        "mandatory": ["fn", "left_control"]
-                                    }
+                                    "modifiers": { "mandatory": ["fn", "left_control"] }
                                 },
                                 "to": [{ "shell_command": "open -g 'hammerspoon://windowmove?mode=to&direction=bottom-right'" }],
                                 "type": "basic"
                             },
                             {
-                                "from": {
-                                    "key_code": "c",
-                                    "modifiers": {
-                                        "mandatory": ["fn", "left_control"]
+                                "conditions": [
+                                    {
+                                        "bundle_identifiers": [
+                                            "com.parallels.desktop.console",
+                                            "com.parallels.macvm"
+                                        ],
+                                        "type": "frontmost_application_unless"
                                     }
-                                },
-                                "to": [{ "shell_command": "open -g 'hammerspoon://windowmove?mode=to&direction=center'" }],
-                                "type": "basic"
-                            },
-                            {
+                                ],
                                 "from": {
                                     "key_code": "w",
-                                    "modifiers": {
-                                        "mandatory": ["fn", "left_shift", "left_control"]
-                                    }
+                                    "modifiers": { "mandatory": ["fn", "left_shift", "left_control"] }
                                 },
                                 "to": [{ "shell_command": "open -g 'hammerspoon://windowmove?mode=towards&direction=top'" }],
                                 "type": "basic"
                             },
                             {
+                                "conditions": [
+                                    {
+                                        "bundle_identifiers": [
+                                            "com.parallels.desktop.console",
+                                            "com.parallels.macvm"
+                                        ],
+                                        "type": "frontmost_application_unless"
+                                    }
+                                ],
                                 "from": {
                                     "key_code": "s",
-                                    "modifiers": {
-                                        "mandatory": ["fn", "left_shift", "left_control"]
-                                    }
+                                    "modifiers": { "mandatory": ["fn", "left_shift", "left_control"] }
                                 },
                                 "to": [{ "shell_command": "open -g 'hammerspoon://windowmove?mode=towards&direction=bottom'" }],
                                 "type": "basic"
                             },
                             {
+                                "conditions": [
+                                    {
+                                        "bundle_identifiers": [
+                                            "com.parallels.desktop.console",
+                                            "com.parallels.macvm"
+                                        ],
+                                        "type": "frontmost_application_unless"
+                                    }
+                                ],
                                 "from": {
                                     "key_code": "a",
-                                    "modifiers": {
-                                        "mandatory": ["fn", "left_shift", "left_control"]
-                                    }
+                                    "modifiers": { "mandatory": ["fn", "left_shift", "left_control"] }
                                 },
                                 "to": [{ "shell_command": "open -g 'hammerspoon://windowmove?mode=towards&direction=left'" }],
                                 "type": "basic"
                             },
                             {
+                                "conditions": [
+                                    {
+                                        "bundle_identifiers": [
+                                            "com.parallels.desktop.console",
+                                            "com.parallels.macvm"
+                                        ],
+                                        "type": "frontmost_application_unless"
+                                    }
+                                ],
                                 "from": {
                                     "key_code": "d",
-                                    "modifiers": {
-                                        "mandatory": ["fn", "left_shift", "left_control"]
-                                    }
+                                    "modifiers": { "mandatory": ["fn", "left_shift", "left_control"] }
                                 },
                                 "to": [{ "shell_command": "open -g 'hammerspoon://windowmove?mode=towards&direction=right'" }],
                                 "type": "basic"
                             },
                             {
+                                "conditions": [
+                                    {
+                                        "bundle_identifiers": [
+                                            "com.parallels.desktop.console",
+                                            "com.parallels.macvm"
+                                        ],
+                                        "type": "frontmost_application_unless"
+                                    }
+                                ],
                                 "from": {
                                     "key_code": "q",
-                                    "modifiers": {
-                                        "mandatory": ["fn", "left_shift", "left_control"]
-                                    }
+                                    "modifiers": { "mandatory": ["fn", "left_shift", "left_control"] }
                                 },
                                 "to": [{ "shell_command": "open -g 'hammerspoon://windowmove?mode=towards&direction=top-left'" }],
                                 "type": "basic"
                             },
                             {
+                                "conditions": [
+                                    {
+                                        "bundle_identifiers": [
+                                            "com.parallels.desktop.console",
+                                            "com.parallels.macvm"
+                                        ],
+                                        "type": "frontmost_application_unless"
+                                    }
+                                ],
                                 "from": {
                                     "key_code": "e",
-                                    "modifiers": {
-                                        "mandatory": ["fn", "left_shift", "left_control"]
-                                    }
+                                    "modifiers": { "mandatory": ["fn", "left_shift", "left_control"] }
                                 },
                                 "to": [{ "shell_command": "open -g 'hammerspoon://windowmove?mode=towards&direction=top-right'" }],
                                 "type": "basic"
                             },
                             {
+                                "conditions": [
+                                    {
+                                        "bundle_identifiers": [
+                                            "com.parallels.desktop.console",
+                                            "com.parallels.macvm"
+                                        ],
+                                        "type": "frontmost_application_unless"
+                                    }
+                                ],
                                 "from": {
                                     "key_code": "z",
-                                    "modifiers": {
-                                        "mandatory":["fn", "left_shift", "left_control"]
-                                    }
+                                    "modifiers": { "mandatory": ["fn", "left_shift", "left_control"] }
                                 },
                                 "to": [{ "shell_command": "open -g 'hammerspoon://windowmove?mode=towards&direction=bottom-left'" }],
                                 "type": "basic"
-                            },
+                            }
+                        ]
+                    },
+                    {
+                        "description": "Fn + Control + arrow to zoom window to screen side",
+                        "enabled": false,
+                        "manipulators": [
                             {
-                                "from": {
-                                    "key_code": "x",
-                                    "modifiers": {
-                                        "mandatory": ["fn", "left_shift", "left_control"]
+                                "conditions": [
+                                    {
+                                        "bundle_identifiers": [
+                                            "com.parallels.desktop.console",
+                                            "com.parallels.macvm"
+                                        ],
+                                        "type": "frontmost_application_unless"
                                     }
+                                ],
+                                "from": {
+                                    "key_code": "left_arrow",
+                                    "modifiers": { "mandatory": ["fn", "left_control"] }
                                 },
-                                "to": [{ "shell_command": "open -g 'hammerspoon://windowmove?mode=towards&direction=bottom-right'" }],
+                                "to": [{ "shell_command": "open -g 'hammerspoon://windowresize?mode=left1/2'" }],
                                 "type": "basic"
                             },
                             {
                                 "from": {
-                                    "key_code": "c",
-                                    "modifiers": {
-                                        "mandatory": ["fn", "left_shift", "left_control"]
-                                    }
+                                    "key_code": "right_arrow",
+                                    "modifiers": { "mandatory": ["fn", "left_control"] }
                                 },
-                                "to": [{ "shell_command": "open -g 'hammerspoon://windowmove?mode=towards&direction=center'" }],
+                                "to": [{ "shell_command": "open -g 'hammerspoon://windowresize?mode=right1/2'" }],
+                                "type": "basic"
+                            },
+                            {
+                                "from": {
+                                    "key_code": "up_arrow",
+                                    "modifiers": { "mandatory": ["fn", "left_control"] }
+                                },
+                                "to": [{ "shell_command": "open -g 'hammerspoon://windowresize?mode=top1/2'" }],
+                                "type": "basic"
+                            },
+                            {
+                                "from": {
+                                    "key_code": "down_arrow",
+                                    "modifiers": { "mandatory": ["fn", "left_control"] }
+                                },
+                                "to": [{ "shell_command": "open -g 'hammerspoon://windowresize?mode=bottom1/2'" }],
+                                "type": "basic"
+                            }
+                        ]
+                    },
+                    {
+                        "description": "Fn + Control + C to center window",
+                        "enabled": false,
+                        "manipulators": [
+                            {
+                                "from": {
+                                    "key_code": "c",
+                                    "modifiers": { "mandatory": ["fn", "left_control"] }
+                                },
+                                "to": [{ "shell_command": "open -g 'hammerspoon://windowmove?mode=to&direction=center'" }],
+                                "type": "basic"
+                            }
+                        ]
+                    },
+                    {
+                        "description": "Fn + Shift + Control + C to center and zoom window",
+                        "manipulators": [
+                            {
+                                "conditions": [
+                                    {
+                                        "bundle_identifiers": [
+                                            "com.parallels.desktop.console",
+                                            "com.parallels.macvm"
+                                        ],
+                                        "type": "frontmost_application_unless"
+                                    }
+                                ],
+                                "from": {
+                                    "key_code": "c",
+                                    "modifiers": { "mandatory": ["fn", "left_shift", "left_control"] }
+                                },
+                                "to": [{ "shell_command": "open -g 'hammerspoon://windowresize?mode=center'" }],
+                                "type": "basic"
+                            }
+                        ]
+                    },
+                    {
+                        "description": "Fn + Control + F to make window fill screen",
+                        "enabled": false,
+                        "manipulators": [
+                            {
+                                "conditions": [
+                                    {
+                                        "bundle_identifiers": [
+                                            "com.parallels.desktop.console",
+                                            "com.parallels.macvm"
+                                        ],
+                                        "type": "frontmost_application_unless"
+                                    }
+                                ],
+                                "from": {
+                                    "key_code": "f",
+                                    "modifiers": { "mandatory": ["fn", "left_control"] }
+                                },
+                                "to": [{ "shell_command": "open -g 'hammerspoon://windowresize?mode=fill'" }],
                                 "type": "basic"
                             }
                         ]

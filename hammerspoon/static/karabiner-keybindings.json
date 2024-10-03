@@ -73,13 +73,6 @@
         "subkind": "MOVE"
     },
     {
-        "mods": ["fn", "control"],
-        "key": "C",
-        "message": "Move to Center",
-        "kind": "WIN_OP",
-        "subkind": "MOVE"
-    },
-    {
         "mods": ["fn", "control", "shift"],
         "key": "W",
         "message": "Move towards Top",

@@ -122,18 +122,6 @@
         "mods": ["shift", "control", "option"],
         "key": "S"
       },
-      "toggleMaximize": {
-        "mods": ["option", "command"],
-        "key": "0"
-      },
-      "zoomToLeft": {
-        "mods": ["shift", "command"],
-        "key": ";"
-      },
-      "zoomToRight": {
-        "mods": ["shift", "command"],
-        "key": "'"
-      },
       "zoomToLeftThird": {
         "mods": ["control",  "command"],
         "key": ";"

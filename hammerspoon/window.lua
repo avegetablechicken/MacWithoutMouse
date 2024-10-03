@@ -32,9 +32,29 @@ hs.urlevent.bind("windowmove", function(eventName, params)
   if fn then fn() end
 end)
 
-local function bindMoveWindow(direction, mode, fn)
+local function bindMoveWindowURL(direction, mode, fn)
+  local newFn = function()
+    fn()
+    local win = hs.window.focusedWindow()
+    frameCacheMaximize[win:id()] = nil
+    frameCacheZoomToCenter[win:id()] = nil
+  end
+  if mode == 1 then
+    windowMoveToFuncs[direction] = newFn
+  elseif mode == 2 then
+    windowMoveTowardsFuncs[direction] = newFn
+  end
+end
+
+local windowResizeFuncs = {}
+hs.urlevent.bind("windowresize", function(eventName, params)
+  local fn = windowResizeFuncs[params["mode"]]
+  if fn then fn() end
+end)
+
+local function bindResizeWindowURL(mode, fn)
   local newFn = fn
-  if mode ~= 2 or direction ~= "center" then
+  if mode ~= "max" and mode ~= "center" then
     newFn = function()
       fn()
       local win = hs.window.focusedWindow()
@@ -42,11 +62,7 @@ local function bindMoveWindow(direction, mode, fn)
       frameCacheZoomToCenter[win:id()] = nil
     end
   end
-  if mode == 1 then
-    windowMoveToFuncs[direction] = newFn
-  elseif mode == 2 then
-    windowMoveTowardsFuncs[direction] = newFn
-  end
+  windowResizeFuncs[mode] = newFn
 end
 
 local function bindResizeWindow(spec, message, fn, repeatable)
@@ -67,7 +83,7 @@ local winHK = KeybindingConfigs.hotkeys.global
 -- continuously move the focused window
 
 -- move towards top-left
-bindMoveWindow("top-left", 2,
+bindMoveWindowURL("top-left", 2,
 function()
   local win = hs.window.focusedWindow()
   local f = win:frame()
@@ -78,7 +94,7 @@ function()
 end)
 
 -- move towards top
-bindMoveWindow("top", 2,
+bindMoveWindowURL("top", 2,
 function()
   local win = hs.window.focusedWindow()
   local f = win:frame()
@@ -88,7 +104,7 @@ function()
 end)
 
 -- move towards top-right
-bindMoveWindow("top-right", 2,
+bindMoveWindowURL("top-right", 2,
 function()
   local win = hs.window.focusedWindow()
   local f = win:frame()
@@ -99,7 +115,7 @@ function()
 end)
 
 -- move towards left
-bindMoveWindow("left", 2,
+bindMoveWindowURL("left", 2,
 function()
   local win = hs.window.focusedWindow()
   local f = win:frame()
@@ -109,7 +125,7 @@ function()
 end)
 
 -- move towards right
-bindMoveWindow("right", 2,
+bindMoveWindowURL("right", 2,
 function()
   local win = hs.window.focusedWindow()
   local f = win:frame()
@@ -119,7 +135,7 @@ function()
 end)
 
 -- move towards bottom-left
-bindMoveWindow("bottom-left", 2,
+bindMoveWindowURL("bottom-left", 2,
 function()
   local win = hs.window.focusedWindow()
   local f = win:frame()
@@ -130,7 +146,7 @@ function()
 end)
 
 -- move towards bottom
-bindMoveWindow("bottom", 2,
+bindMoveWindowURL("bottom", 2,
 function()
   local win = hs.window.focusedWindow()
   local f = win:frame()
@@ -140,7 +156,7 @@ function()
 end)
 
 -- move towards bottom-right
-bindMoveWindow("bottom-right", 2,
+bindMoveWindowURL("bottom-right", 2,
 function()
   local win = hs.window.focusedWindow()
   local f = win:frame()
@@ -152,15 +168,27 @@ end)
 
 
 -- move and zoom to left
-bindResizeWindow(winHK["zoomToLeft"], "Zoom to Left",
+bindResizeWindowURL("left1/2",
 function()
   hs.window.focusedWindow():moveToUnit(hs.layout.left50)
 end)
 
 -- move and zoom to right
-bindResizeWindow(winHK["zoomToRight"], "Zoom to Right",
+bindResizeWindowURL("right1/2",
 function()
   hs.window.focusedWindow():moveToUnit(hs.layout.right50)
+end)
+
+-- move and zoom to top
+bindResizeWindowURL("top1/2",
+function()
+  hs.window.focusedWindow():moveToUnit(hs.geometry.rect(0.0, 0.0, 1.0, 0.5))
+end)
+
+-- move and zoom to bottom
+bindResizeWindowURL("bottom1/2",
+function()
+  hs.window.focusedWindow():moveToUnit(hs.geometry.rect(0.0, 0.5, 1.0, 0.5))
 end)
 
 -- move and zoom to top-left
@@ -283,6 +311,43 @@ function()
   win:setFrame(f)
 end)
 
+-- maximize
+bindResizeWindowURL("max",
+function()
+  local win = hs.window.focusedWindow()
+  if frameCacheMaximize[win:id()] then
+    win:setFrame(frameCacheMaximize[win:id()])
+    frameCacheMaximize[win:id()] = nil
+  else
+    frameCacheMaximize[win:id()] = win:frame()
+    win:maximize()
+  end
+  frameCacheZoomToCenter[win:id()] = nil
+end)
+
+-- move and zoom to center
+bindResizeWindowURL("center",
+function()
+  local win = hs.window.focusedWindow()
+  if frameCacheZoomToCenter[win:id()] then
+    win:setFrame(frameCacheZoomToCenter[win:id()])
+    frameCacheZoomToCenter[win:id()] = nil
+  else
+    frameCacheZoomToCenter[win:id()] = win:frame()
+
+    local f = win:frame()
+    local screen = win:screen()
+    local max = screen:frame()
+
+    f.w = windowZoomToCenterSize.w
+    f.h = windowZoomToCenterSize.h
+    f.x = (max.x + max.x + max.w - f.w) / 2
+    f.y = (max.y + max.y + max.h - f.h) / 2
+    win:setFrame(f)
+  end
+  frameCacheMaximize[win:id()] = nil
+end)
+
 -- expand on left
 bindResizeWindow(winHK["leftExpand"], "Left Border Expand",
 function()
@@ -379,22 +444,8 @@ function()
   win:setFrame(f)
 end, true)
 
--- maximize
-bindWindow(winHK["toggleMaximize"], "Toggle Maximize",
-function()
-  local win = hs.window.focusedWindow()
-  if frameCacheMaximize[win:id()] then
-      win:setFrame(frameCacheMaximize[win:id()])
-      frameCacheMaximize[win:id()] = nil
-  else
-      frameCacheMaximize[win:id()] = win:frame()
-      win:maximize()
-  end
-  frameCacheZoomToCenter[win:id()] = nil
-end).subkind = 0
-
 -- move to top-left
-bindMoveWindow("top-left", 1,
+bindMoveWindowURL("top-left", 1,
 function()
   local win = hs.window.focusedWindow()
   local f = win:frame()
@@ -407,7 +458,7 @@ function()
 end)
 
 -- move to top
-bindMoveWindow("top", 1,
+bindMoveWindowURL("top", 1,
 function()
   local win = hs.window.focusedWindow()
   local f = win:frame()
@@ -419,7 +470,7 @@ function()
 end)
 
 -- move to top-right
-bindMoveWindow("top-right", 1,
+bindMoveWindowURL("top-right", 1,
 function()
   local win = hs.window.focusedWindow()
   local f = win:frame()
@@ -432,7 +483,7 @@ function()
 end)
 
 -- move to left
-bindMoveWindow("left", 1,
+bindMoveWindowURL("left", 1,
 function()
   local win = hs.window.focusedWindow()
   local f = win:frame()
@@ -444,7 +495,7 @@ function()
 end)
 
 -- move to center
-bindMoveWindow("center", 1,
+bindMoveWindowURL("center", 1,
 function()
   local win = hs.window.focusedWindow()
   local f = win:frame()
@@ -456,31 +507,8 @@ function()
   win:setFrame(f)
 end)
 
--- move and zoom to center
-bindMoveWindow("center", 2,
-function()
-  local win = hs.window.focusedWindow()
-  if frameCacheZoomToCenter[win:id()] then
-    win:setFrame(frameCacheZoomToCenter[win:id()])
-    frameCacheZoomToCenter[win:id()] = nil
-  else
-    frameCacheZoomToCenter[win:id()] = win:frame()
-
-    local f = win:frame()
-    local screen = win:screen()
-    local max = screen:frame()
-
-    f.w = windowZoomToCenterSize.w
-    f.h = windowZoomToCenterSize.h
-    f.x = (max.x + max.x + max.w - f.w) / 2
-    f.y = (max.y + max.y + max.h - f.h) / 2
-    win:setFrame(f)
-  end
-  frameCacheMaximize[win:id()] = nil
-end)
-
 -- move to right
-bindMoveWindow("right", 1,
+bindMoveWindowURL("right", 1,
 function()
   local win = hs.window.focusedWindow()
   local f = win:frame()
@@ -492,7 +520,7 @@ function()
 end)
 
 -- move to bottom-left
-bindMoveWindow("bottom-left", 1,
+bindMoveWindowURL("bottom-left", 1,
 function()
   local win = hs.window.focusedWindow()
   local f = win:frame()
@@ -505,7 +533,7 @@ function()
 end)
 
 -- move to bottom
-bindMoveWindow("bottom", 1,
+bindMoveWindowURL("bottom", 1,
 function()
   local win = hs.window.focusedWindow()
   local f = win:frame()
@@ -517,7 +545,7 @@ function()
 end)
 
 -- move to bottom-right
-bindMoveWindow("bottom-right", 1,
+bindMoveWindowURL("bottom-right", 1,
 function()
   local win = hs.window.focusedWindow()
   local f = win:frame()
