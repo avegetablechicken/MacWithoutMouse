@@ -2927,20 +2927,6 @@ appHotKeyCallbacks = {
       windowFilter = iCopyWindowFilter,
       fn = iCopySelectHotkeyRemap(10)
     },
-    ["previousCategory"] = {
-      mods = "⌘", key = "]",
-      message = "Previous Category",
-      windowFilter = iCopyWindowFilter,
-      repeatable = true,
-      fn = function(winObj) hs.eventtap.keyStroke("", "Right", nil, winObj:application()) end
-    },
-    ["nextCategory"] = {
-      mods = "⌘", key = "[",
-      message = "Next Category",
-      windowFilter = iCopyWindowFilter,
-      repeatable = true,
-      fn = function(winObj) hs.eventtap.keyStroke("", "Left", nil, winObj:application()) end
-    },
     ["previousItem"] = {
       mods = "", key = "Left",
       message = "Previous Item",
