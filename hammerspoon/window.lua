@@ -194,121 +194,49 @@ end)
 -- move and zoom to top-left
 bindResizeWindow(winHK["zoomToTopLeft"], "Zoom to Top-Left",
 function()
-  local win = hs.window.focusedWindow()
-  local f = win:frame()
-  local screen = win:screen()
-  local max = screen:frame()
-
-  f.x = max.x
-  f.y = max.y
-  f.w = max.w / 2
-  f.h = max.h / 2
-  win:setFrame(f)
+  hs.window.focusedWindow():moveToUnit(hs.geometry.rect(0.0, 0.0, 0.5, 0.5))
 end)
 
 -- move and zoom to top-right
 bindResizeWindow(winHK["zoomToTopRight"], "Zoom to Top-Right",
 function()
-  local win = hs.window.focusedWindow()
-  local f = win:frame()
-  local screen = win:screen()
-  local max = screen:frame()
-
-  f.x = max.x + max.w / 2
-  f.y = max.y
-  f.w = max.w / 2
-  f.h = max.h / 2
-  win:setFrame(f)
+  hs.window.focusedWindow():moveToUnit(hs.geometry.rect(0.5, 0.0, 0.5, 0.5))
 end)
 
 -- move and zoom to bottom-left
 bindResizeWindow(winHK["zoomToBottomLeft"], "Zoom to Bottom-Left",
 function()
-  local win = hs.window.focusedWindow()
-  local f = win:frame()
-  local screen = win:screen()
-  local max = screen:frame()
-
-  f.x = max.x
-  f.y = max.y + max.h / 2
-  f.w = max.w / 2
-  f.h = max.h / 2
-  win:setFrame(f)
+  hs.window.focusedWindow():moveToUnit(hs.geometry.rect(0.0, 0.5, 0.5, 0.5))
 end)
 
 -- move and zoom to bottom-right
 bindResizeWindow(winHK["zoomToBottomRight"], "Zoom to Bottom-Right",
 function()
-  local win = hs.window.focusedWindow()
-  local f = win:frame()
-  local screen = win:screen()
-  local max = screen:frame()
-
-  f.x = max.x + max.w / 2
-  f.y = max.y + max.h / 2
-  f.w = max.w / 2
-  f.h = max.h / 2
-  win:setFrame(f)
+  hs.window.focusedWindow():moveToUnit(hs.geometry.rect(0.5, 0.5, 0.5, 0.5))
 end)
 
 -- move and zoom to left 1/3
 bindResizeWindow(winHK["zoomToLeftThird"], "Zoom to Left Third",
 function()
-  local win = hs.window.focusedWindow()
-  local f = win:frame()
-  local screen = win:screen()
-  local max = screen:frame()
-
-  f.x = max.x
-  f.y = max.y
-  f.w = max.w / 3
-  f.h = max.h
-  win:setFrame(f)
+  hs.window.focusedWindow():moveToUnit(hs.geometry.rect(0.0, 0.0, 1.0 / 3, 1.0))
 end)
 
 -- move and zoom to right 1/3
 bindResizeWindow(winHK["zoomToRightThird"], "Zoom to Right Third",
 function()
-  local win = hs.window.focusedWindow()
-  local f = win:frame()
-  local screen = win:screen()
-  local max = screen:frame()
-
-  f.x = max.x + max.w / 3 * 2
-  f.y = max.y
-  f.w = max.w / 3
-  f.h = max.h
-  win:setFrame(f)
+  hs.window.focusedWindow():moveToUnit(hs.geometry.rect(2.0 / 3, 0.0, 1.0 / 3, 1.0))
 end)
 
 -- move and zoom to left 2/3
 bindResizeWindow(winHK["zoomToLeftTwoThirds"], "Zoom to Left Two Thirds",
 function()
-  local win = hs.window.focusedWindow()
-  local f = win:frame()
-  local screen = win:screen()
-  local max = screen:frame()
-
-  f.x = max.x
-  f.y = max.y
-  f.w = max.w / 3 * 2
-  f.h = max.h
-  win:setFrame(f)
+  hs.window.focusedWindow():moveToUnit(hs.geometry.rect(0.0, 0.0, 2.0 / 3, 1.0))
 end)
 
 -- move and zoom to right 2/3
 bindResizeWindow(winHK["zoomToRightTwoThirds"], "Zoom to Right Two Thirds",
 function()
-  local win = hs.window.focusedWindow()
-  local f = win:frame()
-  local screen = win:screen()
-  local max = screen:frame()
-
-  f.x = max.x + max.w / 3
-  f.y = max.y
-  f.w = max.w / 3 * 2
-  f.h = max.h
-  win:setFrame(f)
+  hs.window.focusedWindow():moveToUnit(hs.geometry.rect(1.0 / 3, 0.0, 2.0 / 3, 1.0))
 end)
 
 -- maximize
