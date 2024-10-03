@@ -324,7 +324,7 @@ function()
   win:setFrame(f)
 end, true)
 
--- expand on bottom
+-- expand on top
 bindResizeWindow(winHK["topExpand"], "Top Border Expand",
 function()
   local win = hs.window.focusedWindow()
@@ -338,7 +338,7 @@ function()
   win:setFrame(f)
 end, true)
 
--- shrink on bottom
+-- shrink on top
 bindResizeWindow(winHK["topShrink"], "Top Border Shrink",
 function()
   local win = hs.window.focusedWindow()
