@@ -230,10 +230,9 @@ local toggleHotkey = bindHotkeySpecImpl(misc["toggleHotkeys"], "Toggle Hotkeys",
   if HSKeybindings ~= nil and HSKeybindings.isShowing then
     local validOnly = HSKeybindings.validOnly
     local showHS = HSKeybindings.showHS
-    local showKara = HSKeybindings.showKara
     local showApp = HSKeybindings.showApp
     HSKeybindings:reset()
-    HSKeybindings:update(validOnly, showHS, showKara, showApp)
+    HSKeybindings:update(validOnly, showHS, showApp)
   end
 end)
 toggleHotkey.kind = HK.PRIVELLEGE

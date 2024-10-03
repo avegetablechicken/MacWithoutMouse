@@ -186,7 +186,6 @@ function HSKeybindings:reset()
   HSKeybindings.buffer = nil
   self.validOnly = true
   self.showHS = true
-  self.showKara = false
   self.showApp = false
   self.evFlags = nil
   self.appHotkeysLoaded = false
@@ -431,7 +430,7 @@ end
 
 local trackpad = require('modal.trackpad')
 local karaHotkeys
-local function processHotkeys(validOnly, showHS, showKara, showApp, evFlags, reload)
+local function processHotkeys(validOnly, showHS, showApp, evFlags, reload)
   local allKeys = {}
   local enabledAltMenuHotkeys = {}
 
@@ -443,7 +442,7 @@ local function processHotkeys(validOnly, showHS, showKara, showApp, evFlags, rel
     table.insert(allKeys, { idx = modal.idx, msg = modal.msg,
                             condition = modal.condition,
                             kind = modal.kind, subkind = modal.subkind,
-                            suspendable = modal.suspendable, source = 0 })
+                            suspendable = modal.suspendable, source = 1 })
   end
 
   for _, modal in ipairs(HyperModalList) do
@@ -452,14 +451,14 @@ local function processHotkeys(validOnly, showHS, showKara, showApp, evFlags, rel
         table.insert(allKeys, { idx = hotkey.idx, msg = hotkey.msg,
                                 condition = hotkey.condition,
                                 kind = hotkey.kind, subkind = hotkey.subkind,
-                                suspendable = hotkey.suspendable, source = 0 })
+                                suspendable = hotkey.suspendable, source = 1 })
       end
     end
   end
 
   for _, hotkeys in pairs(trackpad.keys) do
     for _, hotkey in ipairs(hotkeys) do
-      table.insert(allKeys, { idx = hotkey.idx, msg = hotkey.msg, source = 0 })
+      table.insert(allKeys, { idx = hotkey.idx, msg = hotkey.msg, source = 1 })
     end
   end
 
@@ -468,7 +467,7 @@ local function processHotkeys(validOnly, showHS, showKara, showApp, evFlags, rel
       local newEntry = { idx = entry.idx, msg = entry.msg,
                          condition = entry.condition,
                          kind = entry.kind, subkind = entry.subkind,
-                         suspendable = entry.suspendable, source = 0 }
+                         suspendable = entry.suspendable, source = 1 }
       if entry.kind == HK.IN_APP and entry.subkind == HK.IN_APP_.MENU then
         table.insert(enabledAltMenuHotkeys, newEntry)
       else
@@ -624,7 +623,7 @@ local function processHotkeys(validOnly, showHS, showKara, showApp, evFlags, rel
         menu = menu .. "<li><div class='menutext'>" .. " " .. entry .. "</div></li>"
         kind = HK.IN_APP
       end
-    elseif ((entry.source == 0 and showHS) or (entry.source == 1 and showKara) or (entry.source == 2 and showApp))
+    elseif ((entry.source == 1 and showHS) or (entry.source == 2 and showApp))
         and (entry.valid or (not validOnly and string.find(entry.msg, ": ") ~= nil)) then
       local msg
       if entry.kind ~= kind then
@@ -711,7 +710,7 @@ local function processHotkeys(validOnly, showHS, showKara, showApp, evFlags, rel
       end
     end
     if entry.kind ~= nil and entry.valid
-        and ((entry.source == 0 and showHS) or (entry.source == 1 and showKara) or (entry.source == 2 and showApp)) then
+        and ((entry.source == 1 and showHS) or (entry.source == 2 and showApp)) then
       kind = entry.kind
     end
   end
@@ -727,18 +726,16 @@ if jsFile then
     js = jsFile:read("*all")
     jsFile:close()
 end
-local function generateHtml(validOnly, showHS, showKara, showApp, evFlags, reload)
+local function generateHtml(validOnly, showHS, showApp, evFlags, reload)
   local title
-  if showHS == true and showKara == false and showApp == false then
-    title = "Keybindings of Hammerspoon"
-  elseif showHS == false and showKara == true and showApp == false then
-    title = "Keybindings of Karabiner-Elements"
-  elseif showHS == false and showKara == false and showApp == true then
+  if showHS == true and showApp == false then
+    title = "Keybindings of Hammerspoon & Karabiner-Elements"
+  elseif showHS == false and showApp == true then
     title = "Keybindings of Activated Application: " .. hs.application.frontmostApplication():name()
   else
     title = "Keybindings of Hammerspoon, Karabiner-Elements and Activated Application"
   end
-  local allmenuitems = processHotkeys(validOnly, showHS, showKara, showApp, evFlags, reload)
+  local allmenuitems = processHotkeys(validOnly, showHS, showApp, evFlags, reload)
 
   local html = [[
       <!DOCTYPE html>
@@ -910,12 +907,11 @@ function HSKeybindings:show()
   loadAppHotkeys(self.buffer)
 end
 
-function HSKeybindings:update(validOnly, showHS, showKara, showApp, reload)
+function HSKeybindings:update(validOnly, showHS, showApp, reload)
   if validOnly ~= nil then self.validOnly = validOnly end
   if showHS ~= nil then self.showHS = showHS end
-  if showKara ~= nil then self.showKara = showKara end
   if showApp ~= nil then self.showApp = showApp end
-  local webcontent = generateHtml(self.validOnly, self.showHS, self.showKara, self.showApp, self.evFlags, reload)
+  local webcontent = generateHtml(self.validOnly, self.showHS, self.showApp, self.evFlags, reload)
   self.sheetView:html(webcontent)
   self.sheetView:show()
   self.isShowing = true
@@ -988,31 +984,26 @@ function()
       if ev:getKeyCode() == hs.keycodes.map[HYPER] then
         evFlags.hyper = true
       elseif ev:getKeyCode() == hs.keycodes.map["Space"] then
-        HSKeybindings:update(false, HSKeybindings.showHS,
-                             HSKeybindings.showKara, HSKeybindings.showApp)
+        HSKeybindings:update(false, HSKeybindings.showHS, HSKeybindings.showApp)
         return true
       elseif ev:getKeyCode() == hs.keycodes.map["Escape"] then
         cancelFunc()
         return true
       elseif ev:getKeyCode() == hs.keycodes.map["0"] then
-        HSKeybindings:update(true, true, true, true)
+        HSKeybindings:update(true, true, true)
         return true
       elseif ev:getKeyCode() == hs.keycodes.map["1"] then
-        HSKeybindings:update(true, true, false, false)
+        HSKeybindings:update(true, true, false)
         return true
       elseif ev:getKeyCode() == hs.keycodes.map["2"] then
-        HSKeybindings:update(true, false, true, false)
-        return true
-      elseif ev:getKeyCode() == hs.keycodes.map["3"] then
-        HSKeybindings:update(true, false, false, true)
+        HSKeybindings:update(true, false, true)
         return true
       end
     elseif ev:getType() == hs.eventtap.event.types.keyUp then
       if ev:getKeyCode() == hs.keycodes.map[HYPER] then
         evFlags.hyper = nil
       elseif ev:getKeyCode() == hs.keycodes.map["Space"] then
-        HSKeybindings:update(true, HSKeybindings.showHS,
-                             HSKeybindings.showKara, HSKeybindings.showApp)
+        HSKeybindings:update(true, HSKeybindings.showHS, HSKeybindings.showApp)
         return true
       end
     end

@@ -5010,10 +5010,9 @@ function App_applicationCallback(appName, eventType, appObject)
           if HSKeybindings ~= nil and HSKeybindings.isShowing then
             local validOnly = HSKeybindings.validOnly
             local showHS = HSKeybindings.showHS
-            local showKara = HSKeybindings.showKara
             local showApp = HSKeybindings.showApp
             HSKeybindings:reset()
-            HSKeybindings:update(validOnly, showHS, showKara, showApp, true)
+            HSKeybindings:update(validOnly, showHS, showApp, true)
           end
           FLAGS["NO_RESHOW_KEYBINDING"] = false
         end)
