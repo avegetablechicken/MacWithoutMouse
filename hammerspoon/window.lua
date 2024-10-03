@@ -19,17 +19,34 @@ end
 
 local frameCacheMaximize = {}
 local frameCacheZoomToCenter = {}
-local function bindMoveWindow(spec, message, fn, repeatable)
-  local newFn = function()
-    fn()
-    local win = hs.window.focusedWindow()
-    frameCacheMaximize[win:id()] = nil
-    frameCacheZoomToCenter[win:id()] = nil
+
+local windowMoveToFuncs = {}
+local windowMoveTowardsFuncs = {}
+hs.urlevent.bind("windowmove", function(eventName, params)
+  local fn
+  if params["mode"] == "to" then
+    fn = windowMoveToFuncs[params["direction"]]
+  elseif params["mode"] == "towards" then
+    fn = windowMoveTowardsFuncs[params["direction"]]
   end
-  local repeatedFn = repeatable and newFn or nil
-  local hotkey = bindWindow(spec, message, newFn, nil, repeatedFn)
-  hotkey.subkind = HK.WIN_OP_.MOVE
-  return hotkey
+  if fn then fn() end
+end)
+
+local function bindMoveWindow(direction, mode, fn)
+  local newFn = fn
+  if mode ~= 2 or direction ~= "center" then
+    newFn = function()
+      fn()
+      local win = hs.window.focusedWindow()
+      frameCacheMaximize[win:id()] = nil
+      frameCacheZoomToCenter[win:id()] = nil
+    end
+  end
+  if mode == 1 then
+    windowMoveToFuncs[direction] = newFn
+  elseif mode == 2 then
+    windowMoveTowardsFuncs[direction] = newFn
+  end
 end
 
 local function bindResizeWindow(spec, message, fn, repeatable)
@@ -50,7 +67,7 @@ local winHK = KeybindingConfigs.hotkeys.global
 -- continuously move the focused window
 
 -- move towards top-left
-bindMoveWindow(winHK["moveTowardsTopLeft"], "Move towards Top-Left",
+bindMoveWindow("top-left", 2,
 function()
   local win = hs.window.focusedWindow()
   local f = win:frame()
@@ -58,20 +75,20 @@ function()
   f.x = f.x - moveStep
   f.y = f.y - moveStep
   win:setFrame(f)
-end, true)
+end)
 
 -- move towards top
-bindMoveWindow(winHK["moveTowardsTop"], "Move towards Top",
+bindMoveWindow("top", 2,
 function()
   local win = hs.window.focusedWindow()
   local f = win:frame()
 
   f.y = f.y - moveStep
   win:setFrame(f)
-end, true)
+end)
 
 -- move towards top-right
-bindMoveWindow(winHK["moveTowardsTopRight"], "Move towards Top-Right",
+bindMoveWindow("top-right", 2,
 function()
   local win = hs.window.focusedWindow()
   local f = win:frame()
@@ -79,30 +96,30 @@ function()
   f.x = f.x + moveStep
   f.y = f.y - moveStep
   win:setFrame(f)
-end, true)
+end)
 
 -- move towards left
-bindMoveWindow(winHK["moveTowardsLeft"], "Move towards Left",
+bindMoveWindow("left", 2,
 function()
   local win = hs.window.focusedWindow()
   local f = win:frame()
 
   f.x = f.x - moveStep
   win:setFrame(f)
-end, true)
+end)
 
 -- move towards right
-bindMoveWindow(winHK["moveTowardsRight"], "Move towards Right",
+bindMoveWindow("right", 2,
 function()
   local win = hs.window.focusedWindow()
   local f = win:frame()
 
   f.x = f.x + moveStep
   win:setFrame(f)
-end, true)
+end)
 
 -- move towards bottom-left
-bindMoveWindow(winHK["moveTowardsBottomLeft"], "Move towards Bottom-Left",
+bindMoveWindow("bottom-left", 2,
 function()
   local win = hs.window.focusedWindow()
   local f = win:frame()
@@ -110,20 +127,20 @@ function()
   f.x = f.x - moveStep
   f.y = f.y + moveStep
   win:setFrame(f)
-end, true)
+end)
 
 -- move towards bottom
-bindMoveWindow(winHK["moveTowardsBottom"], "Move towards Bottom",
+bindMoveWindow("bottom", 2,
 function()
   local win = hs.window.focusedWindow()
   local f = win:frame()
 
   f.y = f.y + moveStep
   win:setFrame(f)
-end, true)
+end)
 
 -- move towards bottom-right
-bindMoveWindow(winHK["moveTowardsBottomRight"], "Move towards Bottom-Right",
+bindMoveWindow("bottom-right", 2,
 function()
   local win = hs.window.focusedWindow()
   local f = win:frame()
@@ -131,7 +148,7 @@ function()
   f.x = f.x + moveStep
   f.y = f.y + moveStep
   win:setFrame(f)
-end, true)
+end)
 
 
 -- move and zoom to left
@@ -377,7 +394,7 @@ function()
 end).subkind = 0
 
 -- move to top-left
-bindMoveWindow(winHK["moveToTopLeft"], "Move to Top-Left",
+bindMoveWindow("top-left", 1,
 function()
   local win = hs.window.focusedWindow()
   local f = win:frame()
@@ -390,7 +407,7 @@ function()
 end)
 
 -- move to top
-bindMoveWindow(winHK["moveToTop"], "Move to Top",
+bindMoveWindow("top", 1,
 function()
   local win = hs.window.focusedWindow()
   local f = win:frame()
@@ -402,7 +419,7 @@ function()
 end)
 
 -- move to top-right
-bindMoveWindow(winHK["moveToTopRight"], "Move to Top-Right",
+bindMoveWindow("top-right", 1,
 function()
   local win = hs.window.focusedWindow()
   local f = win:frame()
@@ -415,7 +432,7 @@ function()
 end)
 
 -- move to left
-bindMoveWindow(winHK["moveToLeft"], "Move to Left",
+bindMoveWindow("left", 1,
 function()
   local win = hs.window.focusedWindow()
   local f = win:frame()
@@ -427,7 +444,7 @@ function()
 end)
 
 -- move to center
-bindMoveWindow(winHK["moveToCenter"], "Move to Center",
+bindMoveWindow("center", 1,
 function()
   local win = hs.window.focusedWindow()
   local f = win:frame()
@@ -440,7 +457,7 @@ function()
 end)
 
 -- move and zoom to center
-bindWindow(winHK["toggleZoomToCenter"], "Toggle Zoom to Center",
+bindMoveWindow("center", 2,
 function()
   local win = hs.window.focusedWindow()
   if frameCacheZoomToCenter[win:id()] then
@@ -460,10 +477,10 @@ function()
     win:setFrame(f)
   end
   frameCacheMaximize[win:id()] = nil
-end).subkind = 0
+end)
 
 -- move to right
-bindMoveWindow(winHK["moveToRight"], "Move to Right",
+bindMoveWindow("right", 1,
 function()
   local win = hs.window.focusedWindow()
   local f = win:frame()
@@ -475,7 +492,7 @@ function()
 end)
 
 -- move to bottom-left
-bindMoveWindow(winHK["moveToBottomLeft"], "Move to Bottom-Left",
+bindMoveWindow("bottom-left", 1,
 function()
   local win = hs.window.focusedWindow()
   local f = win:frame()
@@ -488,7 +505,7 @@ function()
 end)
 
 -- move to bottom
-bindMoveWindow(winHK["moveToBottom"], "Move to Bottom",
+bindMoveWindow("bottom", 1,
 function()
   local win = hs.window.focusedWindow()
   local f = win:frame()
@@ -500,7 +517,7 @@ function()
 end)
 
 -- move to bottom-right
-bindMoveWindow(winHK["moveToBottomRight"], "Move to Bottom-Right",
+bindMoveWindow("bottom-right", 1,
 function()
   local win = hs.window.focusedWindow()
   local f = win:frame()

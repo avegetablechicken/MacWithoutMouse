@@ -4,8 +4,6 @@
     "app": ["option", "command"],
     "daemon": ["shift", "option"],
     "controlCenter": ["shift", "control"],
-    "moveTo": ["option", "command"],
-    "moveTowards": ["shift", "option", "command"],
     "moveToSpace": ["control", "command"],
     "moveToScreen": ["shift", "control", "command"],
     "focusScreen": ["shift", "control"]
@@ -92,74 +90,6 @@
         "mods": "${hyper.daemon}",
         "key": "X"
       },
-      "moveToTopLeft": {
-        "mods": "${hyper.moveTo}",
-        "key": "1"
-      },
-      "moveToTop": {
-        "mods": "${hyper.moveTo}",
-        "key": "2"
-      },
-      "moveToTopRight": {
-        "mods": "${hyper.moveTo}",
-        "key": "3"
-      },
-      "moveToLeft": {
-        "mods": "${hyper.moveTo}",
-        "key": "4"
-      },
-      "moveToCenter": {
-        "mods": "${hyper.moveTo}",
-        "key": "5"
-      },
-      "moveToRight": {
-        "mods": "${hyper.moveTo}",
-        "key": "6"
-      },
-      "moveToBottomLeft": {
-        "mods": "${hyper.moveTo}",
-        "key": "7"
-      },
-      "moveToBottom": {
-        "mods": "${hyper.moveTo}",
-        "key": "8"
-      },
-      "moveToBottomRight": {
-        "mods": "${hyper.moveTo}",
-        "key": "9"
-      },
-      "moveTowardsTopLeft": {
-        "mods": "${hyper.moveTowards}",
-        "key": "1"
-      },
-      "moveTowardsTop": {
-        "mods": "${hyper.moveTowards}",
-        "key": "2"
-      },
-      "moveTowardsTopRight": {
-        "mods": "${hyper.moveTowards}",
-        "key": "3"
-      },
-      "moveTowardsLeft": {
-        "mods": "${hyper.moveTowards}",
-        "key": "4"
-      },
-      "moveTowardsRight": {
-        "mods": "${hyper.moveTowards}",
-        "key": "6"
-      },
-      "moveTowardsBottomLeft": {
-        "mods": "${hyper.moveTowards}",
-        "key": "7"
-      },
-      "moveTowardsBottom": {
-        "mods": "${hyper.moveTowards}",
-        "key": "8"
-      },
-      "moveTowardsBottomRight": {
-        "mods": "${hyper.moveTowards}",
-        "key": "9"
-      },
       "leftExpand": {
         "mods": ["control", "option"],
         "key": "A"
@@ -195,10 +125,6 @@
       "toggleMaximize": {
         "mods": ["option", "command"],
         "key": "0"
-      },
-      "toggleZoomToCenter": {
-        "mods": ["shift", "option", "command"],
-        "key": "5"
       },
       "zoomToLeft": {
         "mods": ["shift", "command"],
