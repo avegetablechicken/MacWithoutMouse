@@ -937,7 +937,8 @@ local doubletap = require('modal.doubletap')
 local hkKeybinding
 hkKeybinding = doubletap.bind("", HYPER, "Show Keybindings",
 function()
-  local hkKeybindingsLastModifier, hkKeybindingsWatcher, hkHideKeybindingsWatcher
+  local hkKeybindingsLastModifier, hkKeybindingsSpacePressed
+  local hkKeybindingsWatcher, hkHideKeybindingsWatcher
   local cancelFunc = function()
     HSKeybindings:hide()
     HSKeybindings:reset()
@@ -957,6 +958,7 @@ function()
   HSKeybindings:show()
   hkKeybinding:disable()
   hkKeybindingsLastModifier = {}
+  hkKeybindingsSpacePressed = false
   local callback = function(ev)
     if FLAGS["NO_RESHOW_KEYBINDING"] then return end
     local evFlags = ev:getFlags()
@@ -984,7 +986,10 @@ function()
       if ev:getKeyCode() == hs.keycodes.map[HYPER] then
         evFlags.hyper = true
       elseif ev:getKeyCode() == hs.keycodes.map["Space"] then
-        HSKeybindings:update(false, HSKeybindings.showHS, HSKeybindings.showApp)
+        if not hkKeybindingsSpacePressed then
+          hkKeybindingsSpacePressed = true
+          HSKeybindings:update(false, HSKeybindings.showHS, HSKeybindings.showApp)
+        end
         return true
       elseif ev:getKeyCode() == hs.keycodes.map["Escape"] then
         cancelFunc()
@@ -1003,6 +1008,7 @@ function()
       if ev:getKeyCode() == hs.keycodes.map[HYPER] then
         evFlags.hyper = nil
       elseif ev:getKeyCode() == hs.keycodes.map["Space"] then
+        hkKeybindingsSpacePressed = false
         HSKeybindings:update(true, HSKeybindings.showHS, HSKeybindings.showApp)
         return true
       end
