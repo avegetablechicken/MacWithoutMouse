@@ -1,5 +1,8 @@
 {
-    "machine_specific": { "krbn-empty-machine-identifier": { "enable_multitouch_extension": true } },
+    "machine_specific": {
+        "krbn-371697e0-6daf-40fd-aa3d-8308d92983fa": { "enable_multitouch_extension": true },
+        "krbn-empty-machine-identifier": { "enable_multitouch_extension": true }
+    },
     "profiles": [
         {
             "complex_modifications": {
@@ -920,7 +923,8 @@
                     "from": { "key_code": "caps_lock" },
                     "to": [{ "key_code": "f18" }]
                 }
-            ]
+            ],
+            "virtual_hid_keyboard": { "keyboard_type_v2": "ansi" }
         }
     ]
 }
