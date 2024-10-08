@@ -216,25 +216,25 @@ function()
 end)
 
 -- move and zoom to left 1/3
-bindResizeWindow(winHK["zoomToLeftThird"], "Zoom to Left Third",
+bindResizeWindowURL("left1/3",
 function()
   hs.window.focusedWindow():moveToUnit(hs.geometry.rect(0.0, 0.0, 1.0 / 3, 1.0))
 end)
 
 -- move and zoom to right 1/3
-bindResizeWindow(winHK["zoomToRightThird"], "Zoom to Right Third",
+bindResizeWindowURL("right1/3",
 function()
   hs.window.focusedWindow():moveToUnit(hs.geometry.rect(2.0 / 3, 0.0, 1.0 / 3, 1.0))
 end)
 
 -- move and zoom to left 2/3
-bindResizeWindow(winHK["zoomToLeftTwoThirds"], "Zoom to Left Two Thirds",
+bindResizeWindowURL("left2/3",
 function()
   hs.window.focusedWindow():moveToUnit(hs.geometry.rect(0.0, 0.0, 2.0 / 3, 1.0))
 end)
 
 -- move and zoom to right 2/3
-bindResizeWindow(winHK["zoomToRightTwoThirds"], "Zoom to Right Two Thirds",
+bindResizeWindowURL("right2/3",
 function()
   hs.window.focusedWindow():moveToUnit(hs.geometry.rect(1.0 / 3, 0.0, 2.0 / 3, 1.0))
 end)

@@ -122,22 +122,6 @@
         "mods": ["shift", "control", "option"],
         "key": "S"
       },
-      "zoomToLeftThird": {
-        "mods": ["control",  "command"],
-        "key": ";"
-      },
-      "zoomToRightThird": {
-        "mods": ["control", "command"],
-        "key": "'"
-      },
-      "zoomToLeftTwoThirds": {
-        "mods": ["shift", "control", "command"],
-        "key": ";"
-      },
-      "zoomToRightTwoThirds": {
-        "mods": ["shift", "control", "command"],
-        "key": "'"
-      },
       "zoomToTopLeft": {
         "mods": ["option", "command"],
         "key": ";"

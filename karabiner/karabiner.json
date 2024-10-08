@@ -457,6 +457,52 @@
                         ]
                     },
                     {
+                        "description": "Fn + Control + Option + Shift (optional) + arrow to zoom window to screen side",
+                        "manipulators": [
+                            {
+                                "conditions": [
+                                    {
+                                        "bundle_identifiers": [
+                                            "com.parallels.desktop.console",
+                                            "com.parallels.macvm"
+                                        ],
+                                        "type": "frontmost_application_unless"
+                                    }
+                                ],
+                                "from": {
+                                    "key_code": "left_arrow",
+                                    "modifiers": { "mandatory": ["fn", "left_control", "left_option"] }
+                                },
+                                "to": [{ "shell_command": "open -g 'hammerspoon://windowresize?mode=left2/3'" }],
+                                "type": "basic"
+                            },
+                            {
+                                "from": {
+                                    "key_code": "right_arrow",
+                                    "modifiers": { "mandatory": ["fn", "left_control", "left_option"] }
+                                },
+                                "to": [{ "shell_command": "open -g 'hammerspoon://windowresize?mode=right2/3'" }],
+                                "type": "basic"
+                            },
+                            {
+                                "from": {
+                                    "key_code": "left_arrow",
+                                    "modifiers": { "mandatory": ["fn", "left_shift", "left_control", "left_option"] }
+                                },
+                                "to": [{ "shell_command": "open -g 'hammerspoon://windowresize?mode=left1/3'" }],
+                                "type": "basic"
+                            },
+                            {
+                                "from": {
+                                    "key_code": "right_arrow",
+                                    "modifiers": { "mandatory": ["fn", "left_shift", "left_control", "left_option"] }
+                                },
+                                "to": [{ "shell_command": "open -g 'hammerspoon://windowresize?mode=right1/3'" }],
+                                "type": "basic"
+                            }
+                        ]
+                    },
+                    {
                         "description": "Fn + Control + C to center window",
                         "enabled": false,
                         "manipulators": [
