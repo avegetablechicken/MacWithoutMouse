@@ -179,8 +179,9 @@ end
 
 local function getFinderSidebarItem(idx)
   return function(appObject)
-    local appUIObj = hs.axuielement.applicationElement(appObject)
-    local outlineUIObj = getAXChildren(appUIObj, "AXWindow", activatedWindowIndex(),
+    if appObject:focusedWindow() == nil
+        or appObject:focusedWindow():role() == 'AXSheet' then return false end
+    local outlineUIObj = getAXChildren(hs.axuielement.windowElement(appObject:focusedWindow()),
         "AXSplitGroup", 1, "AXScrollArea", 1, "AXOutline", 1)
     if outlineUIObj == nil then return false end
     local cnt = 0
