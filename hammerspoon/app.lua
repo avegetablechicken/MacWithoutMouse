@@ -2503,6 +2503,30 @@ appHotKeyCallbacks = {
     }
   },
 
+  ["org.wireshark.Wireshark"] =
+  {
+    ["closeWindow"] = {
+      mods = "⌘", key = "W",
+      message = localizedMessage("Close"),
+      condition = function(appObject)
+        local menuItem, menuItemTitle = findMenuItem(appObject, { "File", "Close" })
+        if menuItem ~= nil and menuItem.enabled then
+          return true, menuItemTitle
+        else
+          local winObj = appObject:focusedWindow()
+          return winObj ~= nil and winObj:role() == "AXWindow", winObj
+        end
+      end,
+      fn = function(result, appObject)
+        if type(result) == 'table' then
+          appObject:selectMenuItem(result)
+        else
+          result:close()
+        end
+      end
+    }
+  },
+
   ["com.apple.Terminal"] =
   {
     ["tmuxPreviousPane"] = {
