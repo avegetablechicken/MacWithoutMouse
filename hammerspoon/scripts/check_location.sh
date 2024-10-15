@@ -41,7 +41,7 @@ networkservice=$(networksetup -listallhardwareports | awk "/${interface}/ {print
 
 if [[ "Wi-Fi" = "$networkservice" ]]; then
   [[ -z "$ssids" ]] && return -1
-	networksetup -getairportnetwork ${interface} | awk '{print $4}' | grep -q -E "^(${ssid_pattern})$"
+	ipconfig getsummary ${interface} | awk -F ' SSID : '  '/ SSID : / {print $2}' | grep -q -E "^(${ssid_pattern})$"
 elif [[ "$networkservice" =~ "^USB (.*) LAN$" ]]; then
   [[ -z "$ips" ]] && return 1
 	ip=$(ifconfig "$interface" | grep "inet[^6]" | awk '{print $2}')
