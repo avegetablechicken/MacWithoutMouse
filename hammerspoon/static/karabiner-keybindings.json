@@ -10,6 +10,13 @@
         "message": "Toggle Input Source"
     },
     {
+        "mods": "fn",
+        "key": "S",
+        "message": "Center",
+        "kind": "WIN_OP",
+        "subkind": 0
+    },
+    {
         "mods": ["fn", "control", "shift"],
         "key": "C",
         "message": "Toggle Zoom to Center",

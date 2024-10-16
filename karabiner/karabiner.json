@@ -517,6 +517,28 @@
                         ]
                     },
                     {
+                        "description": "Fn + S to center window",
+                        "manipulators": [
+                            {
+                                "conditions": [
+                                    {
+                                        "bundle_identifiers": [
+                                            "com.parallels.desktop.console",
+                                            "com.parallels.macvm"
+                                        ],
+                                        "type": "frontmost_application_unless"
+                                    }
+                                ],
+                                "from": {
+                                    "key_code": "s",
+                                    "modifiers": { "mandatory": ["fn"] }
+                                },
+                                "to": [{ "shell_command": "open -g 'hammerspoon://windowmove?mode=to&direction=center'" }],
+                                "type": "basic"
+                            }
+                        ]
+                    },
+                    {
                         "description": "Fn + Shift + Control + C to center and zoom window",
                         "manipulators": [
                             {
