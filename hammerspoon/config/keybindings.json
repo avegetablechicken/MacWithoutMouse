@@ -90,6 +90,10 @@
         "mods": "${hyper.daemon}",
         "key": "X"
       },
+      "toggleMaximize": {
+        "mods": ["option", "command"],
+        "key": "0"
+      },
       "leftExpand": {
         "mods": ["control", "option"],
         "key": "A"
