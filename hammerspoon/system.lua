@@ -838,6 +838,13 @@ local function registerProxyMenu(retry)
       )
       return false
     end
+  elseif curNetworkService == '"iPhone USB"' then
+    local menu = {{
+      title = "Proxy Configured on iPhone",
+      disabled = true
+    }}
+    proxy:setMenu(menu)
+    return true
   else
     registerProxyMenuImpl()
     return true
