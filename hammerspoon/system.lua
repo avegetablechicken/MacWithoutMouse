@@ -23,7 +23,7 @@ end
 
 -- system proxy helpers
 local curNetworkService
-local function getCurrentNetworkService()
+local function refreshNetworkService()
   local interfacev4, interfacev6 = hs.network.primaryInterfaces()
   if interfacev4 then
     local networkservice, status = hs.execute([[
@@ -34,11 +34,16 @@ local function getCurrentNetworkService()
   else
     curNetworkService = nil
   end
+end
+
+local function getCurNetworkService()
   return curNetworkService
 end
 
 local function proxy_info(networkservice)
-  networkservice = networkservice or curNetworkService
+  if networkservice == nil then
+    networkservice = getCurNetworkService()
+  end
   local autodiscovery = hs.execute("networksetup -getproxyautodiscovery " .. networkservice)
   local autoproxyurl = hs.execute("networksetup -getautoproxyurl " .. networkservice)
   local webproxy = hs.execute("networksetup -getwebproxy " .. networkservice)
@@ -48,7 +53,9 @@ local function proxy_info(networkservice)
 end
 
 local function disable_proxy(networkservice)
-  networkservice = networkservice or curNetworkService
+  if networkservice == nil then
+    networkservice = getCurNetworkService()
+  end
   hs.execute("networksetup -setproxyautodiscovery " .. networkservice .. ' off')
   hs.execute("networksetup -setautoproxystate " .. networkservice .. ' off')
   hs.execute("networksetup -setwebproxystate " .. networkservice .. ' off')
@@ -57,7 +64,9 @@ local function disable_proxy(networkservice)
 end
 
 local function enable_proxy_PAC(client, networkservice, location)
-  networkservice = networkservice or curNetworkService
+  if networkservice == nil then
+    networkservice = getCurNetworkService()
+  end
   hs.execute("networksetup -setproxyautodiscovery " .. networkservice .. ' off')
   hs.execute("networksetup -setwebproxystate " .. networkservice .. ' off')
   hs.execute("networksetup -setsecurewebproxystate " .. networkservice .. ' off')
@@ -76,7 +85,9 @@ local function enable_proxy_PAC(client, networkservice, location)
 end
 
 local function enable_proxy_global(client, networkservice, location)
-  networkservice = networkservice or curNetworkService
+  if networkservice == nil then
+    networkservice = getCurNetworkService()
+  end
   hs.execute("networksetup -setproxyautodiscovery " .. networkservice .. ' off')
   hs.execute("networksetup -setautoproxystate " .. networkservice .. ' off')
 
@@ -460,19 +471,20 @@ local function updateProxyWrapper(wrapped, appname)
         table.insert(newProxyMenu, _item)
       end
       if _item.title == appname then
+        local networkservice = getCurNetworkService()
         if string.match(item.title, "PAC") then
-          local PACFile = hs.execute("networksetup -getautoproxyurl " .. curNetworkService
-                                          .. " | grep URL: | awk '{print $2}'")
+          local PACFile = hs.execute("networksetup -getautoproxyurl " .. networkservice
+                                     .. " | grep URL: | awk '{print $2}'")
           table.insert(newProxyMenu, { title = "PAC File: " .. PACFile, disabled = true })
         else
-          local httpAddr = hs.execute("networksetup -getwebproxy " .. curNetworkService
-                                          .. " | grep Server: | awk '{print $2}'")
-          local httpPort = hs.execute("networksetup -getwebproxy " .. curNetworkService
-                                          .. " | grep Port: | awk '{print $2}'")
-          local socksAddr = hs.execute("networksetup -getsocksfirewallproxy " .. curNetworkService
-                                          .. " | grep Server: | awk '{print $2}'")
-          local socksPort = hs.execute("networksetup -getsocksfirewallproxy " .. curNetworkService
-                                          .. " | grep Port: | awk '{print $2}'")
+          local httpAddr = hs.execute("networksetup -getwebproxy " .. networkservice
+                                      .. " | grep Server: | awk '{print $2}'")
+          local httpPort = hs.execute("networksetup -getwebproxy " .. networkservice
+                                      .. " | grep Port: | awk '{print $2}'")
+          local socksAddr = hs.execute("networksetup -getsocksfirewallproxy " .. networkservice
+                                       .. " | grep Server: | awk '{print $2}'")
+          local socksPort = hs.execute("networksetup -getsocksfirewallproxy " .. networkservice
+                                       .. " | grep Port: | awk '{print $2}'")
           table.insert(newProxyMenu, { title = "HTTP Proxy: " .. httpAddr .. ":" .. httpPort, disabled = true })
           table.insert(newProxyMenu, { title = "SOCKS5 Proxy: " .. socksAddr .. ":" .. socksPort, disabled = true })
         end
@@ -817,8 +829,8 @@ local function registerProxyMenuImpl()
 end
 
 local function registerProxyMenu(retry)
-  getCurrentNetworkService()
-  if not curNetworkService then
+  refreshNetworkService()
+  if not getCurNetworkService() then
     local menu = {{
       title = "No Network Access",
       disabled = true
@@ -830,15 +842,15 @@ local function registerProxyMenu(retry)
     else
       hs.timer.waitUntil(
         function()
-          getCurrentNetworkService()
-          return curNetworkService ~= nil
+          refreshNetworkService()
+          return getCurNetworkService() ~= nil
         end,
         function() registerProxyMenu(false) end,
         3
       )
       return false
     end
-  elseif curNetworkService == '"iPhone USB"' then
+  elseif getCurNetworkService() == '"iPhone USB"' then
     local menu = {{
       title = "Proxy Configured on iPhone",
       disabled = true
@@ -880,7 +892,7 @@ local function registerProxyMenuWrapper(storeObj, changedKeys)
     local curNetID = Ipv4State["PrimaryService"]
     table.insert(NetworkMonitorKeys, "Setup:/Network/Service/" .. curNetID .. "/Proxies")
     if lastIpv4State == nil and proxySettings ~= nil then
-      getCurrentNetworkService()
+      refreshNetworkService()
       disable_proxy()
       for _, cfg in ipairs(proxySettings) do
         if cfg.condition ~= nil and cfg.condition() then
@@ -979,7 +991,9 @@ proxyHotkey.icon = hs.image.imageFromAppBundle("com.apple.systempreferences")
 
 -- toggle system proxy
 local function toggleSystemProxy(networkservice)
-  networkservice = networkservice or curNetworkService
+  if networkservice == nil then
+    networkservice = getCurNetworkService()
+  end
   local autodiscovery = hs.execute("networksetup -getproxyautodiscovery " .. networkservice)
   local autoproxyurl = hs.execute("networksetup -getautoproxyurl " .. networkservice)
   local webproxy = hs.execute("networksetup -getwebproxy " .. networkservice)
@@ -2384,7 +2398,7 @@ end)
 -- application event callbacks
 function System_applicationCallback(appName, eventType, appObject)
   if eventType == hs.application.watcher.deactivated then
-    if appName == nil and curNetworkService ~= nil then
+    if appName == nil and getCurNetworkService() ~= nil then
       local enabledProxy = parseProxyInfo(proxy_info(), false)
       for _, proxyApp in ipairs(proxyMenuItemCandidates) do
         if enabledProxy == proxyApp.appname then
