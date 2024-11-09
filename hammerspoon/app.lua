@@ -1375,8 +1375,6 @@ appHotKeyCallbacks = {
 
   ["abnerworks.Typora"] =
   {
-    ["showPrevTab"] = specialCommonHotkeyConfigs["showPrevTab"],
-    ["showNextTab"] = specialCommonHotkeyConfigs["showNextTab"],
     ["openFileLocation"] = {
       message = localizedMessage("Open File Location"),
       condition = checkMenuItem({ "File", "Open File Location" }),
