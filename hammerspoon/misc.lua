@@ -131,11 +131,14 @@ if hs.fs.attributes("config/misc.json") ~= nil then
 end
 local function parseVerificationCodeFromFirstMessage(window)
   local winUIObj = hs.axuielement.windowElement(window)
-  local ele = getAXChildren(winUIObj, "AXScrollArea", 1, nil, 1, "AXGroup", 1, "AXStaticText", 2)
-  if ele == nil then
-    ele = getAXChildren(winUIObj, "AXGroup", 1, "AXScrollArea", 1, nil, 1, "AXGroup", 1, "AXStaticText", 2)
-  end
+  local ele = getAXChildren(winUIObj, "AXGroup", 1, "AXGroup", 1, "AXScrollArea", 1, "AXMenuButton", 1)
+      or (getAXChildren(winUIObj, "AXGroup", 1, "AXScrollArea", 1, nil, 1, "AXGroup", 1, "AXStaticText", 2)
+      or getAXChildren(winUIObj, "AXScrollArea", 1, nil, 1, "AXGroup", 1, "AXStaticText", 2))
   if ele ~= nil then
+    if ele.AXRole == "AXMenuButton" then
+      -- FIXME: now message content is in the label of the button
+      return
+    end
     local content = ele.AXValue
     for _, pattern in ipairs(verificationPatterns) do
       if type(pattern.filter) == 'string' then
