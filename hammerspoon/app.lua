@@ -203,8 +203,29 @@ local function openFinderSidebarItem(cellUIObj, appObject)
   if appObject:findMenuItem({ go, itemTitle }) ~= nil then
     appObject:selectMenuItem({ go, itemTitle })
   else
-    if not leftClickAndRestore(cellUIObj.AXPosition, appObject:name()) then
+    local flags = hs.eventtap.checkKeyboardModifiers()
+    if not (flags['cmd'] or flags['alt'] or flags['ctrl']) then
       cellUIObj:performAction("AXOpen")
+    else
+      local tapper
+      tapper = hs.eventtap.new({ hs.eventtap.event.types.flagsChanged }, function(event)
+        tapper:stop()
+        hs.timer.doAfter(0.01, function()
+          local newFlags = hs.eventtap.checkKeyboardModifiers()
+          if newFlags['cmd'] or newFlags['alt'] or newFlags['ctrl'] then
+            event:setFlags({}):post()
+            hs.timer.doAfter(0.01, function()
+              cellUIObj:performAction("AXOpen")
+            end)
+          else
+            cellUIObj:performAction("AXOpen")
+          end
+        end)
+        return false
+      end):start()
+      local event = hs.eventtap.event.newEvent()
+      event:setType(hs.eventtap.event.types.flagsChanged)
+      event:setFlags({}):post()
     end
   end
 end
