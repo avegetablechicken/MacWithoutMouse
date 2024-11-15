@@ -1085,6 +1085,12 @@
         "key": ","
       }
     },
+    "com.parallels.desktop.console": {
+      "showControlCenter": {
+        "mods": ["shift", "command"],
+        "key": "K"
+      }
+    },
     "com.objective-see.lulu.app": {
       "allowConnection": {
         "mods": "option",

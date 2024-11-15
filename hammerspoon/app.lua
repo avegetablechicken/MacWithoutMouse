@@ -2490,6 +2490,11 @@ appHotKeyCallbacks = {
       condition = checkMenuItem({ "File", "Open..." }),
       fn = receiveMenuItem
     },
+    ["showControlCenter"] = {
+      message = localizedMessage("Control Center"),
+      condition = checkMenuItem({ "Window", "Control Center" }),
+      fn = receiveMenuItem
+    },
     ["minimize"] = {
       mods = "⌘", key = "M",
       message = localizedMessage("Minimize"),
