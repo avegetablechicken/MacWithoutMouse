@@ -326,12 +326,12 @@
         "bundleID": "com.apple.finder"
       },
       "Google Chrome": {
-        "mods": "${hyper.app}",
+        "mods": ["shift", "option", "command"],
         "key": "Z",
         "bundleID": "com.google.Chrome"
       },
       "Safari": {
-        "mods": ["shift", "option", "command"],
+        "mods": "${hyper.app}",
         "key": "Z",
         "bundleID": "com.apple.Safari"
       },
