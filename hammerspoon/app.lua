@@ -2374,11 +2374,11 @@ appHotKeyCallbacks = {
   ["whbalzac.Dongtaizhuomian"] =
   {
     ["invokeInAppScreenSaver"] = {
-      message = localizedString("In-app ScreenSaver", "whbalzac.Dongtaizhuomian",
+      message = localizedString("In-app Screensaver", "whbalzac.Dongtaizhuomian",
                                 { localeFile = "HotkeyWindowController" }),
       fn = function(appObject)
         clickRightMenuBarItem(appObject:bundleID(),
-                             { "In-app ScreenSaver",
+                             { "In-app Screensaver",
                                strings = "HotkeyWindowController" })
       end
     }
