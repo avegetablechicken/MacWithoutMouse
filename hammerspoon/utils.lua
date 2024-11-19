@@ -574,7 +574,7 @@ local function parseNibFile(file, keepOrder, keepAll)
     fileStr = fileStr .. "/*"
   end
   local jsonStr = hs.execute([[
-    strings ]] .. fileStr .. [[ | \
+    strings -n 3 ]] .. fileStr .. [[ | \
     awk 'BEGIN { printf("{"); first = 1 } /\.title_?$/ {
       key = $0;
       if (key ~ /\.title_$/) key = substr(key, 1, length(key) - 1);
