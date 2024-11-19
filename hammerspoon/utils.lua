@@ -614,12 +614,14 @@ local function localizeByStrings(str, localeDir, localeFile, locale, localesDict
           or (locale == 'en' and string.find(localeDir, 'en.lproj') == nil) then
         if hs.fs.attributes(localeDir .. '/' .. fileStem .. '.strings') ~= nil then
           jsonDict = parseStringsFile(localeDir .. '/' .. fileStem .. '.strings')
-        else
+        elseif hs.fs.attributes(localeDir .. '/' .. fileStem .. '.nib') ~= nil then
           local fullPath = localeDir .. '/' .. fileStem .. '.nib'
           if hs.fs.attributes(fullPath, 'mode') == 'directory' then
             fullPath = fullPath .. '/keyedobjects.nib'
           end
           jsonDict = parseNibFile(fullPath)
+        elseif hs.fs.attributes(localeDir .. '/' .. fileStem .. '.storyboardc') ~= nil then
+          jsonDict = parseNibFile(localeDir .. '/' .. fileStem .. '.storyboardc')
         end
       end
       if jsonDict ~= nil and jsonDict[str] ~= nil then
@@ -699,6 +701,8 @@ local function localizeByStrings(str, localeDir, localeFile, locale, localesDict
                 fullPath = fullPath .. '/keyedobjects.nib'
               end
               localesInvDict[localeFile] = parseNibFile(fullPath, false)
+            elseif hs.fs.attributes(enLocaleDir .. '/' .. localeFile .. '.storyboardc') ~= nil then
+              localesInvDict[localeFile] = parseNibFile(enLocaleDir .. '/' .. localeFile .. '.storyboardc', false)
             end
           end
           if localesInvDict[localeFile] ~= nil
@@ -713,15 +717,23 @@ local function localizeByStrings(str, localeDir, localeFile, locale, localesDict
             local fileStem
             if file:sub(-8) == ".strings" then
               fileStem = file:sub(1, -9)
-            else
+            elseif file:sub(-4) == ".nib" then
               fileStem = file:sub(1, -5)
+            elseif file:sub(-12) == ".storyboardc" then
+              fileStem = file:sub(1, -13)
             end
             if localesInvDict[fileStem] == nil then
               local fullPath = enLocaleDir .. '/' .. file
               if hs.fs.attributes(fullPath) ~= nil then
                 if file:sub(-8) == ".strings" then
                   localesInvDict[fileStem] = parseStringsFile(fullPath, false)
-                else
+                elseif file:sub(-4) == ".nib" then
+                  if hs.fs.attributes(fullPath, 'mode') == 'directory' then
+                    localesInvDict[fileStem] = parseNibFile(fullPath .. '/keyedobjects.nib', false)
+                  else
+                    localesInvDict[fileStem] = parseNibFile(fullPath, false)
+                  end
+                elseif file:sub(-12) == ".storyboardc" then
                   localesInvDict[fileStem] = parseNibFile(fullPath, false)
                 end
               end
