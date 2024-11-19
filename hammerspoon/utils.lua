@@ -579,6 +579,7 @@ local function parseNibFile(file, keepOrder, keepAll)
       key = $0;
       if (key ~ /\.title_$/) key = substr(key, 1, length(key) - 1);
       gsub("%", "%%", prev);
+      gsub("\"", "\\\"", prev);
       if (!first) printf(", ");
       printf("\"" key "\": \"" prev "\"");
       first = 0;
