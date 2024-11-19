@@ -363,10 +363,10 @@
         "key": "K",
         "bundleID": "abnerworks.Typora"
       },
-      "PDF Expert": {
+      "PrevieW": {
         "mods": "${hyper.app}",
         "key": "L",
-        "bundleID": "com.readdle.PDFExpert-Mac"
+        "bundleID": "com.apple.Preview"
       },
       "TencentMeeting": {
         "mods": "${hyper.app}",
