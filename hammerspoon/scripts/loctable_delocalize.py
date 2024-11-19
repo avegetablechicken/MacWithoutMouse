@@ -13,7 +13,7 @@ try:
 except ValueError:
   sys.exit(1)
 
-for en in ['en', 'English', 'Base', 'en_GB']:
+for en in ['en', 'English', 'Base', 'en_US', 'en_GB']:
   if en in data and key in data[en]:
     print(data[en][key], end='')
     sys.exit(0)
