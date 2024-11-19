@@ -19,9 +19,6 @@
     "Hzp-jb-hme.title": "View",
     "1948.title": "Presets"
   },
-  "com.app.menubarx": {
-    "5QF-Oa-p0T.title": "Tab"
-  },
 
   "com.apple.Safari": {
     "开发": "Develop"
@@ -30,6 +27,9 @@
     "应用程序": "Applications"
   },
   "com.google.Chrome": {
+    "标签页": "Tab"
+  },
+  "com.app.menubarx": {
     "标签页": "Tab"
   },
   "net.xmind.vana.app": {
