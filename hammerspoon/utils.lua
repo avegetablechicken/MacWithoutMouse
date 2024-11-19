@@ -488,7 +488,7 @@ function getQtMatchedLocale(appLocale, resourceDir)
   end
 end
 
-local preferentialStringsFilePatterns = { "(.-)MainMenu(.-)", "Menu", "MenuBar",
+local preferentialLocaleFilePatterns = { "(.-)MainMenu(.-)", "Menu", "MenuBar",
   "MenuItems", "Localizable", "Main", "MainWindow" }
 
 local function parseStringsFile(file, keepOrder, keepAll)
@@ -533,32 +533,32 @@ local function localizeByLoctable(str, resourceDir, localeFile, loc, localesDict
       return localizeByLoctableImpl(str, fullPath, localeFile, loc, localesDict)
     end
   else
-    local stringsFiles = {}
-    local preferentialStringsFiles = {}
+    local loctableFiles = {}
+    local preferentialLoctableFiles = {}
     for file in hs.fs.dir(resourceDir) do
       if file:sub(-9) == ".loctable" then
-        table.insert(stringsFiles, file)
+        table.insert(loctableFiles, file)
       end
     end
-    if #stringsFiles > 10 then
-      for i = #stringsFiles, 1, -1 do
-        for _, p in ipairs(preferentialStringsFilePatterns) do
+    if #loctableFiles > 10 then
+      for i = #loctableFiles, 1, -1 do
+        for _, p in ipairs(preferentialLocaleFilePatterns) do
           local pattern = "^" .. p .. "%.loctable$"
-          if string.match(stringsFiles[i], pattern) ~= nil then
-            table.insert(preferentialStringsFiles, stringsFiles[i])
-            table.remove(stringsFiles, i)
+          if string.match(loctableFiles[i], pattern) ~= nil then
+            table.insert(preferentialLoctableFiles, loctableFiles[i])
+            table.remove(loctableFiles, i)
             break
           end
         end
       end
     end
-    for _, file in ipairs(preferentialStringsFiles) do
+    for _, file in ipairs(preferentialLoctableFiles) do
       local fullPath = resourceDir .. '/' .. file
       local fileStem = file:sub(1, -10)
       local result = localizeByLoctableImpl(str, fullPath, fileStem, loc, localesDict)
       if result ~= nil then return result end
     end
-    for _, file in ipairs(stringsFiles) do
+    for _, file in ipairs(loctableFiles) do
       local fullPath = resourceDir .. '/' .. file
       local fileStem = file:sub(1, -10)
       local result = localizeByLoctableImpl(str, fullPath, fileStem, loc, localesDict)
@@ -599,7 +599,7 @@ local function localizeByStrings(str, localeDir, localeFile, locale, localesDict
   end
   if #stringsFiles > 10 then
     for i = #stringsFiles, 1, -1 do
-      for _, p in ipairs(preferentialStringsFilePatterns) do
+      for _, p in ipairs(preferentialLocaleFilePatterns) do
         local pattern = "^" .. p .. "%.strings$"
         if string.match(stringsFiles[i], pattern) ~= nil then
           table.insert(preferentialStringsFiles, stringsFiles[i])
@@ -971,7 +971,7 @@ local function delocalizeByLoctable(str, resourceDir, localeFile, locale)
     end
     if #loctableFiles > 10 then
       loctableFiles = hs.fnutils.filter(loctableFiles, function(file)
-        for _, pattern in ipairs(preferentialStringsFilePatterns) do
+        for _, pattern in ipairs(preferentialLocaleFilePatterns) do
           local pattern = "^" .. pattern  .. "%.loctable$"
           if string.match(file, pattern) ~= nil then return true end
         end
@@ -1249,7 +1249,7 @@ function delocalizedString(str, bundleID, params)
           end
           if #stringsFiles > 10 then
             stringsFiles = hs.fnutils.filter(stringsFiles, function(file)
-              for _, pattern in ipairs(preferentialStringsFilePatterns) do
+              for _, pattern in ipairs(preferentialLocaleFilePatterns) do
                 local pattern = "^" .. pattern .. "%.strings$"
                 if string.match(file, pattern) ~= nil then return true end
               end
@@ -1307,7 +1307,7 @@ function delocalizedString(str, bundleID, params)
     end
     if #stringsFiles > 10 then
       stringsFiles = hs.fnutils.filter(stringsFiles, function(file)
-        for _, pattern in ipairs(preferentialStringsFilePatterns) do
+        for _, pattern in ipairs(preferentialLocaleFilePatterns) do
           local pattern = "^" .. pattern .. "%.strings$"
           if string.match(file, pattern) ~= nil then return true end
         end
