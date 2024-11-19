@@ -675,13 +675,13 @@ local function localizeByStrings(str, localeDir, localeFile, locale, localesDict
       end
     end
   end
-  result = invSearchFunc(str, preferentialStringsFiles, localeDir)
-  if result ~= nil then return result end
 
   if localeFile ~= nil then
-    result = searchFunc(str, localeFile .. '.strings', localeDir)
+    result = invSearchFunc(str, localeFile .. '.strings', localeDir)
     if result ~= nil then return result end
   else
+    result = invSearchFunc(str, preferentialStringsFiles, localeDir)
+    if result ~= nil then return result end
     result = searchFunc(str, stringsFiles, localeDir)
     if result ~= nil then return result end
   end
