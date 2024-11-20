@@ -640,11 +640,7 @@ local function localizeByStrings(str, localeDir, localeFile, locale, localesDict
     elseif file:sub(-4) == ".nib" then
       table.insert(stringsFiles, file:sub(1, -5))
     elseif file:sub(-12) == ".storyboardc" then
-      for subfile in hs.fs.dir(localeDir .. '/' .. file) do
-        if subfile:sub(-4) == ".nib" then
-          table.insert(stringsFiles, file .. '/' .. subfile:sub(1, -5))
-        end
-      end
+      table.insert(stringsFiles, file:sub(1, -13))
     end
   end
   if #stringsFiles > 10 then
