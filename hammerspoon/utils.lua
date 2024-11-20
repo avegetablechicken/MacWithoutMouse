@@ -323,26 +323,11 @@ local function getResourceDir(bundleID, frameworkName)
     resourceDir = hs.application.pathForBundleID(bundleID) .. "/WrappedBundle/.."
   elseif frameworkName ~= nil and frameworkName:sub(-10) == ".framework" then
     resourceDir = appContentPath .. "/Frameworks/" .. frameworkName .. "/Resources"
-  elseif bundleID == "com.google.Chrome" then
-    resourceDir = appContentPath .. "/Frameworks/Google Chrome Framework.framework/Resources"
-    framework.chromium = true
-  elseif bundleID == "com.microsoft.edgemac" then
-    resourceDir = appContentPath .. "/Frameworks/Microsoft Edge Framework.framework/Resources"
-    framework.chromium = true
   elseif bundleID == "com.tencent.meeting" then
     resourceDir = appContentPath .. "/Frameworks/WeMeetFramework.framework/Versions/Current/Frameworks"
         .. "/WeMeet.framework/Versions/A/Resources"
         .. "/WeMeetResource.bundle/Contents/Resources"
   else
-    local frameworkDir = appContentPath .. "/Frameworks"
-    for _, fw in ipairs{"Electron Framework", "Chromium Embedded Framework"} do
-      if hs.fs.attributes(frameworkDir .. '/' .. fw .. ".framework") ~= nil then
-        resourceDir = frameworkDir .. '/' .. fw .. ".framework/Resources"
-        framework.chromium = true
-        goto END_GET_RESOURCE_DIR
-      end
-    end
-
     if hs.fs.attributes(appContentPath .. "/Frameworks") ~= nil then
       local chromiumDirs, status = hs.execute(string.format(
         "find '%s' -type f -path '*/Resources/*/locale.pak'" ..
@@ -351,9 +336,12 @@ local function getResourceDir(bundleID, frameworkName)
       if status and chromiumDirs:sub(1, -2) ~= "" then
         chromiumDirs = hs.fnutils.split(chromiumDirs:sub(1, -2), '\n')
         if #chromiumDirs == 1 then
-          resourceDir = chromiumDirs[1] .. "/Resources"
-          framework.chromium = true
-          goto END_GET_RESOURCE_DIR
+          local prefix_len = string.len(appContentPath .. "/Frameworks/")
+          if not chromiumDirs[1]:sub(prefix_len + 1):find('/') then
+            resourceDir = chromiumDirs[1] .. "/Resources"
+            framework.chromium = true
+            goto END_GET_RESOURCE_DIR
+          end
         end
       end
     end
