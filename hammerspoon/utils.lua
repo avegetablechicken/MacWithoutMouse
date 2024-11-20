@@ -818,6 +818,17 @@ local function localizeByQt(str, localeDir, localesDict)
   end
 end
 
+local function localizeByMono(str, localeDir)
+  for file in hs.fs.dir(localeDir .. '/LC_MESSAGES') do
+    if file:sub(-3) == ".mo" then
+      local output, status = hs.execute(string.format(
+        "zsh scripts/mono_localize.sh '%s' '%s'",
+        localeDir .. '/LC_MESSAGES/' .. file, str))
+      if status and output ~= "" then return output end
+    end
+  end
+end
+
 local function dirNotExistOrEmpty(dir)
   if hs.fs.attributes(dir) == nil then return true end
   for file in hs.fs.dir(dir) do
@@ -944,9 +955,10 @@ function localizedString(str, bundleID, params)
   end
   local localesDict = appLocaleAssetBuffer[bundleID][appLocale]
 
-  local locale
+  local locale, mode
+  if localeDir == false then mode = 'strings'
+  elseif not framework.mono then mode = 'lproj' end
   if localeDir == nil or localeDir == false then
-    local mode = localeDir == nil and 'lproj' or 'strings'
     if locale == nil then
       locale = appLocaleDir[bundleID][appLocale]
       if locale == false then return nil end
@@ -967,7 +979,11 @@ function localizedString(str, bundleID, params)
       localeDir = resourceDir
       if localeFile == nil then localeFile = locale end
     elseif localeDir == nil then
-      localeDir = resourceDir .. "/" .. locale .. ".lproj"
+      if mode == 'lproj' then
+        localeDir = resourceDir .. "/" .. locale .. ".lproj"
+      else
+        localeDir = resourceDir .. "/" .. locale
+      end
     end
     if framework.qt and type(localeDir) == 'string'
         and hs.fs.attributes(localeDir) == nil then
@@ -977,6 +993,11 @@ function localizedString(str, bundleID, params)
 
   if framework.chromium then
     result = localizeByChromium(str, localeDir, localesDict, bundleID)
+    goto L_END_LOCALIZED
+  end
+
+  if framework.mono then
+    result = localizeByMono(str, localeDir)
     goto L_END_LOCALIZED
   end
 
