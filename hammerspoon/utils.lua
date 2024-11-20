@@ -1447,6 +1447,68 @@ function delocalizedString(str, bundleID, params)
     if result ~= nil then return result end
   end
 
+  -- only for menu items
+  for _, enLocaleDir in ipairs {
+    resourceDir .. "/en.lproj",
+    resourceDir .. "/English.lproj",
+    resourceDir .. "/Base.lproj",
+    resourceDir .. "/en_US.lproj",
+    resourceDir .. "/en_GB.lproj" } do
+    if hs.fs.attributes(enLocaleDir) ~= nil then
+      local enStringFiles = {}
+      for file in hs.fs.dir(enLocaleDir) do
+        if file:sub(-4) == ".nib" then
+          table.insert(enStringFiles, file)
+        elseif file:sub(-12) == ".storyboardc" then
+          table.insert(enStringFiles, file)
+          for subfile in hs.fs.dir(enLocaleDir .. '/' .. file) do
+            if subfile:sub(-4) == ".nib" then
+              table.insert(enStringFiles, { file, subfile })
+            end
+          end
+        end
+      end
+      local enFilePath
+      local targetFile = hs.fnutils.find(enStringFiles, function(file)
+        if type(file) == 'table' then
+          file = file[1] .. '/' .. file[2]
+        end
+        file = enLocaleDir .. '/' .. file
+        if hs.fs.attributes(file, 'mode') == 'directory' then
+          file = file .. '/keyedobjects.nib'
+        end
+        local f = io.open(file, "rb")
+        if f ~= nil then
+          local line = f:read("*line")
+          while line ~= nil do
+            if string.match(line, "_NSAppleMenu") then
+              enFilePath = file
+              return true
+            end
+            line = f:read("*line")
+          end
+        end
+        return false
+      end)
+      if targetFile ~= nil then
+        if type(targetFile) == 'table' then
+          targetFile = targetFile[1] .. '/' .. targetFile[2]
+        end
+        local filePath = localeDir .. '/' .. targetFile
+        if hs.fs.attributes(filePath) ~= nil then
+          if hs.fs.attributes(filePath, 'mode') == 'directory' then
+            filePath = filePath .. '/keyedobjects.nib'
+          end
+          result = hs.execute(string.format(
+              "/usr/bin/python3 scripts/nib_delocalize.py '%s' '%s' '%s'",
+              str, enFilePath, filePath))
+          if result then goto L_END_DELOCALIZED end
+        end
+      end
+      break
+    end
+  end
+
   if result == nil and
       (string.sub(str, -3) == "..." or string.sub(str, -3) == "…") then
     result = delocalizedString(string.sub(str, 1, -4), bundleID, params)
