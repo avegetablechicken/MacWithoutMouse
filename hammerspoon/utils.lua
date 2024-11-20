@@ -748,18 +748,14 @@ local function localizeByStrings(str, localeDir, localeFile, locale, localesDict
   end
   if locale == 'en' then
     for _, _localeDir in ipairs{
+        resourceDir .. "/en.lproj",
         resourceDir .. "/English.lproj",
         resourceDir .. "/Base.lproj",
         resourceDir .. "/en_US.lproj",
         resourceDir .. "/en_GB.lproj"} do
       if hs.fs.attributes(_localeDir) ~= nil then
-        if localeFile ~= nil then
-          result = searchFunc(str, localeFile, _localeDir)
-          if result ~= nil then return result end
-        else
-          result = searchFunc(str, stringsFiles, _localeDir)
-          if result ~= nil then return result end
-        end
+        result = searchFunc(str, stringsFiles, _localeDir)
+        if result ~= nil then return result end
       end
     end
   end
