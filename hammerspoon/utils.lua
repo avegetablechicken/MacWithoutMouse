@@ -1558,7 +1558,7 @@ function delocalizedString(str, bundleID, params)
       end)
       if targetFile ~= nil then
         if type(targetFile) == 'table' then
-          targetFile = targetFile[1] .. '/' .. targetFile[2]
+          targetFile = targetFile[1] .. '.nib'
         end
         local filePath = localeDir .. '/' .. targetFile
         if hs.fs.attributes(filePath) ~= nil then
