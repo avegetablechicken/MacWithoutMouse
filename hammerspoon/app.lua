@@ -2766,20 +2766,6 @@ appHotKeyCallbacks = {
       fn = function(appObject)
         selectMenuItem(appObject, { "Actions", "Show In Finder" })
       end
-    },
-    ["openRecent"] = {
-      message = function(appObject)
-        local appLocale = applicationLocales(appObject:bundleID())[1]
-        return appLocale:sub(1, 2) == "en" and "Open Recent" or "打开最近的"
-      end,
-      bindCondition = ENOrZHSim,
-      fn = function(appObject)
-        showMenuItemWrapper(function()
-          local thisSpec = appHotKeyCallbacks[appObject:bundleID()]["openRecent"]
-          selectMenuItem(appObject, { "File" })
-          selectMenuItem(appObject, { "File", thisSpec.message(appObject) })
-        end)()
-      end
     }
   },
 
