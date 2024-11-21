@@ -2762,14 +2762,9 @@ appHotKeyCallbacks = {
   ["com.torusknot.SourceTreeNotMAS"] =
   {
     ["showInFinder"] = {
-      message = function(appObject)
-        local appLocale = applicationLocales(appObject:bundleID())[1]
-        return appLocale:sub(1, 2) == "en" and "Show In Finder" or "在 Finder 中显示"
-      end,
-      bindCondition = ENOrZHSim,
+      message = localizedMessage("Show In Finder"),
       fn = function(appObject)
-        local thisSpec = appHotKeyCallbacks[appObject:bundleID()]["showInFinder"]
-        selectMenuItem(appObject, { "Actions", thisSpec.message(appObject) })
+        selectMenuItem(appObject, { "Actions", "Show In Finder" })
       end
     },
     ["openRecent"] = {
