@@ -1038,7 +1038,6 @@ function localizedString(str, bundleID, params)
     elseif not setDefaultLocale() then
       return nil
     end
-    print(resourceDir, locale, localeDir, localeFile)
   end
 
   if framework.qt then
