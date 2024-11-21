@@ -712,43 +712,54 @@ local function localizeByStrings(str, localeDir, localeFile, locale, localesDict
         if localeFile ~= nil then
           if localesInvDict[localeFile] == nil then
             if hs.fs.attributes(enLocaleDir .. '/' .. localeFile .. '.string') ~= nil then
-              localesInvDict[localeFile] = parseStringsFile(enLocaleDir .. '/' .. localeFile .. '.string', false)
+              localesInvDict[localeFile] = parseStringsFile(enLocaleDir .. '/' .. localeFile .. '.string', false, true)
             elseif hs.fs.attributes(enLocaleDir .. '/' .. localeFile .. '.nib') ~= nil then
               local fullPath = enLocaleDir .. '/' .. localeFile .. '.nib'
               if hs.fs.attributes(fullPath, 'mode') == 'directory' then
                 fullPath = fullPath .. '/keyedobjects.nib'
               end
-              localesInvDict[localeFile] = parseNibFile(fullPath, false)
+              localesInvDict[localeFile] = parseNibFile(fullPath, false, true)
             elseif hs.fs.attributes(enLocaleDir .. '/' .. localeFile .. '.storyboardc') ~= nil then
-              localesInvDict[localeFile] = parseNibFile(enLocaleDir .. '/' .. localeFile .. '.storyboardc', false)
+              localesInvDict[localeFile] = parseNibFile(enLocaleDir .. '/' .. localeFile .. '.storyboardc', false, true)
             end
           end
           if localesInvDict[localeFile] ~= nil
               and localesInvDict[localeFile][str] ~= nil then
-            local result = searchFunc(localesInvDict[localeFile][str],
-                                      localeFile, localeDir)
-            if result ~= nil then return result end
+            local keys = localesInvDict[localeFile][str]
+            if type(keys) == 'string' then
+              keys = { keys }
+            end
+            for _, key in ipairs(keys) do
+              local result = searchFunc(key, stringsFiles, localeDir)
+              if result ~= nil then return result end
+            end
           end
           localesInvDict[localeFile] = nil
         else
           for _, fileStem in ipairs(stringsFiles) do
             if localesInvDict[fileStem] == nil then
               if hs.fs.attributes(enLocaleDir .. '/' .. fileStem .. '.strings') ~= nil then
-                localesInvDict[fileStem] = parseStringsFile(enLocaleDir .. '/' .. fileStem .. '.strings', false)
+                localesInvDict[fileStem] = parseStringsFile(enLocaleDir .. '/' .. fileStem .. '.strings', false, true)
               elseif hs.fs.attributes(enLocaleDir .. '/' .. fileStem .. '.nib') ~= nil then
                 local fullPath = enLocaleDir .. '/' .. fileStem .. '.nib'
                 if hs.fs.attributes(fullPath, 'mode') == 'directory' then
                   fullPath = fullPath .. '/keyedobjects.nib'
                 end
-                localesInvDict[fileStem] = parseNibFile(fullPath, false)
+                localesInvDict[fileStem] = parseNibFile(fullPath, false, true)
               elseif hs.fs.attributes(enLocaleDir .. '/' .. fileStem .. '.storyboardc') ~= nil then
-                localesInvDict[fileStem] = parseNibFile(enLocaleDir .. '/' .. fileStem .. '.storyboardc', false)
+                localesInvDict[fileStem] = parseNibFile(enLocaleDir .. '/' .. fileStem .. '.storyboardc', false, true)
               end
             end
             if localesInvDict[fileStem] ~= nil
                 and localesInvDict[fileStem][str] ~= nil then
-              local result = searchFunc(localesInvDict[fileStem][str], fileStem, localeDir)
-              if result ~= nil then return result end
+              local keys = localesInvDict[fileStem][str]
+              if type(keys) == 'string' then
+                keys = { keys }
+              end
+              for _, key in ipairs(keys) do
+                local result = searchFunc(key, stringsFiles, localeDir)
+                if result ~= nil then return result end
+              end
             end
             localesInvDict[fileStem] = nil
           end
