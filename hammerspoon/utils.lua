@@ -991,19 +991,52 @@ function localizedString(str, bundleID, params)
     end
   end
 
+  local setDefaultLocale = function()
+    localeFile = type(params) == 'table' and params.localeFile or params
+    resourceDir = hs.application.pathForBundleID(bundleID) .. "/Contents/Resources"
+    if mode == nil then mode = 'lproj' end
+    locale = getMatchedLocale(appLocale, resourceDir, mode)
+    if locale == nil then
+      appLocaleDir[bundleID][appLocale] = false
+      appLocaleMap[bundleID][appLocale] = nil
+      return false
+    end
+    appLocaleDir[bundleID][appLocale] = locale
+    if mode == 'strings' then
+      localeDir = resourceDir
+      if localeFile == nil then localeFile = locale end
+    else
+      localeDir = resourceDir .. "/" .. locale .. ".lproj"
+    end
+    return true
+  end
+
   if framework.chromium then
     result = localizeByChromium(str, localeDir, localesDict, bundleID)
-    goto L_END_LOCALIZED
+    if result ~= nil then
+      goto L_END_LOCALIZED
+    elseif not setDefaultLocale() then
+      return nil
+    end
   end
 
   if framework.mono then
     result = localizeByMono(str, localeDir)
-    goto L_END_LOCALIZED
+    if result ~= nil then
+      goto L_END_LOCALIZED
+    elseif not setDefaultLocale() then
+      return nil
+    end
+    print(resourceDir, locale, localeDir, localeFile)
   end
 
   if framework.qt then
     result = localizeByQt(str, localeDir, localesDict)
-    goto L_END_LOCALIZED
+    if result ~= nil then
+      goto L_END_LOCALIZED
+    elseif not setDefaultLocale() then
+      return nil
+    end
   end
 
   if locale ~= nil then
@@ -1247,7 +1280,7 @@ function delocalizedString(str, bundleID, params)
     deLocaleInversedMap[bundleID] = {}
   end
 
-  local locale, localeDir, mode, searchFunc
+  local locale, localeDir, mode, setDefaultLocale, searchFunc
 
   if bundleID == "org.zotero.zotero" then
     result, locale = delocalizeZoteroMenu(str, appLocale)
@@ -1296,9 +1329,27 @@ function delocalizedString(str, bundleID, params)
     end
   end
 
+  setDefaultLocale = function()
+    resourceDir = hs.application.pathForBundleID(bundleID) .. "/Contents/Resources"
+    mode = 'lproj'
+    locale = getMatchedLocale(appLocale, resourceDir, mode)
+    if locale == nil then
+      deLocaleDir[bundleID][appLocale] = false
+      deLocaleMap[bundleID][appLocale] = nil
+      return false
+    end
+    deLocaleDir[bundleID][appLocale] = locale
+    localeDir = resourceDir .. "/" .. locale .. ".lproj"
+    return true
+  end
+
   if framework.chromium then
     result = delocalizeByChromium(str, localeDir, bundleID)
-    goto L_END_DELOCALIZED
+    if result ~= nil then
+      goto L_END_DELOCALIZED
+    elseif not setDefaultLocale() then
+      return nil
+    end
   end
 
   if framework.mono then
@@ -1307,13 +1358,19 @@ function delocalizedString(str, bundleID, params)
       if bundleID == "com.microsoft.visual-studio" then
         result = result:gsub('_', '')
       end
+      goto L_END_DELOCALIZED
+    elseif not setDefaultLocale() then
+      return nil
     end
-    goto L_END_DELOCALIZED
   end
 
   if framework.qt then
     result = delocalizeByQt(str, localeDir)
-    goto L_END_DELOCALIZED
+    if result ~= nil then
+      goto L_END_DELOCALIZED
+    elseif not setDefaultLocale() then
+      return nil
+    end
   end
 
   result = delocalizeByLoctable(str, resourceDir, localeFile, locale)
