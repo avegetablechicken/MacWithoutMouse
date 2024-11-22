@@ -736,88 +736,76 @@ end
 local function localizeByNiB(str, localeDir, localeFile, bundleID)
   local resourceDir = localeDir .. '/..'
   local locale = localeDir:match("^.*/(.*)%.lproj$")
-  local compareNIBs = function(localeFile)
-    for _, enLocale in ipairs{"en", "English", "Base", "en_US", "en_GB"} do
-      local enLocaleDir = resourceDir .. '/' .. enLocale .. '.lproj'
-      if hs.fs.attributes(enLocaleDir) ~= nil then
-        local enNIBPath = enLocaleDir .. '/' .. localeFile .. '.nib'
-        if hs.fs.attributes(enNIBPath) ~= nil then
-          if hs.fs.attributes(enNIBPath, 'mode') == 'directory' then
-            enNIBPath = enNIBPath .. '/keyedobjects.nib'
-          end
-          local enJsonPath = localeTmpDir .. bundleID .. '-' .. enLocale .. '-' .. localeFile .. '.json'
-          if hs.fs.attributes(enJsonPath) == nil then
-            hs.execute(string.format("/usr/bin/python3 scripts/nib_parse.py dump-json '%s' -o '%s'",
-                                     enNIBPath, enJsonPath))
-          end
-          local enJsonList = hs.json.read(enJsonPath)
-          local values_index, key_index
-          for i, value in ipairs(enJsonList['values']) do
-            if value['type'] == 8 and value['data'] == str then
-              values_index = i
-              key_index = value['key_index']
-              break
-            end
-          end
-          if values_index ~= nil then
-            local NIBPath = localeDir .. '/' .. localeFile .. '.nib'
-            if hs.fs.attributes(NIBPath) ~= nil then
-              if hs.fs.attributes(NIBPath, 'mode') == 'directory' then
-                NIBPath = NIBPath .. '/keyedobjects.nib'
-              end
-              local jsonPath = localeTmpDir .. bundleID .. '-' .. locale .. '-' .. localeFile .. '.json'
-              if hs.fs.attributes(jsonPath) == nil then
-                hs.execute(string.format("/usr/bin/python3 scripts/nib_parse.py dump-json '%s' -o '%s'",
-                           NIBPath, jsonPath))
-              end
-              local jsonList = hs.json.read(jsonPath)
-              local values = jsonList['values']
-              local candidate
-              local i, min_i, max_i = values_index, math.max(1, values_index - 5), math.min(#values, values_index + 5)
-              while i >= min_i do
-                local value = values[i]
-                if value['type'] == 8 and value['key_index'] == key_index then
-                  candidate = value['data']
-                elseif candidate ~= nil then
-                  return candidate
-                end
-                i = i - 1
-              end
-              i = values_index + 1
-              while i <= max_i do
-                local value = values[i]
-                if value['type'] == 8 and value['key_index'] == key_index then
-                  return value['data']
-                end
-                i = i + 1
-              end
-            end
-            break
-          end
-        end
+  local enLocaleDir = possibleEnglishLocaleDirs(resourceDir)[1]
+  local enLocale = enLocaleDir:match("^.*/(.*)%.lproj$")
+  local compareNIBs = function(file)
+    local NIBPath = localeDir .. '/' .. file .. '.nib'
+    local enNIBPath = enLocaleDir .. '/' .. file .. '.nib'
+    if hs.fs.attributes(NIBPath) == nil or hs.fs.attributes(enNIBPath) == nil then return end
+    if hs.fs.attributes(enNIBPath, 'mode') == 'directory' then
+      enNIBPath = enNIBPath .. '/keyedobjects.nib'
+    end
+
+    local enJsonPath = localeTmpDir .. bundleID .. '-' .. enLocale .. '-' .. file .. '.json'
+    if hs.fs.attributes(enJsonPath) == nil then
+      hs.execute(string.format("/usr/bin/python3 scripts/nib_parse.py dump-json '%s' -o '%s'",
+                 enNIBPath, enJsonPath))
+    end
+    if hs.fs.attributes(enJsonPath) == nil then return end
+
+    local enValues = hs.json.read(enJsonPath)
+    local values_index, key_index
+    for i, value in ipairs(enValues) do
+      if value['type'] == 8 and value['data'] == str then
+        values_index = i
+        key_index = value['key_index']
+        break
       end
+    end
+    if values_index == nil then return end
+
+    if hs.fs.attributes(NIBPath, 'mode') == 'directory' then
+      NIBPath = NIBPath .. '/keyedobjects.nib'
+    end
+    local jsonPath = localeTmpDir .. bundleID .. '-' .. locale .. '-' .. file .. '.json'
+    if hs.fs.attributes(jsonPath) == nil then
+      hs.execute(string.format("/usr/bin/python3 scripts/nib_parse.py dump-json '%s' -o '%s'",
+                  NIBPath, jsonPath))
+    end
+    if hs.fs.attributes(jsonPath) == nil then return end
+
+    local values = hs.json.read(jsonPath)
+    local candidate
+    local i, min_i, max_i = values_index, math.max(1, values_index - 5), math.min(#values, values_index + 5)
+    while i >= min_i do
+      local value = values[i]
+      if value['type'] == 8 and value['key_index'] == key_index then
+        candidate = value['data']
+      elseif candidate ~= nil then
+        return candidate
+      end
+      i = i - 1
+    end
+    i = values_index + 1
+    while i <= max_i do
+      local value = values[i]
+      if value['type'] == 8 and value['key_index'] == key_index then
+        return value['data']
+      end
+      i = i + 1
     end
   end
+
   if localeFile ~= nil then
-    result = compareNIBs(localeFile)
+    local result = compareNIBs(localeFile)
     if result ~= nil then return result end
   else
-    local nibFiles = {}
-    for file in hs.fs.dir(localeDir) do
-      if file:sub(-4) == ".nib" then
-        table.insert(nibFiles, file:sub(1, -5))
-      end
-    end
+    local nibFiles = collectStringsFiles(localeDir, { nib = true })
     if #nibFiles > 10 then
-      nibFiles = hs.fnutils.filter(nibFiles, function(file)
-        for _, pattern in ipairs(preferentialLocaleFilePatterns) do
-          if string.match(file, "^" .. pattern .. "$") ~= nil then return true end
-        end
-        return false
-      end)
+      _, nibFiles = filterPreferentialStringsFiles(nibFiles)
     end
     for _, file in ipairs(nibFiles) do
-      result = compareNIBs(file)
+      local result = compareNIBs(file)
       if result ~= nil then return result end
     end
   end
