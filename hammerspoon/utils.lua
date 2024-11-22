@@ -985,43 +985,21 @@ function localizedString(str, bundleID, params)
     end
   end
 
-  if appLocaleMap[bundleID] == nil then
-    appLocaleMap[bundleID] = {}
-  end
-  if appLocaleMap[bundleID][appLocale] == nil then
-    appLocaleMap[bundleID][appLocale] = {}
-  end
-  if appLocaleDir[bundleID] == nil then
-    appLocaleDir[bundleID] = {}
-  end
-  if appLocaleAssetBuffer[bundleID] == nil then
-    appLocaleAssetBuffer[bundleID] = {}
-  end
-  if appLocaleAssetBuffer[bundleID][appLocale] == nil then
-    appLocaleAssetBuffer[bundleID][appLocale] = {}
-  end
-  local localesDict = appLocaleAssetBuffer[bundleID][appLocale]
-
-  local locale, mode
+  local locale, mode, localesDict, setDefaultLocale
   if localeDir == false then mode = 'strings'
   elseif not framework.mono then mode = 'lproj' end
   if localeDir == nil or localeDir == false then
     if locale == nil then
-      locale = appLocaleDir[bundleID][appLocale]
-      if locale == false then return nil end
+      locale = get(appLocaleDir, bundleID, appLocale)
+      if locale == false then goto L_END_LOCALIZED end
     end
     if locale == nil then
       locale = getMatchedLocale(appLocale, resourceDir, mode)
       if locale == nil and framework.qt then
         locale, localeDir = getQtMatchedLocale(appLocale, resourceDir)
       end
-      if locale == nil then
-        appLocaleDir[bundleID][appLocale] = false
-        appLocaleMap[bundleID][appLocale] = nil
-        return nil
-      end
+      if locale == nil then goto L_END_LOCALIZED end
     end
-    appLocaleDir[bundleID][appLocale] = locale
     if mode == 'strings' then
       localeDir = resourceDir
       if localeFile == nil then localeFile = locale end
@@ -1038,17 +1016,12 @@ function localizedString(str, bundleID, params)
     end
   end
 
-  local setDefaultLocale = function()
+  setDefaultLocale = function()
     localeFile = type(params) == 'table' and params.localeFile or params
     resourceDir = hs.application.pathForBundleID(bundleID) .. "/Contents/Resources"
     if mode == nil then mode = 'lproj' end
     locale = getMatchedLocale(appLocale, resourceDir, mode)
-    if locale == nil then
-      appLocaleDir[bundleID][appLocale] = false
-      appLocaleMap[bundleID][appLocale] = nil
-      return false
-    end
-    appLocaleDir[bundleID][appLocale] = locale
+    if locale == nil then return false end
     if mode == 'strings' then
       localeDir = resourceDir
       if localeFile == nil then localeFile = locale end
@@ -1058,41 +1031,36 @@ function localizedString(str, bundleID, params)
     return true
   end
 
+  if appLocaleAssetBuffer[bundleID] == nil
+      or get(appLocaleDir, bundleID, appLocale) ~= locale then
+    appLocaleAssetBuffer[bundleID] = {}
+  end
+  localesDict = appLocaleAssetBuffer[bundleID]
+
   if framework.chromium then
     result = localizeByChromium(str, localeDir, localesDict, bundleID)
-    if result ~= nil then
-      goto L_END_LOCALIZED
-    elseif not setDefaultLocale() then
-      return nil
-    end
+    if result ~= nil or not setDefaultLocale() then goto L_END_LOCALIZED end
   end
 
   if framework.mono then
     result = localizeByMono(str, localeDir)
-    if result ~= nil then
-      goto L_END_LOCALIZED
-    elseif not setDefaultLocale() then
-      return nil
-    end
+    if result ~= nil or not setDefaultLocale() then goto L_END_LOCALIZED end
   end
 
   if framework.qt then
     result = localizeByQt(str, localeDir, localesDict)
-    if result ~= nil then
-      goto L_END_LOCALIZED
-    elseif not setDefaultLocale() then
-      return nil
-    end
+    if result ~= nil or not setDefaultLocale() then goto L_END_LOCALIZED end
   end
 
   result = localizeByLoctable(str, resourceDir, localeFile, locale, localesDict)
   if result ~= nil then goto L_END_LOCALIZED end
 
-  if appLocaleAssetBufferInverse[bundleID] == nil then
+  if appLocaleAssetBufferInverse[bundleID] == nil
+      or get(appLocaleDir, bundleID, appLocale) ~= locale then
     appLocaleAssetBufferInverse[bundleID] = {}
   end
   result = localizeByStrings(str, localeDir, localeFile, localesDict,
-                              appLocaleAssetBufferInverse[bundleID])
+                             appLocaleAssetBufferInverse[bundleID])
   if result ~= nil then goto L_END_LOCALIZED end
 
   result = localizeByNiB(str, localeDir, localeFile, bundleID)
@@ -1107,16 +1075,34 @@ function localizedString(str, bundleID, params)
   end
 
   ::L_END_LOCALIZED::
+  if appLocaleDir[bundleID] == nil then
+    appLocaleDir[bundleID] = {}
+  end
+  if locale == nil then
+    appLocaleDir[bundleID][appLocale] = false
+    goto L_END_DUMP_LOCALIZED
+  else
+    appLocaleDir[bundleID][appLocale] = locale
+  end
+
+  if appLocaleMap[bundleID] == nil then
+    appLocaleMap[bundleID] = {}
+  end
+  if appLocaleMap[bundleID][appLocale] == nil then
+    appLocaleMap[bundleID][appLocale] = {}
+  end
   if result ~= nil then
-    if hs.fs.attributes(localeTmpDir) == nil then
-      hs.execute(string.format("mkdir -p '%s'", localeTmpDir))
-    end
     appLocaleMap[bundleID][appLocale][str] = result
-    hs.json.write({ locale = appLocaleDir, map = appLocaleMap },
-                  localeTmpFile, false, true)
   else
     appLocaleMap[bundleID][appLocale][str] = false
   end
+
+  ::L_END_DUMP_LOCALIZED::
+  if hs.fs.attributes(localeTmpDir) == nil then
+    hs.execute(string.format("mkdir -p '%s'", localeTmpDir))
+  end
+  hs.json.write({ locale = appLocaleDir, map = appLocaleMap },
+    localeTmpFile, false, true)
   return result
 end
 
@@ -1453,44 +1439,19 @@ function delocalizedString(str, bundleID, params)
     end
   end
 
-  if deLocaleMap[bundleID] == nil then
-    deLocaleMap[bundleID] = {}
-  end
-  if deLocaleInversedMap[bundleID] == nil then
-    deLocaleInversedMap[bundleID] = {}
-  end
-  if deLocaleDir[bundleID] == nil then
-    deLocaleDir[bundleID] = {}
-  end
-  if deLocaleDir[bundleID][appLocale] == nil then
-    deLocaleDir[bundleID] = {}
-    deLocaleMap[bundleID] = {}
-    deLocaleInversedMap[bundleID] = {}
-  end
-
   local locale, localeDir, mode, setDefaultLocale
 
   if bundleID == "org.zotero.zotero" then
     result, locale = delocalizeZoteroMenu(str, appLocale)
-    if deLocaleDir[bundleID][appLocale] ~= nil
-        and deLocaleDir[bundleID][appLocale] ~= locale then
-      deLocaleMap[bundleID] = {}
-    end
-    deLocaleDir[bundleID][appLocale] = locale
     goto L_END_DELOCALIZED
   elseif bundleID == "com.mathworks.matlab" then
     result, locale = delocalizeMATLABFigureMenu(str, appLocale)
-    if deLocaleDir[bundleID][appLocale] ~= nil
-        and deLocaleDir[bundleID][appLocale] ~= locale then
-      deLocaleMap[bundleID] = {}
-    end
-    deLocaleDir[bundleID][appLocale] = locale
     goto L_END_DELOCALIZED
   end
 
   if not framework.mono then mode = 'lproj' end
   if locale == nil then
-    locale = deLocaleDir[bundleID][appLocale]
+    locale = get(deLocaleDir, bundleID, appLocale)
     if locale == false then return nil end
   end
   if locale == nil then
@@ -1498,13 +1459,8 @@ function delocalizedString(str, bundleID, params)
     if locale == nil and framework.qt then
       locale, localeDir = getQtMatchedLocale(appLocale, resourceDir)
     end
-    if locale == nil then
-      deLocaleDir[bundleID][appLocale] = false
-      deLocaleMap[bundleID][appLocale] = nil
-      return nil
-    end
+    if locale == nil then goto L_END_DELOCALIZED end
   end
-  deLocaleDir[bundleID][appLocale] = locale
   if localeDir == nil then
     if mode == 'lproj' then
       localeDir = resourceDir .. "/" .. locale .. ".lproj"
@@ -1521,22 +1477,15 @@ function delocalizedString(str, bundleID, params)
     resourceDir = hs.application.pathForBundleID(bundleID) .. "/Contents/Resources"
     mode = 'lproj'
     locale = getMatchedLocale(appLocale, resourceDir, mode)
-    if locale == nil then
-      deLocaleDir[bundleID][appLocale] = false
-      deLocaleMap[bundleID][appLocale] = nil
-      return false
-    end
-    deLocaleDir[bundleID][appLocale] = locale
+    if locale == nil then return false end
     localeDir = resourceDir .. "/" .. locale .. ".lproj"
     return true
   end
 
   if framework.chromium then
     result = delocalizeByChromium(str, localeDir, bundleID)
-    if result ~= nil then
+    if result ~= nil or not setDefaultLocale() then
       goto L_END_DELOCALIZED
-    elseif not setDefaultLocale() then
-      return nil
     end
   end
 
@@ -1546,24 +1495,25 @@ function delocalizedString(str, bundleID, params)
       if bundleID == "com.microsoft.visual-studio" then
         result = result:gsub('_', '')
       end
+    end
+    if result ~= nil or not setDefaultLocale() then
       goto L_END_DELOCALIZED
-    elseif not setDefaultLocale() then
-      return nil
     end
   end
 
   if framework.qt then
     result = delocalizeByQt(str, localeDir)
-    if result ~= nil then
+    if result ~= nil or not setDefaultLocale() then
       goto L_END_DELOCALIZED
-    elseif not setDefaultLocale() then
-      return nil
     end
   end
 
   result = delocalizeByLoctable(str, resourceDir, localeFile, locale)
   if result ~= nil then goto L_END_DELOCALIZED end
 
+  if deLocaleInversedMap[bundleID] == nil or get(deLocaleDir, bundleID, appLocale) ~= locale then
+    deLocaleInversedMap[bundleID] = {}
+  end
   result = delocalizeByStrings(str, localeDir, localeFile, deLocaleInversedMap[bundleID])
   if result ~= nil then goto L_END_DELOCALIZED end
 
@@ -1584,10 +1534,26 @@ function delocalizedString(str, bundleID, params)
   end
 
   ::L_END_DELOCALIZED::
-  if result ~= nil then
-    deLocaleMap[bundleID][str] = result
+  if deLocaleDir[bundleID] == nil then
+    deLocaleDir[bundleID] = {}
+  end
+  if locale == nil then
+    deLocaleDir[bundleID][appLocale] = false
+    return
   else
-    deLocaleMap[bundleID][str] = false
+    deLocaleDir[bundleID][appLocale] = locale
+  end
+
+  if deLocaleMap[bundleID] == nil then
+    deLocaleMap[bundleID] = {}
+  end
+  if deLocaleMap[bundleID][appLocale] == nil then
+    deLocaleMap[bundleID][appLocale] = {}
+  end
+  if result ~= nil then
+    deLocaleMap[bundleID][appLocale][str] = result
+  else
+    deLocaleMap[bundleID][appLocale][str] = false
   end
   return result
 end
