@@ -1224,6 +1224,81 @@ local function delocalizeByStrings(str, localeDir, localeFile, deLocalesInvDict)
   end
 end
 
+local function delocalizeByNIB(str, localeDir, localeFile, bundleID)
+  local resourceDir = localeDir .. '/..'
+  local locale = localeDir:match("^.*/(.*)%.lproj$")
+  local enLocaleDir = baseLocaleDirs(resourceDir)[1]
+  local enLocale = enLocaleDir:match("^.*/(.*)%.lproj$")
+  local compareNIBs = function(file)
+    local NIBPath = localeDir .. '/' .. file .. '.nib'
+    local enNIBPath = enLocaleDir .. '/' .. file .. '.nib'
+    if hs.fs.attributes(NIBPath) == nil or hs.fs.attributes(enNIBPath) == nil then return end
+    if hs.fs.attributes(NIBPath, 'mode') == 'directory' then
+      NIBPath = NIBPath .. '/keyedobjects.nib'
+    end
+
+    local jsonPath = localeTmpDir .. bundleID .. '-' .. locale .. '-' .. file .. '.json'
+    if hs.fs.attributes(jsonPath) == nil then
+      hs.execute(string.format("/usr/bin/python3 scripts/nib_parse.py dump-json '%s' -o '%s'",
+                 NIBPath, jsonPath))
+    end
+    if hs.fs.attributes(jsonPath) == nil then return end
+
+    local values = hs.json.read(jsonPath)
+    local values_index, key_index
+    for i, value in ipairs(values) do
+      if value['type'] == 8 and value['data'] == str then
+        values_index = i
+        key_index = value['key_index']
+        break
+      end
+    end
+    if values_index == nil then return end
+
+    local enJsonPath = localeTmpDir .. bundleID .. '-' .. enLocale .. '-' .. file .. '.json'
+    if hs.fs.attributes(enJsonPath) == nil then
+      hs.execute(string.format("/usr/bin/python3 scripts/nib_parse.py dump-json '%s' -o '%s'",
+        enLocaleDir .. '/' .. file .. '.nib', enJsonPath))
+    end
+    if hs.fs.attributes(enJsonPath) == nil then return end
+
+    local enValues = hs.json.read(enJsonPath)
+    local candidate
+    local i, min_i, max_i = values_index, math.max(1, values_index - 5), math.min(#enValues, values_index + 5)
+    while i >= min_i do
+      local enValue = enValues[i]
+      if enValue['type'] == 8 and enValue['key_index'] == key_index then
+        candidate = enValue['data']
+      elseif candidate ~= nil then
+        return candidate
+      end
+      i = i - 1
+    end
+    i = values_index + 1
+    while i <= max_i do
+      local enValue = enValues[i]
+      if enValue['type'] == 8 and enValue['key_index'] == key_index then
+        return enValue['data']
+      end
+      i = i + 1
+    end
+  end
+
+  if localeFile ~= nil then
+    local result = compareNIBs(localeFile)
+    if result ~= nil then return result end
+  else
+    local nibFiles = collectStringsFiles(localeDir, { nib = true })
+    if #nibFiles > 10 then
+      _, nibFiles = filterPreferentialStringsFiles(nibFiles)
+    end
+    for _, file in ipairs(nibFiles) do
+      local result = compareNIBs(file)
+      if result ~= nil then return result end
+    end
+  end
+end
+
 local function delocalizeByQtImpl(str, file)
   local output, status = hs.execute(string.format(
       "zsh scripts/qm_delocalize.sh '%s' '%s'", file, str))
@@ -1394,7 +1469,7 @@ function delocalizedString(str, bundleID, params)
     deLocaleInversedMap[bundleID] = {}
   end
 
-  local locale, localeDir, mode, setDefaultLocale, compareNIBs
+  local locale, localeDir, mode, setDefaultLocale
 
   if bundleID == "org.zotero.zotero" then
     result, locale = delocalizeZoteroMenu(str, appLocale)
@@ -1493,88 +1568,8 @@ function delocalizedString(str, bundleID, params)
   result = delocalizeByStrings(str, localeDir, localeFile, deLocaleInversedMap[bundleID])
   if result ~= nil then goto L_END_DELOCALIZED end
 
-  compareNIBs = function(localeFile)
-    if hs.fs.attributes(localeDir .. '/' .. localeFile .. '.nib') ~= nil then
-      local jsonPath = localeTmpDir .. bundleID .. '-' .. locale .. '-' .. localeFile .. '.json'
-      if hs.fs.attributes(jsonPath) == nil then
-        hs.execute(string.format("/usr/bin/python3 scripts/nib_parse.py dump-json '%s' -o '%s'",
-          localeDir .. '/' .. localeFile .. '.nib', jsonPath))
-      end
-      if hs.fs.attributes(jsonPath) == nil then return end
-      local values = hs.json.read(jsonPath)
-      local values_index, key_index
-      for i, value in ipairs(values) do
-        if value['type'] == 8 and value['data'] == str then
-          values_index = i
-          key_index = value['key_index']
-          break
-        end
-      end
-      if values_index ~= nil then
-        for _, enLocaleDir in ipairs {
-          resourceDir .. "/en.lproj",
-          resourceDir .. "/English.lproj",
-          resourceDir .. "/Base.lproj",
-          resourceDir .. "/en_US.lproj",
-          resourceDir .. "/en_GB.lproj" } do
-          if hs.fs.attributes(enLocaleDir) ~= nil then
-            if hs.fs.attributes(enLocaleDir .. '/' .. localeFile .. '.nib') ~= nil then
-              local enJsonPath = localeTmpDir .. bundleID .. '-en-' .. localeFile .. '.json'
-              if hs.fs.attributes(enJsonPath) == nil then
-                hs.execute(string.format("/usr/bin/python3 scripts/nib_parse.py dump-json '%s' -o '%s'",
-                  enLocaleDir .. '/' .. localeFile .. '.nib', enJsonPath))
-              end
-              if hs.fs.attributes(enJsonPath) == nil then return end
-              local enValues = hs.json.read(enJsonPath)
-              local candidate
-              local i, min_i, max_i = values_index, math.max(1, values_index - 5), math.min(#enValues, values_index + 5)
-              while i >= min_i do
-                local enValue = enValues[i]
-                if enValue['type'] == 8 and enValue['key_index'] == key_index then
-                  candidate = enValue['data']
-                elseif candidate ~= nil then
-                  return candidate
-                end
-                i = i - 1
-              end
-              i = values_index + 1
-              while i <= max_i do
-                local enValue = enValues[i]
-                if enValue['type'] == 8 and enValue['key_index'] == key_index then
-                  return enValue['data']
-                end
-                i = i + 1
-              end
-            end
-            break
-          end
-        end
-      end
-    end
-  end
-  if localeFile ~= nil then
-    result = compareNIBs(localeFile)
-    if result ~= nil then goto L_END_DELOCALIZED end
-  else
-    local nibFiles = {}
-    for file in hs.fs.dir(localeDir) do
-      if file:sub(-4) == ".nib" then
-        table.insert(nibFiles, file:sub(1, -5))
-      end
-    end
-    if #nibFiles > 10 then
-      nibFiles = hs.fnutils.filter(nibFiles, function(file)
-        for _, pattern in ipairs(preferentialLocaleFilePatterns) do
-          if string.match(file, "^" .. pattern .. "$") ~= nil then return true end
-        end
-        return false
-      end)
-    end
-    for _, file in ipairs(nibFiles) do
-      result = compareNIBs(file)
-      if result ~= nil then goto L_END_DELOCALIZED end
-    end
-  end
+  result = delocalizeByNIB(str, localeDir, localeFile, bundleID)
+  if result ~= nil then goto L_END_DELOCALIZED end
 
   if bundleID:match("^com%.charliemonroe%..*$") and localeFramework == nil then
     result = delocalizedString(str, bundleID, { framework = "XUCore.framework" })
