@@ -1500,9 +1500,10 @@ function delocalizedString(str, bundleID, params)
         hs.execute(string.format("/usr/bin/python3 scripts/nib_parse.py dump-json '%s' -o '%s'",
           localeDir .. '/' .. localeFile .. '.nib', jsonPath))
       end
-      local jsonList = hs.json.read(jsonPath)
+      if hs.fs.attributes(jsonPath) == nil then return end
+      local values = hs.json.read(jsonPath)
       local values_index, key_index
-      for i, value in ipairs(jsonList['values']) do
+      for i, value in ipairs(values) do
         if value['type'] == 8 and value['data'] == str then
           values_index = i
           key_index = value['key_index']
@@ -1523,8 +1524,8 @@ function delocalizedString(str, bundleID, params)
                 hs.execute(string.format("/usr/bin/python3 scripts/nib_parse.py dump-json '%s' -o '%s'",
                   enLocaleDir .. '/' .. localeFile .. '.nib', enJsonPath))
               end
-              local enJsonList = hs.json.read(enJsonPath)
-              local enValues = enJsonList['values']
+              if hs.fs.attributes(enJsonPath) == nil then return end
+              local enValues = hs.json.read(enJsonPath)
               local candidate
               local i, min_i, max_i = values_index, math.max(1, values_index - 5), math.min(#enValues, values_index + 5)
               while i >= min_i do

@@ -199,7 +199,7 @@ def dump_json(args: dict):
         with open(files[0], "rb") as fp:
             archive = parser.parse(fp)
         with open(str(output), "w", encoding="utf-8") as ofp:
-            json.dump(dataclasses.asdict(archive), ofp, indent=2, cls=JSONBytesEncoder, ensure_ascii=False)
+            json.dump(dataclasses.asdict(archive)['values'], ofp, indent=2, cls=JSONBytesEncoder, ensure_ascii=False)
 
     else:
         for file_path in map(pathlib.Path, files):
@@ -209,7 +209,7 @@ def dump_json(args: dict):
                 output = str(file_path.parent / f"{file_path.stem}.swift")
                 with open(output, "w", encoding="utf-8") as ofp:
                     json.dump(
-                        dataclasses.asdict(archive), ofp, indent=2, cls=JSONBytesEncoder, ensure_ascii=False
+                        dataclasses.asdict(archive)['values'], ofp, indent=2, cls=JSONBytesEncoder, ensure_ascii=False
                     )
             else:
                 for nib_file in (
@@ -226,7 +226,7 @@ def dump_json(args: dict):
                     # Using dataclasses we can simply convert our NIBArchive into a dict
                     with open(output, "w", encoding="utf-8") as ofp:
                         json.dump(
-                            dataclasses.asdict(archive),
+                            dataclasses.asdict(archive)['values'],
                             ofp,
                             indent=2,
                             cls=JSONBytesEncoder,
