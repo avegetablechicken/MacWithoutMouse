@@ -1085,25 +1085,24 @@ function localizedString(str, bundleID, params)
     end
   end
 
-  if locale ~= nil then
-    result = localizeByLoctable(str, resourceDir, localeFile, locale, localesDict)
-    if result ~= nil then goto L_END_LOCALIZED end
+  result = localizeByLoctable(str, resourceDir, localeFile, locale, localesDict)
+  if result ~= nil then goto L_END_LOCALIZED end
 
-    if appLocaleAssetBufferInverse[bundleID] == nil then
-      appLocaleAssetBufferInverse[bundleID] = {}
-    end
-    result = localizeByStrings(str, localeDir, localeFile, localesDict,
-                               appLocaleAssetBufferInverse[bundleID])
-    if result ~= nil then goto L_END_LOCALIZED end
-    result = localizeByNiB(str, localeDir, localeFile, bundleID)
-    if result ~= nil then goto L_END_LOCALIZED end
+  if appLocaleAssetBufferInverse[bundleID] == nil then
+    appLocaleAssetBufferInverse[bundleID] = {}
   end
+  result = localizeByStrings(str, localeDir, localeFile, localesDict,
+                              appLocaleAssetBufferInverse[bundleID])
+  if result ~= nil then goto L_END_LOCALIZED end
 
-  if result == nil and
-      (string.sub(str, -3) == "..." or string.sub(str, -3) == "…") then
+  result = localizeByNiB(str, localeDir, localeFile, bundleID)
+  if result ~= nil then goto L_END_LOCALIZED end
+
+  if string.sub(str, -3) == "..." or string.sub(str, -3) == "…" then
     result = localizedString(string.sub(str, 1, -4), bundleID, params)
     if result ~= nil then
       result = result .. string.sub(str, -3)
+      goto L_END_LOCALIZED
     end
   end
 
@@ -1568,19 +1567,19 @@ function delocalizedString(str, bundleID, params)
   result = delocalizeByStrings(str, localeDir, localeFile, deLocaleInversedMap[bundleID])
   if result ~= nil then goto L_END_DELOCALIZED end
 
-  result = delocalizeByNIB(str, localeDir, localeFile, bundleID)
-  if result ~= nil then goto L_END_DELOCALIZED end
-
   if bundleID:match("^com%.charliemonroe%..*$") and localeFramework == nil then
     result = delocalizedString(str, bundleID, { framework = "XUCore.framework" })
     if result ~= nil then return result end
   end
 
-  if result == nil and
-      (string.sub(str, -3) == "..." or string.sub(str, -3) == "…") then
+  result = delocalizeByNIB(str, localeDir, localeFile, bundleID)
+  if result ~= nil then goto L_END_DELOCALIZED end
+
+  if string.sub(str, -3) == "..." or string.sub(str, -3) == "…" then
     result = delocalizedString(string.sub(str, 1, -4), bundleID, params)
     if result ~= nil then
       result = result .. string.sub(str, -3)
+      goto L_END_DELOCALIZED
     end
   end
 
