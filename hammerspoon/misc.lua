@@ -285,7 +285,7 @@ local function menuItemHotkeyIdx(mods, key)
 end
 
 local localizedEnterFullScreen = {}
-local function getSubMenuHotkeys(t, menuItem, titleAsEntry, titlePrefix)
+local function getSubMenuHotkeys(t, menuItem, titleAsEntry, titlePrefix, isAppMenu)
   if menuItem.AXChildren == nil then return end
   if titleAsEntry == true then
     table.insert(t, menuItem.AXTitle)
@@ -311,7 +311,7 @@ local function getSubMenuHotkeys(t, menuItem, titleAsEntry, titlePrefix)
       if subItem.AXMenuItemCmdChar == 'E' and subItem.AXMenuItemCmdGlyph == ""
           and #subItem.AXMenuItemCmdModifiers == 0 and subItem.AXMenuItemMarkChar == ""
           and subItem.AXChildren == nil
-          and delocalizedMenuBarItem(menuItem.AXTitle, bundleID) == 'Edit' then
+          and (not isAppMenu and delocalizedMenuBarItem(menuItem.AXTitle, bundleID) == 'Edit') then
         idx = "🌐︎E"
       elseif subItem.AXMenuItemCmdChar == 'F' and subItem.AXMenuItemCmdGlyph == ""
           and #subItem.AXMenuItemCmdModifiers == 0 and subItem.AXMenuItemMarkChar == ""
@@ -331,7 +331,7 @@ local function getSubMenuHotkeys(t, menuItem, titleAsEntry, titlePrefix)
   end
   if getOSVersion() >= OS.Sequoia and menuItem.AXRole == "AXMenuBarItem" then
     local bundleID = hs.application.frontmostApplication():bundleID()
-    if delocalizedMenuBarItem(menuItem.AXTitle, bundleID) == 'Window' then
+    if not isAppMenu and delocalizedMenuBarItem(menuItem.AXTitle, bundleID) == 'Window' then
       local startPatch = false
       for i=startIdx+1,#t do
         if not startPatch and i < #t
@@ -362,8 +362,8 @@ local function loadAppHotkeys(t)
     localizedString("Exit Full Screen", appObject:bundleID(), { locale = locale }),
     localizedString("Exit Full Screen", 'com.apple.finder', { locale = locale })
   }
-  for _, menuItem in ipairs(menuItems) do
-    getSubMenuHotkeys(appHotkeys, menuItem, true, true)
+  for i, menuItem in ipairs(menuItems) do
+    getSubMenuHotkeys(appHotkeys, menuItem, true, true, i == 1)
   end
   for _, hotkey in ipairs(appHotkeys) do
     if type(hotkey) == 'table' then
@@ -1207,8 +1207,8 @@ local searchHotkey = bindHotkeySpec(misc["searchHotkeys"], "Search Hotkey", func
     localizedString("Exit Full Screen", appObject:bundleID(), { locale = locale }),
     localizedString("Exit Full Screen", 'com.apple.finder', { locale = locale })
   }
-  for _, menuItem in ipairs(hs.application.frontmostApplication():getMenuItems()) do
-    getSubMenuHotkeys(appHotkeys, menuItem, false, true)
+  for i, menuItem in ipairs(hs.application.frontmostApplication():getMenuItems()) do
+    getSubMenuHotkeys(appHotkeys, menuItem, false, true, i == 1)
   end
   for _, hotkey in ipairs(appHotkeys) do
     hotkey.modalType = 0
