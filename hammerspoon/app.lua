@@ -1835,7 +1835,7 @@ appHotKeyCallbacks = {
   ["com.apple.iMovieApp"] =
   {
     ["export"] = {
-      message = "Export",
+      message = localizedMessage({ "Share", "File…" }),
       condition = checkMenuItem({ "File", "Share", "File…" }),
       fn = receiveMenuItem
     }
