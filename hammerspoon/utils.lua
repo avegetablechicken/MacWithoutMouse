@@ -1149,7 +1149,7 @@ function localizedString(str, bundleID, params)
 
   if framework.qt then
     result = localizeByQt(str, localeDir, localesDict)
-    if result ~= nil or not setDefaultLocale() then goto L_END_LOCALIZED end
+    goto L_END_LOCALIZED
   end
 
   ::L_LOCALIZED_DEFAULT::
@@ -1635,9 +1635,7 @@ function delocalizedString(str, bundleID, params)
 
   if framework.qt then
     result = delocalizeByQt(str, localeDir)
-    if result ~= nil or not setDefaultLocale() then
-      goto L_END_DELOCALIZED
-    end
+    goto L_END_DELOCALIZED
   end
 
   ::L_DELOCALIZED_DEFAULT::
