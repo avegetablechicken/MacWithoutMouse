@@ -1946,15 +1946,8 @@ function clickAppRightMenuBarItem(bundleID, menuItem, subMenuItem, show)
     end
     menuItem = '"'..menuItem..'"'
   else
-    if #menuItem > 0 then
-      menuItem['localized'] = '"'..localizedString(menuItem[1], bundleID, menuItem.strings)..'"'
-      menuItem[1] = nil
-      menuItem.strings = nil
-    end
     for lang, item in pairs(menuItem) do
-      if lang ~= 'strings' and lang ~= 'localized' then
-        menuItem[lang] = '"'..item..'"'
-      end
+      menuItem[lang] = '"'..item..'"'
     end
   end
 
@@ -1968,15 +1961,8 @@ function clickAppRightMenuBarItem(bundleID, menuItem, subMenuItem, show)
       end
       subMenuItem = '"'..subMenuItem..'"'
     else
-      if #subMenuItem > 0 then
-        subMenuItem['localized'] = '"' ..localizedString(subMenuItem[1], bundleID, subMenuItem.strings).. '"'
-        subMenuItem[1] = nil
-        subMenuItem.strings = nil
-      end
       for lang, item in pairs(subMenuItem) do
-        if lang ~= 'strings' and lang ~= 'localized' then
-          subMenuItem[lang] = '"' .. item .. '"'
-        end
+        subMenuItem[lang] = '"' .. item .. '"'
       end
     end
   end
