@@ -570,6 +570,60 @@ local function localizeByLoctable(str, resourceDir, localeFile, loc, localesDict
   end
 end
 
+
+local function isBinarayPlist(file)
+  local f = io.open(file, "rb")
+  if f == nil then return false end
+  local firstByte = f:read(1)
+  f:close()
+  return firstByte == "b"
+end
+
+local function parseBinaryPlistFile(file, keepOrder, keepAll)
+  if keepOrder == nil then keepOrder = true end
+  local jsonStr = hs.execute([[
+    plutil -convert xml1 ']] .. file .. [[' -o /dev/stdout | \
+    awk '
+    BEGIN { printf("{"); first = 1 }
+    /<string>.*\.title<\/string>/ {
+      key = $0;
+      sub("<string>", "", key);
+      sub("</string>", "", key);
+      gsub(/^[ \t]+/, "", key);
+      gsub("%", "%%", key);
+      gsub("\"", "\\\"", key);
+
+      getline
+      value = $0;
+      if (value ~ /<string>.*<\/string>/) {
+        sub("<string>", "", value);
+        sub("</string>", "", value);
+        gsub(/^[ \t]+/, "", value);
+        gsub("%", "%%", value);
+        gsub("\"", "\\\"", value);
+        if (!first) printf(", ");
+        printf "\"%s\": \"%s\"", key, value;
+        first = 0;
+      }
+    }
+    END { print "}" }']])
+  local jsonDict = hs.json.decode(jsonStr)
+  if keepOrder then return jsonDict end
+  local localesDict = {}
+  for k, v in pairs(jsonDict) do
+    if localesDict[v] == nil then
+      localesDict[v] = k
+    elseif keepAll then
+      if type(localesDict[v]) == 'string' then
+        localesDict[v] = { localesDict[v], k }
+      else
+        table.insert(localesDict[v], k)
+      end
+    end
+  end
+  return localesDict
+end
+
 local function parseNibFile(file, keepOrder, keepAll)
   if keepOrder == nil then keepOrder = true end
   local fileStr = "'" .. file .. "'"
@@ -578,9 +632,8 @@ local function parseNibFile(file, keepOrder, keepAll)
   end
   local jsonStr = hs.execute([[
     strings -n 3 ]] .. fileStr .. [[ | \
-    awk 'BEGIN { printf("{"); first = 1 } /\.title_?$/ {
+    awk 'BEGIN { printf("{"); first = 1 } /\.title?$/ {
       key = $0;
-      if (key ~ /\.title_$/) key = substr(key, 1, length(key) - 1);
       gsub("%", "%%", prev);
       gsub("\"", "\\\"", prev);
       if (!first) printf(", ");
@@ -672,8 +725,9 @@ end
 
 -- situation 1: "str" is a key in a strings file of target locale
 -- situation 2: both base and target locales use strings files
--- situation 3: both base and target locales use "*.title"-style keys & target locale uses strings files
--- situation 4: both base variant (e.g. en_US) and target locales use strings files
+-- situation 3: both base variant (e.g. en_US) and target locales use strings files
+-- situation 4: both base and target locales use "*.title"-style keys, base locale uses NIB file & target locale uses strings files
+-- situation 5: both base and target locales use "*.title"-style keys, base locale uses binary plist file & target locale uses strings files
 local function localizeByStrings(str, localeDir, localeFile, localesDict, localesInvDict)
   local resourceDir = localeDir .. '/..'
   local searchFunc = function(str, files)
@@ -716,14 +770,17 @@ local function localizeByStrings(str, localeDir, localeFile, localesDict, locale
         if invDict == nil then
           if hs.fs.attributes(enLocaleDir .. '/' .. fileStem .. '.strings') ~= nil then
             invDict = parseStringsFile(enLocaleDir .. '/' .. fileStem .. '.strings', false, true)
-          elseif str:len() > 2
-              and hs.fs.attributes(enLocaleDir .. '/' .. fileStem .. '.nib') ~= nil
+          elseif hs.fs.attributes(enLocaleDir .. '/' .. fileStem .. '.nib') ~= nil
               and hs.fs.attributes(localeDir .. '/' .. fileStem .. '.strings') ~= nil then
             local fullPath = enLocaleDir .. '/' .. fileStem .. '.nib'
             if hs.fs.attributes(fullPath, 'mode') == 'directory' then
               fullPath = fullPath .. '/keyedobjects.nib'
             end
-            invDict = parseNibFile(fullPath, false, true)
+            if isBinarayPlist(fullPath) then
+              invDict = parseBinaryPlistFile(fullPath, false, true)
+            elseif str:len() > 2 then
+              invDict = parseNibFile(fullPath, false, true)
+            end
           elseif str:len() > 2
               and hs.fs.attributes(enLocaleDir .. '/' .. fileStem .. '.storyboardc') ~= nil
               and hs.fs.attributes(localeDir .. '/' .. fileStem .. '.strings') ~= nil then
@@ -771,14 +828,6 @@ local function localizeByStrings(str, localeDir, localeFile, localesDict, locale
 
   result = invSearchFunc(str, enStringsFiles)
   if result ~= nil then return result end
-end
-
-local function isBinarayPlist(file)
-  local f = io.open(file, "rb")
-  if f == nil then return false end
-  local firstByte = f:read(1)
-  f:close()
-  return firstByte == "b"
 end
 
 local function localizeByNiB(str, localeDir, localeFile, bundleID)
@@ -1205,12 +1254,16 @@ local function delocalizeByStrings(str, localeDir, localeFile, deLocalesInvDict)
       local jsonDict
       if hs.fs.attributes(enLocaleDir .. '/' .. file .. '.strings') ~= nil then
         jsonDict = parseStringsFile(enLocaleDir .. '/' .. file .. '.strings')
-      elseif not onlyStrings and hs.fs.attributes(enLocaleDir .. '/' .. file .. '.nib') ~= nil then
+      elseif hs.fs.attributes(enLocaleDir .. '/' .. file .. '.nib') ~= nil then
         local fullPath = enLocaleDir .. '/' .. file .. '.nib'
         if hs.fs.attributes(fullPath, 'mode') == 'directory' then
           fullPath = fullPath .. '/keyedobjects.nib'
         end
-        jsonDict = parseNibFile(fullPath)
+        if isBinarayPlist(fullPath) then
+          invDict = parseBinaryPlistFile(fullPath)
+        elseif not onlyStrings then
+          jsonDict = parseNibFile(fullPath)
+        end
       elseif not onlyStrings and hs.fs.attributes(enLocaleDir .. '/' .. file .. '.storyboardc') ~= nil then
         jsonDict = parseNibFile(enLocaleDir .. '/' .. file .. '.storyboardc')
       end
