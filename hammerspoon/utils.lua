@@ -1438,7 +1438,7 @@ function delocalizedString(str, bundleID, params)
   local localeDetails = hs.host.locale.details(appLocale)
   if localeDetails.languageCode == 'en' then return str end
 
-  local result = get(deLocaleMap, bundleID, str)
+  local result = get(deLocaleMap, bundleID, appLocale, str)
   if result == false then return nil
   elseif result ~= nil then return result end
 
