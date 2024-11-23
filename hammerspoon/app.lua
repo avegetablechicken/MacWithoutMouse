@@ -1844,7 +1844,7 @@ appHotKeyCallbacks = {
   ["com.tencent.xinWeChat"] =
   {
     ["back"] = {
-      message = localizedMessage("Common.Navigation.Back", { key = true }),
+      message = localizedMessage("Common.Navigation.Back"),
       condition = function(appObject)
         local exBundleID = "com.tencent.xinWeChat.WeChatAppEx"
         local exAppObject = findApplication(exBundleID)
@@ -1863,16 +1863,16 @@ appHotKeyCallbacks = {
         local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
         -- Moments
         if string.find(appObject:focusedWindow():title(), appObject:name()) == nil then
-          local album = localizedString("Album_WindowTitle", bundleID, { key = true })
-          local moments = localizedString("SNS_Feed_Window_Title", bundleID, { key = true })
-          local detail = localizedString("SNS_Feed_Detail_Title", bundleID, { key = true })
+          local album = localizedString("Album_WindowTitle", bundleID)
+          local moments = localizedString("SNS_Feed_Window_Title", bundleID)
+          local detail = localizedString("SNS_Feed_Detail_Title", bundleID)
           if string.find(appObject:focusedWindow():title(), album .. '-') == 1
               or appObject:focusedWindow():title() == moments .. '-' .. detail then
             return true, { 2, winUIObj:childrenWithRole("AXButton")[1].AXPosition }
           end
           return false
         end
-        local back = localizedString("Common.Navigation.Back", bundleID, { key = true })
+        local back = localizedString("Common.Navigation.Back", bundleID)
         -- Official Accounts
         local g = getAXChildren(winUIObj, "AXSplitGroup", 1, "AXSplitGroup", 1)
         if g ~= nil then
@@ -1973,10 +1973,8 @@ appHotKeyCallbacks = {
         local version = hs.execute(string.format('mdls -r -name kMDItemVersion "%s"', appObject:path()))
         local major, minor, patch = string.match(version, "(%d+)%.(%d+)%.(%d+)")
         if tonumber(major) < 9 then
-          local song = localizedString("COMMON_SONG", appObject:bundleID(),
-                                      { localeDir = false, key = true })
-          local detail = localizedString("COMMON_DETAIL", appObject:bundleID(),
-                                        { localeDir = false, key = true })
+          local song = localizedString("COMMON_SONG", appObject:bundleID(), { localeDir = false })
+          local detail = localizedString("COMMON_DETAIL", appObject:bundleID(), { localeDir = false })
           local btnName = song .. detail
           local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
           local buttons = winUIObj:childrenWithRole("AXButton")

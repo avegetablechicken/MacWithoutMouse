@@ -943,13 +943,12 @@ end
 local localizationMap = {}
 
 function localizedString(str, bundleID, params)
-  local appLocale, localeFile, localeDir, localeFramework, key
+  local appLocale, localeFile, localeDir, localeFramework
   if type(params) == "table" then
     appLocale = params.locale
     localeFile = params.localeFile
     localeDir = params.localeDir
     localeFramework = params.framework
-    key = params.key
   else
     localeFile = params
   end
@@ -959,7 +958,7 @@ function localizedString(str, bundleID, params)
     appLocale = locales[1]
   end
   local localeDetails = hs.host.locale.details(appLocale)
-  if localeDetails.languageCode == 'en' and key ~= true then
+  if localeDetails.languageCode == 'en' then
     return str
   end
 
