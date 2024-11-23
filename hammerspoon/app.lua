@@ -2001,7 +2001,8 @@ appHotKeyCallbacks = {
     ["preferences"] = {
       message = localizedMessage("Preferences"),
       fn = function(appObject)
-        selectMenuItem(appObject, { appObject:name(), "Preferences" })
+        local thisSpec = appHotKeyCallbacks[appObject:bundleID()]["preferences"]
+        appObject:selectMenuItem({ appObject:name(), thisSpec.message(appObject) })
       end
     }
   },
