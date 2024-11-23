@@ -338,7 +338,9 @@ local function getResourceDir(bundleID, frameworkName)
         "find '%s' -type d -name '%s' | head -n 1 | tr -d '\\n'", appContentPath, frameworkName))
     if frameworkName:sub(-10) == ".framework" then
       resourceDir = frameworkDir .. "/Resources"
-    elseif frameworkName:sub(-4) == ".app" or frameworkName:sub(-7) == ".bundle" then
+    elseif frameworkName:sub(-4) == ".app"
+      or frameworkName:sub(-7) == ".bundle"
+      or frameworkName:sub(-4) == ".xpc" then
       resourceDir = frameworkDir .. "/Contents/Resources"
     end
     framework.user = true
