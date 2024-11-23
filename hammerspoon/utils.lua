@@ -832,7 +832,7 @@ local function localizeByStrings(str, localeDir, localeFile, localesDict, locale
   if result ~= nil then return result end
 end
 
-local function localizeByNiB(str, localeDir, localeFile, bundleID)
+local function localizeByNIB(str, localeDir, localeFile, bundleID)
   local resourceDir = localeDir .. '/..'
   local locale = localeDir:match("^.*/(.*)%.lproj$")
   local enLocaleDir = baseLocaleDirs(resourceDir)[1]
@@ -1165,7 +1165,7 @@ function localizedString(str, bundleID, params)
                              appLocaleAssetBufferInverse[bundleID])
   if result ~= nil then goto L_END_LOCALIZED end
 
-  result = localizeByNiB(str, localeDir, localeFile, bundleID)
+  result = localizeByNIB(str, localeDir, localeFile, bundleID)
   if result ~= nil then goto L_END_LOCALIZED end
 
   if framework.user then
