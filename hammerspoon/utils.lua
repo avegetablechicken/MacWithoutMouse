@@ -773,6 +773,14 @@ local function localizeByStrings(str, localeDir, localeFile, localesDict, locale
   if result ~= nil then return result end
 end
 
+local function isBinarayPlist(file)
+  local f = io.open(file, "rb")
+  if f == nil then return false end
+  local firstByte = f:read(1)
+  f:close()
+  return firstByte == "b"
+end
+
 local function localizeByNiB(str, localeDir, localeFile, bundleID)
   local resourceDir = localeDir .. '/..'
   local locale = localeDir:match("^.*/(.*)%.lproj$")
@@ -787,6 +795,22 @@ local function localizeByNiB(str, localeDir, localeFile, bundleID)
     end
     if hs.fs.attributes(NIBPath, 'mode') == 'directory' then
       NIBPath = NIBPath .. '/keyedobjects.nib'
+    end
+
+    if isBinarayPlist(NIBPath) and isBinarayPlist(enNIBPath) then
+      local xmlPath = localeTmpDir .. bundleID .. '-' .. locale .. '-' .. file .. '.xml'
+      local _, status = hs.execute(string.format(
+          "plutil -convert xml1 '%s' -o '%s'", NIBPath, xmlPath))
+      if not status then return end
+      local enXmlPath = localeTmpDir .. bundleID .. '-' .. enLocale .. '-' .. file .. '.xml'
+      _, status = hs.execute(string.format(
+          "plutil -convert xml1 '%s' -o '%s'", enNIBPath, enXmlPath))
+      if not status then return end
+      local pattern = '<string>' .. str .. '</string>[[:space:]]*\\|[[:space:]]*<string>(.*?)</string>'
+      local result = hs.execute(string.format(
+          "diff -y '%s' '%s' | grep -E '%s' | awk -F'<string>|</string>' '{print $4}' | tr -d '\\n'",
+          enXmlPath, xmlPath, pattern))
+      return result ~= "" and result or nil
     end
 
     local enJsonPath = localeTmpDir .. bundleID .. '-' .. enLocale .. '-' .. file .. '.json'
@@ -1252,6 +1276,22 @@ local function delocalizeByNIB(str, localeDir, localeFile, bundleID)
     end
     if hs.fs.attributes(enNIBPath, 'mode') == 'directory' then
       enNIBPath = enNIBPath .. '/keyedobjects.nib'
+    end
+
+    if isBinarayPlist(NIBPath) and isBinarayPlist(enNIBPath) then
+      local xmlPath = localeTmpDir .. bundleID .. '-' .. locale .. '-' .. file .. '.xml'
+      local _, status = hs.execute(string.format(
+          "plutil -convert xml1 '%s' -o '%s'", NIBPath, xmlPath))
+      if not status then return end
+      local enXmlPath = localeTmpDir .. bundleID .. '-' .. enLocale .. '-' .. file .. '.xml'
+      _, status = hs.execute(string.format(
+          "plutil -convert xml1 '%s' -o '%s'", enNIBPath, enXmlPath))
+      if not status then return end
+      local pattern = '<string>' .. str .. '</string>[[:space:]]*\\|[[:space:]]*<string>(.*?)</string>'
+      local result = hs.execute(string.format(
+          "diff -y '%s' '%s' | grep -E '%s' | awk -F'<string>|</string>' '{print $4}' | tr -d '\\n'",
+          xmlPath, enXmlPath, pattern))
+      return result ~= "" and result or nil
     end
 
     local jsonPath = localeTmpDir .. bundleID .. '-' .. locale .. '-' .. file .. '.json'
