@@ -785,6 +785,9 @@ local function localizeByNiB(str, localeDir, localeFile, bundleID)
     if hs.fs.attributes(enNIBPath, 'mode') == 'directory' then
       enNIBPath = enNIBPath .. '/keyedobjects.nib'
     end
+    if hs.fs.attributes(NIBPath, 'mode') == 'directory' then
+      NIBPath = NIBPath .. '/keyedobjects.nib'
+    end
 
     local enJsonPath = localeTmpDir .. bundleID .. '-' .. enLocale .. '-' .. file .. '.json'
     if hs.fs.attributes(enJsonPath) == nil then
@@ -1246,6 +1249,9 @@ local function delocalizeByNIB(str, localeDir, localeFile, bundleID)
     if hs.fs.attributes(NIBPath) == nil or hs.fs.attributes(enNIBPath) == nil then return end
     if hs.fs.attributes(NIBPath, 'mode') == 'directory' then
       NIBPath = NIBPath .. '/keyedobjects.nib'
+    end
+    if hs.fs.attributes(enNIBPath, 'mode') == 'directory' then
+      enNIBPath = enNIBPath .. '/keyedobjects.nib'
     end
 
     local jsonPath = localeTmpDir .. bundleID .. '-' .. locale .. '-' .. file .. '.json'
