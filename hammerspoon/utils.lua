@@ -591,16 +591,33 @@ local function parseNibFile(file, keepOrder, keepAll)
   return localesDict
 end
 
-local possibleEnglishLocales = {
-  "Base", "en", "English", "en_US", "en_GB"
+local baseLocales = {
+  "Base", "en", "English"
 }
-local function possibleEnglishLocaleDirs(resourceDir, locales)
+local function baseLocaleDirs(resourceDir)
   local dirs = {}
-  for _, locale in ipairs(locales or possibleEnglishLocales) do
+  for _, locale in ipairs(baseLocales) do
     local localeDir = resourceDir .. '/' .. locale .. '.lproj'
     if hs.fs.attributes(localeDir) ~= nil then
       table.insert(dirs, localeDir)
     end
+  end
+  return dirs
+end
+
+local extraEnglishLocales = {
+  "en_US", "en_GB"
+}
+local function prependExtraEnglishLocaleDirs(resourceDir, baseDirs)
+  local dirs = {}
+  for _, locale in ipairs(extraEnglishLocales) do
+    local localeDir = resourceDir .. '/' .. locale .. '.lproj'
+    if hs.fs.attributes(localeDir) ~= nil then
+      table.insert(dirs, localeDir)
+    end
+  end
+  for _, dir in ipairs(baseDirs) do
+    table.insert(dirs, dir)
   end
   return dirs
 end
@@ -674,23 +691,26 @@ local function localizeByStrings(str, localeDir, localeFile, localesDict, locale
     if result ~= nil then return result end
   end
 
-  local enLocaleDirs = possibleEnglishLocaleDirs(resourceDir)
+  local enLocaleDirs = baseLocaleDirs(resourceDir)
   local invSearchFunc = function(str, files)
     if type(files) == 'string' then files = { files } end
-    for _, enLocaleDir in ipairs(enLocaleDirs) do
+    local dirs = prependExtraEnglishLocaleDirs(resourceDir, enLocaleDirs)
+    for _, enLocaleDir in ipairs(dirs) do
       for _, fileStem in ipairs(files) do
         local invDict = localesInvDict[fileStem]
         if invDict == nil then
           if hs.fs.attributes(enLocaleDir .. '/' .. fileStem .. '.strings') ~= nil then
             invDict = parseStringsFile(enLocaleDir .. '/' .. fileStem .. '.strings', false, true)
-          elseif hs.fs.attributes(enLocaleDir .. '/' .. fileStem .. '.nib') ~= nil
+          elseif str:len() > 2
+              and hs.fs.attributes(enLocaleDir .. '/' .. fileStem .. '.nib') ~= nil
               and hs.fs.attributes(localeDir .. '/' .. fileStem .. '.strings') ~= nil then
             local fullPath = enLocaleDir .. '/' .. fileStem .. '.nib'
             if hs.fs.attributes(fullPath, 'mode') == 'directory' then
               fullPath = fullPath .. '/keyedobjects.nib'
             end
             invDict = parseNibFile(fullPath, false, true)
-          elseif hs.fs.attributes(enLocaleDir .. '/' .. fileStem .. '.storyboardc') ~= nil
+          elseif str:len() > 2
+              and hs.fs.attributes(enLocaleDir .. '/' .. fileStem .. '.storyboardc') ~= nil
               and hs.fs.attributes(localeDir .. '/' .. fileStem .. '.strings') ~= nil then
             invDict = parseNibFile(enLocaleDir .. '/' .. fileStem .. '.storyboardc', false, true)
           end
@@ -736,7 +756,7 @@ end
 local function localizeByNiB(str, localeDir, localeFile, bundleID)
   local resourceDir = localeDir .. '/..'
   local locale = localeDir:match("^.*/(.*)%.lproj$")
-  local enLocaleDir = possibleEnglishLocaleDirs(resourceDir)[1]
+  local enLocaleDir = baseLocaleDirs(resourceDir)[1]
   local enLocale = enLocaleDir:match("^.*/(.*)%.lproj$")
   local compareNIBs = function(file)
     local NIBPath = localeDir .. '/' .. file .. '.nib'
@@ -1140,19 +1160,20 @@ end
 
 local function delocalizeByStrings(str, localeDir, localeFile, deLocalesInvDict)
   local resourceDir = localeDir .. '/..'
-  local enLocaleDirs = possibleEnglishLocaleDirs(resourceDir)
-  local searchFunc = function(str, file)
-    for _, enLocaleDir in ipairs(enLocaleDirs) do
+  local enLocaleDirs = baseLocaleDirs(resourceDir)
+  local searchFunc = function(str, file, onlyStrings)
+    local dirs = prependExtraEnglishLocaleDirs(resourceDir, enLocaleDirs)
+    for _, enLocaleDir in ipairs(dirs) do
       local jsonDict
       if hs.fs.attributes(enLocaleDir .. '/' .. file .. '.strings') ~= nil then
         jsonDict = parseStringsFile(enLocaleDir .. '/' .. file .. '.strings')
-      elseif hs.fs.attributes(enLocaleDir .. '/' .. file .. '.nib') ~= nil then
+      elseif not onlyStrings and hs.fs.attributes(enLocaleDir .. '/' .. file .. '.nib') ~= nil then
         local fullPath = enLocaleDir .. '/' .. file .. '.nib'
         if hs.fs.attributes(fullPath, 'mode') == 'directory' then
           fullPath = fullPath .. '/keyedobjects.nib'
         end
         jsonDict = parseNibFile(fullPath)
-      elseif hs.fs.attributes(enLocaleDir .. '/' .. file .. '.storyboardc') ~= nil then
+      elseif not onlyStrings and hs.fs.attributes(enLocaleDir .. '/' .. file .. '.storyboardc') ~= nil then
         jsonDict = parseNibFile(enLocaleDir .. '/' .. file .. '.storyboardc')
       end
       if jsonDict ~= nil and jsonDict[str] ~= nil then
@@ -1174,7 +1195,7 @@ local function delocalizeByStrings(str, localeDir, localeFile, deLocalesInvDict)
         local keys = invDict[str]
         if type(keys) == 'string' then keys = { keys } end
         for _, key in ipairs(keys) do
-          local result = searchFunc(key, fileStem)
+          local result = searchFunc(key, fileStem, str:len() < 3)
           if result ~= nil then
             deLocalesInvDict[fileStem] = invDict
             return result
