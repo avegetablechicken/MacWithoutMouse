@@ -738,6 +738,11 @@ local function localizeByStrings(str, localeDir, localeFile, localesDict, locale
     if result ~= nil then return result end
   else
     enStringsFiles = collectStringsFiles(enLocaleDirs[1])
+    for i=2, #enLocaleDirs do
+      if hs.fs.attributes(enLocaleDirs[i] .. '/Localizable.strings') ~= nil then
+        table.insert(enStringsFiles, 'Localizable')
+      end
+    end
     local enPreferentialStringsFiles = {}
     if #enStringsFiles > 10 then
       enStringsFiles, enPreferentialStringsFiles = filterPreferentialStringsFiles(enStringsFiles)
