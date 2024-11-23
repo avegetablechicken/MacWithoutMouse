@@ -981,10 +981,6 @@
       "insertEquation": {
         "mods": ["shift", "command"],
         "key": "E"
-      },
-      "openRecent": {
-        "mods": "control",
-        "key": "R"
       }
     },
     "JabRef": {

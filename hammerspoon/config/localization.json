@@ -5,6 +5,9 @@
     "com.charliemonroe.Permute-3": "XUCore.framework"
   },
 
+  "com.apple.MobileSMS": {
+    "删除对话…": "Delete Conversation…"
+  },
   "com.apple.Safari": {
     "开发": "Develop"
   },
@@ -17,7 +20,11 @@
   "net.xmind.vana.app": {
     "插入": "Insert",
     "工具": "Tools",
-    "查看": "View"
+    "查看": "View",
+
+    "导出": "Export",
+    "方程": "Equation",
+    "最近打开": "Open Recent"
   },
 
   "com.baidu.BaiduNetdisk-mac": {

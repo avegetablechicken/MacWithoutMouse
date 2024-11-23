@@ -1001,14 +1001,6 @@ local function safeGlobalKeyStroke(mods, key)
   end
 end
 
--- workaround for apps that is hard to fetch localized strings
--- require locales of them to be set to English or Chinese
-local function ENOrZHSim(appObject)
-  local appLocale = applicationLocales(appObject:bundleID())[1]
-  return appLocale:match("^en[^%a]") ~= nil
-      or (appLocale:match("^zh[^%a]") ~= nil and (appLocale:find("Hans") ~= nil or appLocale:find("CN") ~= nil))
-end
-
 
 -- ## hotkey configs for apps
 
@@ -1158,16 +1150,11 @@ appHotKeyCallbacks = {
   ["com.apple.MobileSMS"] =
   {
     ["deleteConversation"] = {
-      message = function(appObject)
-        local appLocale = applicationLocales(appObject:bundleID())[1]
-        return appLocale:sub(1, 2) == "en" and "Delete Conversation…" or "删除对话…"
-      end,
-      bindCondition = ENOrZHSim,
-      condition = function(appObject)
-        local menuBarItemTitle = getOSVersion() < OS.Ventura and "File" or "Conversations"
-        local thisSpec = appHotKeyCallbacks[appObject:bundleID()]["deleteConversation"]
-        return checkMenuItem({ menuBarItemTitle, thisSpec.message(appObject) })(appObject)
-      end,
+      message = localizedMessage("Delete Conversation…"),
+      condition = checkMenuItem({
+        getOSVersion() < OS.Ventura and "File" or "Conversations",
+        "Delete Conversation…",
+      }),
       fn = function(menuItemTitle, appObject) deleteSelectedMessage(appObject, menuItemTitle) end
     },
     ["deleteAllConversations"] = {
@@ -1644,46 +1631,14 @@ appHotKeyCallbacks = {
   ["net.xmind.vana.app"] =
   {
     ["exportToPDF"] = {
-      message = function(appObject)
-        local appLocale = applicationLocales(appObject:bundleID())[1]
-        return (appLocale:sub(1, 2) == "en" and "Export" or "导出") .. ' > PDF'
-      end,
-      bindCondition = ENOrZHSim,
-      condition = function(appObject)
-        local appLocale = applicationLocales(appObject:bundleID())[1]
-        return checkMenuItem({ "File", appLocale:sub(1, 2) == "en" and "Export" or "导出", "PDF" })(appObject)
-      end,
+      message = localizedMessage({ "Export", "PDF" }),
+      condition = checkMenuItem({ "File", "Export", "PDF" }),
       fn = receiveMenuItem
     },
     ["insertEquation"] = {
-      message = function(appObject)
-        local appLocale = applicationLocales(appObject:bundleID())[1]
-        return localizedMessage({ 'Insert', appLocale:sub(1, 2) == "en" and "Equation" or "方程" })(appObject)
-      end,
-      bindCondition = ENOrZHSim,
-      condition = function(appObject)
-        local appLocale = applicationLocales(appObject:bundleID())[1]
-        return checkMenuItem({ 'Insert', appLocale:sub(1, 2) == "en" and "Equation" or "方程" })(appObject)
-      end,
+      message = localizedMessage({ "Insert", "Equation" }),
+      condition = checkMenuItem({ 'Insert', "Equation" }),
       fn = receiveMenuItem
-    },
-    ["openRecent"] = {
-      message = function(appObject)
-        local appLocale = applicationLocales(appObject:bundleID())[1]
-        return appLocale:sub(1, 2) == "en" and "Open Recent" or "最近打开"
-      end,
-      bindCondition = function(appObject)
-        if not ENOrZHSim(appObject) then return false end
-        local thisSpec = appHotKeyCallbacks[appObject:bundleID()]["openRecent"]
-        return checkMenuItem({ "File", thisSpec.message(appObject) })(appObject)
-      end,
-      fn = function(appObject)
-        showMenuItemWrapper(function()
-          local thisSpec = appHotKeyCallbacks[appObject:bundleID()]["openRecent"]
-          selectMenuItem(appObject, { "File" })
-          selectMenuItem(appObject, { "File", thisSpec.message(appObject) })
-        end)()
-      end
     }
   },
 

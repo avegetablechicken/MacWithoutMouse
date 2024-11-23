@@ -1062,6 +1062,11 @@ function localizedString(str, bundleID, params)
   if result == false then return nil
   elseif result ~= nil then return result end
 
+  if localizationMap[bundleID] ~= nil then
+    result = hs.fnutils.indexOf(localizationMap[bundleID], str)
+    if result ~= nil then return result end
+  end
+
   if hs.application.pathForBundleID(bundleID) == nil
       or hs.application.pathForBundleID(bundleID) == "" then
     return nil
