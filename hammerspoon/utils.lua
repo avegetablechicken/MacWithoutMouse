@@ -321,12 +321,14 @@ local function getResourceDir(bundleID, frameworkName)
   local appContentPath = hs.application.pathForBundleID(bundleID) .. "/Contents"
   if hs.fs.attributes(appContentPath) == nil then
     resourceDir = hs.application.pathForBundleID(bundleID) .. "/WrappedBundle/.."
-  elseif frameworkName ~= nil and frameworkName:sub(-10) == ".framework" then
-    resourceDir = appContentPath .. "/Frameworks/" .. frameworkName .. "/Resources"
-  elseif bundleID == "com.tencent.meeting" then
-    resourceDir = appContentPath .. "/Frameworks/WeMeetFramework.framework/Versions/Current/Frameworks"
-        .. "/WeMeet.framework/Versions/A/Resources"
-        .. "/WeMeetResource.bundle/Contents/Resources"
+  elseif frameworkName ~= nil then
+    local frameworkDir = hs.execute(string.format(
+        "find '%s' -type d -name '%s' | head -n 1 | tr -d '\\n'", appContentPath, frameworkName))
+    if frameworkName:sub(-10) == ".framework" then
+      resourceDir = frameworkDir .. "/Resources"
+    elseif frameworkName:sub(-4) == ".app" or frameworkName:sub(-7) == ".bundle" then
+      resourceDir = frameworkDir .. "/Contents/Resources"
+    end
   else
     if hs.fs.attributes(appContentPath .. "/Frameworks") ~= nil then
       local chromiumDirs, status = hs.execute(string.format(
@@ -363,10 +365,10 @@ local function getResourceDir(bundleID, frameworkName)
         goto END_GET_RESOURCE_DIR
       end
     end
+  end
 
-    if resourceDir == nil then
-      resourceDir = appContentPath .. "/Resources"
-    end
+  if resourceDir == nil then
+    resourceDir = appContentPath .. "/Resources"
   end
 
   ::END_GET_RESOURCE_DIR::
