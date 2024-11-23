@@ -1,4 +1,10 @@
 {
+  "resources": {
+    "com.tencent.meeting": "WeMeetResource.bundle",
+    "com.charliemonroe.Downie-4": "XUCore.framework",
+    "com.charliemonroe.Permute-3": "XUCore.framework"
+  },
+
   "com.apple.Safari": {
     "开发": "Develop"
   },

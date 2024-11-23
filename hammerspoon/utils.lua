@@ -304,6 +304,15 @@ end
 
 local localeTmpDir = hs.fs.temporaryDirectory() .. 'org.hammerspoon.Hammerspoon/locale/'
 
+local localizationMap, localizationFrameworks = {}, {}
+local localizationMapLoaded = {}
+if hs.fs.attributes("config/localization.json") ~= nil then
+  localizationMapLoaded = hs.json.read("config/localization.json")
+  localizationMap = hs.fnutils.copy(localizationMapLoaded)
+  localizationFrameworks = localizationMap['resources']
+  localizationMap['resources'] = nil
+end
+
 function systemLocales()
   local locales, ok = hs.execute("defaults read -globalDomain AppleLanguages | tr -d '()\" \\n'")
   return hs.fnutils.split(locales, ',')
@@ -316,6 +325,9 @@ function applicationLocales(bundleID)
 end
 
 local function getResourceDir(bundleID, frameworkName)
+  if frameworkName == nil then
+    frameworkName = localizationFrameworks[bundleID]
+  end
   local resourceDir
   local framework = {}
   local appContentPath = hs.application.pathForBundleID(bundleID) .. "/Contents"
@@ -947,8 +959,6 @@ if hs.fs.attributes(localeTmpFile) ~= nil then
   appLocaleMap = json.map
 end
 
-local localizationMap = {}
-
 function localizedString(str, bundleID, params)
   local appLocale, localeFile, localeDir, localeFramework
   if type(params) == "table" then
@@ -1523,11 +1533,6 @@ function delocalizedString(str, bundleID, params)
   result = delocalizeByStrings(str, localeDir, localeFile, deLocaleInversedMap[bundleID])
   if result ~= nil then goto L_END_DELOCALIZED end
 
-  if bundleID:match("^com%.charliemonroe%..*$") and localeFramework == nil then
-    result = delocalizedString(str, bundleID, { framework = "XUCore.framework" })
-    if result ~= nil then return result end
-  end
-
   result = delocalizeByNIB(str, localeDir, localeFile, bundleID)
   if result ~= nil then goto L_END_DELOCALIZED end
 
@@ -1562,6 +1567,21 @@ function delocalizedString(str, bundleID, params)
     deLocaleMap[bundleID][appLocale][str] = false
   end
   return result
+end
+
+localizationMap.common = {}
+local systemLocale = systemLocales()[1]
+for _, title in ipairs { 'File', 'Edit', 'Format', 'View', 'Window', 'Help' } do
+  local localizedTitle = localizedString(title, "com.apple.Notes",
+                                         { locale = systemLocale })
+  if localizedTitle ~= nil then
+    localizationMap.common[localizedTitle] = title
+  end
+end
+local localizedTitle = localizedString('View', "com.apple.finder",
+                                       { locale = systemLocale })
+if localizedTitle ~= nil then
+  localizationMap.common[localizedTitle] = 'View'
 end
 
 function delocalizedMenuBarItem(title, bundleID, params)
@@ -1641,27 +1661,6 @@ function delocalizeMenuBarItems(itemTitles, bundleID, localeFile)
                   menuItemTmpFile, false, true)
   end
   return result
-end
-
-local localizationMapLoaded = {}
-localizationMap = {}
-if hs.fs.attributes("config/localization.json") ~= nil then
-  localizationMapLoaded = hs.json.read("config/localization.json")
-  localizationMap = hs.fnutils.copy(localizationMapLoaded)
-end
-localizationMap.common = {}
-local systemLocale = systemLocales()[1]
-for _, title in ipairs{ 'File', 'Edit', 'Format', 'View', 'Window', 'Help' } do
-  local localizedTitle = localizedString(title, "com.apple.Notes",
-                                          { locale = systemLocale })
-  if localizedTitle ~= nil then
-    localizationMap.common[localizedTitle] = title
-  end
-end
-local localizedTitle = localizedString('View', "com.apple.finder",
-                                      { locale = systemLocale })
-if localizedTitle ~= nil then
-  localizationMap.common[localizedTitle] = 'View'
 end
 
 function localizedMenuBarItem(title, bundleID, params)
