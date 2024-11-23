@@ -341,6 +341,7 @@ local function getResourceDir(bundleID, frameworkName)
     elseif frameworkName:sub(-4) == ".app" or frameworkName:sub(-7) == ".bundle" then
       resourceDir = frameworkDir .. "/Contents/Resources"
     end
+    framework.user = true
   else
     if hs.fs.attributes(appContentPath .. "/Frameworks") ~= nil then
       local chromiumDirs, status = hs.execute(string.format(
@@ -1068,11 +1069,13 @@ function localizedString(str, bundleID, params)
     if result ~= nil or not setDefaultLocale() then goto L_END_LOCALIZED end
   end
 
+  ::L_LOCALIZED_DEFAULT::
   result = localizeByLoctable(str, resourceDir, localeFile, locale, localesDict)
   if result ~= nil then goto L_END_LOCALIZED end
 
   if appLocaleAssetBufferInverse[bundleID] == nil
-      or get(appLocaleDir, bundleID, appLocale) ~= locale then
+      or get(appLocaleDir, bundleID, appLocale) ~= locale
+      or framework.user then
     appLocaleAssetBufferInverse[bundleID] = {}
   end
   result = localizeByStrings(str, localeDir, localeFile, localesDict,
@@ -1081,6 +1084,13 @@ function localizedString(str, bundleID, params)
 
   result = localizeByNiB(str, localeDir, localeFile, bundleID)
   if result ~= nil then goto L_END_LOCALIZED end
+
+  if framework.user then
+    framework.user = nil
+    if setDefaultLocale() then
+      goto L_LOCALIZED_DEFAULT
+    end
+  end
 
   if string.sub(str, -3) == "..." or string.sub(str, -3) == "…" then
     result = localizedString(string.sub(str, 1, -4), bundleID, params)
@@ -1524,10 +1534,13 @@ function delocalizedString(str, bundleID, params)
     end
   end
 
+  ::L_DELOCALIZED_DEFAULT::
   result = delocalizeByLoctable(str, resourceDir, localeFile, locale)
   if result ~= nil then goto L_END_DELOCALIZED end
 
-  if deLocaleInversedMap[bundleID] == nil or get(deLocaleDir, bundleID, appLocale) ~= locale then
+  if deLocaleInversedMap[bundleID] == nil
+      or get(deLocaleDir, bundleID, appLocale) ~= locale
+      or framework.user then
     deLocaleInversedMap[bundleID] = {}
   end
   result = delocalizeByStrings(str, localeDir, localeFile, deLocaleInversedMap[bundleID])
@@ -1535,6 +1548,13 @@ function delocalizedString(str, bundleID, params)
 
   result = delocalizeByNIB(str, localeDir, localeFile, bundleID)
   if result ~= nil then goto L_END_DELOCALIZED end
+
+  if framework.user then
+    framework.user = nil
+    if setDefaultLocale() then
+      goto L_DELOCALIZED_DEFAULT
+    end
+  end
 
   if string.sub(str, -3) == "..." or string.sub(str, -3) == "…" then
     result = delocalizedString(string.sub(str, 1, -4), bundleID, params)
