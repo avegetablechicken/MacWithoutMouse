@@ -1035,7 +1035,16 @@ local localeTmpFile = localeTmpDir .. 'strings.json'
 if hs.fs.attributes(localeTmpFile) ~= nil then
   local json = hs.json.read(localeTmpFile)
   appLocaleDir = json.locale
+  for bundleID, locale in pairs(appLocaleDir) do
+    appLocaleDir[bundleID] = hs.fnutils.copy(locale)
+  end
   appLocaleMap = json.map
+  for bundleID, map in pairs(appLocaleMap) do
+    appLocaleMap[bundleID] = hs.fnutils.copy(map)
+    for k, v in pairs(appLocaleMap[bundleID]) do
+      appLocaleMap[bundleID][k] = hs.fnutils.copy(v)
+    end
+  end
 end
 
 function localizedString(str, bundleID, params)
@@ -1535,7 +1544,16 @@ local menuItemTmpFile = localeTmpDir .. 'menuitems.json'
 if hs.fs.attributes(menuItemTmpFile) ~= nil then
   local json = hs.json.read(menuItemTmpFile)
   deLocaleDir = json.locale
+  for bundleID, locale in pairs(deLocaleDir) do
+    deLocaleDir[bundleID] = hs.fnutils.copy(locale)
+  end
   deLocaleMap = json.map
+  for bundleID, map in pairs(deLocaleMap) do
+    deLocaleMap[bundleID] = hs.fnutils.copy(map)
+    for k, v in pairs(deLocaleMap[bundleID]) do
+      deLocaleMap[bundleID][k] = hs.fnutils.copy(v)
+    end
+  end
 end
 function delocalizedString(str, bundleID, params)
   local appLocale, localeFile, localeFramework
