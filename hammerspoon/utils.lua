@@ -776,7 +776,12 @@ local function localizeByStrings(str, localeDir, localeFile, localesDict, locale
               and hs.fs.attributes(localeDir .. '/' .. fileStem .. '.strings') ~= nil then
             local fullPath = enLocaleDir .. '/' .. fileStem .. '.nib'
             if hs.fs.attributes(fullPath, 'mode') == 'directory' then
-              fullPath = fullPath .. '/keyedobjects.nib'
+              if hs.fs.attributes(fullPath .. '/keyedobjects.nib') ~= nil then
+                fullPath = fullPath .. '/keyedobjects.nib'
+              else
+                fullPath = hs.execute([[ls '%s'/keyedobjects* | tail -n 1 | tr -d '\n']], fullPath)
+                if fullPath == "" then return end
+              end
             end
             if isBinarayPlist(fullPath) then
               invDict = parseBinaryPlistFile(fullPath, false, true)
@@ -842,10 +847,20 @@ local function localizeByNIB(str, localeDir, localeFile, bundleID)
     local enNIBPath = enLocaleDir .. '/' .. file .. '.nib'
     if hs.fs.attributes(NIBPath) == nil or hs.fs.attributes(enNIBPath) == nil then return end
     if hs.fs.attributes(enNIBPath, 'mode') == 'directory' then
-      enNIBPath = enNIBPath .. '/keyedobjects.nib'
+      if hs.fs.attributes(enNIBPath .. '/keyedobjects.nib') ~= nil then
+        enNIBPath = enNIBPath .. '/keyedobjects.nib'
+      else
+        enNIBPath = hs.execute([[ls '%s'/keyedobjects* | tail -n 1 | tr -d '\n']], enNIBPath)
+        if enNIBPath == "" then return end
+      end
     end
     if hs.fs.attributes(NIBPath, 'mode') == 'directory' then
-      NIBPath = NIBPath .. '/keyedobjects.nib'
+      if hs.fs.attributes(NIBPath .. '/keyedobjects.nib') ~= nil then
+        NIBPath = NIBPath .. '/keyedobjects.nib'
+      else
+        NIBPath = hs.execute([[ls '%s'/keyedobjects* | tail -n 1 | tr -d '\n']], NIBPath)
+        if NIBPath == "" then return end
+      end
     end
 
     if isBinarayPlist(NIBPath) and isBinarayPlist(enNIBPath) then
@@ -1272,7 +1287,12 @@ local function delocalizeByStrings(str, localeDir, localeFile, deLocalesInvDict)
       elseif hs.fs.attributes(enLocaleDir .. '/' .. file .. '.nib') ~= nil then
         local fullPath = enLocaleDir .. '/' .. file .. '.nib'
         if hs.fs.attributes(fullPath, 'mode') == 'directory' then
-          fullPath = fullPath .. '/keyedobjects.nib'
+          if hs.fs.attributes(fullPath .. '/keyedobjects.nib') ~= nil then
+            fullPath = fullPath .. '/keyedobjects.nib'
+          else
+            fullPath = hs.execute([[ls '%s'/keyedobjects* | tail -n 1 | tr -d '\n']], fullPath)
+            if fullPath == "" then return end
+          end
         end
         if isBinarayPlist(fullPath) then
           invDict = parseBinaryPlistFile(fullPath)
@@ -1340,10 +1360,20 @@ local function delocalizeByNIB(str, localeDir, localeFile, bundleID)
     local enNIBPath = enLocaleDir .. '/' .. file .. '.nib'
     if hs.fs.attributes(NIBPath) == nil or hs.fs.attributes(enNIBPath) == nil then return end
     if hs.fs.attributes(NIBPath, 'mode') == 'directory' then
-      NIBPath = NIBPath .. '/keyedobjects.nib'
+      if hs.fs.attributes(NIBPath .. '/keyedobjects.nib') ~= nil then
+        NIBPath = NIBPath .. '/keyedobjects.nib'
+      else
+        NIBPath = hs.execute([[ls '%s'/keyedobjects* | tail -n 1 | tr -d '\n']], NIBPath)
+        if NIBPath == "" then return end
+      end
     end
     if hs.fs.attributes(enNIBPath, 'mode') == 'directory' then
-      enNIBPath = enNIBPath .. '/keyedobjects.nib'
+      if hs.fs.attributes(enNIBPath .. '/keyedobjects.nib') ~= nil then
+        enNIBPath = enNIBPath .. '/keyedobjects.nib'
+      else
+        enNIBPath = hs.execute([[ls '%s'/keyedobjects* | tail -n 1 | tr -d '\n']], enNIBPath)
+        if enNIBPath == "" then return end
+      end
     end
 
     if isBinarayPlist(NIBPath) and isBinarayPlist(enNIBPath) then
