@@ -876,54 +876,23 @@ local function localizeByNIB(str, localeDir, localeFile, bundleID)
     local enJsonPath = enJsonDir .. '/' .. file .. '.json'
     if hs.fs.attributes(enJsonPath) == nil then
       hs.execute(string.format("mkdir -p '%s'", enJsonDir))
-      hs.execute(string.format("/usr/bin/python3 scripts/nib_parse.py dump-json '%s' -o '%s'",
-                 enNIBPath, enJsonPath))
-    end
-    if hs.fs.attributes(enJsonPath) == nil then return end
-
-    local enValues = hs.json.read(enJsonPath)
-    local values_index, key_index
-    for i, value in ipairs(enValues) do
-      if value['type'] == 8 and value['data'] == str then
-        values_index = i
-        key_index = value['key_index']
-        break
-      end
-    end
-    if values_index == nil then return end
-
-    if hs.fs.attributes(NIBPath, 'mode') == 'directory' then
-      NIBPath = NIBPath .. '/keyedobjects.nib'
+      local _, status = hs.execute(string.format("/usr/bin/python3 scripts/nib_parse.py dump-json '%s' -o '%s'",
+                                   enNIBPath, enJsonPath))
+      if not status then return end
     end
     local jsonDir = localeTmpDir .. bundleID .. '/' .. locale
     local jsonPath = jsonDir .. '/' .. file .. '.json'
     if hs.fs.attributes(jsonPath) == nil then
       hs.execute(string.format("mkdir -p '%s'", jsonDir))
-      hs.execute(string.format("/usr/bin/python3 scripts/nib_parse.py dump-json '%s' -o '%s'",
-                  NIBPath, jsonPath))
+      local _, status = hs.execute(string.format("/usr/bin/python3 scripts/nib_parse.py dump-json '%s' -o '%s'",
+                                   NIBPath, jsonPath))
+      if not status then return end
     end
-    if hs.fs.attributes(jsonPath) == nil then return end
-
-    local values = hs.json.read(jsonPath)
-    local candidate
-    local i, min_i, max_i = values_index, math.max(1, values_index - 5), math.min(#values, values_index + 5)
-    while i >= min_i do
-      local value = values[i]
-      if value['type'] == 8 and value['key_index'] == key_index then
-        candidate = value['data']
-      elseif candidate ~= nil then
-        return candidate
-      end
-      i = i - 1
-    end
-    i = values_index + 1
-    while i <= max_i do
-      local value = values[i]
-      if value['type'] == 8 and value['key_index'] == key_index then
-        return value['data']
-      end
-      i = i + 1
-    end
+    local pattern = '"data": "' .. str .. '"[[:space:]]*\\|[[:space:]]*"data": "(.*?)"'
+    local result = hs.execute(string.format(
+        [[diff -y '%s' '%s' | grep -E '%s' | awk -F': ' '{print $3}'| sed 's/^"//;s/"$//' | tr -d '\n']],
+        enJsonPath, jsonPath, pattern))
+    return result ~= "" and result or nil
   end
 
   if localeFile ~= nil then
@@ -1391,51 +1360,24 @@ local function delocalizeByNIB(str, localeDir, localeFile, bundleID)
     local jsonPath = jsonDir .. '/' .. file .. '.json'
     if hs.fs.attributes(jsonPath) == nil then
       hs.execute(string.format("mkdir -p '%s'", jsonDir))
-      hs.execute(string.format("/usr/bin/python3 scripts/nib_parse.py dump-json '%s' -o '%s'",
-                 NIBPath, jsonPath))
+      local _, status = hs.execute(string.format("/usr/bin/python3 scripts/nib_parse.py dump-json '%s' -o '%s'",
+                                   NIBPath, jsonPath))
+      if not status then return end
     end
-    if hs.fs.attributes(jsonPath) == nil then return end
-
-    local values = hs.json.read(jsonPath)
-    local values_index, key_index
-    for i, value in ipairs(values) do
-      if value['type'] == 8 and value['data'] == str then
-        values_index = i
-        key_index = value['key_index']
-        break
-      end
-    end
-    if values_index == nil then return end
-
     local enJsonDir = localeTmpDir .. bundleID .. '/' .. enLocale
     local enJsonPath = enJsonDir .. '/' .. file .. '.json'
       if hs.fs.attributes(enJsonPath) == nil then
       hs.execute(string.format("mkdir -p '%s'", enJsonDir))
-      hs.execute(string.format("/usr/bin/python3 scripts/nib_parse.py dump-json '%s' -o '%s'",
-        enLocaleDir .. '/' .. file .. '.nib', enJsonPath))
+      local _, status = hs.execute(string.format("/usr/bin/python3 scripts/nib_parse.py dump-json '%s' -o '%s'",
+                                   enLocaleDir .. '/' .. file .. '.nib', enJsonPath))
+      if not status then return end
     end
     if hs.fs.attributes(enJsonPath) == nil then return end
-
-    local enValues = hs.json.read(enJsonPath)
-    local candidate
-    local i, min_i, max_i = values_index, math.max(1, values_index - 5), math.min(#enValues, values_index + 5)
-    while i >= min_i do
-      local enValue = enValues[i]
-      if enValue['type'] == 8 and enValue['key_index'] == key_index then
-        candidate = enValue['data']
-      elseif candidate ~= nil then
-        return candidate
-      end
-      i = i - 1
-    end
-    i = values_index + 1
-    while i <= max_i do
-      local enValue = enValues[i]
-      if enValue['type'] == 8 and enValue['key_index'] == key_index then
-        return enValue['data']
-      end
-      i = i + 1
-    end
+    local pattern = '"data": "' .. str .. '"[[:space:]]*\\|[[:space:]]*"data": "(.*?)"'
+    local result = hs.execute(string.format(
+        [[diff -y '%s' '%s' | grep -E '%s' | awk -F': ' '{print $3}'| sed 's/^"//;s/"$//' | tr -d '\n']],
+        jsonPath, enJsonPath, pattern))
+    return result ~= "" and result or nil
   end
 
   if localeFile ~= nil then
