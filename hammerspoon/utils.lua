@@ -849,14 +849,22 @@ local function localizeByNIB(str, localeDir, localeFile, bundleID)
     end
 
     if isBinarayPlist(NIBPath) and isBinarayPlist(enNIBPath) then
-      local xmlPath = localeTmpDir .. bundleID .. '-' .. locale .. '-' .. file .. '.xml'
-      local _, status = hs.execute(string.format(
-          "plutil -convert xml1 '%s' -o '%s'", NIBPath, xmlPath))
-      if not status then return end
-      local enXmlPath = localeTmpDir .. bundleID .. '-' .. enLocale .. '-' .. file .. '.xml'
-      _, status = hs.execute(string.format(
-          "plutil -convert xml1 '%s' -o '%s'", enNIBPath, enXmlPath))
-      if not status then return end
+      local xmlDir = localeTmpDir .. bundleID .. '/' .. locale
+      local xmlPath = xmlDir .. '/' .. file .. '.xml'
+      if hs.fs.attributes(xmlPath) == nil then
+        hs.execute(string.format("mkdir -p '%s'", xmlDir))
+        local _, status = hs.execute(string.format(
+            "plutil -convert xml1 '%s' -o '%s'", NIBPath, xmlPath))
+        if not status then return end
+      end
+      local enXmlDir = localeTmpDir .. bundleID .. '/' .. enLocale
+      local enXmlPath = enXmlDir .. '/' .. file .. '.xml'
+      if hs.fs.attributes(enXmlPath) == nil then
+        hs.execute(string.format("mkdir -p '%s'", enXmlDir))
+        local _, status = hs.execute(string.format(
+            "plutil -convert xml1 '%s' -o '%s'", enNIBPath, enXmlPath))
+        if not status then return end
+      end
       local pattern = '<string>' .. str .. '</string>[[:space:]]*\\|[[:space:]]*<string>(.*?)</string>'
       local result = hs.execute(string.format(
           "diff -y '%s' '%s' | grep -E '%s' | awk -F'<string>|</string>' '{print $4}' | tr -d '\\n'",
@@ -864,8 +872,10 @@ local function localizeByNIB(str, localeDir, localeFile, bundleID)
       return result ~= "" and result or nil
     end
 
-    local enJsonPath = localeTmpDir .. bundleID .. '-' .. enLocale .. '-' .. file .. '.json'
+    local enJsonDir = localeTmpDir .. bundleID .. '/' .. enLocale
+    local enJsonPath = enJsonDir .. '/' .. file .. '.json'
     if hs.fs.attributes(enJsonPath) == nil then
+      hs.execute(string.format("mkdir -p '%s'", enJsonDir))
       hs.execute(string.format("/usr/bin/python3 scripts/nib_parse.py dump-json '%s' -o '%s'",
                  enNIBPath, enJsonPath))
     end
@@ -885,8 +895,10 @@ local function localizeByNIB(str, localeDir, localeFile, bundleID)
     if hs.fs.attributes(NIBPath, 'mode') == 'directory' then
       NIBPath = NIBPath .. '/keyedobjects.nib'
     end
-    local jsonPath = localeTmpDir .. bundleID .. '-' .. locale .. '-' .. file .. '.json'
+    local jsonDir = localeTmpDir .. bundleID .. '/' .. locale
+    local jsonPath = jsonDir .. '/' .. file .. '.json'
     if hs.fs.attributes(jsonPath) == nil then
+      hs.execute(string.format("mkdir -p '%s'", jsonDir))
       hs.execute(string.format("/usr/bin/python3 scripts/nib_parse.py dump-json '%s' -o '%s'",
                   NIBPath, jsonPath))
     end
@@ -991,8 +1003,10 @@ local function localizeByChromium(str, localeDir, localesDict, bundleID)
         if file:sub(-4) == ".pak" then
           local fullPath = resourceDir .. '/' .. enLocale .. '.lproj/' .. file
           local fileStem = file:sub(1, -5)
-          local enTmpdir = string.format(localeTmpDir .. '%s-%s-%s', bundleID, enLocale, fileStem)
+          local enTmpBaseDir = string.format(localeTmpDir .. '%s/%s', bundleID, enLocale)
+          local enTmpdir = enTmpBaseDir .. '/' .. fileStem
           if dirNotExistOrEmpty(enTmpdir) then
+            hs.execute(string.format("mkdir -p '%s'", enTmpBaseDir))
             hs.execute(string.format(
                 "scripts/pak -u '%s' '%s'", fullPath, enTmpdir))
           end
@@ -1000,8 +1014,10 @@ local function localizeByChromium(str, localeDir, localesDict, bundleID)
           if status and output ~= "" then
             if hs.fs.attributes(localeDir .. '/' .. file) then
               local matchFile = output:match("^.*/(.*)$")
-              local tmpdir = string.format(localeTmpDir .. '%s-%s-%s', bundleID, locale, fileStem)
+              local tmpBaseDir = string.format(localeTmpDir .. '%s/%s', bundleID, locale)
+              local tmpdir = tmpBaseDir .. '/' .. fileStem
               if dirNotExistOrEmpty(tmpdir) then
+                hs.execute(string.format("mkdir -p '%s'", tmpBaseDir))
                 hs.execute(string.format(
                     "scripts/pak -u '%s' '%s'", localeDir .. '/' .. file, tmpdir))
               end
@@ -1348,14 +1364,22 @@ local function delocalizeByNIB(str, localeDir, localeFile, bundleID)
     end
 
     if isBinarayPlist(NIBPath) and isBinarayPlist(enNIBPath) then
-      local xmlPath = localeTmpDir .. bundleID .. '-' .. locale .. '-' .. file .. '.xml'
-      local _, status = hs.execute(string.format(
-          "plutil -convert xml1 '%s' -o '%s'", NIBPath, xmlPath))
-      if not status then return end
-      local enXmlPath = localeTmpDir .. bundleID .. '-' .. enLocale .. '-' .. file .. '.xml'
-      _, status = hs.execute(string.format(
-          "plutil -convert xml1 '%s' -o '%s'", enNIBPath, enXmlPath))
-      if not status then return end
+      local xmlDir = localeTmpDir .. bundleID .. '/' .. locale
+      local xmlPath = xmlDir .. '/' .. file .. '.xml'
+      if hs.fs.attributes(xmlPath) == nil then
+        hs.execute(string.format("mkdir -p '%s'", xmlDir))
+        local _, status = hs.execute(string.format(
+            "plutil -convert xml1 '%s' -o '%s'", NIBPath, xmlPath))
+        if not status then return end
+      end
+      local enXmlDir = localeTmpDir .. bundleID .. '/' .. enLocale
+      local enXmlPath = enXmlDir .. '/' .. file .. '.xml'
+      if hs.fs.attributes(enXmlPath) == nil then
+        hs.execute(string.format("mkdir -p '%s'", enXmlDir))
+        local _, status = hs.execute(string.format(
+            "plutil -convert xml1 '%s' -o '%s'", enNIBPath, enXmlPath))
+        if not status then return end
+      end
       local pattern = '<string>' .. str .. '</string>[[:space:]]*\\|[[:space:]]*<string>(.*?)</string>'
       local result = hs.execute(string.format(
           "diff -y '%s' '%s' | grep -E '%s' | awk -F'<string>|</string>' '{print $4}' | tr -d '\\n'",
@@ -1363,8 +1387,10 @@ local function delocalizeByNIB(str, localeDir, localeFile, bundleID)
       return result ~= "" and result or nil
     end
 
-    local jsonPath = localeTmpDir .. bundleID .. '-' .. locale .. '-' .. file .. '.json'
+    local jsonDir = localeTmpDir .. bundleID .. '/' .. locale
+    local jsonPath = jsonDir .. '/' .. file .. '.json'
     if hs.fs.attributes(jsonPath) == nil then
+      hs.execute(string.format("mkdir -p '%s'", jsonDir))
       hs.execute(string.format("/usr/bin/python3 scripts/nib_parse.py dump-json '%s' -o '%s'",
                  NIBPath, jsonPath))
     end
@@ -1381,8 +1407,10 @@ local function delocalizeByNIB(str, localeDir, localeFile, bundleID)
     end
     if values_index == nil then return end
 
-    local enJsonPath = localeTmpDir .. bundleID .. '-' .. enLocale .. '-' .. file .. '.json'
-    if hs.fs.attributes(enJsonPath) == nil then
+    local enJsonDir = localeTmpDir .. bundleID .. '/' .. enLocale
+    local enJsonPath = enJsonDir .. '/' .. file .. '.json'
+      if hs.fs.attributes(enJsonPath) == nil then
+      hs.execute(string.format("mkdir -p '%s'", enJsonDir))
       hs.execute(string.format("/usr/bin/python3 scripts/nib_parse.py dump-json '%s' -o '%s'",
         enLocaleDir .. '/' .. file .. '.nib', enJsonPath))
     end
@@ -1466,8 +1494,10 @@ local function delocalizeByChromium(str, localeDir, bundleID)
   for file in hs.fs.dir(localeDir) do
     if file:sub(-4) == ".pak" then
       local fileStem = file:sub(1, -5)
-      local tmpdir = string.format(localeTmpDir .. '%s-%s-%s', bundleID, locale, fileStem)
+      local tmpBaseDir = string.format(localeTmpDir .. '%s/%s', bundleID, locale)
+      local tmpdir = tmpBaseDir .. '/' .. fileStem
       if dirNotExistOrEmpty(tmpdir) then
+        hs.execute(string.format("mkdir -p '%s'", tmpBaseDir))
         hs.execute(string.format(
           "scripts/pak  -u '%s' '%s'", localeDir .. '/' .. file, tmpdir))
       end
@@ -1479,8 +1509,10 @@ local function delocalizeByChromium(str, localeDir, bundleID)
         for _, enLocale in ipairs{"en", "English", "Base", "en_US", "en_GB"} do
           local fullPath = resourceDir .. '/' .. enLocale .. '.lproj/' .. file
           if hs.fs.attributes(fullPath) ~= nil then
-            local enTmpdir = string.format(localeTmpDir .. '%s-%s-%s', bundleID, enLocale, fileStem)
+            local enTmpBaseDir = string.format(localeTmpDir .. '%s/%s', bundleID, enLocale)
+            local enTmpdir = enTmpBaseDir .. '/' .. fileStem
             if dirNotExistOrEmpty(enTmpdir) then
+              hs.execute(string.format("mkdir -p '%s'", enTmpBaseDir))
               hs.execute(string.format(
                 "scripts/pak  -u '%s' '%s'", fullPath, enTmpdir))
             end
