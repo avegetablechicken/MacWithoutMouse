@@ -865,10 +865,17 @@ local function localizeByNIB(str, localeDir, localeFile, bundleID)
             "plutil -convert xml1 '%s' -o '%s'", enNIBPath, enXmlPath))
         if not status then return end
       end
-      local pattern = '<string>' .. str .. '</string>[[:space:]]*\\|[[:space:]]*<string>(.*?)</string>'
+      local diffDir = localeTmpDir .. bundleID .. '/' .. enLocale .. '-' .. locale
+      local diffPath = diffDir .. '/' .. file .. '.diff'
+      if hs.fs.attributes(diffPath) == nil then
+        hs.execute(string.format("mkdir -p '%s'", diffDir))
+        hs.execute(string.format(
+                  "diff --suppress-common-lines '%s' '%s' > '%s'", enXmlPath, xmlPath, diffPath))
+      end
       local result = hs.execute(string.format(
-          "diff -y '%s' '%s' | grep -E '%s' | awk -F'<string>|</string>' '{print $4}' | tr -d '\\n'",
-          enXmlPath, xmlPath, pattern))
+          [[cat '%s' | awk '/^<.*<string>%s<\/string>/ && !found {getline; if ($0 ~ "---") {getline; print $0; found=1}}' | \
+            sed 's/^>.*<string>//;s/<\/string>$//' | tr -d '\n']],
+          diffPath, str))
       return result ~= "" and result or nil
     end
 
@@ -888,10 +895,17 @@ local function localizeByNIB(str, localeDir, localeFile, bundleID)
                                    NIBPath, jsonPath))
       if not status then return end
     end
-    local pattern = '"data": "' .. str .. '"[[:space:]]*\\|[[:space:]]*"data": "(.*?)"'
+    local diffDir = localeTmpDir .. bundleID .. '/' .. enLocale .. '-' .. locale
+    local diffPath = diffDir .. '/' .. file .. '.diff'
+    if hs.fs.attributes(diffPath) == nil then
+      hs.execute(string.format("mkdir -p '%s'", diffDir))
+      hs.execute(string.format("diff --suppress-common-lines '%s' '%s' > '%s'",
+                               enJsonPath, jsonPath, diffPath))
+    end
     local result = hs.execute(string.format(
-        [[diff -y '%s' '%s' | grep -E '%s' | awk -F': ' '{print $3}'| sed 's/^"//;s/"$//' | tr -d '\n']],
-        enJsonPath, jsonPath, pattern))
+        [[cat '%s' | awk '/^<.*"data": "%s"/ && !found {getline; if ($0 ~ "---") {getline; print $0; found=1}}' | \
+          sed 's/^>.*"data": "//;s/"$//' | tr -d '\n']],
+        diffPath, str))
     return result ~= "" and result or nil
   end
 
@@ -1349,10 +1363,17 @@ local function delocalizeByNIB(str, localeDir, localeFile, bundleID)
             "plutil -convert xml1 '%s' -o '%s'", enNIBPath, enXmlPath))
         if not status then return end
       end
-      local pattern = '<string>' .. str .. '</string>[[:space:]]*\\|[[:space:]]*<string>(.*?)</string>'
+      local diffDir = localeTmpDir .. bundleID .. '/' .. locale .. '-' .. enLocale
+      local diffPath = diffDir .. '/' .. file .. '.diff'
+      if hs.fs.attributes(diffPath) == nil then
+        hs.execute(string.format("mkdir -p '%s'", diffDir))
+        hs.execute(string.format("diff --suppress-common-lines '%s' '%s' > '%s'",
+                                 xmlPath, enXmlPath, diffPath))
+      end
       local result = hs.execute(string.format(
-          "diff -y '%s' '%s' | grep -E '%s' | awk -F'<string>|</string>' '{print $4}' | tr -d '\\n'",
-          xmlPath, enXmlPath, pattern))
+          [[cat '%s' | awk '/^<.*<string>%s<\/string>/ && !found {getline; if ($0 ~ "---") {getline; print $0}; found=1}' | \
+            sed 's/^>.*<string>//;s/<\/string>$//' | tr -d '\n']],
+          diffPath, str))
       return result ~= "" and result or nil
     end
 
@@ -1372,11 +1393,17 @@ local function delocalizeByNIB(str, localeDir, localeFile, bundleID)
                                    enLocaleDir .. '/' .. file .. '.nib', enJsonPath))
       if not status then return end
     end
-    if hs.fs.attributes(enJsonPath) == nil then return end
-    local pattern = '"data": "' .. str .. '"[[:space:]]*\\|[[:space:]]*"data": "(.*?)"'
+    local diffDir = localeTmpDir .. bundleID .. '/' .. locale .. '-' .. enLocale
+    local diffPath = diffDir .. '/' .. file .. '.diff'
+    if hs.fs.attributes(diffPath) == nil then
+      hs.execute(string.format("mkdir -p '%s'", diffDir))
+      hs.execute(string.format("diff --suppress-common-lines '%s' '%s' > '%s'",
+                               jsonPath, enJsonPath, diffPath))
+    end
     local result = hs.execute(string.format(
-        [[diff -y '%s' '%s' | grep -E '%s' | awk -F': ' '{print $3}'| sed 's/^"//;s/"$//' | tr -d '\n']],
-        jsonPath, enJsonPath, pattern))
+        [[cat '%s' | awk '/^<.*"data": "%s"/ && !found {getline; if ($0 ~ "---") {getline; print $0; found=1}}' | \
+          sed 's/^>.*"data": "//;s/"$//' | tr -d '\n']],
+        diffPath, str))
     return result ~= "" and result or nil
   end
 
