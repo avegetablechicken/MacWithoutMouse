@@ -1100,7 +1100,7 @@ function localizedString(str, bundleID, params)
   if localeDir == nil or localeDir == false then
     if locale == nil then
       locale = get(appLocaleDir, bundleID, appLocale)
-      if locale == false then goto L_END_LOCALIZED end
+      if locale == false then return nil end
     end
     if locale == nil then
       locale = getMatchedLocale(appLocale, resourceDir, mode)
