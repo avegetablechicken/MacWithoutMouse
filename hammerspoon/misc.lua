@@ -405,8 +405,6 @@ local function testValid(entry)
         if hotkeyInfo then
           valid, actualMsg = getValidMessage(hotkeyInfo, hs.application.frontmostApplication())
         end
-      else
-        valid = false
       end
     elseif valid and entry.kind == HK.IN_APP and entry.subkind == HK.IN_APP_.WINDOW then
       local bundleID = hs.application.frontmostApplication():bundleID()
@@ -415,8 +413,6 @@ local function testValid(entry)
         if hotkeyInfo then
           valid, actualMsg = getValidMessage(hotkeyInfo, hs.application.frontmostApplication():focusedWindow())
         end
-      else
-        valid = false
       end
     end
     entry.valid = valid
