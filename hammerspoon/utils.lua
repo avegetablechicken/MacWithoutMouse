@@ -628,16 +628,12 @@ end
 
 local function parseNibFile(file, keepOrder, keepAll)
   if keepOrder == nil then keepOrder = true end
-  local fileStr = "'" .. file .. "'"
-  if hs.fs.attributes(file, 'mode') == 'directory' then
-    fileStr = fileStr .. "/*"
-  end
   local jsonStr = hs.execute([[
-    strings -n 3 ]] .. fileStr .. [[ | \
-    awk 'BEGIN { printf("{"); first = 1 } /\.title?$/ {
+    /usr/bin/python3 scripts/nib_parse.py dump-json ']] .. file .. [[' -o /dev/stdout | \
+    grep '"data": "' | sed 's/^.*"data": "//;s/"$//' | \
+    awk 'BEGIN { printf("{"); first = 1 } /\.title$/ {
       key = $0;
       gsub("%", "%%", prev);
-      gsub("\"", "\\\"", prev);
       if (!first) printf(", ");
       printf("\"" key "\": \"" prev "\"");
       first = 0;
@@ -785,25 +781,36 @@ local function localizeByStrings(str, localeDir, localeFile, localesDict, locale
             end
             if isBinarayPlist(fullPath) then
               invDict = parseBinaryPlistFile(fullPath, false, true)
-            elseif str:len() > 2 then
+            else
               invDict = parseNibFile(fullPath, false, true)
             end
-          elseif str:len() > 2
-              and hs.fs.attributes(enLocaleDir .. '/' .. fileStem .. '.storyboardc') ~= nil
-              and hs.fs.attributes(localeDir .. '/' .. fileStem .. '.strings') ~= nil then
-            invDict = parseNibFile(enLocaleDir .. '/' .. fileStem .. '.storyboardc', false, true)
           end
         end
-        if invDict ~= nil and invDict[str] ~= nil then
-          local keys = invDict[str]
-          if type(keys) == 'string' then
-            keys = { keys }
+        local searchFromDict = function(dict)
+          if dict ~= nil and dict[str] ~= nil then
+            local keys = dict[str]
+            if type(keys) == 'string' then
+              keys = { keys }
+            end
+            for _, key in ipairs(keys) do
+              local result = searchFunc(key, fileStem)
+              if result ~= nil then
+                localesInvDict[fileStem] = dict
+                return result
+              end
+            end
           end
-          for _, key in ipairs(keys) do
-            local result = searchFunc(key, fileStem)
-            if result ~= nil then
-              localesInvDict[fileStem] = invDict
-              return result
+        end
+        local result = searchFromDict(invDict)
+        if result ~= nil then return result end
+        if hs.fs.attributes(enLocaleDir .. '/' .. fileStem .. '.storyboardc') ~= nil
+            and hs.fs.attributes(localeDir .. '/' .. fileStem .. '.strings') ~= nil then
+          local fullPath = enLocaleDir .. '/' .. fileStem .. '.storyboardc'
+          for subFile in hs.fs.dir(fullPath) do
+            if subFile:sub(-4) == '.nib' then
+              invDict = parseNibFile(fullPath .. '/' .. subFile, false, true)
+              local result = searchFromDict(invDict)
+              if result ~= nil then return result end
             end
           end
         end
@@ -1278,7 +1285,7 @@ end
 local function delocalizeByStrings(str, localeDir, localeFile, deLocalesInvDict)
   local resourceDir = localeDir .. '/..'
   local enLocaleDirs = baseLocaleDirs(resourceDir)
-  local searchFunc = function(str, file, onlyStrings)
+  local searchFunc = function(str, file)
     local dirs = prependExtraEnglishLocaleDirs(resourceDir, enLocaleDirs)
     for _, enLocaleDir in ipairs(dirs) do
       local jsonDict
@@ -1296,14 +1303,23 @@ local function delocalizeByStrings(str, localeDir, localeFile, deLocalesInvDict)
         end
         if isBinarayPlist(fullPath) then
           invDict = parseBinaryPlistFile(fullPath)
-        elseif not onlyStrings then
+        else
           jsonDict = parseNibFile(fullPath)
         end
-      elseif not onlyStrings and hs.fs.attributes(enLocaleDir .. '/' .. file .. '.storyboardc') ~= nil then
-        jsonDict = parseNibFile(enLocaleDir .. '/' .. file .. '.storyboardc')
       end
       if jsonDict ~= nil and jsonDict[str] ~= nil then
         return jsonDict[str]
+      end
+      if hs.fs.attributes(enLocaleDir .. '/' .. file .. '.storyboardc') ~= nil then
+        local fullPath = enLocaleDir .. '/' .. file .. '.storyboardc'
+        for subFile in hs.fs.dir(fullPath) do
+          if subFile:sub(-4) == '.nib' then
+            jsonDict = parseNibFile(fullPath .. '/' .. subFile)
+            if jsonDict ~= nil and jsonDict[str] ~= nil then
+              return jsonDict[str]
+            end
+          end
+        end
       end
     end
   end
@@ -1321,7 +1337,7 @@ local function delocalizeByStrings(str, localeDir, localeFile, deLocalesInvDict)
         local keys = invDict[str]
         if type(keys) == 'string' then keys = { keys } end
         for _, key in ipairs(keys) do
-          local result = searchFunc(key, fileStem, str:len() < 3)
+          local result = searchFunc(key, fileStem)
           if result ~= nil then
             deLocalesInvDict[fileStem] = invDict
             return result
