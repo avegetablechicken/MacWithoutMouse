@@ -4017,6 +4017,12 @@ local function registerOpenRecent(appObject)
   if specApp ~= nil or spec == nil or hs.fnutils.contains(spec.excluded or {}, bundleID) then
     return
   end
+
+  local menuItems = getMenuItems(appObject)
+  local localizedFile = localizedMenuBarItem("File", appObject:bundleID())
+  if #hs.fnutils.ifilter(menuItems, function(v) return v.AXTitle == localizedFile end) == 0 then
+    return
+  end
   local menuItem, menuItemPath = findMenuItem(appObject, { "File",  "Open Recent" })
   if menuItem ~= nil then
     local fn = showMenuItemWrapper(function()
