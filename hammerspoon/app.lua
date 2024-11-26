@@ -290,6 +290,37 @@ end
 -- ### FaceTime
 local function deleteMousePositionCall(winObj)
   local winUIObj = hs.axuielement.windowElement(winObj)
+  local collection = getAXChildren(winUIObj, "AXGroup", 1, "AXGroup", 1, "AXGroup", 1, "AXGroup", 2)
+  if collection ~= nil and collection.AXDescription ==
+      localizedString("Recent Calls", winObj:application():bundleID()) then
+    local section = collection:childrenWithRole("AXButton")[1]
+    if section ~= nil then
+      if not rightClick(hs.mouse.absolutePosition(), winObj:application():name()) then return end
+      local popup = getAXChildren(winUIObj, "AXGroup", 1, "AXMenu", 1)
+      local maxTime, time = 0.5, 0
+      while popup == nil and time < maxTime do
+        hs.timer.usleep(0.01 * 1000000)
+        time = time + 0.01
+        popup = getAXChildren(winUIObj, "AXGroup", 1, "AXMenu", 1)
+      end
+      if popup == nil then
+        if not rightClick(hs.mouse.absolutePosition(), winObj:application():name()) then return end
+        popup = getAXChildren(winUIObj, "AXGroup", 1, "AXMenu", 1)
+        time = 0
+        while popup == nil and time < maxTime do
+          hs.timer.usleep(0.01 * 1000000)
+          time = time + 0.01
+          popup = getAXChildren(winUIObj, "AXGroup", 1, "AXMenu", 1)
+        end
+        if popup == nil then return end
+      end
+      local menuItem = popup:childrenWithRole("AXMenuItem")[5]
+      if menuItem ~= nil then
+        menuItem:performAction("AXPress")
+      end
+    end
+    return
+  end
   winUIObj:elementSearch(
     function(msg, results, count)
       if count == 0 then return end
@@ -326,6 +357,40 @@ end
 
 local function deleteAllCalls(winObj)
   local winUIObj = hs.axuielement.windowElement(winObj)
+  local collection = getAXChildren(winUIObj, "AXGroup", 1, "AXGroup", 1, "AXGroup", 1, "AXGroup", 2)
+  if collection ~= nil and collection.AXDescription ==
+      localizedString("Recent Calls", winObj:application():bundleID()) then
+    local section = collection:childrenWithRole("AXButton")[1]
+    if section ~= nil then
+      local position = { section.AXPosition.x + 50, section.AXPosition.y + 10 }
+      if not rightClick(position, winObj:application():name()) then return end
+      local popup = getAXChildren(winUIObj, "AXGroup", 1, "AXMenu", 1)
+      local maxTime, time = 0.5, 0
+      while popup == nil and time < maxTime do
+        hs.timer.usleep(0.01 * 1000000)
+        time = time + 0.01
+        popup = getAXChildren(winUIObj, "AXGroup", 1, "AXMenu", 1)
+      end
+      if popup == nil then
+        if not rightClick(position, winObj:application():name()) then return end
+        popup = getAXChildren(winUIObj, "AXGroup", 1, "AXMenu", 1)
+        time = 0
+        while popup == nil and time < maxTime do
+          hs.timer.usleep(0.01 * 1000000)
+          time = time + 0.01
+          popup = getAXChildren(winUIObj, "AXGroup", 1, "AXMenu", 1)
+        end
+        if popup == nil then return end
+      end
+      local menuItem = popup:childrenWithRole("AXMenuItem")[5]
+      if menuItem ~= nil then
+        menuItem:performAction("AXPress")
+      end
+      hs.timer.usleep(0.1 * 1000000)
+      deleteAllCalls(winObj)
+    end
+    return
+  end
   winUIObj:elementSearch(
     function(msg, results, count)
       if count == 0 then return end
