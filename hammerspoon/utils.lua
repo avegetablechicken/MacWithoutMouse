@@ -425,9 +425,20 @@ function getMatchedLocale(appLocale, localeSource, mode)
           thisScript = localeItems[2]
         end
       end
+      if thisLanguage == 'zh' or thisLanguage == 'yue' then
+        if thisCountry == 'HK' or thisCountry == 'MO' or thisCountry == 'TW' then
+          if thisScript == nil then thisScript = 'Hant' end
+        elseif thisCountry == 'CN' or thisCountry == 'SG' then
+          if thisScript == nil then thisScript = 'Hans' end
+        end
+      end
       if thisLanguage == language
           and (script == nil or thisScript == nil or thisScript == script)
           and (country == nil or thisCountry == nil or thisCountry == country) then
+        return locale
+      end
+      if thisLanguage == language
+          and (script ~= nil and thisScript == script) then
         return locale
       end
     end
