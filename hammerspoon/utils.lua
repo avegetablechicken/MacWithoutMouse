@@ -307,6 +307,7 @@ local localeTmpDir = hs.fs.temporaryDirectory() .. 'org.hammerspoon.Hammerspoon/
 local localizationMap, localizationFrameworks = {}, {}
 if hs.fs.attributes("config/localization.json") ~= nil then
   localizationMap = hs.json.read("config/localization.json")
+  localizationMap['common'] = {}
   localizationFrameworks = localizationMap['resources']
   localizationMap['resources'] = nil
 end
@@ -1773,7 +1774,6 @@ function delocalizedString(str, bundleID, params)
 end
 
 function localizeCommonMenuItemTitles(locale)
-  localizationMap.common = {}
   local shouldWrite = false
 
   local sampleBundleID = "com.apple.Notes"
