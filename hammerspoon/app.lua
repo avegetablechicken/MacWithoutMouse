@@ -288,9 +288,9 @@ local function deleteAllMessages(appObject)
 end
 
 -- ### FaceTime
-local function deleteMousePositionCall(appObject)
-  local appUIObj = hs.axuielement.applicationElement(appObject)
-  appUIObj:elementSearch(
+local function deleteMousePositionCall(winObj)
+  local winUIObj = hs.axuielement.windowElement(winObj)
+  winUIObj:elementSearch(
     function(msg, results, count)
       if count == 0 then return end
 
@@ -298,7 +298,7 @@ local function deleteMousePositionCall(appObject)
       if #sectionList == 0 then return end
 
       local section = sectionList[1]
-      if not rightClick(hs.mouse.absolutePosition(), appObject:name()) then return end
+      if not rightClick(hs.mouse.absolutePosition(), winObj:application():name()) then return end
       local popups = section:childrenWithRole("AXMenu")
       local maxTime, time = 0.5, 0
       while #popups == 0 and time < maxTime do
@@ -324,9 +324,9 @@ local function deleteMousePositionCall(appObject)
   )
 end
 
-local function deleteAllCalls(appObject)
-  local appUIObj = hs.axuielement.applicationElement(appObject)
-  appUIObj:elementSearch(
+local function deleteAllCalls(winObj)
+  local winUIObj = hs.axuielement.windowElement(winObj)
+  winUIObj:elementSearch(
     function(msg, results, count)
       if count == 0 then return end
 
@@ -334,7 +334,7 @@ local function deleteAllCalls(appObject)
       if #sectionList == 0 then return end
 
       local section = sectionList[1]
-      if not rightClickAndRestore(section.AXPosition, appObject:name()) then
+      if not rightClickAndRestore(section.AXPosition, winObj:application():name()) then
         return
       end
       local popups = section:childrenWithRole("AXMenu")
@@ -353,7 +353,7 @@ local function deleteAllCalls(appObject)
           end
         end
       end
-      deleteAllCalls(appObject)
+      deleteAllCalls(winUIObj)
     end,
     function(element)
       return element.AXSubrole == "AXCollectionList"
@@ -1182,10 +1182,16 @@ appHotKeyCallbacks = {
   ["com.apple.FaceTime"] = {
     ["deleteMousePositionCall"] = {
       message = "Delete Call at Mouse Position",
+      condition = function(appObject)
+        return appObject:focusedWindow() ~= nil, appObject:focusedWindow()
+      end,
       fn = deleteMousePositionCall
     },
     ["deleteAllCalls"] = {
       message = "Delete All Calls",
+      condition = function(appObject)
+        return appObject:focusedWindow() ~= nil, appObject:focusedWindow()
+      end,
       fn = deleteAllCalls
     }
   },
