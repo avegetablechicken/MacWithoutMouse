@@ -2500,6 +2500,11 @@ appHotKeyCallbacks = {
     ["closeWindow"] = specialCommonHotkeyConfigs["closeWindow"]
   },
 
+  ["com.apple.VoiceOverUtility"] =
+  {
+    ["closeWindow"] = specialCommonHotkeyConfigs["closeWindow"]
+  },
+
   ["com.apple.CaptiveNetworkAssistant"] =
   {
     ["closeWindow"] = specialCommonHotkeyConfigs["closeWindow"]
