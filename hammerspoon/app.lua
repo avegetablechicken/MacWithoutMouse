@@ -2495,6 +2495,11 @@ appHotKeyCallbacks = {
     ["hide"] = specialCommonHotkeyConfigs["hide"]
   },
 
+  ["com.apple.Image_Capture"] =
+  {
+    ["closeWindow"] = specialCommonHotkeyConfigs["closeWindow"]
+  },
+
   ["com.apple.CaptiveNetworkAssistant"] =
   {
     ["closeWindow"] = specialCommonHotkeyConfigs["closeWindow"]
