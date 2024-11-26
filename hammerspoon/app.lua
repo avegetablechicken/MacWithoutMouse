@@ -2525,6 +2525,11 @@ appHotKeyCallbacks = {
     ["closeWindow"] = specialCommonHotkeyConfigs["closeWindow"]
   },
 
+  ["com.apple.DeskCam"] =
+  {
+    ["closeWindow"] = specialCommonHotkeyConfigs["closeWindow"]
+  },
+
   ["com.apple.Chess"] =
   {
     ["openRecent"] = {
