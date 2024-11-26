@@ -4994,9 +4994,10 @@ function App_applicationCallback(appName, eventType, appObject)
     hs.timer.doAfter(0, function()
       local locales = applicationLocales(bundleID)
       local appLocale = locales[1]
-      if appLocales[bundleID] ~= nil and appLocales[bundleID] ~= appLocale then
+      if (appLocales[bundleID] or systemLocales()[1]) ~= appLocale then
         unregisterRunningAppHotKeys(bundleID, true)
         registerRunningAppHotKeys(bundleID)
+        localizeCommonMenuItemTitles(appLocale)
       end
       appLocales[bundleID] = appLocale
       registerForOpenSavePanel(appObject)

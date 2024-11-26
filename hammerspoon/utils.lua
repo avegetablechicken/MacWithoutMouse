@@ -1767,62 +1767,66 @@ function delocalizedString(str, bundleID, params)
   return result
 end
 
-localizationMap.common = {}
-local systemLocale = systemLocales()[1]
-local shouldWrite = false
+function localizeCommonMenuItemTitles(locale)
+  localizationMap.common = {}
+  local shouldWrite = false
 
-local sampleBundleID = "com.apple.Notes"
-if deLocaleMap[sampleBundleID] == nil then
-  deLocaleMap[sampleBundleID] = {}
-end
-if deLocaleMap[sampleBundleID][systemLocale] == nil then
-  deLocaleMap[sampleBundleID][systemLocale] = {}
-end
-for _, title in ipairs { 'File', 'Edit', 'Format', 'View', 'Window', 'Help' } do
-  local localizedTitle = hs.fnutils.indexOf(deLocaleMap[sampleBundleID][systemLocale], title)
-  if localizedTitle == nil then
-    localizedTitle = localizedString(title, sampleBundleID, { locale = systemLocale })
+  local sampleBundleID = "com.apple.Notes"
+  if deLocaleMap[sampleBundleID] == nil then
+    deLocaleMap[sampleBundleID] = {}
+  end
+  if deLocaleMap[sampleBundleID][locale] == nil then
+    deLocaleMap[sampleBundleID][locale] = {}
+  end
+  for _, title in ipairs { 'File', 'Edit', 'Format', 'View', 'Window', 'Help' } do
+    local localizedTitle = hs.fnutils.indexOf(deLocaleMap[sampleBundleID][locale], title)
+    if localizedTitle == nil then
+      localizedTitle = localizedString(title, sampleBundleID, { locale = locale })
+      if localizedTitle ~= nil then
+        deLocaleMap[sampleBundleID][locale][localizedTitle] = title
+        shouldWrite = true
+      end
+    end
     if localizedTitle ~= nil then
-      deLocaleMap[sampleBundleID][systemLocale][localizedTitle] = title
+      localizationMap.common[localizedTitle] = title
+    end
+  end
+  if deLocaleDir[sampleBundleID] == nil then
+    deLocaleDir[sampleBundleID] = {}
+  end
+  deLocaleDir[sampleBundleID][locale] = appLocaleDir[sampleBundleID][locale]
+
+  sampleBundleID = "com.apple.finder"
+  if deLocaleMap[sampleBundleID] == nil then
+    deLocaleMap[sampleBundleID] = {}
+  end
+  if deLocaleMap[sampleBundleID][locale] == nil then
+    deLocaleMap[sampleBundleID][locale] = {}
+  end
+  local localizedTitle = hs.fnutils.indexOf(deLocaleMap[sampleBundleID][locale], 'View')
+  if localizedTitle == nil then
+    localizedTitle = localizedString('View', sampleBundleID, { locale = locale })
+    if localizedTitle ~= nil then
+      if deLocaleDir[sampleBundleID] == nil then
+        deLocaleDir[sampleBundleID] = {}
+      end
+      deLocaleDir[sampleBundleID][locale] = appLocaleDir[sampleBundleID][locale]
+      deLocaleMap[sampleBundleID][locale][localizedTitle] = 'View'
       shouldWrite = true
     end
   end
   if localizedTitle ~= nil then
-    localizationMap.common[localizedTitle] = title
+    localizationMap.common[localizedTitle] = 'View'
+  end
+
+  if shouldWrite then
+    hs.json.write({ locale = deLocaleDir, map = deLocaleMap },
+                  menuItemTmpFile, false, true)
   end
 end
-if deLocaleDir[sampleBundleID] == nil then
-  deLocaleDir[sampleBundleID] = {}
-end
-deLocaleDir[sampleBundleID][systemLocale] = appLocaleDir[sampleBundleID][systemLocale]
 
-sampleBundleID = "com.apple.finder"
-if deLocaleMap[sampleBundleID] == nil then
-  deLocaleMap[sampleBundleID] = {}
-end
-if deLocaleMap[sampleBundleID][systemLocale] == nil then
-  deLocaleMap[sampleBundleID][systemLocale] = {}
-end
-local localizedTitle = hs.fnutils.indexOf(deLocaleMap[sampleBundleID][systemLocale], 'View')
-if localizedTitle == nil then
-  localizedTitle = localizedString('View', sampleBundleID, { locale = systemLocale })
-  if localizedTitle ~= nil then
-    if deLocaleDir[sampleBundleID] == nil then
-      deLocaleDir[sampleBundleID] = {}
-    end
-    deLocaleDir[sampleBundleID][systemLocale] = appLocaleDir[sampleBundleID][systemLocale]
-    deLocaleMap[sampleBundleID][systemLocale][localizedTitle] = 'View'
-    shouldWrite = true
-  end
-end
-if localizedTitle ~= nil then
-  localizationMap.common[localizedTitle] = 'View'
-end
-
-if shouldWrite then
-  hs.json.write({ locale = deLocaleDir, map = deLocaleMap },
-                menuItemTmpFile, false, true)
-end
+local systemLocale = systemLocales()[1]
+localizeCommonMenuItemTitles(systemLocale)
 
 function delocalizedMenuBarItem(title, bundleID, params)
   local defaultTitleMap, titleMap
