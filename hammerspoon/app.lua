@@ -2515,6 +2515,11 @@ appHotKeyCallbacks = {
     ["closeWindow"] = specialCommonHotkeyConfigs["closeWindow"]
   },
 
+  ["com.apple.CertificateAssistant"] =
+  {
+    ["closeWindow"] = specialCommonHotkeyConfigs["closeWindow"]
+  },
+
   ["com.apple.Chess"] =
   {
     ["openRecent"] = {
