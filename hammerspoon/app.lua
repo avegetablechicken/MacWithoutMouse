@@ -4999,6 +4999,7 @@ function App_applicationCallback(appName, eventType, appObject)
         registerRunningAppHotKeys(bundleID)
       end
       appLocales[bundleID] = appLocale
+      registerForOpenSavePanel(appObject)
       registerInAppHotKeys(appObject)
       registerInWinHotKeys(appObject)
       hs.timer.doAfter(0, function()
@@ -5007,7 +5008,6 @@ function App_applicationCallback(appName, eventType, appObject)
           remapPreviousTab(appObject)
           registerOpenRecent(appObject)
           registerObserverForMenuBarChange(appObject)
-          registerForOpenSavePanel(appObject)
           if HSKeybindings ~= nil and HSKeybindings.isShowing then
             local validOnly = HSKeybindings.validOnly
             local showHS = HSKeybindings.showHS
