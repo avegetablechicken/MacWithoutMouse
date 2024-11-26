@@ -1774,6 +1774,8 @@ function delocalizedString(str, bundleID, params)
 end
 
 function localizeCommonMenuItemTitles(locale)
+  if locale == 'en' or locale:sub(1, 3) == 'en-' or locale:sub(1, 3) == 'en_' then return end
+
   local shouldWrite = false
 
   local sampleBundleID = "com.apple.Notes"
