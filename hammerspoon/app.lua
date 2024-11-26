@@ -2505,6 +2505,11 @@ appHotKeyCallbacks = {
     ["closeWindow"] = specialCommonHotkeyConfigs["closeWindow"]
   },
 
+  ["com.apple.DigitalColorMeter"] =
+  {
+    ["closeWindow"] = specialCommonHotkeyConfigs["closeWindow"]
+  },
+
   ["com.apple.CaptiveNetworkAssistant"] =
   {
     ["closeWindow"] = specialCommonHotkeyConfigs["closeWindow"]
