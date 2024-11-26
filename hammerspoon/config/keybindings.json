@@ -1298,6 +1298,12 @@
         "key": "escape"
       }
     },
+    "com.apple.Chess": {
+      "openRecent": {
+        "mods": "control",
+        "key": "R"
+      }
+    },
     "com.apple.ScreenSharing": {
       "openRecent": {
         "mods": "control",
