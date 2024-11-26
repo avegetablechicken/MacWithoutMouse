@@ -60,3 +60,13 @@ Then clone this repository, rename `hammerspoon` to `.hammerspoon` and move it t
 - Safe quitting applications.
 
 ![image-20231102162952494](./assets/karabiner-complex.png)
+
+## Acknowledgement
+
+Some codes are taken from the following repositories:
+
+- [HSKeybindings.spoon](https://github.com/Hammerspoon/Spoons/tree/master/Source/HSKeybindings.spoon)
+
+- [chrome-pak-customizer](https://github.com/myfreeer/chrome-pak-customizer)
+
+- [NIBArchive-Parser](https://github.com/MatrixEditor/nibarchive)
