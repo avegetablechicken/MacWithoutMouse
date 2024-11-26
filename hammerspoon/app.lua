@@ -2515,6 +2515,20 @@ appHotKeyCallbacks = {
     ["closeWindow"] = specialCommonHotkeyConfigs["closeWindow"]
   },
 
+  ["com.apple.ScreenSharing"] =
+  {
+    ["openRecent"] = {
+      message = localizedMessage("Open Recent"),
+      condition = checkMenuItem({ "Connect", "Open Recent" }),
+      fn = function(menuItemPath, appObject)
+        showMenuItemWrapper(function()
+          appObject:selectMenuItem({ menuItemPath[1] })
+          appObject:selectMenuItem(menuItemPath)
+        end)()
+      end
+    },
+  },
+
   ["com.parallels.desktop.console"] =
   {
     ["new..."] = {
