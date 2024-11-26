@@ -385,6 +385,7 @@ local function getResourceDir(bundleID, frameworkName)
   end
 
   ::END_GET_RESOURCE_DIR::
+  if hs.fs.attributes(resourceDir) == nil then return nil, {} end
   return resourceDir, framework
 end
 
@@ -1112,6 +1113,7 @@ function localizedString(str, bundleID, params)
   end
 
   local resourceDir, framework = getResourceDir(bundleID, localeFramework)
+  if resourceDir == nil then return nil end
   if framework.chromium then
     if findApplication(bundleID) then
       local menuItems = getMenuItems(findApplication(bundleID))
@@ -1158,6 +1160,7 @@ function localizedString(str, bundleID, params)
   setDefaultLocale = function()
     localeFile = type(params) == 'table' and params.localeFile or params
     resourceDir = hs.application.pathForBundleID(bundleID) .. "/Contents/Resources"
+    if hs.fs.attributes(resourceDir) == nil then return false end
     if mode == nil then mode = 'lproj' end
     locale = getMatchedLocale(appLocale, resourceDir, mode)
     if locale == nil then return false end
@@ -1633,6 +1636,7 @@ function delocalizedString(str, bundleID, params)
   elseif result ~= nil then return result end
 
   local resourceDir, framework = getResourceDir(bundleID, localeFramework)
+  if resourceDir == nil then return nil end
   if framework.chromium then
     if findApplication(bundleID) then
       local menuItems = getMenuItems(findApplication(bundleID))
@@ -1681,6 +1685,7 @@ function delocalizedString(str, bundleID, params)
 
   setDefaultLocale = function()
     resourceDir = hs.application.pathForBundleID(bundleID) .. "/Contents/Resources"
+    if hs.fs.attributes(resourceDir) == nil then return false end
     mode = 'lproj'
     locale = getMatchedLocale(appLocale, resourceDir, mode)
     if locale == nil then return false end
