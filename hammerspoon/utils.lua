@@ -305,10 +305,8 @@ end
 local localeTmpDir = hs.fs.temporaryDirectory() .. 'org.hammerspoon.Hammerspoon/locale/'
 
 local localizationMap, localizationFrameworks = {}, {}
-local localizationMapLoaded = {}
 if hs.fs.attributes("config/localization.json") ~= nil then
-  localizationMapLoaded = hs.json.read("config/localization.json")
-  localizationMap = hs.fnutils.copy(localizationMapLoaded)
+  localizationMap = hs.json.read("config/localization.json")
   localizationFrameworks = localizationMap['resources']
   localizationMap['resources'] = nil
 end
@@ -1896,10 +1894,6 @@ end
 
 function localizedMenuBarItem(title, bundleID, params)
   local appLocale = applicationLocales(bundleID)[1]
-  if deLocaleDir[bundleID] ~= nil
-      and deLocaleDir[bundleID][appLocale] == nil then
-    localizationMap[bundleID] = localizationMapLoaded[bundleID]
-  end
   local locTitle = hs.fnutils.indexOf(localizationMap[bundleID] or {}, title)
   if locTitle ~= nil then
     if title == 'View' and findApplication(bundleID) then
