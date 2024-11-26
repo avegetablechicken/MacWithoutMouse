@@ -1917,8 +1917,6 @@ function localizedMenuBarItem(title, bundleID, params)
       if hs.fnutils.find(menuItems, function(item) return item.AXTitle == locTitle end) ~= nil then
         return locTitle
       end
-    elseif locTitle:sub(-6) == '.title' then
-      return localizedString(locTitle, bundleID, params)
     else
       return locTitle
     end
