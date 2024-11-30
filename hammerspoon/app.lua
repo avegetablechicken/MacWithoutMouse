@@ -5127,14 +5127,16 @@ function App_applicationCallback(appName, eventType, appObject)
       FLAGS["NO_RESHOW_KEYBINDING"] = false
     end)
     hs.timer.doAfter(0, function()
-      local locales = applicationLocales(bundleID)
-      local appLocale = locales[1]
-      if (appLocales[bundleID] or systemLocales()[1]) ~= appLocale then
-        unregisterRunningAppHotKeys(bundleID, true)
-        registerRunningAppHotKeys(bundleID)
-        localizeCommonMenuItemTitles(appLocale)
+      local appLocale = applicationLocales(bundleID)[1]
+      local oldAppLocale = appLocales[bundleID] or systemLocales()[1]
+      if oldAppLocale ~= appLocale then
+        if getMatchedLocale(oldAppLocale, { appLocale }) ~= appLocale then
+          unregisterRunningAppHotKeys(bundleID, true)
+          registerRunningAppHotKeys(bundleID)
+          localizeCommonMenuItemTitles(appLocale)
+        end
+        appLocales[bundleID] = appLocale
       end
-      appLocales[bundleID] = appLocale
       registerForOpenSavePanel(appObject)
       registerInAppHotKeys(appObject)
       registerInWinHotKeys(appObject)

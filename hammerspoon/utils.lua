@@ -1935,7 +1935,7 @@ function localizedMenuBarItem(title, bundleID, params)
       return title
     end
   end
-  if appLocale == systemLocale then
+  if appLocale == getMatchedLocale(systemLocale, { appLocale }) then
     locTitle = hs.fnutils.indexOf(localizationMap.common, title)
     if locTitle ~= nil then return locTitle end
   end
