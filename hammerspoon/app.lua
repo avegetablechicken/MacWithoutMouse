@@ -2022,6 +2022,28 @@ appHotKeyCallbacks = {
     }
   },
 
+  ["com.tencent.tenvideo"] =
+  {
+    ["openRecent"] = {
+      message = "最近打开",
+      fn = function(appObject)
+        local appUIObj = hs.axuielement.applicationElement(appObject)
+        local menuBarItems = appUIObj:childrenWithRole('AXMenuBar')[1]:childrenWithRole('AXMenuBarItem')
+        local menuBarItem = hs.fnutils.find(menuBarItems, function(item)
+          return item.AXChildren ~= nil and #item.AXChildren > 0 and item.AXTitle == '文件'
+        end)
+        if menuBarItem == nil then return end
+        local menuItem = hs.fnutils.find(menuBarItem:childrenWithRole('AXMenu')[1]
+                                                    :childrenWithRole('AXMenuItem'),
+                                         function(item) return item.AXTitle == '最近打开' end)
+        if menuItem ~= nil then
+          menuBarItem:performAction('AXPress')
+          menuItem:performAction('AXPress')
+        end
+      end
+    }
+  },
+
   ["com.tencent.meeting"] =
   {
     ["preferences"] = {

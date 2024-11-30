@@ -1081,6 +1081,12 @@
         "key": ","
       }
     },
+    "com.tencent.tenvideo": {
+      "openRecent": {
+        "mods": "control",
+        "key": "R"
+      }
+    },
     "com.parallels.desktop.console": {
       "showControlCenter": {
         "mods": ["shift", "command"],
