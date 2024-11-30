@@ -1316,6 +1316,12 @@
         "key": "F"
       }
     },
+    "com.apple.dt.Xcode": {
+      "showInFinder": {
+        "mods": ["shift", "option", "command"],
+        "key": "F"
+      }
+    },
     "com.jetbrains.CLion": {
       "newProject": {
         "mods": "command",

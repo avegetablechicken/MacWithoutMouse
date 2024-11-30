@@ -2851,6 +2851,15 @@ appHotKeyCallbacks = {
     }
   },
 
+  ["com.apple.dt.Xcode"] =
+  {
+    ["showInFinder"] = {
+      message = "Show In Finder",
+      condition = checkMenuItem({ "File", "Show in Finder" }),
+      fn = receiveMenuItem
+    }
+  },
+
   ["com.jetbrains.CLion"] =
   {
     ["newProject"] = {
