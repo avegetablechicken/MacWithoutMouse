@@ -983,6 +983,12 @@
         "key": "E"
       }
     },
+    "com.eusoft.freeeudic": {
+      "navigateToSearchField": {
+        "mods": "command",
+        "key": "S"
+      }
+    },
     "JabRef": {
       "preferences": {
         "mods": "command",
