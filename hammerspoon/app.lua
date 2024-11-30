@@ -4276,8 +4276,9 @@ local function registerForOpenSavePanel(appObject)
     if hs.application.frontmostApplication():bundleID()
         == "com.kingsoft.wpsoffice.mac" then
       WPSCloseDialog(element)
+    else
+      actionFunc(element)
     end
-    actionFunc(element)
   end)
   observer:start()
   stopOnDeactivated(appObject:bundleID(), observer, function()
