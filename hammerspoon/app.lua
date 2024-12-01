@@ -4431,7 +4431,9 @@ local function altMenuBarItem(appObject)
     -- if there are still items not set, set them by second letter
     notSetItems, alreadySetHotkeys = searchHotkeyByNth(notSetItems, alreadySetHotkeys, 2)
     -- if there are still items not set, set them by third letter
-    searchHotkeyByNth(notSetItems, alreadySetHotkeys, 3)
+    notSetItems, alreadySetHotkeys = searchHotkeyByNth(notSetItems, alreadySetHotkeys, 3)
+    -- if there are still items not set, set them by fourth letter
+    searchHotkeyByNth(notSetItems, alreadySetHotkeys, 4)
     local invMap = {}
     for key, title in pairs(alreadySetHotkeys) do
       local menuBarItem = type(title) == 'table' and title[1] or title
