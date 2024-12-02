@@ -1130,8 +1130,6 @@ appHotKeyCallbacks = {
         end)()
       end
     },
-    ["showPrevTab"] = specialCommonHotkeyConfigs["showPrevTab"],
-    ["showNextTab"] = specialCommonHotkeyConfigs["showNextTab"],
     ["open1stSidebarItem"] = {
       message = getFinderSidebarItemTitle(1),
       condition = getFinderSidebarItem(1),
@@ -1316,8 +1314,6 @@ appHotKeyCallbacks = {
 
   ["com.apple.Preview"] =
   {
-    ["showPrevTab"] = specialCommonHotkeyConfigs["showPrevTab"],
-    ["showNextTab"] = specialCommonHotkeyConfigs["showNextTab"],
     ["revealInFinder"] = {
       message = "Reveal in Finder",
       condition = function(appObject)
