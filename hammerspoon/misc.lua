@@ -317,6 +317,7 @@ local function getSubMenuHotkeys(t, menuItem, titleAsEntry, titlePrefix, isAppMe
         if subItem.AXTitle == "Enter Full Screen"
             or subItem.AXTitle == "Exit Full Screen"
             or subItem.AXTitle == localizedString("Enter Full Screen", 'com.apple.finder')
+            or subItem.AXTitle == localizedString("Exit Full Screen", 'com.apple.finder')
             or subItem.AXTitle == localizedString("Enter Full Screen", bundleID)
             or subItem.AXTitle == localizedString("Exit Full Screen", bundleID) then
           idx = "🌐︎F"

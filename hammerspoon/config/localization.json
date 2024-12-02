@@ -5,6 +5,9 @@
     "com.charliemonroe.Permute-3": "XUCore.framework"
   },
 
+  "com.apple.finder": {
+    "退出全屏幕": "Exit Full Screen"
+  },
   "com.apple.MobileSMS": {
     "删除对话…": "Delete Conversation…"
   },
