@@ -151,6 +151,69 @@ registerAppHotkeys()
 -- # hotkeys in specific application
 local appHotKeyCallbacks
 
+local function applicationVersion(bundleID)
+  local version = hs.execute(string.format('mdls -r -name kMDItemVersion "%s"',
+    hs.application.pathForBundleID(bundleID)))
+  version = hs.fnutils.split(version, "%.")
+  local major, minor, patch
+  major = tonumber(version[1]:match("%d+"))
+  minor = #version > 1 and tonumber(version[2]:match("%d+")) or 0
+  patch = #version > 2 and tonumber(version[3]:match("%d+")) or 0
+  return major, minor, patch
+end
+
+local function versionCompare(versionStr, comp)
+  return function(appObject)
+    local appMajor, appMinor, appPatch = applicationVersion(appObject:bundleID())
+    local version = hs.fnutils.split(versionStr, "%.")
+    local major, minor, patch
+    major = tonumber(version[1]:match("%d+"))
+    minor = #version > 1 and tonumber(version[2]:match("%d+")) or 0
+    patch = #version > 2 and tonumber(version[3]:match("%d+")) or 0
+    if comp == "==" then
+      return appMajor == major and appMinor == minor and appPatch == patch
+    elseif comp == "~=" then
+      return appMajor ~= major or appMinor ~= minor or appPatch ~= patch
+    elseif comp == "<" or comp == "<=" then
+      if appMajor < major then return true end
+      if appMajor == major and appMinor < minor then return true end
+      if appMajor == major and appMinor == minor and appPatch < patch then return true end
+      if comp == "<=" and appMajor == major and appMinor == minor and appPatch == patch then return true end
+      return false
+    elseif comp == ">" or comp == ">=" then
+      if appMajor > major then return true end
+      if appMajor == major and appMinor > minor then return true end
+      if appMajor == major and appMinor == minor and appPatch > patch then return true end
+      if comp == ">=" and appMajor == major and appMinor == minor and appPatch == patch then return true end
+      return false
+    end
+  end
+end
+
+local function versionEqual(version)
+  return versionCompare(version, "==")
+end
+
+local function versionNotEqual(version)
+  return versionCompare(version, "~=")
+end
+
+local function versionLessThan(version)
+  return versionCompare(version, "<")
+end
+
+local function versionGreaterThan(version)
+  return versionCompare(version, ">")
+end
+
+local function versionGreaterEqual(version)
+  return versionCompare(version, ">=")
+end
+
+local function versionLessEqual(version)
+  return versionCompare(version, "<=")
+end
+
 -- ## function utilities for hotkey configs of specific application
 
 -- ### Finder
@@ -635,28 +698,8 @@ local function clickBartenderBarItem(index, rightClick)
 end
 
 -- ### iCopy
-local function iCopySelectHotkeyRemapRequired(appObject)
-  local version = hs.execute(string.format('mdls -r -name kMDItemVersion "%s"', appObject:path()))
-  local major, minor, patch = string.match(version, "(%d+)%.(%d+)%.(%d+)")
-  major = tonumber(major)
-  minor = tonumber(minor)
-  patch = tonumber(patch)
-  return major < 1 or (major == 1 and minor < 1) or (major == 1 and minor == 1 and patch < 3)
-end
-
 local function iCopySelectHotkeyMod(appObject)
-  local version = hs.execute(string.format('mdls -r -name kMDItemVersion "%s"', appObject:path()))
-  local major, minor, patch = string.match(version, "(%d+)%.(%d+)%.(%d+)")
-  major = tonumber(major)
-  minor = tonumber(minor)
-  patch = tonumber(patch)
-  local mods
-  if major < 1 or (major == 1 and minor < 1) or (major == 1 and minor == 1 and patch < 1) then
-    mods = ""
-  else
-    mods = "⌃"
-  end
-  return mods
+  return versionLessThan("1.1.1")(appObject) and "" or "⌃"
 end
 local iCopyMod
 
@@ -2011,9 +2054,7 @@ appHotKeyCallbacks = {
       message = "关闭歌曲详情",
       condition = function(appObject)
         if appObject:focusedWindow() == nil then return false end
-        local version = hs.execute(string.format('mdls -r -name kMDItemVersion "%s"', appObject:path()))
-        local major, minor, patch = string.match(version, "(%d+)%.(%d+)%.(%d+)")
-        if tonumber(major) < 9 then
+        if versionLessThan("9")(appObject) then
           local song = localizedString("COMMON_SONG", appObject:bundleID(), { localeDir = false })
           local detail = localizedString("COMMON_DETAIL", appObject:bundleID(), { localeDir = false })
           local btnName = song .. detail
@@ -3018,70 +3059,70 @@ appHotKeyCallbacks = {
     ["select1stItem"] = {
       mods = "⌘", key = "1",
       message = "Select 1st Item",
-      bindCondition = iCopySelectHotkeyRemapRequired,
+      bindCondition = versionLessThan("1.1.3"),
       windowFilter = iCopyWindowFilter,
       fn = iCopySelectHotkeyRemap(1)
     },
     ["select2ndItem"] = {
       mods = "⌘", key = "2",
       message = "Select 2nd Item",
-      bindCondition = iCopySelectHotkeyRemapRequired,
+      bindCondition = versionLessThan("1.1.3"),
       windowFilter = iCopyWindowFilter,
       fn = iCopySelectHotkeyRemap(2)
     },
     ["select3rdItem"] = {
       mods = "⌘", key = "3",
       message = "Select 3rd Item",
-      bindCondition = iCopySelectHotkeyRemapRequired,
+      bindCondition = versionLessThan("1.1.3"),
       windowFilter = iCopyWindowFilter,
       fn = iCopySelectHotkeyRemap(3)
     },
     ["select4thItem"] = {
       mods = "⌘", key = "4",
       message = "Select 4th Item",
-      bindCondition = iCopySelectHotkeyRemapRequired,
+      bindCondition = versionLessThan("1.1.3"),
       windowFilter = iCopyWindowFilter,
       fn = iCopySelectHotkeyRemap(4)
     },
     ["select5thItem"] = {
       mods = "⌘", key = "5",
       message = "Select 5th Item",
-      bindCondition = iCopySelectHotkeyRemapRequired,
+      bindCondition = versionLessThan("1.1.3"),
       windowFilter = iCopyWindowFilter,
       fn = iCopySelectHotkeyRemap(5)
     },
     ["select6thItem"] = {
       mods = "⌘", key = "6",
       message = "Select 6th Item",
-      bindCondition = iCopySelectHotkeyRemapRequired,
+      bindCondition = versionLessThan("1.1.3"),
       windowFilter = iCopyWindowFilter,
       fn = iCopySelectHotkeyRemap(6)
     },
     ["select7thItem"] = {
       mods = "⌘", key = "7",
       message = "Select 7th Item",
-      bindCondition = iCopySelectHotkeyRemapRequired,
+      bindCondition = versionLessThan("1.1.3"),
       windowFilter = iCopyWindowFilter,
       fn = iCopySelectHotkeyRemap(7)
     },
     ["select8thItem"] = {
       mods = "⌘", key = "8",
       message = "Select 8th Item",
-      bindCondition = iCopySelectHotkeyRemapRequired,
+      bindCondition = versionLessThan("1.1.3"),
       windowFilter = iCopyWindowFilter,
       fn = iCopySelectHotkeyRemap(8)
     },
     ["select9thItem"] = {
       mods = "⌘", key = "9",
       message = "Select 9th Item",
-      bindCondition = iCopySelectHotkeyRemapRequired,
+      bindCondition = versionLessThan("1.1.3"),
       windowFilter = iCopyWindowFilter,
       fn = iCopySelectHotkeyRemap(9)
     },
     ["select10thItem"] = {
       mods = "⌘", key = "0",
       message = "Select 10th Item",
-      bindCondition = iCopySelectHotkeyRemapRequired,
+      bindCondition = versionLessThan("1.1.3"),
       windowFilter = iCopyWindowFilter,
       fn = iCopySelectHotkeyRemap(10)
     },
