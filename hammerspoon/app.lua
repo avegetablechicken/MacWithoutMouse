@@ -2230,6 +2230,7 @@ appHotKeyCallbacks = {
   {
     ["allowConnection"] = {
       message = "Allow Connection",
+      bindCondition = versionLessThan("2.9.1"),
       windowFilter = {
         allowTitles = "^LuLu Alert$"
       },
@@ -2242,6 +2243,7 @@ appHotKeyCallbacks = {
     },
     ["blockConnection"] = {
       message = "Block Connection",
+      bindCondition = versionLessThan("2.9.1"),
       windowFilter = {
         allowTitles = "^LuLu Alert$"
       },
