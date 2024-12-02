@@ -719,31 +719,33 @@ local function weiboNavigateToSideBarCondition(idx, isCommon)
     if source == nil then return end
     local start, stop
     if isCommon then
-      start = source:find("Nav_title")
-      if start == nil then
-        hs.timer.usleep(1 * 1000000)
-        source = getTabSource(appObject)
-        start = source:find("Nav_title")
-      end
-      if start == nil then return false end
-      stop = source:find("自定义分组", start + 1)
-    else
-      start = source:find("自定义分组")
+      local header = [[<h2 class="Nav_title_[^>]-">首页</h2>]]
+      local tailer = [[<div class="[^>]-Home_split_[^>]-">]]
+      _, start = source:find(header)
       if start == nil then
         hs.timer.usleep(1 * 1000000)
         source = getTabSource(appObject)
         if source == nil then return end
-        start = source:find("自定义分组")
+        _, start = source:find(header)
       end
       if start == nil then return false end
-      stop = source:find([[<span class="woo-button-content"> 收起 </span>]], start + 1)
-      if stop == nil then
-        stop = source:find([[<span class="woo-button-content"> 展开 </span>]], start + 1)
+      stop = source:find(tailer, start + 1)
+    else
+      local header = [[<h3 class="Home_title_[^>]-">自定义分组</h3>]]
+      local tailer = [[<button class="[^>]-Home_btn_[^>]-">]]
+      _, start = source:find(header)
+      if start == nil then
+        hs.timer.usleep(1 * 1000000)
+        source = getTabSource(appObject)
+        if source == nil then return end
+        _, start = source:find(header)
       end
+      if start == nil then return false end
+      stop = source:find(tailer, start + 1)
     end
-    source = source:sub(start, stop)
+    source = source:sub(start + 1, stop - 1)
     local cnt = isCommon and 1 or 0
-    for url in string.gmatch(source, [[<a class="ALink_none.-href="/(mygroup.-)">]]) do
+    for url in string.gmatch(source, [[<a class="ALink_none[^>]-href="/(mygroup.-)">]]) do
       cnt = cnt + 1
       if cnt == idx then return true, url end
     end
@@ -784,7 +786,7 @@ local function douyinNavigateToTabCondition(idx)
     if source == nil then return end
     local cnt = 0
     local lastURL = ""
-    for url in string.gmatch(source, [[<div class="tab\-.-><a href="(.-)"]]) do
+    for url in string.gmatch(source, [[<div class="tab\-[^>]-><a href="(.-)"]]) do
       if url ~= lastURL then cnt = cnt + 1 end
       if cnt == idx then return true, url end
       lastURL = url
