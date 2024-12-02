@@ -1120,7 +1120,7 @@ local specialCommonHotkeyConfigs = {
 appHotKeyCallbacks = {
   ["com.apple.finder"] =
   {
-    ["recentFolders"] = {
+    ["openRecent"] = {
       message = localizedMessage("Recent Folders"),
       condition = checkMenuItem({ "Go", "Recent Folders" }),
       fn = function(menuItemPath, appObject)

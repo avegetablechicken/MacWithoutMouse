@@ -534,7 +534,7 @@
     },
 
     "com.apple.finder": {
-      "recentFolders": {
+      "openRecent": {
         "mods": "control",
         "key": "R"
       },
