@@ -351,8 +351,10 @@ local function getSubMenuHotkeys(t, menuItem, titleAsEntry, titlePrefix, isAppMe
           startPatch = true
         end
         if startPatch then
-          t[i].msg = "🌐︎" .. t[i].msg
-          t[i].idx = "🌐︎" .. t[i].idx
+          if t[i].idx:find("🌐︎") == nil then
+            t[i].msg = "🌐︎" .. t[i].msg
+            t[i].idx = "🌐︎" .. t[i].idx
+          end
         end
         if startPatch and t[i].idx == "🌐︎⌃R" then
           break
