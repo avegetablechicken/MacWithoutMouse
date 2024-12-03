@@ -1437,7 +1437,7 @@ appHotKeyCallbacks = {
       fn = function(appObject) hs.eventtap.keyStroke("⌘⌥", "R", nil, appObject) end
     },
     ["openRecent"] = {
-      message = localizedMessage("Open Recent"),
+      message = "Open Recent",
       condition = function(appObject)
         local enabled, menuItem = checkMenuItem({ "File", "Open Recent", "More…" })(appObject)
         if enabled then
