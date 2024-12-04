@@ -334,8 +334,13 @@ local function getResourceDir(bundleID, frameworkName)
   if hs.fs.attributes(appContentPath) == nil then
     resourceDir = hs.application.pathForBundleID(bundleID) .. "/WrappedBundle/.."
   elseif frameworkName ~= nil then
-    local frameworkDir = hs.execute(string.format(
-        "find '%s' -type d -name '%s' | head -n 1 | tr -d '\\n'", appContentPath, frameworkName))
+    local frameworkDir
+    if hs.fs.attributes(frameworkName) ~= nil then
+      frameworkDir = frameworkName
+    else
+      frameworkDir = hs.execute(string.format(
+          "find '%s' -type d -name '%s' | head -n 1 | tr -d '\\n'", appContentPath, frameworkName))
+    end
     if frameworkName:sub(-10) == ".framework" then
       resourceDir = frameworkDir .. "/Resources"
     elseif frameworkName:sub(-4) == ".app"
