@@ -909,7 +909,7 @@ local function commonLocalizedMessage(message)
   if message == "Close Window" or message == "Minimize" then
     return function(appObject)
       local appLocale = applicationLocales(appObject:bundleID())[1]
-      local appLocalesSupported = hs.application.localizationsForBundleID(appObject:bundleID())
+      local appLocalesSupported = hs.application.localizationsForBundleID(appObject:bundleID()) or {}
       local locale = getMatchedLocale(appLocale, appLocalesSupported)
       if locale ~= nil then
         local resourceDir = '/System/Library/Frameworks/AppKit.framework/Resources'
@@ -923,7 +923,7 @@ local function commonLocalizedMessage(message)
   elseif message == "Hide" or message == "Quit" then
     return function(appObject)
       local appLocale = applicationLocales(appObject:bundleID())[1]
-      local appLocalesSupported = hs.application.localizationsForBundleID(appObject:bundleID())
+      local appLocalesSupported = hs.application.localizationsForBundleID(appObject:bundleID()) or {}
       local locale = getMatchedLocale(appLocale, appLocalesSupported)
       if locale ~= nil then
         local menuItemTitle = localizedString(message .. ' App Store', 'com.apple.AppStore',
@@ -1271,7 +1271,7 @@ appHotKeyCallbacks = {
       message = localizedMessage("Delete Conversation…"),
       condition = checkMenuItem({
         getOSVersion() < OS.Ventura and "File" or "Conversations",
-        "Delete Conversation…",
+        "Delete Conversation…"
       }),
       fn = function(menuItemTitle, appObject) deleteSelectedMessage(appObject, menuItemTitle) end
     },
