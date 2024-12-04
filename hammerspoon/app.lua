@@ -1047,6 +1047,19 @@ local function receiveMenuItem(menuItemTitle, appObject)
   appObject:selectMenuItem(menuItemTitle)
 end
 
+-- show the menu item returned by the condition
+-- work as hotkey callback
+local function showMenuItem(menuItemTitle, appObject)
+  local fn = function()
+    appObject:selectMenuItem({ menuItemTitle[1] })
+    if #menuItemTitle > 1 then
+      appObject:selectMenuItem(menuItemTitle)
+    end
+  end
+  fn = showMenuItemWrapper(fn)
+  fn()
+end
+
 -- click the position returned by the condition
 -- work as hotkey callback
 local function receivePosition(position, appObject)
@@ -1171,12 +1184,7 @@ appHotKeyCallbacks = {
     ["openRecent"] = {
       message = localizedMessage("Recent Folders"),
       condition = checkMenuItem({ "Go", "Recent Folders" }),
-      fn = function(menuItemPath, appObject)
-        showMenuItemWrapper(function()
-          appObject:selectMenuItem({ menuItemPath[1] })
-          appObject:selectMenuItem(menuItemPath)
-        end)()
-      end
+      fn = showMenuItem
     },
     ["open1stSidebarItem"] = {
       message = getFinderSidebarItemTitle(1),
@@ -1445,14 +1453,11 @@ appHotKeyCallbacks = {
           return checkMenuItem({ "File", "Open Recent" })(appObject)
         end
       end,
-      fn = function(menuItem, appObject)
-        if #menuItem == 3 then
-          appObject:selectMenuItem(menuItem)
+      fn = function(menuItemTitle, appObject)
+        if #menuItemTitle == 3 then
+          appObject:selectMenuItem(menuItemTitle)
         else
-          showMenuItemWrapper(function()
-            appObject:selectMenuItem({ menuItem[1] })
-            appObject:selectMenuItem(menuItem)
-          end)()
+          showMenuItem(menuItemTitle, appObject)
         end
       end
     }
@@ -1478,12 +1483,7 @@ appHotKeyCallbacks = {
     ["recentDocuments"] = {
       message = localizedMessage("Recent Documents"),
       condition = checkMenuItem({ "File", "Recent Documents" }),
-      fn = function(menuItemPath, appObject)
-        showMenuItemWrapper(function()
-          appObject:selectMenuItem({menuItemPath[1]})
-          appObject:selectMenuItem(menuItemPath)
-        end)()
-      end
+      fn = showMenuItem
     },
     ["revealPDFInFinder"] = {
       message = localizedMessage("Reveal PDF in Finder..."),
@@ -1785,12 +1785,7 @@ appHotKeyCallbacks = {
     ["recentLibraries"] = {
       message = "Recent Libraries",
       condition = checkMenuItem({ "File", "Recent libraries" }),
-      fn = function(menuItemPath, appObject)
-        showMenuItemWrapper(function()
-          appObject:selectMenuItem({ menuItemPath[1] })
-          appObject:selectMenuItem(menuItemPath)
-        end)()
-      end
+      fn = showMenuItem
     },
     ["remapPrevLibrary"] = {
       mods = get(KeybindingConfigs.hotkeys.appCommon, "remapPreviousTab", "mods"),
@@ -1925,12 +1920,7 @@ appHotKeyCallbacks = {
     ["openRecent"] = {
       message = localizedMessage("Open Library"),
       condition = checkMenuItem({ "File", "Open Library" }),
-      fn = function(menuItemPath, appObject)
-        showMenuItemWrapper(function()
-          appObject:selectMenuItem({ menuItemPath[1] })
-          appObject:selectMenuItem(menuItemPath)
-        end)()
-      end
+      fn = showMenuItem
     }
   },
 
@@ -2624,12 +2614,7 @@ appHotKeyCallbacks = {
     ["openRecent"] = {
       message = localizedMessage("Open Recent"),
       condition = checkMenuItem({ "Game", "Open Recent" }),
-      fn = function(menuItemPath, appObject)
-        showMenuItemWrapper(function()
-          appObject:selectMenuItem({ menuItemPath[1] })
-          appObject:selectMenuItem(menuItemPath)
-        end)()
-      end
+      fn = showMenuItem
     },
   },
 
@@ -2638,12 +2623,7 @@ appHotKeyCallbacks = {
     ["openRecent"] = {
       message = localizedMessage("Open Recent"),
       condition = checkMenuItem({ "Connect", "Open Recent" }),
-      fn = function(menuItemPath, appObject)
-        showMenuItemWrapper(function()
-          appObject:selectMenuItem({ menuItemPath[1] })
-          appObject:selectMenuItem(menuItemPath)
-        end)()
-      end
+      fn = showMenuItem
     },
   },
 
@@ -4181,10 +4161,7 @@ local function registerOpenRecent(appObject)
   end
   local menuItem, menuItemPath = findMenuItem(appObject, { "File",  "Open Recent" })
   if menuItem ~= nil then
-    local fn = showMenuItemWrapper(function()
-        appObject:selectMenuItem({ menuItemPath[1] })
-        appObject:selectMenuItem(menuItemPath)
-    end)
+    local fn = function() showMenuItem(menuItemPath, appObject) end
     local cond = function()
       local menuItemCond = appObject:findMenuItem(menuItemPath)
       return menuItemCond ~= nil and menuItemCond.enabled
