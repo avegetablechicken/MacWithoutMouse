@@ -912,7 +912,7 @@ local function commonLocalizedMessage(message)
       local appLocalesSupported = hs.application.localizationsForBundleID(appObject:bundleID())
       local locale = getMatchedLocale(appLocale, appLocalesSupported)
       if locale ~= nil then
-        local resourceDir = '/System/Library/Frameworks/AppKit.framework/Versions/C/Resources'
+        local resourceDir = '/System/Library/Frameworks/AppKit.framework/Resources'
         locale = getMatchedLocale(locale, resourceDir, 'lproj')
         if locale ~= nil then
           return localizeByLoctable(message, resourceDir, 'MenuCommands', locale, {})

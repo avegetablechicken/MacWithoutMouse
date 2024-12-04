@@ -1802,7 +1802,7 @@ end
 function localizeCommonMenuItemTitles(locale)
   if locale == 'en' or locale:sub(1, 3) == 'en-' or locale:sub(1, 3) == 'en_' then return end
 
-  local resourceDir = '/System/Library/Frameworks/AppKit.framework/Versions/C/Resources'
+  local resourceDir = '/System/Library/Frameworks/AppKit.framework/Resources'
   local matchedLocale = getMatchedLocale(locale, resourceDir, 'lproj')
   for _, title in ipairs {
       'File', 'View', 'Window', 'Help',
