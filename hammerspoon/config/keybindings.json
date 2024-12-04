@@ -1051,6 +1051,10 @@
       "export": {
         "mods": "command",
         "key": "E"
+      },
+      "openRecent": {
+        "mods": "control",
+        "key": "R"
       }
     },
     "com.tencent.xinWeChat": {

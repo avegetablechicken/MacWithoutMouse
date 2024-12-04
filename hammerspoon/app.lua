@@ -1921,6 +1921,16 @@ appHotKeyCallbacks = {
       message = localizedMessage({ "Share", "File…" }),
       condition = checkMenuItem({ "File", "Share", "File…" }),
       fn = receiveMenuItem
+    },
+    ["openRecent"] = {
+      message = localizedMessage("Open Library"),
+      condition = checkMenuItem({ "File", "Open Library" }),
+      fn = function(menuItemPath, appObject)
+        showMenuItemWrapper(function()
+          appObject:selectMenuItem({ menuItemPath[1] })
+          appObject:selectMenuItem(menuItemPath)
+        end)()
+      end
     }
   },
 
