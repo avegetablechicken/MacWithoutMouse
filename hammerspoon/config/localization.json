@@ -11,6 +11,9 @@
   "com.google.Chrome": {
     "标签页": "Tab"
   },
+  "com.tencent.qq": {
+    "切换全屏": "Toggle fullscreen"
+  },
   "net.xmind.vana.app": {
     "插入": "Insert",
     "工具": "Tools",
