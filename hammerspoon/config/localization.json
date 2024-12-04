@@ -2,6 +2,7 @@
   "resources": {
     "com.apple.MobileSMS": "/System/iOSSupport/System/Library/PrivateFrameworks/ChatKit.framework",
     "com.apple.Safari": "/System/Library/PrivateFrameworks/Safari.framework",
+    "com.apple.Home": "/System/Library/PrivateFrameworks/UIKitMacHelper.framework",
     "com.tencent.meeting": "WeMeetResource.bundle",
     "com.charliemonroe.Downie-4": "XUCore.framework",
     "com.charliemonroe.Permute-3": "XUCore.framework"
