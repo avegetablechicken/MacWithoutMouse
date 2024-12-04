@@ -1283,14 +1283,19 @@ local function delocalizeByLoctable(str, resourceDir, localeFile, locale)
         table.insert(loctableFiles, file)
       end
     end
+    local preferentialLoctableFiles = {}
     if #loctableFiles > 10 then
-      loctableFiles = hs.fnutils.filter(loctableFiles, function(file)
+      preferentialLoctableFiles = hs.fnutils.filter(loctableFiles, function(file)
         for _, pattern in ipairs(preferentialLocaleFilePatterns) do
           local pattern = "^" .. pattern  .. "%.loctable$"
           if string.match(file, pattern) ~= nil then return true end
         end
         return false
       end)
+    end
+    for _, file in ipairs(preferentialLoctableFiles) do
+      local result = delocalizeByLoctableImpl(str, resourceDir .. '/' .. file, locale)
+      if result ~= nil then return result end
     end
     for _, file in ipairs(loctableFiles) do
       local result = delocalizeByLoctableImpl(str, resourceDir .. '/' .. file, locale)
