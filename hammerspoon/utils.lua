@@ -304,13 +304,14 @@ end
 
 local localeTmpDir = hs.fs.temporaryDirectory() .. 'org.hammerspoon.Hammerspoon/locale/'
 
-local localizationMap, localizationFrameworks = {}, {}
+localizationMap = {}
+local localizationFrameworks = {}
 if hs.fs.attributes("config/localization.json") ~= nil then
   localizationMap = hs.json.read("config/localization.json")
-  localizationMap['common'] = {}
   localizationFrameworks = localizationMap['resources']
   localizationMap['resources'] = nil
 end
+localizationMap.common = {}
 
 function systemLocales()
   local locales, ok = hs.execute("defaults read -globalDomain AppleLanguages | tr -d '()\" \\n'")
@@ -542,7 +543,7 @@ local function localizeByLoctableImpl(str, filePath, fileStem, locale, localesDi
   end
 end
 
-local function localizeByLoctable(str, resourceDir, localeFile, loc, localesDict)
+function localizeByLoctable(str, resourceDir, localeFile, loc, localesDict)
   if localeFile ~= nil then
     local fullPath = resourceDir .. '/' .. localeFile .. '.loctable'
     if hs.fs.attributes(fullPath) ~= nil then
@@ -1776,59 +1777,32 @@ end
 function localizeCommonMenuItemTitles(locale)
   if locale == 'en' or locale:sub(1, 3) == 'en-' or locale:sub(1, 3) == 'en_' then return end
 
-  local shouldWrite = false
-
-  local sampleBundleID = "com.apple.Notes"
-  if deLocaleMap[sampleBundleID] == nil then
-    deLocaleMap[sampleBundleID] = {}
-  end
-  if deLocaleMap[sampleBundleID][locale] == nil then
-    deLocaleMap[sampleBundleID][locale] = {}
-  end
-  for _, title in ipairs { 'File', 'Edit', 'Format', 'View', 'Window', 'Help' } do
-    local localizedTitle = hs.fnutils.indexOf(deLocaleMap[sampleBundleID][locale], title)
+  local resourceDir = '/System/Library/Frameworks/AppKit.framework/Versions/C/Resources'
+  local matchedLocale = getMatchedLocale(locale, resourceDir, 'lproj')
+  for _, title in ipairs {
+      'File', 'View', 'Window', 'Help',
+      'Enter Full Screen', 'Exit Full Screen',
+      'Fill', 'Center', 'Move & Resize', 'Return to Previous Size',
+      'Left', 'Right', 'Top', 'Bottom',
+      'Left & Right', 'Right & Left', 'Top & Bottom', 'Bottom & Top',
+      'Left & Quarters', 'Right & Quarters', 'Top & Quarters', 'Bottom & Quarters',
+  } do
+    local localizedTitle = hs.fnutils.indexOf(localizationMap.common, title)
     if localizedTitle == nil then
-      localizedTitle = localizedString(title, sampleBundleID, { locale = locale })
+      localizedTitle = localizeByLoctable(title, resourceDir, 'MenuCommands', matchedLocale, {})
       if localizedTitle ~= nil then
-        deLocaleMap[sampleBundleID][locale][localizedTitle] = title
-        shouldWrite = true
+        localizationMap.common[localizedTitle] = title
       end
     end
-    if localizedTitle ~= nil then
-      localizationMap.common[localizedTitle] = title
-    end
   end
-  if deLocaleDir[sampleBundleID] == nil then
-    deLocaleDir[sampleBundleID] = {}
-  end
-  deLocaleDir[sampleBundleID][locale] = appLocaleDir[sampleBundleID][locale]
-
-  sampleBundleID = "com.apple.finder"
-  if deLocaleMap[sampleBundleID] == nil then
-    deLocaleMap[sampleBundleID] = {}
-  end
-  if deLocaleMap[sampleBundleID][locale] == nil then
-    deLocaleMap[sampleBundleID][locale] = {}
-  end
-  local localizedTitle = hs.fnutils.indexOf(deLocaleMap[sampleBundleID][locale], 'View')
-  if localizedTitle == nil then
-    localizedTitle = localizedString('View', sampleBundleID, { locale = locale })
-    if localizedTitle ~= nil then
-      if deLocaleDir[sampleBundleID] == nil then
-        deLocaleDir[sampleBundleID] = {}
+  for _, title in ipairs { 'Edit', 'Emoji & Symbols' } do
+    local localizedTitle = hs.fnutils.indexOf(localizationMap.common, title)
+    if localizedTitle == nil then
+      localizedTitle = localizeByLoctable(title, resourceDir, 'InputManager', matchedLocale, {})
+      if localizedTitle ~= nil then
+        localizationMap.common[localizedTitle] = title
       end
-      deLocaleDir[sampleBundleID][locale] = appLocaleDir[sampleBundleID][locale]
-      deLocaleMap[sampleBundleID][locale][localizedTitle] = 'View'
-      shouldWrite = true
     end
-  end
-  if localizedTitle ~= nil then
-    localizationMap.common[localizedTitle] = 'View'
-  end
-
-  if shouldWrite then
-    hs.json.write({ locale = deLocaleDir, map = deLocaleMap },
-                  menuItemTmpFile, false, true)
   end
 end
 

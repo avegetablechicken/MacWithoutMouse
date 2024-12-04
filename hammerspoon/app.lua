@@ -906,16 +906,19 @@ end
 
 -- fetch localized string as hotkey message after activating the app
 local function commonLocalizedMessage(message)
-  if message == "Close Window" or message == "Minimise" then
+  if message == "Close Window" or message == "Minimize" then
     return function(appObject)
       local appLocale = applicationLocales(appObject:bundleID())[1]
       local appLocalesSupported = hs.application.localizationsForBundleID(appObject:bundleID())
       local locale = getMatchedLocale(appLocale, appLocalesSupported)
       if locale ~= nil then
-        return localizedString(message, 'com.apple.finder', { locale = locale })
-      else
-        return message
+        local resourceDir = '/System/Library/Frameworks/AppKit.framework/Versions/C/Resources'
+        locale = getMatchedLocale(locale, resourceDir, 'lproj')
+        if locale ~= nil then
+          return localizeByLoctable(message, resourceDir, 'MenuCommands', locale, {})
+        end
       end
+      return message
     end
   elseif message == "Hide" or message == "Quit" then
     return function(appObject)
@@ -1128,7 +1131,7 @@ local specialCommonHotkeyConfigs = {
   },
   ["minimize"] = {
     mods = "⌘", key = "M",
-    message = commonLocalizedMessage("Minimise"),
+    message = commonLocalizedMessage("Minimize"),
     condition = function(appObject)
       local winObj = appObject:focusedWindow()
       return winObj ~= nil and winObj:role() == "AXWindow", winObj

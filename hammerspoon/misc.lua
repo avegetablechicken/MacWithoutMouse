@@ -284,12 +284,24 @@ local function menuItemHotkeyIdx(mods, key)
   return idx
 end
 
-local function getSubMenuHotkeys(t, menuItem, titleAsEntry, titlePrefix, isAppMenu, bundleID)
+local windowMenuItemsSinceSequio1 = {
+  ["⌃F"] = "Fill", ["⌃C"] = "Center"
+}
+local windowMenuItemsSinceSequio2 = {
+  ["⌃R"] = "Return to Previous Size",
+  ["⌃←"] = "Left", ["⌃→"] = "Right",
+  ["⌃↑"] = "Top", ["⌃↓"] = "Bottom",
+  ["⌃⇧←"] = "Left & Right", ["⌃⇧→"] = "Right & Left",
+  ["⌃⇧↑"] = "Top & Bottom", ["⌃⇧↓"] = "Bottom & Top",
+  ["⌥⌃⇧←"] = "Left & Quarters", ["⌥⌃⇧→"] = "Right & Quarters",
+  ["⌥⌃⇧↑"] = "Top & Quarters", ["⌥⌃⇧↓"] = "Bottom & Quarters",
+}
+local function getSubMenuHotkeys(t, menuItem, titleAsEntry, titlePrefix, bundleID)
   if menuItem.AXChildren == nil then return end
   if titleAsEntry == true then
     table.insert(t, menuItem.AXTitle)
   end
-  local startIdx = #t
+  local osv = getOSVersion()
   for i, subItem in ipairs(menuItem.AXChildren[1]) do
     if i > 1 and menuItem.AXChildren[1][i - 1] == subItem then
       goto L_CONTINUE
@@ -308,16 +320,18 @@ local function getSubMenuHotkeys(t, menuItem, titleAsEntry, titlePrefix, isAppMe
         and string.byte(subItem.AXMenuItemCmdChar, 1) ~= 3 then
       if subItem.AXMenuItemCmdChar == 'E' and subItem.AXMenuItemCmdGlyph == ""
           and #subItem.AXMenuItemCmdModifiers == 0 and subItem.AXMenuItemMarkChar == ""
-          and subItem.AXChildren == nil
-          and (not isAppMenu and delocalizedMenuBarItem(menuItem.AXTitle, bundleID) == 'Edit') then
-        idx = "🌐︎E"
+          and subItem.AXChildren == nil then
+        if subItem.AXTitle == "Emoji & Symbols"
+            or localizationMap.common[subItem.AXTitle] == "Emoji & Symbols" then
+          idx = "🌐︎E"
+        end
       elseif subItem.AXMenuItemCmdChar == 'F' and subItem.AXMenuItemCmdGlyph == ""
           and #subItem.AXMenuItemCmdModifiers == 0 and subItem.AXMenuItemMarkChar == ""
           and subItem.AXChildren == nil then
         if subItem.AXTitle == "Enter Full Screen"
             or subItem.AXTitle == "Exit Full Screen"
-            or subItem.AXTitle == localizedString("Enter Full Screen", 'com.apple.finder')
-            or subItem.AXTitle == localizedString("Exit Full Screen", 'com.apple.finder')
+            or localizationMap.common[subItem.AXTitle] == "Enter Full Screen"
+            or localizationMap.common[subItem.AXTitle] == "Exit Full Screen"
             or subItem.AXTitle == localizedString("Enter Full Screen", bundleID)
             or subItem.AXTitle == localizedString("Exit Full Screen", bundleID) then
           idx = "🌐︎F"
@@ -336,38 +350,39 @@ local function getSubMenuHotkeys(t, menuItem, titleAsEntry, titlePrefix, isAppMe
       end
     end
     if idx ~= nil then
+      if osv >= OS.Sequoia then
+        if menuItem.AXTitle == 'Window'
+            or localizationMap.common[menuItem.AXTitle] == 'Window' then
+          for hkIdx, itemTitle in pairs(windowMenuItemsSinceSequio1) do
+            if idx == hkIdx and (subItem.AXTitle == itemTitle
+                or localizationMap.common[subItem.AXTitle] == itemTitle) then
+              idx = "🌐︎" .. idx
+              break
+            end
+          end
+        elseif menuItem.AXTitle == 'Move & Resize'
+            or localizationMap.common[menuItem.AXTitle] == 'Move & Resize' then
+          for hkIdx, itemTitle in pairs(windowMenuItemsSinceSequio2) do
+            if idx == hkIdx and (subItem.AXTitle == itemTitle
+                or localizationMap.common[subItem.AXTitle] == itemTitle) then
+              idx = "🌐︎" .. idx
+              break
+            end
+          end
+        end
+      end
       table.insert(t, { idx = idx, msg = idx .. ": " .. title,
                         kind = HK.IN_APP, valid = subItem.AXEnabled })
     end
-    getSubMenuHotkeys(t, subItem, false, titlePrefix and title or nil, isAppMenu, bundleID)
+    getSubMenuHotkeys(t, subItem, false, titlePrefix and title or nil, bundleID)
     ::L_CONTINUE::
-  end
-  if getOSVersion() >= OS.Sequoia and menuItem.AXRole == "AXMenuBarItem" then
-    if not isAppMenu and delocalizedMenuBarItem(menuItem.AXTitle, bundleID) == 'Window' then
-      local startPatch = false
-      for i=startIdx+1,#t do
-        if not startPatch and i < #t
-            and t[i].idx == "⌃F" and t[i + 1].idx == "⌃C" then
-          startPatch = true
-        end
-        if startPatch then
-          if t[i].idx:find("🌐︎") == nil then
-            t[i].msg = "🌐︎" .. t[i].msg
-            t[i].idx = "🌐︎" .. t[i].idx
-          end
-        end
-        if startPatch and t[i].idx == "🌐︎⌃R" then
-          break
-        end
-      end
-    end
   end
 end
 
 local function getMenuHotkeys(appObject, titleAsEntry, titlePrefix)
   local appHotkeys = {}
   for i, menuItem in ipairs(getMenuItems(appObject)) do
-    getSubMenuHotkeys(appHotkeys, menuItem, titleAsEntry, titlePrefix, i == 1, appObject:bundleID())
+    getSubMenuHotkeys(appHotkeys, menuItem, titleAsEntry, titlePrefix, appObject:bundleID())
   end
   return appHotkeys
 end
