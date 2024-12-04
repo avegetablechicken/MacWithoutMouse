@@ -1097,6 +1097,8 @@ function localizedString(str, bundleID, params)
   if appLocale == nil then
     local locales = applicationLocales(bundleID)
     appLocale = locales[1]
+    local appLocalesSupported = hs.application.localizationsForBundleID(bundleID) or {}
+    if getMatchedLocale(appLocale, appLocalesSupported) == nil then return nil end
   end
   local localeDetails = hs.host.locale.details(appLocale)
   if localeDetails.languageCode == 'en' then
@@ -1637,6 +1639,8 @@ function delocalizedString(str, bundleID, params)
   if appLocale == nil then
     local locales = applicationLocales(bundleID)
     appLocale = locales[1]
+    local appLocalesSupported = hs.application.localizationsForBundleID(bundleID) or {}
+    if getMatchedLocale(appLocale, appLocalesSupported) == nil then return nil end
   end
   local localeDetails = hs.host.locale.details(appLocale)
   if localeDetails.languageCode == 'en' then return str end
