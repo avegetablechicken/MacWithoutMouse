@@ -1270,10 +1270,6 @@ appHotKeyCallbacks = {
     },
     ["deleteAllConversations"] = {
       message = "Delete All Conversations",
-      bindCondition = function(appObject)
-        local appLocale = applicationLocales(appObject:bundleID())[1]
-        return appLocale:sub(1, 2) == "en" or appLocale == "zh-Hans-CN"
-      end,
       fn = deleteAllMessages
     },
     ["goToPreviousConversation"] = {

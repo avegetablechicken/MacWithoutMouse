@@ -1,13 +1,11 @@
 {
   "resources": {
+    "com.apple.MobileSMS": "/System/iOSSupport/System/Library/PrivateFrameworks/ChatKit.framework",
     "com.tencent.meeting": "WeMeetResource.bundle",
     "com.charliemonroe.Downie-4": "XUCore.framework",
     "com.charliemonroe.Permute-3": "XUCore.framework"
   },
 
-  "com.apple.MobileSMS": {
-    "删除对话…": "Delete Conversation…"
-  },
   "com.apple.Safari": {
     "开发": "Develop"
   },
