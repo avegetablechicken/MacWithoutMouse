@@ -341,11 +341,9 @@ local function getResourceDir(bundleID, frameworkName)
       frameworkDir = hs.execute(string.format(
           "find '%s' -type d -name '%s' | head -n 1 | tr -d '\\n'", appContentPath, frameworkName))
     end
-    if frameworkName:sub(-10) == ".framework" then
+    if hs.fs.attributes(frameworkDir .. "/Contents") == nil then
       resourceDir = frameworkDir .. "/Resources"
-    elseif frameworkName:sub(-4) == ".app"
-      or frameworkName:sub(-7) == ".bundle"
-      or frameworkName:sub(-4) == ".xpc" then
+    else
       resourceDir = frameworkDir .. "/Contents/Resources"
     end
     framework.user = true
