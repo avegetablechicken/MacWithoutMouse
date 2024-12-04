@@ -340,6 +340,19 @@ local function getResourceDir(bundleID, frameworkName)
     else
       frameworkDir = hs.execute(string.format(
           "find '%s' -type d -name '%s' | head -n 1 | tr -d '\\n'", appContentPath, frameworkName))
+      if frameworkDir == "" then
+        for _, searchDir in ipairs {
+          '/System/Library/Frameworks',
+          '/System/Library/PrivateFrameworks',
+          '/System/iOSSupport/System/Library/PrivateFrameworks',
+        } do
+          if hs.fs.attributes(searchDir .. '/' .. frameworkName) ~= nil then
+            frameworkDir = searchDir .. '/' .. frameworkName
+            break
+          end
+        end
+      end
+      if frameworkDir == "" then return nil, {} end
     end
     if hs.fs.attributes(frameworkDir .. "/Contents") == nil then
       resourceDir = frameworkDir .. "/Resources"
