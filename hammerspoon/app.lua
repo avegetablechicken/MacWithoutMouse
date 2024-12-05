@@ -1770,6 +1770,16 @@ appHotKeyCallbacks = {
     },
   },
 
+  ["com.openai.chat"] =
+  {
+    ["toggleSidebar"] = {
+      message = localizedMessage("Toggle Sidebar"),
+      fn = function(appObject)
+        selectMenuItem(appObject, { "View", "Toggle Sidebar" })
+      end
+    }
+  },
+
   ["JabRef"] =
   {
     ["preferences"] = {

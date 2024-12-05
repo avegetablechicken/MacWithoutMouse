@@ -983,6 +983,12 @@
         "key": "E"
       }
     },
+    "com.openai.chat": {
+      "toggleSidebar": {
+        "mods": ["control", "command"],
+        "key": "S"
+      }
+    },
     "com.eusoft.freeeudic": {
       "navigateToSearchField": {
         "mods": "command",
