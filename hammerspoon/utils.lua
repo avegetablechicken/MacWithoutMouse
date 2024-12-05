@@ -803,7 +803,7 @@ local function localizeByStrings(str, localeDir, localeFile, localesDict, locale
               if hs.fs.attributes(fullPath .. '/keyedobjects.nib') ~= nil then
                 fullPath = fullPath .. '/keyedobjects.nib'
               else
-                fullPath = hs.execute([[ls '%s'/keyedobjects* | tail -n 1 | tr -d '\n']], fullPath)
+                fullPath = hs.execute(string.format([[ls '%s'/keyedobjects* | tail -n 1 | tr -d '\n']], fullPath))
                 if fullPath == "" then return end
               end
             end
@@ -885,7 +885,7 @@ local function localizeByNIB(str, localeDir, localeFile, bundleID)
       if hs.fs.attributes(enNIBPath .. '/keyedobjects.nib') ~= nil then
         enNIBPath = enNIBPath .. '/keyedobjects.nib'
       else
-        enNIBPath = hs.execute([[ls '%s'/keyedobjects* | tail -n 1 | tr -d '\n']], enNIBPath)
+        enNIBPath = hs.execute(string.format([[ls '%s'/keyedobjects* | tail -n 1 | tr -d '\n']], enNIBPath))
         if enNIBPath == "" then return end
       end
     end
@@ -893,7 +893,7 @@ local function localizeByNIB(str, localeDir, localeFile, bundleID)
       if hs.fs.attributes(NIBPath .. '/keyedobjects.nib') ~= nil then
         NIBPath = NIBPath .. '/keyedobjects.nib'
       else
-        NIBPath = hs.execute([[ls '%s'/keyedobjects* | tail -n 1 | tr -d '\n']], NIBPath)
+        NIBPath = hs.execute(string.format([[ls '%s'/keyedobjects* | tail -n 1 | tr -d '\n']], NIBPath))
         if NIBPath == "" then return end
       end
     end
@@ -1334,7 +1334,7 @@ local function delocalizeByStrings(str, localeDir, localeFile, deLocalesInvDict)
           if hs.fs.attributes(fullPath .. '/keyedobjects.nib') ~= nil then
             fullPath = fullPath .. '/keyedobjects.nib'
           else
-            fullPath = hs.execute([[ls '%s'/keyedobjects* | tail -n 1 | tr -d '\n']], fullPath)
+            fullPath = hs.execute(string.format([[ls '%s'/keyedobjects* | tail -n 1 | tr -d '\n']], fullPath))
             if fullPath == "" then return end
           end
         end
@@ -1416,7 +1416,7 @@ local function delocalizeByNIB(str, localeDir, localeFile, bundleID)
       if hs.fs.attributes(NIBPath .. '/keyedobjects.nib') ~= nil then
         NIBPath = NIBPath .. '/keyedobjects.nib'
       else
-        NIBPath = hs.execute([[ls '%s'/keyedobjects* | tail -n 1 | tr -d '\n']], NIBPath)
+        NIBPath = hs.execute(string.format([[ls '%s'/keyedobjects* | tail -n 1 | tr -d '\n']], NIBPath))
         if NIBPath == "" then return end
       end
     end
@@ -1424,7 +1424,7 @@ local function delocalizeByNIB(str, localeDir, localeFile, bundleID)
       if hs.fs.attributes(enNIBPath .. '/keyedobjects.nib') ~= nil then
         enNIBPath = enNIBPath .. '/keyedobjects.nib'
       else
-        enNIBPath = hs.execute([[ls '%s'/keyedobjects* | tail -n 1 | tr -d '\n']], enNIBPath)
+        enNIBPath = hs.execute(string.format([[ls '%s'/keyedobjects* | tail -n 1 | tr -d '\n']], enNIBPath))
         if enNIBPath == "" then return end
       end
     end
