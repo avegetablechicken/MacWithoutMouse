@@ -1817,21 +1817,15 @@ function localizeCommonMenuItemTitles(locale)
     })
   end
   for _, title in ipairs(titleList) do
-    local localizedTitle = hs.fnutils.indexOf(localizationMap.common, title)
-    if localizedTitle == nil then
-      localizedTitle = localizeByLoctable(title, resourceDir, 'MenuCommands', matchedLocale, {})
-      if localizedTitle ~= nil then
-        localizationMap.common[localizedTitle] = title
-      end
+    local localizedTitle = localizeByLoctable(title, resourceDir, 'MenuCommands', matchedLocale, {})
+    if localizedTitle ~= nil then
+      localizationMap.common[localizedTitle] = title
     end
   end
   for _, title in ipairs { 'Edit', 'Emoji & Symbols' } do
-    local localizedTitle = hs.fnutils.indexOf(localizationMap.common, title)
-    if localizedTitle == nil then
-      localizedTitle = localizeByLoctable(title, resourceDir, 'InputManager', matchedLocale, {})
-      if localizedTitle ~= nil then
-        localizationMap.common[localizedTitle] = title
-      end
+    local localizedTitle = localizeByLoctable(title, resourceDir, 'InputManager', matchedLocale, {})
+    if localizedTitle ~= nil then
+      localizationMap.common[localizedTitle] = title
     end
   end
 end
