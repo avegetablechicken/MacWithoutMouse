@@ -1804,14 +1804,19 @@ function localizeCommonMenuItemTitles(locale)
 
   local resourceDir = '/System/Library/Frameworks/AppKit.framework/Resources'
   local matchedLocale = getMatchedLocale(locale, resourceDir, 'lproj')
-  for _, title in ipairs {
-      'File', 'View', 'Window', 'Help',
-      'Enter Full Screen', 'Exit Full Screen',
+  local titleList = {
+    'File', 'View', 'Window',
+    'Help', 'Enter Full Screen', 'Exit Full Screen',
+  }
+  if getOSVersion() >= OS.Sequoia then
+    titleList = hs.fnutils.concat(titleList, {
       'Fill', 'Center', 'Move & Resize', 'Return to Previous Size',
       'Left', 'Right', 'Top', 'Bottom',
       'Left & Right', 'Right & Left', 'Top & Bottom', 'Bottom & Top',
       'Left & Quarters', 'Right & Quarters', 'Top & Quarters', 'Bottom & Quarters',
-  } do
+    })
+  end
+  for _, title in ipairs(titleList) do
     local localizedTitle = hs.fnutils.indexOf(localizationMap.common, title)
     if localizedTitle == nil then
       localizedTitle = localizeByLoctable(title, resourceDir, 'MenuCommands', matchedLocale, {})
