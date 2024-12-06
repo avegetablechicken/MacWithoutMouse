@@ -2235,7 +2235,16 @@ function controlCenterLocalized(panel, key)
     key = "User"
   end
   panel = panel:gsub(" ", ""):gsub("‑", "")
-  return localizedString(key, "com.apple.controlcenter", panel)
+  local result = localizedString(key, "com.apple.controlcenter", panel)
+  if result == nil and panel == "Focus" then
+    result = localizedString(key, "com.apple.controlcenter",
+        { framework = "DoNotDisturb.framework" }, true)
+    if result == nil then
+      result = localizedString(key, "com.apple.controlcenter",
+          { framework = "DoNotDisturbKit.framework" }, true)
+    end
+  end
+  return result
 end
 
 function clickRightMenuBarItem(menuBarName, menuItem, subMenuItem, show)

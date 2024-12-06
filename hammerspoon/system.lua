@@ -1767,23 +1767,23 @@ function registerControlCenterHotKeys(panel)
     if osVersion < OS.Ventura then
       ok, toggleNames = hs.osascript.applescript([[
         tell application "System Events"
-          repeat until checkbox 2 of ]] .. pane .. [[ of application process "ControlCenter" exists
+          set pane to ]] .. pane .. [[ of application process "ControlCenter"
+          repeat until checkbox 2 of pane exists
             delay 0.1
           end repeat
-          return {title of checkbox 1 of ]] .. pane .. [[ of application process "ControlCenter", ¬
-                  title of checkbox 2 of ]] .. pane .. [[ of application process "ControlCenter"}
+          return title of checkboxes of pane
         end tell
       ]])
     else
       local toggleIdents
       ok, toggleIdents = hs.osascript.applescript([[
         tell application "System Events"
-          repeat until checkbox 2 of ]] .. pane .. [[ of application process "ControlCenter" exists
+          set pane to ]] .. pane .. [[ of application process "ControlCenter"
+          repeat until checkbox 2 of pane exists
             delay 0.1
           end repeat
-          set pane to ]] .. pane .. [[ of application process "ControlCenter"
-          return {value of attribute "AXIdentifier" of checkbox 1 of pane, ¬
-                  value of attribute "AXIdentifier" of checkbox 2 of pane}
+          delay 0.1
+          return value of attribute "AXIdentifier" of checkboxes of pane
         end tell
       ]])
       if ok then
@@ -1797,32 +1797,33 @@ function registerControlCenterHotKeys(panel)
     end
     if ok then
       for i=1,2 do
-        local hotkey = newControlCenter("", tostring(i), "Toggle " .. toggleNames[i],
+        local order = i == 1 and "first" or "last"
+        local hotkey = newControlCenter("", tostring(i), "Toggle " .. toggleNames[i == 1 and 1 or #toggleNames],
           function()
             hs.osascript.applescript([[
               tell application "System Events"
-                set cb to checkbox ]] .. tostring(i) .. [[ of ]] .. pane .. [[ of application process "ControlCenter"
+                set cb to ]] .. order .. [[ checkbox of ]] .. pane .. [[ of application process "ControlCenter"
                 perform action 1 of cb
               end tell
             ]])
           end)
         if not checkAndRegisterControlCenterHotKeys(hotkey) then return end
       end
-    end
-    for i=1,2 do
-      local hotkey = newControlCenter("⌘", tostring(i), toggleNames[1] .. " " .. i,
-        function()
-          hs.osascript.applescript([[
-            tell application "System Events"
-              set pane to ]] .. pane .. [[ of application process "ControlCenter"
-              if count of checkboxes of pane > 2 then
-                set cb to checkbox ]] .. tostring(i + 1) .. [[ of pane
-                perform action 1 of cb
-              end if
-            end tell
-          ]])
-        end)
-      if not checkAndRegisterControlCenterHotKeys(hotkey) then return end
+      for i=2,3 do
+        local hotkey = newControlCenter("⌘", tostring(i-1), toggleNames[1] .. " " .. i - 1,
+          function()
+            hs.osascript.applescript([[
+              tell application "System Events"
+                set pane to ]] .. pane .. [[ of application process "ControlCenter"
+                if count of checkboxes of pane > 2 then
+                  set cb to checkbox ]] .. tostring(i) .. [[ of pane
+                  perform action 1 of cb
+                end if
+              end tell
+            ]])
+          end)
+        if not checkAndRegisterControlCenterHotKeys(hotkey) then return end
+      end
     end
   elseif panel == "Display" then
     local pos = osVersion < OS.Ventura and "scroll area 1 of" or "group 1 of"
