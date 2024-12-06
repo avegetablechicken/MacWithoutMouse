@@ -922,9 +922,13 @@ local function localizeByNIB(str, localeDir, localeFile, bundleID)
         hs.execute(string.format(
                   "diff --suppress-common-lines '%s' '%s' > '%s'", enXmlPath, xmlPath, diffPath))
       end
-      local result = hs.execute(string.format(
-          [[cat '%s' | awk '/^<.*<string>%s<\/string>/ && !found {getline; if ($0 ~ "---") {getline; print $0; found=1}}' | \
-            sed 's/^>.*<string>//;s/<\/string>$//' | tr -d '\n']],
+      local result = hs.execute(string.format([[
+          cat '%s' | awk '/^<.*<string>%s<\/string>/ && !found {
+            curline=$0; getline;
+            if ($0 == curline) {getline}
+            if ($0 ~ "---") {getline; print $0; found=1}
+          }' | \
+          sed 's/^>.*<string>//;s/<\/string>$//' | tr -d '\n']],
           diffPath, str))
       return result ~= "" and result or nil
     end
@@ -1458,9 +1462,13 @@ local function delocalizeByNIB(str, localeDir, localeFile, bundleID)
         hs.execute(string.format("diff --suppress-common-lines '%s' '%s' > '%s'",
                                  xmlPath, enXmlPath, diffPath))
       end
-      local result = hs.execute(string.format(
-          [[cat '%s' | awk '/^<.*<string>%s<\/string>/ && !found {getline; if ($0 ~ "---") {getline; print $0}; found=1}' | \
-            sed 's/^>.*<string>//;s/<\/string>$//' | tr -d '\n']],
+      local result = hs.execute(string.format([[
+          cat '%s' | awk '/^<.*<string>%s<\/string>/ && !found {
+            curline=$0; getline;
+            if ($0 == curline) {getline}
+            if ($0 ~ "---") {getline; print $0}; found=1
+          }' | \
+          sed 's/^>.*<string>//;s/<\/string>$//' | tr -d '\n']],
           diffPath, str))
       return result ~= "" and result or nil
     end
