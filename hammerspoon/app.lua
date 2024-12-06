@@ -931,9 +931,8 @@ local function commonLocalizedMessage(message)
         if menuItemTitle ~= nil then
           return menuItemTitle:gsub('App Store', appObject:name())
         end
-      else
-        return message .. ' ' .. appObject:name()
       end
+      return message .. ' ' .. appObject:name()
     end
   end
 end
