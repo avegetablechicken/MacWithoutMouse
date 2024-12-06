@@ -1774,7 +1774,8 @@ function registerControlCenterHotKeys(panel)
         end tell
       ]])
     else
-      local ok, toggleIdents = hs.osascript.applescript([[
+      local toggleIdents
+      ok, toggleIdents = hs.osascript.applescript([[
         tell application "System Events"
           repeat until checkbox 2 of ]] .. pane .. [[ of application process "ControlCenter" exists
             delay 0.1
@@ -1812,8 +1813,11 @@ function registerControlCenterHotKeys(panel)
         function()
           hs.osascript.applescript([[
             tell application "System Events"
-              set bt to button ]] .. tostring(i) .. [[ of ]] .. pane .. [[ of application process "ControlCenter"
-              perform action 1 of bt
+              set pane to ]] .. pane .. [[ of application process "ControlCenter"
+              if count of checkboxes of pane > 2 then
+                set cb to checkbox ]] .. tostring(i + 1) .. [[ of pane
+                perform action 1 of cb
+              end if
             end tell
           ]])
         end)
