@@ -1408,19 +1408,20 @@ function registerControlCenterHotKeys(panel)
       local searchPanel = panel
       local btnName
       if panel == "Screen Mirroring" then
-        btnName = "Display Settings…"
+        btnName = "Display"
       elseif panel == "Keyboard Brightness" then
-        btnName = "Keyboard Settings…"
+        btnName = "Keyboard"
       elseif panel == "Accessibility Shortcuts" then
-        btnName = "Accessibility Settings…"
+        btnName = "Accessibility"
       elseif panel == "Hearing" then
         searchPanel = "Accessibility Shortcuts"
-        btnName = "Accessibility Settings…"
+        btnName = "Accessibility"
       elseif panel == "Users" then
-        btnName = "Users & Groups Settings…"
+        btnName = "Users & Groups"
       else
-        btnName = panel .. " Settings…"
+        btnName = panel
       end
+      btnName = btnName .. " Settings…"
       btnName = controlCenterLocalized(searchPanel, btnName)
       local hotkey = newControlCenter("⌘", ",", btnName,
         function()
