@@ -696,6 +696,7 @@ local function baseLocaleDirs(resourceDir)
       table.insert(dirs, localeDir)
     end
   end
+  if #dirs == 0 then table.insert(dirs, resourceDir) end
   return dirs
 end
 
