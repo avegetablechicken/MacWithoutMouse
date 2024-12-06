@@ -340,7 +340,7 @@ local function getSubMenuHotkeys(t, menuItem, titleAsEntry, titlePrefix, bundleI
           if enTitle:find("full screen") or enTitle:find("fullscreen") then
             idx = "🌐︎F"
           else
-            enTitle = delocalizedMenuBarItem(subItem.AXTitle, bundleID)
+            enTitle = delocalizedMenuItem(subItem.AXTitle, bundleID)
             if enTitle ~= nil then
               enTitle = string.lower(enTitle)
               if enTitle:find("full screen") or enTitle:find("fullscreen") then

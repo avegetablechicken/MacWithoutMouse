@@ -1843,7 +1843,7 @@ end
 local systemLocale = systemLocales()[1]
 localizeCommonMenuItemTitles(systemLocale)
 
-function delocalizedMenuBarItem(title, bundleID, params)
+function delocalizedMenuItem(title, bundleID, params)
   local defaultTitleMap, titleMap
   if localizationMap ~= nil then
     defaultTitleMap = localizationMap.common
