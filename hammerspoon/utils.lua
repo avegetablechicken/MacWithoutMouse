@@ -1096,7 +1096,7 @@ if hs.fs.attributes(localeTmpFile) ~= nil then
   end
 end
 
-function localizedString(str, bundleID, params)
+function localizedString(str, bundleID, params, force)
   local appLocale, localeFile, localeDir, localeFramework
   if type(params) == "table" then
     appLocale = params.locale
@@ -1106,6 +1106,7 @@ function localizedString(str, bundleID, params)
   else
     localeFile = params
   end
+  if force == nil then force = false end
 
   if appLocale == nil then
     local locales = applicationLocales(bundleID)
@@ -1118,9 +1119,13 @@ function localizedString(str, bundleID, params)
     return str
   end
 
-  local result = get(appLocaleMap, bundleID, appLocale, str)
-  if result == false then return nil
-  elseif result ~= nil then return result end
+  local result
+
+  if not force then
+    result = get(appLocaleMap, bundleID, appLocale, str)
+    if result == false then return nil
+    elseif result ~= nil then return result end
+  end
 
   if localizationMap[bundleID] ~= nil then
     result = hs.fnutils.indexOf(localizationMap[bundleID], str)
