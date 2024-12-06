@@ -1081,18 +1081,20 @@ local function localizeByChromium(str, localeDir, localesDict, bundleID)
   return nil
 end
 
-local appLocaleMap = {}
 local appLocaleDir = {}
+local localeMatchTmpFile = localeTmpDir .. 'map.json'
+if hs.fs.attributes(localeMatchTmpFile) ~= nil then
+  appLocaleDir = hs.json.read(localeMatchTmpFile)
+  for bundleID, locale in pairs(appLocaleDir) do
+    appLocaleDir[bundleID] = hs.fnutils.copy(locale)
+  end
+end
+local appLocaleMap = {}
 local appLocaleAssetBuffer = {}
 local appLocaleAssetBufferInverse = {}
 local localeTmpFile = localeTmpDir .. 'strings.json'
 if hs.fs.attributes(localeTmpFile) ~= nil then
-  local json = hs.json.read(localeTmpFile)
-  appLocaleDir = json.locale
-  for bundleID, locale in pairs(appLocaleDir) do
-    appLocaleDir[bundleID] = hs.fnutils.copy(locale)
-  end
-  appLocaleMap = json.map
+  appLocaleMap = hs.json.read(localeTmpFile)
   for bundleID, map in pairs(appLocaleMap) do
     appLocaleMap[bundleID] = hs.fnutils.copy(map)
     for k, v in pairs(appLocaleMap[bundleID]) do
@@ -1282,8 +1284,8 @@ function localizedString(str, bundleID, params, force)
   if hs.fs.attributes(localeTmpDir) == nil then
     hs.execute(string.format("mkdir -p '%s'", localeTmpDir))
   end
-  hs.json.write({ locale = appLocaleDir, map = appLocaleMap },
-    localeTmpFile, false, true)
+  hs.json.write(appLocaleDir, localeMatchTmpFile, false, true)
+  hs.json.write(appLocaleMap, localeTmpFile, false, true)
   return result
 end
 
@@ -1636,16 +1638,10 @@ local function delocalizeMATLABFigureMenu(str, appLocale)
 end
 
 local deLocaleMap = {}
-local deLocaleDir = {}
 local deLocaleInversedMap = {}
 local menuItemTmpFile = localeTmpDir .. 'menuitems.json'
 if hs.fs.attributes(menuItemTmpFile) ~= nil then
-  local json = hs.json.read(menuItemTmpFile)
-  deLocaleDir = json.locale
-  for bundleID, locale in pairs(deLocaleDir) do
-    deLocaleDir[bundleID] = hs.fnutils.copy(locale)
-  end
-  deLocaleMap = json.map
+  deLocaleMap = hs.json.read(menuItemTmpFile)
   for bundleID, map in pairs(deLocaleMap) do
     deLocaleMap[bundleID] = hs.fnutils.copy(map)
     for k, v in pairs(deLocaleMap[bundleID]) do
@@ -1702,7 +1698,7 @@ function delocalizedString(str, bundleID, params)
 
   if not framework.mono then mode = 'lproj' end
   if locale == nil then
-    locale = get(deLocaleDir, bundleID, appLocale)
+    locale = get(appLocaleDir, bundleID, appLocale)
     if locale == false then return nil end
   end
   if locale == nil then
@@ -1763,7 +1759,7 @@ function delocalizedString(str, bundleID, params)
   if result ~= nil then goto L_END_DELOCALIZED end
 
   if deLocaleInversedMap[bundleID] == nil
-      or get(deLocaleDir, bundleID, appLocale) ~= locale
+      or get(appLocaleDir, bundleID, appLocale) ~= locale
       or framework.user then
     deLocaleInversedMap[bundleID] = {}
   end
@@ -1789,14 +1785,14 @@ function delocalizedString(str, bundleID, params)
   end
 
   ::L_END_DELOCALIZED::
-  if deLocaleDir[bundleID] == nil then
-    deLocaleDir[bundleID] = {}
+  if appLocaleDir[bundleID] == nil then
+    appLocaleDir[bundleID] = {}
   end
   if locale == nil then
-    deLocaleDir[bundleID][appLocale] = false
+    appLocaleDir[bundleID][appLocale] = false
     return
   else
-    deLocaleDir[bundleID][appLocale] = locale
+    appLocaleDir[bundleID][appLocale] = locale
   end
 
   if deLocaleMap[bundleID] == nil then
@@ -1870,8 +1866,8 @@ function delocalizedMenuBarItem(title, bundleID, params)
     if hs.fs.attributes(localeTmpDir) == nil then
       hs.execute(string.format("mkdir -p '%s'", localeTmpDir))
     end
-    hs.json.write({ locale = deLocaleDir, map = deLocaleMap },
-                  menuItemTmpFile, false, true)
+    hs.json.write(appLocaleDir, localeMatchTmpFile, false, true)
+    hs.json.write(deLocaleMap, menuItemTmpFile, false, true)
   end
   return newTitle
 end
@@ -1920,8 +1916,8 @@ function delocalizeMenuBarItems(itemTitles, bundleID, localeFile)
     if hs.fs.attributes(localeTmpDir) == nil then
       hs.execute(string.format("mkdir -p '%s'", localeTmpDir))
     end
-    hs.json.write({ locale = deLocaleDir, map = deLocaleMap },
-                  menuItemTmpFile, false, true)
+    hs.json.write(appLocaleDir, localeMatchTmpFile, false, true)
+    hs.json.write(deLocaleMap, menuItemTmpFile, false, true)
   end
   return result
 end
