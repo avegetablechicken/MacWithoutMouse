@@ -1114,11 +1114,12 @@ local function popupControlCenterSubPanel(panel, allowReentry)
     ]], controlCenterMenuBarItemIdentifiers[panel]))
     if _ok and menuBarItemIndex ~= 0 then
       if findApplication("com.surteesstudios.Bartender") ~= nil then
+        local menuBarPanel = panel == "Focus" and "Focus Modes" or panel
         ok, result = hs.osascript.applescript(string.format([[
           tell application id "com.surteesstudios.Bartender"
             activate "com.apple.controlcenter-%s"
           end tell
-        ]], panel:gsub(" ", ""):gsub("‑", "")))
+        ]], menuBarPanel:gsub(" ", ""):gsub("‑", "")))
       else
         ok, result = hs.osascript.applescript(string.format([[
           tell application "System Events"
