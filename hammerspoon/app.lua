@@ -2095,12 +2095,9 @@ appHotKeyCallbacks = {
       condition = function(appObject)
         if appObject:focusedWindow() == nil then return false end
         if versionLessThan("9")(appObject) then
-          local song = localizedString("COMMON_SONG", appObject:bundleID(), { localeDir = false })
-          local detail = localizedString("COMMON_DETAIL", appObject:bundleID(), { localeDir = false })
-          local btnName = song .. detail
           local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
           local buttons = winUIObj:childrenWithRole("AXButton")
-          return #buttons > 4 and getAXChildren(winUIObj, "AXButton", btnName) ~= nil
+          return #buttons > 4 and getAXChildren(winUIObj, "AXButton", '歌曲详情') ~= nil
         else
           if #appObject:visibleWindows() < 2 then return false end
           local fWin, mWin = appObject:focusedWindow(), appObject:mainWindow()

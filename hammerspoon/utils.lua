@@ -427,12 +427,8 @@ function getMatchedLocale(appLocale, localeSource, mode)
   end
   for _, loc in ipairs(localeSource) do
     if (mode == 'lproj' and loc:sub(-6) == ".lproj")
-        or (mode == 'strings' and loc:sub(-8) == ".strings")
         or mode == nil then
-      local locale
-      if mode == nil then locale = loc
-      elseif mode == 'lproj' then locale = loc:sub(1, -7)
-      else locale = loc:sub(1, -9) end
+      local locale = mode and loc:sub(1, -7) or loc
       local newLocale = string.gsub(locale, '_', '-')
       local thisLocale = hs.host.locale.details(newLocale)
       local thisLanguage = thisLocale.languageCode
@@ -1104,11 +1100,10 @@ if hs.fs.attributes(localeTmpFile) ~= nil then
 end
 
 function localizedString(str, bundleID, params, force)
-  local appLocale, localeFile, localeDir, localeFramework
+  local appLocale, localeFile, localeFramework
   if type(params) == "table" then
     appLocale = params.locale
     localeFile = params.localeFile
-    localeDir = params.localeDir
     localeFramework = params.framework
   else
     localeFile = params
@@ -1158,50 +1153,39 @@ function localizedString(str, bundleID, params, force)
     end
   end
 
-  local locale, mode, localesDict, setDefaultLocale
-  if localeDir == false then mode = 'strings'
-  elseif not framework.mono then mode = 'lproj' end
-  if localeDir == nil or localeDir == false then
-    if locale == nil then
-      locale = get(appLocaleDir, bundleID, appLocale)
-      if locale == false then return nil end
+  local locale, localeDir, mode, localesDict, setDefaultLocale
+  if not framework.mono then mode = 'lproj' end
+  if locale == nil then
+    locale = get(appLocaleDir, bundleID, appLocale)
+    if locale == false then return nil end
+  end
+  if locale == nil then
+    locale = getMatchedLocale(appLocale, resourceDir, mode)
+    if locale == nil and framework.qt then
+      locale, localeDir = getQtMatchedLocale(appLocale, resourceDir)
     end
-    if locale == nil then
-      locale = getMatchedLocale(appLocale, resourceDir, mode)
-      if locale == nil and framework.qt then
-        locale, localeDir = getQtMatchedLocale(appLocale, resourceDir)
-      end
-      if locale == nil then goto L_END_LOCALIZED end
+    if locale == nil then goto L_END_LOCALIZED end
+  end
+  if localeDir == nil then
+    if mode == 'lproj' then
+      localeDir = resourceDir .. "/" .. locale .. ".lproj"
+    else
+      localeDir = resourceDir .. "/" .. locale
     end
-    if mode == 'strings' then
-      localeDir = resourceDir
-      if localeFile == nil then localeFile = locale end
-    elseif localeDir == nil then
-      if mode == 'lproj' then
-        localeDir = resourceDir .. "/" .. locale .. ".lproj"
-      else
-        localeDir = resourceDir .. "/" .. locale
-      end
-    end
-    if framework.qt and type(localeDir) == 'string'
-        and hs.fs.attributes(localeDir) == nil then
-      _, localeDir = getQtMatchedLocale(appLocale, resourceDir)
-    end
+  end
+  if framework.qt and type(localeDir) == 'string'
+      and hs.fs.attributes(localeDir) == nil then
+    _, localeDir = getQtMatchedLocale(appLocale, resourceDir)
   end
 
   setDefaultLocale = function()
     localeFile = type(params) == 'table' and params.localeFile or params
     resourceDir = hs.application.pathForBundleID(bundleID) .. "/Contents/Resources"
     if hs.fs.attributes(resourceDir) == nil then return false end
-    if mode == nil then mode = 'lproj' end
+    mode = 'lproj'
     locale = getMatchedLocale(appLocale, resourceDir, mode)
     if locale == nil then return false end
-    if mode == 'strings' then
-      localeDir = resourceDir
-      if localeFile == nil then localeFile = locale end
-    else
-      localeDir = resourceDir .. "/" .. locale .. ".lproj"
-    end
+    localeDir = resourceDir .. "/" .. locale .. ".lproj"
     return true
   end
 
