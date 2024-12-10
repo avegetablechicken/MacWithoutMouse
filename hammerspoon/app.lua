@@ -3018,7 +3018,7 @@ appHotKeyCallbacks = {
   ["com.apple.dt.Xcode"] =
   {
     ["showInFinder"] = {
-      message = "Show In Finder",
+      message = "Show in Finder",
       condition = checkMenuItem({ "File", "Show in Finder" }),
       fn = receiveMenuItem
     }
