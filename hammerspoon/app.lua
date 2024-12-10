@@ -2090,8 +2090,8 @@ appHotKeyCallbacks = {
       end,
       fn = receivePosition
     },
-    ["exitSongDetails"] = {
-      message = "关闭歌曲详情",
+    ["playBarCloseSingleSong"] = {
+      message = "关闭单曲",
       condition = function(appObject)
         if appObject:focusedWindow() == nil then return false end
         if versionLessThan("9")(appObject) then

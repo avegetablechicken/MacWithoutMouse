@@ -1090,7 +1090,7 @@
         "mods": "command",
         "key": "R"
       },
-      "exitSongDetails": {
+      "playBarCloseSingleSong": {
         "mods": "",
         "key": "escape"
       }
