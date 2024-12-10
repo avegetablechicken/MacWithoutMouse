@@ -1320,15 +1320,16 @@ appHotKeyCallbacks = {
   },
 
   ["com.apple.FaceTime"] = {
-    ["deleteMousePositionCall"] = {
-      message = "Delete Call at Mouse Position",
+    ["removeFromRecents"] = {
+      message = localizedMessage("Remove from Recents",
+                                 { framework = "ConversationKit.framework" }),
       condition = function(appObject)
         return appObject:focusedWindow() ~= nil, appObject:focusedWindow()
       end,
       fn = deleteMousePositionCall
     },
-    ["deleteAllCalls"] = {
-      message = "Delete All Calls",
+    ["clearAllRecents"] = {
+      message = localizedMessage("Clear All Recents"),
       condition = function(appObject)
         return appObject:focusedWindow() ~= nil, appObject:focusedWindow()
       end,

@@ -778,11 +778,11 @@
       }
     },
     "com.apple.FaceTime": {
-      "deleteMousePositionCall": {
+      "removeFromRecents": {
         "mods": "command",
         "key": "delete"
       },
-      "deleteAllCalls": {
+      "clearAllRecents": {
         "mods": ["option", "command"],
         "key": "delete"
       }
