@@ -1790,6 +1790,19 @@ appHotKeyCallbacks = {
       fn = function(appObject)
         selectMenuItem(appObject, { "View", "Toggle Sidebar" })
       end
+    },
+    ["back"] = {
+      message = commonLocalizedMessage("Back"),
+      condition = function(appObject)
+        if appObject:focusedWindow() == nil then return false end
+        local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
+        if winUIObj:attributeValue("AXIdentifier") ~= "ChatGPTSettingsAppWindow" then
+          return false
+        end
+        local button = getAXChildren(winUIObj, "AXToolbar", 1, "AXButton", 1, "AXButton", 1)
+        return button ~= nil and button.AXEnabled, button
+      end,
+      fn = receiveButton
     }
   },
 

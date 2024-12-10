@@ -987,6 +987,10 @@
       "toggleSidebar": {
         "mods": ["control", "command"],
         "key": "S"
+      },
+      "back": {
+        "mods": "command",
+        "key": "["
       }
     },
     "com.eusoft.freeeudic": {
