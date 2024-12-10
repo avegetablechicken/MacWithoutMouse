@@ -1179,7 +1179,6 @@ function localizedString(str, bundleID, params, force)
   end
 
   setDefaultLocale = function()
-    localeFile = type(params) == 'table' and params.localeFile or params
     resourceDir = hs.application.pathForBundleID(bundleID) .. "/Contents/Resources"
     if hs.fs.attributes(resourceDir) == nil then return false end
     mode = 'lproj'
@@ -1698,10 +1697,10 @@ function delocalizedString(str, bundleID, params)
     else
       localeDir = resourceDir .. "/" .. locale
     end
-    if framework.qt and type(localeDir) == 'string'
-        and hs.fs.attributes(localeDir) == nil then
-      _, localeDir = getQtMatchedLocale(appLocale, resourceDir)
-    end
+  end
+  if framework.qt and type(localeDir) == 'string'
+      and hs.fs.attributes(localeDir) == nil then
+    _, localeDir = getQtMatchedLocale(appLocale, resourceDir)
   end
 
   setDefaultLocale = function()
