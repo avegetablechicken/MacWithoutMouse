@@ -906,30 +906,16 @@ end
 
 -- fetch localized string as hotkey message after activating the app
 local function commonLocalizedMessage(message)
-  if message == "Close Window" or message == "Minimize" then
+  if message == "Hide" or message == "Quit" then
     return function(appObject)
       local appLocale = applicationLocales(appObject:bundleID())[1]
       local appLocalesSupported = hs.application.localizationsForBundleID(appObject:bundleID()) or {}
       local locale = getMatchedLocale(appLocale, appLocalesSupported)
       if locale ~= nil then
-        local resourceDir = '/System/Library/Frameworks/AppKit.framework/Resources'
-        locale = getMatchedLocale(locale, resourceDir, 'lproj')
-        if locale ~= nil then
-          return localizeByLoctable(message, resourceDir, 'MenuCommands', locale, {})
-        end
-      end
-      return message
-    end
-  elseif message == "Hide" or message == "Quit" then
-    return function(appObject)
-      local appLocale = applicationLocales(appObject:bundleID())[1]
-      local appLocalesSupported = hs.application.localizationsForBundleID(appObject:bundleID()) or {}
-      local locale = getMatchedLocale(appLocale, appLocalesSupported)
-      if locale ~= nil then
-        local menuItemTitle = localizedString(message .. ' App Store', 'com.apple.AppStore',
-                                              { locale = appLocale })
-        if menuItemTitle ~= nil then
-          return menuItemTitle:gsub('App Store', appObject:name())
+        local result = localizedString(message .. ' App Store', 'com.apple.AppStore',
+                                       { locale = appLocale })
+        if result ~= nil then
+          return result:gsub('App Store', appObject:name())
         end
       end
       return message .. ' ' .. appObject:name()
@@ -941,9 +927,28 @@ local function commonLocalizedMessage(message)
       local locale = getMatchedLocale(appLocale, appLocalesSupported)
       if locale ~= nil then
         local result = localizedString(message, 'com.apple.AppStore',
-                                        { locale = appLocale })
+                                       { locale = appLocale })
         if result ~= nil then
           return result
+        end
+      end
+      return message
+    end
+  else
+    return function(appObject)
+      local appLocale = applicationLocales(appObject:bundleID())[1]
+      local appLocalesSupported = hs.application.localizationsForBundleID(appObject:bundleID()) or {}
+      local locale = getMatchedLocale(appLocale, appLocalesSupported)
+      if locale ~= nil then
+        local resourceDir = '/System/Library/Frameworks/AppKit.framework/Resources'
+        locale = getMatchedLocale(locale, resourceDir, 'lproj')
+        if locale ~= nil then
+          for _, stem in ipairs{ 'MenuCommands', 'Menus', 'Common' } do
+            local result = localizeByLoctable(message, resourceDir, stem, locale, {})
+            if result ~= nil then
+              return result:gsub('“%%@”', ''):gsub('%%@', '')
+            end
+          end
         end
       end
       return message
@@ -1264,7 +1269,7 @@ appHotKeyCallbacks = {
   ["com.apple.ActivityMonitor"] =
   {
     ["search"] = {
-      message = "Search",
+      message = commonLocalizedMessage("Search"),
       condition = function(appObject)
         if appObject:focusedWindow() == nil then return false end
         local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
@@ -1361,8 +1366,8 @@ appHotKeyCallbacks = {
 
   ["com.apple.Safari"] =
   {
-    ["revealInFinder"] = {
-      message = "Reveal in Finder",
+    ["showInFinder"] = {
+      message = commonLocalizedMessage("Show in Finder"),
       condition = function(appObject)
         local ok, url = hs.osascript.applescript([[
           tell application id "]] .. appObject:bundleID() .. [[" to return URL of front document
@@ -1379,8 +1384,8 @@ appHotKeyCallbacks = {
 
   ["com.apple.Preview"] =
   {
-    ["revealInFinder"] = {
-      message = "Reveal in Finder",
+    ["showInFinder"] = {
+      message = commonLocalizedMessage("Show in Finder"),
       condition = function(appObject)
         local ok, filePath = hs.osascript.applescript([[
           tell application id "]] .. appObject:bundleID() .. [[" to get path of front document
@@ -1397,8 +1402,8 @@ appHotKeyCallbacks = {
 
   ["com.google.Chrome"] =
   {
-    ["revealInFinder"] = {
-      message = "Reveal in Finder",
+    ["showInFinder"] = {
+      message = commonLocalizedMessage("Show in Finder"),
       condition = function(appObject)
         local ok, url = hs.osascript.applescript([[
           tell application id "]] .. appObject:bundleID() .. [[" to return URL of active tab of front window
@@ -1677,8 +1682,8 @@ appHotKeyCallbacks = {
       condition = checkMenuItem({ "Insert", "Equation..." }),
       fn = receiveMenuItem
     },
-    ["revealInFinder"] = {
-      message = "Reveal in Finder",
+    ["showInFinder"] = {
+      message = commonLocalizedMessage("Show in Finder"),
       condition = function(appObject)
         local ok, filePath = hs.osascript.applescript([[
           tell application id "]] .. appObject:bundleID() .. [[" to get file of front document
@@ -1732,8 +1737,8 @@ appHotKeyCallbacks = {
       condition = checkMenuItem({ "Insert", "Equation…" }),
       fn = receiveMenuItem
     },
-    ["revealInFinder"] = {
-      message = "Reveal in Finder",
+    ["showInFinder"] = {
+      message = commonLocalizedMessage("Show in Finder"),
       condition = function(appObject)
         local ok, filePath = hs.osascript.applescript([[
           tell application id "]] .. appObject:bundleID() .. [[" to get file of front document
@@ -1769,7 +1774,7 @@ appHotKeyCallbacks = {
   ["com.eusoft.freeeudic"] =
   {
     ["navigateToSearchField"] = {
-      message = "搜索",
+      message = commonLocalizedMessage("Search"),
       condition = function(appObject)
         if appObject:focusedWindow() == nil then return false end
         local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
@@ -2149,7 +2154,7 @@ appHotKeyCallbacks = {
   ["com.tencent.LemonMonitor"] =
   {
     ["closeWindow"] = {
-      message = "Close Window",
+      message = commonLocalizedMessage("Close Window"),
       windowFilter = {},
       background = true,
       fn = function(winUIObj)

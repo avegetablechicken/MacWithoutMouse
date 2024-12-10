@@ -804,19 +804,19 @@
       }
     },
     "com.apple.Safari": {
-      "revealInFinder": {
+      "showInFinder": {
         "mods": ["shift", "option", "command"],
         "key": "F"
       }
     },
     "com.apple.Preview": {
-      "revealInFinder": {
+      "showInFinder": {
         "mods": ["shift", "option", "command"],
         "key": "F"
       }
     },
     "com.google.Chrome": {
-      "revealInFinder": {
+      "showInFinder": {
         "mods": ["shift", "option", "command"],
         "key": "F"
       }
@@ -942,7 +942,7 @@
         "mods": ["shift", "command"],
         "key": "E"
       },
-      "revealInFinder": {
+      "showInFinder": {
         "mods": ["shift", "option", "command"],
         "key": "F"
       }
@@ -968,7 +968,7 @@
         "mods": ["shift", "command"],
         "key": "E"
       },
-      "revealInFinder": {
+      "showInFinder": {
         "mods": ["shift", "option", "command"],
         "key": "F"
       }
