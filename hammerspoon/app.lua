@@ -934,6 +934,20 @@ local function commonLocalizedMessage(message)
       end
       return message .. ' ' .. appObject:name()
     end
+  elseif message == "Back" then
+    return function(appObject)
+      local appLocale = applicationLocales(appObject:bundleID())[1]
+      local appLocalesSupported = hs.application.localizationsForBundleID(appObject:bundleID()) or {}
+      local locale = getMatchedLocale(appLocale, appLocalesSupported)
+      if locale ~= nil then
+        local result = localizedString(message, 'com.apple.AppStore',
+                                        { locale = appLocale })
+        if result ~= nil then
+          return result
+        end
+      end
+      return message
+    end
   end
 end
 
