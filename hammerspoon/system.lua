@@ -1827,33 +1827,38 @@ function registerControlCenterHotKeys(panel)
       end
     end
   elseif panel == "Display" then
-    local pos = osVersion < OS.Ventura and "scroll area 1 of" or "group 1 of"
+    local role = osVersion < OS.Ventura and "scroll area" or "group"
     local ok, idx = hs.osascript.applescript([[
       tell application "System Events"
         set totalDelay to 0.0
-        repeat until ]] .. pos .. " " .. pane .. [[ of application process "ControlCenter" exists
+        repeat until ]] .. role .. " 1 of " .. pane .. [[ of application process "ControlCenter" exists
           set totalDelay to totalDelay + 0.1
           if totalDelay > 0.5 then
-            return false
+            return
           end
           delay 0.1
         end
-        set sa to ]] .. pos .. " " .. pane .. [[ of application process "ControlCenter"
-        repeat with i from 1 to count (UI elements of sa)
-          set ele to ui element i of sa
-          if value of attribute "AXRole" of ele is "AXDisclosureTriangle" then
-            return i
-          end if
+        repeat with i from 1 to count (]] .. role .. " of " .. pane .. [[) of application process "ControlCenter"
+          set sa to ]] .. role .. " i of " .. pane .. [[ of application process "ControlCenter"
+          set c to count (UI elements of sa)
+          repeat with jj from 1 to c
+            set j to c - jj + 1
+            set ele to ui element j of sa
+            if value of attribute "AXRole" of ele is "AXDisclosureTriangle" then
+              return {i, j}
+            end if
+          end repeat
         end repeat
       end tell
     ]])
-    if ok and idx ~= false then
+    if ok and idx ~= nil then
+      local i, j = idx[1], idx[2]
       local hotkey = newControlCenter("", "Space", "Toggle Showing Display Presets",
         function()
           hs.osascript.applescript([[
             tell application "System Events"
-              set sa to ]] .. pos .. " " .. pane .. [[ of application process "ControlCenter"
-              perform action 1 of ui element ]] .. tostring(idx) .. [[ of sa
+              set sa to ]] .. role .. " " .. tostring(i) .. " of " .. pane .. [[ of application process "ControlCenter"
+              perform action 1 of ui element ]] .. tostring(j) .. [[ of sa
             end tell
           ]])
         end)
