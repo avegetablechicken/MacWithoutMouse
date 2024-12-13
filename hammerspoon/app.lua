@@ -129,7 +129,11 @@ local function registerAppHotkeys()
     if appPath ~= nil then
       local appName, status_ok = hs.execute(string.format("mdls -name kMDItemDisplayName -raw '%s'", appPath))
       if status_ok then
-        appName = appName:sub(1, -5)
+        if appName:sub(-4) == '.app' then
+          appName = appName:sub(1, -5)
+        else
+          appName = hs.application.infoForBundlePath(appPath).CFBundleName
+        end
         local hotkey = bindHotkeySpec(config, "Toggle " .. appName,
             hs.fnutils.partial(config.fn or focusOrHide, config.bundleID or (config.appPath or appName)))
         hotkey.kind = HK.APPKEY
