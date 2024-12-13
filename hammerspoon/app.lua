@@ -777,7 +777,7 @@ local function weiboNavigateToSideBarCondition(idx, isCommon)
         _, start = source:find(header)
       end
       if start == nil then return false end
-      stop = source:find(tailer, start + 1)
+      stop = source:find(tailer, start + 1) or source:len()
     else
       local header = [[<h3 class="Home_title_[^>]-">自定义分组</h3>]]
       local tailer = [[<button class="[^>]-Home_btn_[^>]-">]]
@@ -789,7 +789,7 @@ local function weiboNavigateToSideBarCondition(idx, isCommon)
         _, start = source:find(header)
       end
       if start == nil then return false end
-      stop = source:find(tailer, start + 1)
+      stop = source:find(tailer, start + 1) or source:len()
     end
     source = source:sub(start + 1, stop - 1)
     local cnt = isCommon and 1 or 0
