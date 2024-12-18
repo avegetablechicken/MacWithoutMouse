@@ -337,7 +337,9 @@ local function deleteAllMessages(appObject)
 
       local messageItems = results[1].AXChildren
       if messageItems == nil or #messageItems == 0
-        or (#messageItems == 1 and messageItems[1].AXDescription == nil) then
+          or (#messageItems == 1 and (messageItems[1].AXDescription == nil
+            or messageItems[1].AXDescription:sub(4) ==
+               localizedString('New Message', appObject:bundleID()))) then
         return
       end
 
