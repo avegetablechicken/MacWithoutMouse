@@ -316,10 +316,10 @@ local function deleteSelectedMessage(appObject, menuItem, force)
     end
   end
   if menuItem == nil then
-    local menuBarItemTitle = getOSVersion() < OS.Ventura and "File" or "Conversation"
-    local thisSpec = appHotKeyCallbacks[appObject:bundleID()]["deleteConversation"]
-    local menuItemTitle = thisSpec.message(appObject)
-    local _, menuItemPath = findMenuItem(appObject, { menuBarItemTitle, menuItemTitle })
+    local _, menuItemPath = findMenuItem(appObject, {
+      getOSVersion() < OS.Ventura and "File" or "Conversation",
+      "Delete Conversation…"
+    })
     menuItem = menuItemPath
   end
   appObject:selectMenuItem(menuItem)
