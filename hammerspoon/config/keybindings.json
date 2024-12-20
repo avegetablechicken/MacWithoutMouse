@@ -292,19 +292,6 @@
         "key": "W",
         "bundleID": "com.tencent.xinWeChat"
       },
-      "EuDic": {
-        "mods": "${hyper.app}",
-        "key": "E",
-        "bundleID": "com.eusoft.freeeudic"
-      },
-      "RDM": {
-        "mods": "${hyper.app}",
-        "key": "R",
-        "bundleID": [
-          "com.devolutions.remotedesktopmanager",
-          "com.devolutions.remotedesktopmanager.free"
-        ]
-      },
       "Terminal": {
         "mods": "${hyper.app}",
         "key": "T",
@@ -340,33 +327,25 @@
         "key": "X",
         "bundleID": "com.microsoft.VSCode"
       },
-      "App Cleaner & Uninstaller": {
+      "PrevieW": {
         "mods": "${hyper.app}",
-        "key": "U",
-        "bundleID": [
-          "com.nektony.App-Cleaner-SIII",
-          "com.nektony.App-Cleaner-SIIICn"
-        ]
+        "key": "P",
+        "bundleID": "com.apple.Preview"
+      },
+      "JabRef": {
+        "mods": "${hyper.app}",
+        "key": "J",
+        "bundleID": "JabRef"
       },
       "Keynote": {
         "mods": "${hyper.app}",
-        "key": "P",
+        "key": "K",
         "bundleID": "com.apple.iWork.Keynote"
-      },
-      "Script Editor": {
-        "mods": "${hyper.app}",
-        "key": "J",
-        "bundleID": "com.apple.ScriptEditor2"
       },
       "Typora": {
         "mods": "${hyper.app}",
-        "key": "K",
+        "key": "M",
         "bundleID": "abnerworks.Typora"
-      },
-      "PrevieW": {
-        "mods": "${hyper.app}",
-        "key": "L",
-        "bundleID": "com.apple.Preview"
       },
       "QQMusic": {
         "mods": "${hyper.hyper}",
@@ -378,15 +357,21 @@
         "key": "W",
         "vm": "com.parallels.desktop.console"
       },
-      "Microsoft Remote Desktop": {
+      "RDM": {
         "mods": "${hyper.hyper}",
         "key": "R",
-        "bundleID": "com.microsoft.rdc.macos"
+        "bundleID": [
+          "com.devolutions.remotedesktopmanager",
+          "com.devolutions.remotedesktopmanager.free"
+        ]
       },
-      "Ubuntu": {
+      "App Cleaner & Uninstaller": {
         "mods": "${hyper.hyper}",
         "key": "U",
-        "vm": "com.parallels.desktop.console"
+        "bundleID": [
+          "com.nektony.App-Cleaner-SIII",
+          "com.nektony.App-Cleaner-SIIICn"
+        ]
       },
       "Accessibility Inspector": {
         "mods": "${hyper.hyper}",
@@ -403,15 +388,25 @@
         "key": "P",
         "bundleID": "com.jetbrains.pycharm"
       },
-      "SourceTree": {
-        "mods": "${hyper.hyper}",
-        "key": "S",
-        "bundleID": "com.torusknot.SourceTreeNotMAS"
-      },
       "Activity Monitor": {
         "mods": "${hyper.hyper}",
-        "key": "H",
+        "key": "A",
         "bundleID": "com.apple.ActivityMonitor"
+      },
+      "Script Editor": {
+        "mods": "${hyper.hyper}",
+        "key": "S",
+        "bundleID": "com.apple.ScriptEditor2"
+      },
+      "EuDic": {
+        "mods": "${hyper.hyper}",
+        "key": "D",
+        "bundleID": "com.eusoft.freeeudic"
+      },
+      "SourceTree": {
+        "mods": "${hyper.hyper}",
+        "key": "G",
+        "bundleID": "com.torusknot.SourceTreeNotMAS"
       },
       "IntelliJ IDEA": {
         "mods": "${hyper.hyper}",
@@ -423,10 +418,10 @@
         "key": "K",
         "bundleID": "org.klatexformula.klatexformula"
       },
-      "JabRef": {
+      "Ubuntu": {
         "mods": "${hyper.hyper}",
         "key": "L",
-        "bundleID": "JabRef"
+        "vm": "com.parallels.desktop.console"
       },
       "System Preferences": {
         "mods": "${hyper.hyper}",
