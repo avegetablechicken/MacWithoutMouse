@@ -135,26 +135,66 @@ local function parseVerificationCodeFromFirstMessage(window)
       or (getAXChildren(winUIObj, "AXGroup", 1, "AXScrollArea", 1, nil, 1, "AXGroup", 1, "AXStaticText", 2)
       or getAXChildren(winUIObj, "AXScrollArea", 1, nil, 1, "AXGroup", 1, "AXStaticText", 2))
   if ele ~= nil then
-    if ele.AXRole == "AXMenuButton" then
-      -- FIXME: now message content is in the label of the button
-      return
-    end
-    local content = ele.AXValue
-    for _, pattern in ipairs(verificationPatterns) do
-      if type(pattern.filter) == 'string' then
-        if string.find(content, pattern.filter) then
-          return string.match(content, pattern.extract)
-        end
-      elseif type(pattern.filter) == 'table' then
-        if hs.fnutils.every(pattern.filter,
-              function(f) return string.find(content, f) end) then
-          return string.match(content, pattern.extract)
+    local actionFunc = function(content)
+      local code
+      for _, pattern in ipairs(verificationPatterns) do
+        if type(pattern.filter) == 'string' then
+          if string.find(content, pattern.filter) then
+            code = string.match(content, pattern.extract)
+          end
+        elseif type(pattern.filter) == 'table' then
+          if hs.fnutils.every(pattern.filter,
+                function(f) return string.find(content, f) end) then
+            code = string.match(content, pattern.extract)
+            break
+          end
         end
       end
+      if code == nil and string.find(string.lower(content), 'verify')
+          or string.find(string.lower(content), 'verification') then
+        code = string.match(content, '%d%d%d%d+')
+      end
+
+      if code then
+        hs.notify.new({
+          title = string.format("SMS Code Detected: %s", code),
+          informativeText = 'Copied to pasteboard',
+        }):send()
+        hs.pasteboard.writeObjects(code)
+      end
     end
-    if string.find(string.lower(content), 'verify')
-        or string.find(string.lower(content), 'verification') then
-      return string.match(content, '%d%d%d%d+')
+
+    if ele.AXRole == "AXStaticText" then
+      actionFunc(ele.AXValue)
+    else
+      local messagesLaunched = findApplication("com.apple.MobileSMS") ~= nil
+      if not messagesLaunched then
+        hs.execute([[open -g -b "com.apple.MobileSMS"]])
+        hs.timer.usleep(1000000)
+      end
+      local appObject = findApplication("com.apple.MobileSMS")
+      local appUIObj = hs.axuielement.applicationElement(appObject)
+      appUIObj:elementSearch(
+        function(msg, results, count)
+          if count ~= 1 then
+            if not messagesLaunched then
+              appObject:kill()
+            end
+            return
+          end
+
+          local messageItems = results[1].AXChildren
+          if messageItems ~= nil and #messageItems > 0 then
+            local content = hs.fnutils.split(messageItems[1].AXDescription, ", ")[3]
+            actionFunc(content)
+          end
+          if not messagesLaunched then
+            appObject:kill()
+          end
+        end,
+        function(element)
+          return element.AXIdentifier == "ConversationList"
+        end)
     end
   end
 end
@@ -163,14 +203,7 @@ NewMessageWindowFilter = hs.window.filter.new(false):
 allowApp(findApplication("com.apple.notificationcenterui"):name()):
 subscribe(hs.window.filter.windowCreated,
   function(window)
-    local code = parseVerificationCodeFromFirstMessage(window)
-    if code then
-      hs.notify.new({
-        title = string.format("SMS Code Detected: %s", code),
-        informativeText = 'Copied to pasteboard',
-      }):send()
-      hs.pasteboard.writeObjects(code)
-    end
+    parseVerificationCodeFromFirstMessage(window)
   end)
 
 -- show all hammerspoon keybinds
