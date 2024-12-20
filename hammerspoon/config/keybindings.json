@@ -368,11 +368,6 @@
         "key": "L",
         "bundleID": "com.apple.Preview"
       },
-      "TencentMeeting": {
-        "mods": "${hyper.app}",
-        "key": "M",
-        "bundleID": "com.tencent.meeting"
-      },
       "QQMusic": {
         "mods": "${hyper.hyper}",
         "key": "Q",
@@ -456,10 +451,10 @@
         "key": "V",
         "bundleID": "com.realvnc.vncviewer"
       },
-      "MATLAB": {
+      "TencentMeeting": {
         "mods": "${hyper.hyper}",
         "key": "M",
-        "bundleID": "com.mathworks.matlab"
+        "bundleID": "com.tencent.meeting"
       }
     },
 
