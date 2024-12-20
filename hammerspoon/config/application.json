@@ -86,6 +86,7 @@
     "org.xquartz.X11": "com.apple.keylayout.ABC",
     "com.termius.mac": "com.apple.keylayout.ABC",
     "com.termius-dmg.mac": "com.apple.keylayout.ABC",
+    "com.renfei.SnippetsLab": "com.apple.keylayout.ABC",
     "org.hammerspoon.Hammerspoon": "com.apple.keylayout.ABC",
     "com.kapeli.dashdoc": "com.apple.keylayout.ABC",
     "org.klatexformula.klatexformula": "com.apple.keylayout.ABC",
