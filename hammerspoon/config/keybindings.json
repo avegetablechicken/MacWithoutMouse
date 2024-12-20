@@ -967,6 +967,28 @@
         "key": "F"
       }
     },
+    "com.apple.iWork.Numbers": {
+      "exportToPDF": {
+        "mods": "command",
+        "key": "E"
+      },
+      "exportToExcel": {
+        "mods": ["shift", "option", "command"],
+        "key": "E"
+      },
+      "pasteAndMatchStyle": {
+        "mods": "command",
+        "key": "V"
+      },
+      "paste": {
+        "mods": ["shift", "option", "command"],
+        "key": "V"
+      },
+      "showInFinder": {
+        "mods": ["shift", "option", "command"],
+        "key": "F"
+      }
+    },
     "net.xmind.vana.app": {
       "exportToPDF": {
         "mods": "command",

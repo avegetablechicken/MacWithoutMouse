@@ -1761,6 +1761,56 @@ appHotKeyCallbacks = {
     },
   },
 
+  ["com.apple.iWork.Numbers"] =
+  {
+    ["exportToPDF"] = {  -- File > Export To > PDF…
+      message = localizedMessage({ "Export To", "PDF…" }),
+      condition = checkMenuItem({ "File", "Export To", "PDF…" }),
+      fn = function(menuItemTitle, appObject)
+        appObject:selectMenuItem({ menuItemTitle[1], menuItemTitle[2] })
+        appObject:selectMenuItem(menuItemTitle)
+      end
+    },
+    ["exportToExcel"] = {  -- File > Export To > Excel…
+      message = localizedMessage({ "Export To", "Excel…" }),
+      condition = checkMenuItem({ "File", "Export To", "Excel…" }),
+      fn = function(menuItemTitle, appObject)
+        appObject:selectMenuItem({ menuItemTitle[1], menuItemTitle[2] })
+        appObject:selectMenuItem(menuItemTitle)
+      end
+    },
+    ["pasteAndMatchStyle"] = {  -- Edit > Paste and Match Style
+      message = localizedMessage("Paste and Match Style"),
+      condition = checkMenuItem({ "Edit", "Paste and Match Style" }),
+      repeatable = true,
+      fn = receiveMenuItem
+    },
+    ["paste"] = {  -- Edit > Paste
+      message = localizedMessage("Paste"),
+      condition = checkMenuItem({ "Edit", "Paste" }),
+      repeatable = true,
+      fn = receiveMenuItem
+    },
+    ["showInFinder"] = {
+      message = commonLocalizedMessage("Show in Finder"),
+      condition = function(appObject)
+        local ok, filePath = hs.osascript.applescript([[
+          tell application id "]] .. appObject:bundleID() .. [[" to get file of front document
+        ]])
+        if ok and filePath ~= nil then
+          local pos = string.find(filePath, ":", 1)
+          assert(pos)
+          filePath = string.sub(filePath, pos)
+          filePath = string.gsub(filePath, ":", "/")
+          return true, filePath
+        else
+          return false
+        end
+      end,
+      fn = function(filePath) hs.execute("open -R '" .. filePath .. "'") end
+    },
+  },
+
   ["net.xmind.vana.app"] =
   {
     ["exportToPDF"] = {
