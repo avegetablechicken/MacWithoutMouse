@@ -1564,12 +1564,14 @@ appHotKeyCallbacks = {
     ["exportToPDF"] = {
       message = "输出为PDF",
       condition = function(appObject)
-        local menuItem, menuItemTitle = appObject:findMenuItem({ "文件", "输出为PDF..." })
-        if menuItem ~= nil and menuItem.enabled then
-          return true, menuItemTitle
+        local menuItemPath = { "文件", "输出为PDF..." }
+        local menuItem = appObject:findMenuItem(menuItemPath)
+        if menuItem ~= nil then
+          return menuItem.enabled, menuItemPath
         end
-        menuItem, menuItemTitle = appObject:findMenuItem({ "文件", "输出为PDF格式..." })
-        return menuItem ~= nil and menuItem.enabled, menuItemTitle
+        menuItemPath[2] = "输出为PDF格式..."
+        menuItem = appObject:findMenuItem(menuItemPath)
+        return menuItem ~= nil and menuItem.enabled, menuItemPath
       end,
       fn = receiveMenuItem
     },
