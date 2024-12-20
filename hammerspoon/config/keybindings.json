@@ -942,6 +942,18 @@
         "mods": ["shift", "option", "command"],
         "key": "P"
       },
+      "insertTextBox": {
+        "mods": ["shift", "command"],
+        "key": "T"
+      },
+      "insertShape": {
+        "mods": ["control", "command"],
+        "key": "S"
+      },
+      "insertLine": {
+        "mods": ["control", "command"],
+        "key": "L"
+      },
       "insertEquation": {
         "mods": ["shift", "command"],
         "key": "E"

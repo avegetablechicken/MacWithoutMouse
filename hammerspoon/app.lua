@@ -1689,6 +1689,21 @@ appHotKeyCallbacks = {
       condition = checkMenuItem({ "Play", "Play Slideshow" }),
       fn = receiveMenuItem
     },
+    ["insertTextBox"] = {  -- Insert > Text Box
+      message = localizedMessage({ "Insert", "Text Box" }),
+      condition = checkMenuItem({ "Insert", "Text Box" }),
+      fn = receiveMenuItem
+    },
+    ["insertShape"] = {  -- Insert > Shape
+      message = localizedMessage({ "Insert", "Shape" }),
+      condition = checkMenuItem({ "Insert", "Shape" }),
+      fn = showMenuItem
+    },
+    ["insertLine"] = {  -- Insert > Line
+      message = localizedMessage({ "Insert", "Line" }),
+      condition = checkMenuItem({ "Insert", "Line" }),
+      fn = showMenuItem
+    },
     ["insertEquation"] = {  -- Insert > Equation…
       message = localizedMessage({ "Insert", "Equation..." }),
       condition = checkMenuItem({ "Insert", "Equation..." }),
