@@ -1576,6 +1576,20 @@ appHotKeyCallbacks = {
       end,
       fn = receiveMenuItem
     },
+    ["insertTextBox"] = {
+      message = "插入文本框",
+      condition = function(appObject)
+        local menuItemPath = { "插入", "文本框", "横向" }
+        local menuItem = appObject:findMenuItem(menuItemPath)
+        if menuItem ~= nil then
+          return menuItem.enabled, menuItemPath
+        end
+        menuItemPath[3] = "横向文本框"
+        menuItem = appObject:findMenuItem(menuItemPath)
+        return menuItem ~= nil and menuItem.enabled, menuItemPath
+      end,
+      fn = receiveMenuItem
+    },
     ["insertEquation"] = {
       message = "插入LaTeX公式...",
       condition = checkMenuItem({ "插入", "LaTeX公式..." }),

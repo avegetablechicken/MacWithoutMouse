@@ -890,6 +890,10 @@
         "mods": ["control", "command"],
         "key": "S"
       },
+      "insertTextBox": {
+        "mods": ["shift", "command"],
+        "key": "T"
+      },
       "insertEquation": {
         "mods": ["option", "command"],
         "key": "E"
