@@ -1497,7 +1497,7 @@ appHotKeyCallbacks = {
 
   ["com.vallettaventures.Texpad"] =
   {
-    ["recentDocuments"] = {
+    ["openRecent"] = {
       message = localizedMessage("Recent Documents"),
       condition = checkMenuItem({ "File", "Recent Documents" }),
       fn = showMenuItem
