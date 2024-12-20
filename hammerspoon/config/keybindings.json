@@ -1002,7 +1002,7 @@
         "mods": "option",
         "key": "N"
       },
-      "recentLibraries": {
+      "openRecent": {
         "mods": "control",
         "key": "R"
       },

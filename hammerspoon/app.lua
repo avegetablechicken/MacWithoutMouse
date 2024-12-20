@@ -1827,7 +1827,7 @@ appHotKeyCallbacks = {
       condition = checkMenuItem({ "File", "New library" }),
       fn = receiveMenuItem
     },
-    ["recentLibraries"] = {
+    ["openRecent"] = {
       message = "Recent Libraries",
       condition = checkMenuItem({ "File", "Recent libraries" }),
       fn = showMenuItem
