@@ -164,25 +164,16 @@ function getMenuItems(appObject)
 end
 
 function findMenuItem(appObject, menuItemTitle, params)
-  if #menuItemTitle > 0 then
-    local menuItem = appObject:findMenuItem(menuItemTitle)
-    if menuItem ~= nil then return menuItem, menuItemTitle end
-    local targetMenuItem = {}
-    local locStr = localizedMenuBarItem(menuItemTitle[1], appObject:bundleID())
-    table.insert(targetMenuItem, locStr or menuItemTitle[1])
-    for i=#menuItemTitle,2,-1 do
-      locStr = localizedString(menuItemTitle[i], appObject:bundleID(), params)
-      table.insert(targetMenuItem, 2, locStr or menuItemTitle[i])
-    end
-    return appObject:findMenuItem(targetMenuItem), targetMenuItem
-  else
-    for _, title in pairs(menuItemTitle) do
-      local menuItem = appObject:findMenuItem(title)
-      if menuItem ~= nil then
-        return menuItem, title
-      end
-    end
+  local menuItem = appObject:findMenuItem(menuItemTitle)
+  if menuItem ~= nil then return menuItem, menuItemTitle end
+  local targetMenuItem = {}
+  local locStr = localizedMenuBarItem(menuItemTitle[1], appObject:bundleID())
+  table.insert(targetMenuItem, locStr or menuItemTitle[1])
+  for i=#menuItemTitle,2,-1 do
+    locStr = localizedString(menuItemTitle[i], appObject:bundleID(), params)
+    table.insert(targetMenuItem, 2, locStr or menuItemTitle[i])
   end
+  return appObject:findMenuItem(targetMenuItem), targetMenuItem
 end
 
 function selectMenuItem(appObject, menuItemTitle, params, show)
@@ -198,7 +189,7 @@ function selectMenuItem(appObject, menuItemTitle, params, show)
       end)()
       return appObject:selectMenuItem(targetMenuItem)
     end
-  elseif #menuItemTitle > 0 then
+  else
     if appObject:selectMenuItem(menuItemTitle) then return true end
     local targetMenuItem = {}
     local locStr = localizedMenuBarItem(menuItemTitle[1], appObject:bundleID())
@@ -208,10 +199,6 @@ function selectMenuItem(appObject, menuItemTitle, params, show)
       table.insert(targetMenuItem, 2, locStr or menuItemTitle[i])
     end
     return appObject:selectMenuItem(targetMenuItem)
-  else
-    for _, title in pairs(menuItemTitle) do
-      if appObject:selectMenuItem(title) then return true end
-    end
   end
 end
 
@@ -2054,31 +2041,17 @@ function clickAppRightMenuBarItem(bundleID, menuItem, subMenuItem, show)
 
   if type(menuItem) == "number" then
     menuItem = tostring(menuItem)
-  elseif type(menuItem) == "string" then
-    local localized = localizedString(menuItem, bundleID)
-    if localized ~= nil then
-      menuItem = localized
-    end
-    menuItem = '"'..menuItem..'"'
   else
-    for lang, item in pairs(menuItem) do
-      menuItem[lang] = '"'..item..'"'
-    end
+    menuItem = localizedString(menuItem, bundleID) or menuItem
+    menuItem = '"'..menuItem..'"'
   end
 
   if subMenuItem ~= nil then
     if type(subMenuItem) == "number" then
       subMenuItem = tostring(subMenuItem)
-    elseif type(subMenuItem) == "string" then
-      local localized = localizedString(subMenuItem, bundleID)
-      if localized ~= nil then
-        subMenuItem = localized
-      end
-      subMenuItem = '"'..subMenuItem..'"'
     else
-      for lang, item in pairs(subMenuItem) do
-        subMenuItem[lang] = '"' .. item .. '"'
-      end
+      subMenuItem = localizedString(subMenuItem, bundleID) or subMenuItem
+      subMenuItem = '"'..subMenuItem..'"'
     end
   end
 
