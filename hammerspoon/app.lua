@@ -1562,7 +1562,7 @@ appHotKeyCallbacks = {
       fn = function(appObject) hs.eventtap.keyStroke("⇧⌘", "End", nil, appObject) end
     },
     ["exportToPDF"] = {
-      message = "输出为PDF",
+      message = "输出为PDF...",
       condition = function(appObject)
         local menuItemPath = { "文件", "输出为PDF..." }
         local menuItem = appObject:findMenuItem(menuItemPath)
@@ -1576,23 +1576,23 @@ appHotKeyCallbacks = {
       fn = receiveMenuItem
     },
     ["insertEquation"] = {
-      message = "插入LaTeX公式",
-      condition = checkMenuItem({ zh = { "插入", "LaTeX公式..." } }),
+      message = "插入LaTeX公式...",
+      condition = checkMenuItem({ "插入", "LaTeX公式..." }),
       fn = receiveMenuItem
     },
     ["pdfHightlight"] = {
       message = "高亮",
-      condition = checkMenuItem({ zh = { "批注", "高亮" } }),
+      condition = checkMenuItem({ "批注", "高亮" }),
       fn = receiveMenuItem
     },
     ["pdfUnderline"] = {
       message = "下划线",
-      condition = checkMenuItem({ zh = { "批注", "下划线" } }),
+      condition = checkMenuItem({ "批注", "下划线" }),
       fn = receiveMenuItem
     },
     ["pdfStrikethrough"] = {
       message = "删除线",
-      condition = checkMenuItem({ zh = { "批注", "删除线" } }),
+      condition = checkMenuItem({ "批注", "删除线" }),
       fn = receiveMenuItem
     },
     ["openFileLocation"] = {
@@ -1633,7 +1633,7 @@ appHotKeyCallbacks = {
     },
     ["openRecent"] = {
       message = "最近文档管理",
-      condition = checkMenuItem({ zh = { "文件", "更多历史记录..." } }),
+      condition = checkMenuItem({ "文件", "更多历史记录..." }),
       fn = receiveMenuItem
     }
   },
