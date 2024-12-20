@@ -925,8 +925,8 @@
         "key": "O"
       },
       "play": {
-        "mods": ["shift", "option", "command"],
-        "key": "P"
+        "mods": ["shift", "command"],
+        "key": "Return"
       },
       "insertTextBox": {
         "mods": ["shift", "command"],
