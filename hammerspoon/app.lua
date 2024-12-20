@@ -1386,6 +1386,11 @@ appHotKeyCallbacks = {
         end
       end,
       fn = function(url) hs.execute('open -R "' .. url .. '"') end
+    },
+    ["openRecent"] = {
+      message = localizedMessage("Recently Closed"),
+      condition = checkMenuItem({ "History", "Recently Closed" }),
+      fn = showMenuItem
     }
   },
 

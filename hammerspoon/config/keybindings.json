@@ -807,6 +807,10 @@
       "showInFinder": {
         "mods": ["shift", "option", "command"],
         "key": "F"
+      },
+      "openRecent": {
+        "mods": "control",
+        "key": "R"
       }
     },
     "com.apple.Preview": {
