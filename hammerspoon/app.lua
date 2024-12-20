@@ -1631,11 +1631,6 @@ appHotKeyCallbacks = {
           end tell
         ]])
       end
-    },
-    ["openRecent"] = {
-      message = "最近文档管理",
-      condition = checkMenuItem({ "文件", "更多历史记录..." }),
-      fn = receiveMenuItem
     }
   },
 
