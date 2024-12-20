@@ -824,10 +824,6 @@
         "mods": ["shift", "option", "command"],
         "key": "W"
       },
-      "toggleSearchEditorRegex": {
-        "mods": ["shift", "option", "command"],
-        "key": "R"
-      },
       "openRecent": {
         "mods": "control",
         "key": "R"
