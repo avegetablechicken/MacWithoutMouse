@@ -891,7 +891,7 @@
         "key": "S"
       },
       "insertEquation": {
-        "mods": ["shift", "command"],
+        "mods": ["option", "command"],
         "key": "E"
       },
       "openFileLocation": {
@@ -940,10 +940,6 @@
         "mods": ["control", "command"],
         "key": "L"
       },
-      "insertEquation": {
-        "mods": ["shift", "command"],
-        "key": "E"
-      },
       "showInFinder": {
         "mods": ["shift", "option", "command"],
         "key": "F"
@@ -966,10 +962,6 @@
         "mods": ["shift", "option", "command"],
         "key": "V"
       },
-      "insertEquation": {
-        "mods": ["shift", "command"],
-        "key": "E"
-      },
       "showInFinder": {
         "mods": ["shift", "option", "command"],
         "key": "F"
@@ -981,7 +973,7 @@
         "key": "E"
       },
       "insertEquation": {
-        "mods": ["shift", "command"],
+        "mods": ["option", "command"],
         "key": "E"
       }
     },

@@ -1691,11 +1691,6 @@ appHotKeyCallbacks = {
       condition = checkMenuItem({ "Insert", "Line" }),
       fn = showMenuItem
     },
-    ["insertEquation"] = {  -- Insert > Equation…
-      message = localizedMessage({ "Insert", "Equation..." }),
-      condition = checkMenuItem({ "Insert", "Equation..." }),
-      fn = receiveMenuItem
-    },
     ["showInFinder"] = {
       message = commonLocalizedMessage("Show in Finder"),
       condition = function(appObject)
@@ -1744,11 +1739,6 @@ appHotKeyCallbacks = {
       message = localizedMessage("Paste"),
       condition = checkMenuItem({ "Edit", "Paste" }),
       repeatable = true,
-      fn = receiveMenuItem
-    },
-    ["insertEquation"] = {  -- Insert > Equation…
-      message = localizedMessage({ "Insert", "Equation…" }),
-      condition = checkMenuItem({ "Insert", "Equation…" }),
       fn = receiveMenuItem
     },
     ["showInFinder"] = {
