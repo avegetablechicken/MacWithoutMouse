@@ -921,7 +921,7 @@
         "key": "V"
       },
       "showBuildOrder": {
-        "mods": ["shift", "option", "command"],
+        "mods": ["shift", "command"],
         "key": "O"
       },
       "play": {
