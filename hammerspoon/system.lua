@@ -674,7 +674,7 @@ local function registerProxySettingsEntry(menu)
               set tb to table 1 of scroll area 1 of group 1 of tab group 1 of sheet 1
               repeat with r in every row of tb
                 if value of checkbox 1 of r is 1 then
-                  return position of text field 1 of r
+                  return {position of text field 1 of r, size of text field 1 of r}
                 end if
               end repeat
               return false
@@ -693,7 +693,7 @@ local function registerProxySettingsEntry(menu)
               set tb to scroll area 1 of group 2 of splitter group 1 of group 1 of sheet 1
               repeat with r in every group of tb
                 if value of checkbox 1 of r is 1 then
-                  return position of text field 1 of r
+                  return {position of text field 1 of r, size of text field 1 of r}
                 end if
               end repeat
               return false
@@ -701,9 +701,9 @@ local function registerProxySettingsEntry(menu)
           end tell
         ]]
       end
-      local ok, position = hs.osascript.applescript(script)
-      if ok and type(position) == "table" then
-        leftClickAndRestore({ position[1], position[2] + 10 },
+      local ok, frame = hs.osascript.applescript(script)
+      if ok and type(frame) == "table" then
+        leftClickAndRestore({ frame[1][1] + frame[2][1] - 1, frame[1][2] },
                             findApplication("com.apple.systempreferences"):name())
       end
     end,
