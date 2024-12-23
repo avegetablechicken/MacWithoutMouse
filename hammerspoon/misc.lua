@@ -290,10 +290,10 @@ local function menuItemHotkeyIdx(mods, key)
   return idx
 end
 
-local windowMenuItemsSinceSequio1 = {
+local windowMenuItemsSinceSequoia1 = {
   ["⌃F"] = "Fill", ["⌃C"] = "Center"
 }
-local windowMenuItemsSinceSequio2 = {
+local windowMenuItemsSinceSequoia2 = {
   ["⌃R"] = "Return to Previous Size",
   ["⌃←"] = "Left", ["⌃→"] = "Right",
   ["⌃↑"] = "Top", ["⌃↓"] = "Bottom",
@@ -364,7 +364,7 @@ local function getSubMenuHotkeys(t, menuItem, titleAsEntry, titlePrefix, bundleI
       if osv >= OS.Sequoia then
         if menuItem.AXTitle == 'Window'
             or localizationMap.common[menuItem.AXTitle] == 'Window' then
-          for hkIdx, itemTitle in pairs(windowMenuItemsSinceSequio1) do
+          for hkIdx, itemTitle in pairs(windowMenuItemsSinceSequoia1) do
             if idx == hkIdx and (subItem.AXTitle == itemTitle
                 or localizationMap.common[subItem.AXTitle] == itemTitle) then
               idx = "🌐︎" .. idx
@@ -373,7 +373,7 @@ local function getSubMenuHotkeys(t, menuItem, titleAsEntry, titlePrefix, bundleI
           end
         elseif menuItem.AXTitle == 'Move & Resize'
             or localizationMap.common[menuItem.AXTitle] == 'Move & Resize' then
-          for hkIdx, itemTitle in pairs(windowMenuItemsSinceSequio2) do
+          for hkIdx, itemTitle in pairs(windowMenuItemsSinceSequoia2) do
             if idx == hkIdx and (subItem.AXTitle == itemTitle
                 or localizationMap.common[subItem.AXTitle] == itemTitle) then
               idx = "🌐︎" .. idx
