@@ -32,9 +32,6 @@ end
 
 -- Utility to bind handler to Hyper+modifiers+key
 function module:bindNoSuspend(mods, key, message, pressedfn, releasedfn, repeatfn)
-  pressedfn = forgiveWrapper(pressedfn, mods, key)
-  releasedfn = forgiveWrapper(releasedfn, mods, key)
-  repeatfn = forgiveWrapper(repeatfn, mods, key)
   local hotkey = hs.hotkey.new(mods, key, pressedfn, releasedfn, repeatfn)
   hotkey.msg = self.hyper .. hotkey.idx .. ": " .. message
   table.insert(self.hyperMode.keys, hotkey)

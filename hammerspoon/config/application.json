@@ -74,7 +74,10 @@
   ],
 
   "suspendHotkeysInRemoteDesktop": [
-    "com.microsoft.rdc.macos"
+    "com.microsoft.rdc.macos",
+    "com.devolutions.remotedesktopmanager",
+    "com.devolutions.remotedesktopmanager.free",
+    "com.parallels.macvm"
   ],
 
   "defaultMusicAppForControlCenter": "com.tencent.QQMusicMac",

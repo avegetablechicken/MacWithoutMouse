@@ -112,7 +112,7 @@ function module:_new(mods, key, msg, func)
     func = msg
     msg = nil
   end
-  self.action = forgiveWrapper(func)
+  self.action = func
   if msg then self.msg = self.idx .. ": " .. msg end
 
   -- the actual workhorse

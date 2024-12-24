@@ -76,25 +76,6 @@ local hyper = require('modal.hyper')
 HyperModal = hyper.install(HYPER)
 table.insert(HyperModalList, HyperModal)
 
-FORGIVEN_APPS = {
-  "com.devolutions.remotedesktopmanager", "com.devolutions.remotedesktopmanager.free",
-  "com.parallels.macvm",
-}
-
-function forgiveWrapper(fn, mods, key)
-  if fn ~= nil then
-    local oldFn = fn
-    fn = function()
-      if not hs.fnutils.contains(FORGIVEN_APPS, hs.application.frontmostApplication():bundleID()) then
-        oldFn()
-      elseif mods ~= nil and key ~= nil then
-        selectMenuItemOrKeyStroke(hs.window.frontmostWindow():application(), mods, key)
-      end
-    end
-  end
-  return fn
-end
-
 function suspendWrapper(fn, mods, key, predicates)
   if fn ~= nil then
     local oldFn = fn
@@ -141,9 +122,6 @@ function newHotkeyImpl(mods, key, message, pressedfn, releasedfn, repeatfn)
   pressedfn = getFunc(pressedfn)
   releasedfn = getFunc(releasedfn)
   repeatfn = getFunc(repeatfn)
-  pressedfn = forgiveWrapper(pressedfn, mods, key)
-  releasedfn = forgiveWrapper(releasedfn, mods, key)
-  repeatfn = forgiveWrapper(repeatfn, mods, key)
   local hotkey
   local validHyperModal = hs.fnutils.find(HyperModalList, function(modal)
     return modal.hyper == mods
