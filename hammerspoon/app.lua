@@ -5001,9 +5001,21 @@ end
 
 -- ## Barrier
 -- barrier window may not be focused when it is created, so focus it
-local barrierWindowFilter = hs.window.filter.new(false):allowApp("Barrier"):subscribe(
-  hs.window.filter.windowCreated, function(winObj) winObj:focus() end
-)
+if hs.application.pathForBundleID("barrier") ~= nil
+    and hs.application.pathForBundleID("barrier") ~= "" then
+  local appObject = findApplication("barrier")
+  if appObject == nil then
+    execOnLaunch("barrier", function(appObject)
+      hs.window.filter.new(false):allowApp(appObject:name()):subscribe(
+        hs.window.filter.windowCreated, function(winObj) winObj:focus() end
+      )
+    end)
+  else
+    hs.window.filter.new(false):allowApp(appObject:name()):subscribe(
+      hs.window.filter.windowCreated, function(winObj) winObj:focus() end
+    )
+  end
+end
 
 -- ## remote desktop apps
 -- remap modifier keys for specified windows of remote desktop apps
