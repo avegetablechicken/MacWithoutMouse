@@ -73,6 +73,10 @@
     "com.eusoft.freeeudic"
   ],
 
+  "suspendHotkeysInRemoteDesktop": [
+    "com.microsoft.rdc.macos"
+  ],
+
   "defaultMusicAppForControlCenter": "com.tencent.QQMusicMac",
 
   "inputSource": {

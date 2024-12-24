@@ -1612,23 +1612,13 @@
     }
   },
 
-  "remap": {
+  "remoteDesktopModifiers": {
     "com.realvnc.vncviewer": [
       {
         "type": "restore",
         "map": {
           "command": "control",
           "control": "command"
-        },
-        "condition": {
-          "noWindow": true,
-          "windowFilter": {
-            "allowSheet": true,
-            "rejectTitles": [
-              "%) %- VNC Viewer$",
-              "%) %- RealVNC Viewer$"
-            ]
-          }
         }
       }
     ],
@@ -1637,15 +1627,6 @@
         "map":  {
           "command":  "control",
           "control":  "command"
-        },
-        "condition": {
-          "windowFilter": {
-            "rejectTitles":  [
-              "^$",
-              "^Microsoft Remote Desktop$",
-              "^Preferences$"
-            ]
-          }
         }
       }
     ]

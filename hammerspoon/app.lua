@@ -5019,7 +5019,7 @@ end
 
 -- ## remote desktop apps
 -- remap modifier keys for specified windows of remote desktop apps
-local remoteDesktopsMappingModifiers = get(KeybindingConfigs, 'remap') or {}
+local remoteDesktopsMappingModifiers = get(KeybindingConfigs, 'remoteDesktopModifiers') or {}
 local modifiersShort = {
   control = "ctrl",
   option = "alt",
@@ -5038,53 +5038,73 @@ for _, rules in pairs(remoteDesktopsMappingModifiers) do
   end
 end
 
+local microsoftRemoteDesktopWindowFilter
+if hs.application.nameForBundleID("com.microsoft.rdc.macos") == "Windows App" then
+  microsoftRemoteDesktopWindowFilter = { rejectTitles = {} }
+  local preLocalizeWindowsApp = function ()
+    for _, title in ipairs { "Favorites", "Devices", "Apps",
+      "Settings", "About", "Device View Options", "App View Options" } do
+      local locTitle = "^" .. localizedString(title, "com.microsoft.rdc.macos") .. "$"
+      if not hs.fnutils.contains(microsoftRemoteDesktopWindowFilter.rejectTitles, locTitle) then
+        table.insert(microsoftRemoteDesktopWindowFilter.rejectTitles, locTitle)
+      end
+    end
+  end
+  if findApplication("com.microsoft.rdc.macos") ~= nil then
+    preLocalizeWindowsApp()
+  end
+  execOnActivated("com.microsoft.rdc.macos", preLocalizeWindowsApp)
+else
+  microsoftRemoteDesktopWindowFilter = {
+    rejectTitles = {
+      "^Microsoft Remote Desktop$",
+      "^Preferences$",
+    }
+  }
+end
+
+local function isDefaultRemoteDesktopWindow(window)
+  local bundleID = window:application():bundleID()
+  if bundleID == "com.realvnc.vncviewer" then
+    local winUIObj = hs.axuielement.windowElement(window)
+    return hs.fnutils.find(winUIObj:childrenWithRole("AXButton"),
+      function(child) return child.AXHelp == "Session informatioon" end) ~= nil
+  elseif bundleID == "com.microsoft.rdc.macos" then
+    local wFilter = hs.window.filter.new(false):setAppFilter(
+        window:application():name(), microsoftRemoteDesktopWindowFilter)
+    local result = wFilter:isWindowAllowed(window)
+    if result then
+      local winUIObj = hs.axuielement.windowElement(window)
+      local title = "Cancel"
+      if window:application():name() == "Windows App" then
+        title = localizedString(title, "com.microsoft.rdc.macos") or title
+      end
+      for _, bt in ipairs(winUIObj:childrenWithRole("AXButton")) do
+        if bt.AXTitle == title then
+          return false
+        end
+      end
+    end
+    return result
+  end
+  return true
+end
+
 local function remoteDesktopWindowFilter(appObject)
   local bundleID = appObject:bundleID()
   local rules = remoteDesktopsMappingModifiers[bundleID]
   local winObj = appObject:focusedWindow()
   for _, r in ipairs(rules or {}) do
     local valid = false
-    if r.condition == nil then
-      valid = true
+    if winObj == nil or winObj:role() == "AXSheet" or winObj:role() == "AXPopover" then
+      valid = r.type == 'restore'
+    elseif r.condition == nil then
+      local isRDW = isDefaultRemoteDesktopWindow(winObj)
+      valid = (r.type == 'restore' and not isRDW) or (r.type ~= 'restore' and isRDW)
     else
-      if winObj == nil then
-        valid = r.condition.noWindow == true
-      elseif r.condition.windowFilter ~= nil then
-        local filterRules = r.condition.windowFilter
-        if filterRules.allowSheet and winObj:role() == "AXSheet" then
-          valid = true
-        elseif filterRules.allowPopover and winObj:role() == "AXPopover" then
-          valid = true
-        else
-          filterRules = hs.fnutils.copy(filterRules)
-          filterRules.allowSheet = nil
-          filterRules.allowPopover = nil
-          local wFilter = hs.window.filter.new(false):setAppFilter(appObject:name(), filterRules)
-          if wFilter:isWindowAllowed(winObj) then
-            valid = true
-          end
-          if bundleID == "com.realvnc.vncviewer" then
-            if (r.type == 'restore' and not valid) or (r.type ~= 'restore' and valid) then
-              local winUIObj = hs.axuielement.windowElement(winObj)
-              for _, bt in ipairs(winUIObj:childrenWithRole("AXButton")) do
-                if bt.AXTitle == "Stop" then
-                  valid = not valid
-                  break
-                end
-              end
-            end
-          elseif bundleID == "com.microsoft.rdc.macos" then
-            if (r.type == 'restore' and not valid) or (r.type ~= 'restore' and valid) then
-              local winUIObj = hs.axuielement.windowElement(winObj)
-              for _, bt in ipairs(winUIObj:childrenWithRole("AXButton")) do
-                if bt.AXTitle == "Cancel" then
-                  valid = not valid
-                  break
-                end
-              end
-            end
-          end
-        end
+      if r.condition.windowFilter ~= nil then  -- currently only support window filter
+        local wFilter = hs.window.filter.new(false):setAppFilter(appObject:name(), r.condition.windowFilter)
+        valid = wFilter:isWindowAllowed(winObj)
       end
     end
     if valid then
@@ -5124,27 +5144,13 @@ if remoteDesktopsMappingModifiers[frontmostApplication:bundleID()] then
   remoteDesktopModifierTapper:start()
 end
 
-local function microsoftRemoteDesktopCallback(appObject)
-  local filterRules = {
-    rejectTitles = {
-      "^$",
-      "^Microsoft Remote Desktop$",
-      "^Preferences$"
-    }
-  }
+local function suspendHotkeysInRemoteDesktop(appObject)
   local winObj = appObject:focusedWindow()
   if winObj ~= nil then
-    local windowFilter = hs.window.filter.new(false):setAppFilter(appObject:name(), filterRules)
-    if windowFilter:isWindowAllowed(winObj) then
-      local winUIObj = hs.axuielement.windowElement(winObj)
-      local cancel = hs.fnutils.filter(winUIObj:childrenWithRole("AXButton"), function(child)
-        return child.AXTitle == "Cancel"
-      end)
-      if #cancel == 0 then
-        FLAGS["SUSPEND_IN_REMOTE_DESKTOP"] = not FLAGS["SUSPEND"]
-        FLAGS["SUSPEND"] = true
-        return
-      end
+    if isDefaultRemoteDesktopWindow(winObj) then
+      FLAGS["SUSPEND_IN_REMOTE_DESKTOP"] = not FLAGS["SUSPEND"]
+      FLAGS["SUSPEND"] = true
+      return
     end
   end
   if FLAGS["SUSPEND_IN_REMOTE_DESKTOP"] ~= nil then
@@ -5152,10 +5158,17 @@ local function microsoftRemoteDesktopCallback(appObject)
     FLAGS["SUSPEND_IN_REMOTE_DESKTOP"] = nil
   end
 end
-execOnActivated("com.microsoft.rdc.macos", microsoftRemoteDesktopCallback)
 
-local microsoftRemoteDesktopObserver
-local function watchForMicrosoftRemoteDesktopWindow(appObject)
+local remoteDesktopAppsRequireSuspendHotkeys = applicationConfigs.suspendHotkeysInRemoteDesktop or {}
+for _, bundleID in ipairs(remoteDesktopAppsRequireSuspendHotkeys) do
+  if frontmostApplication:bundleID() == bundleID then
+    suspendHotkeysInRemoteDesktop(frontmostApplication)
+  end
+  execOnActivated(bundleID, suspendHotkeysInRemoteDesktop)
+end
+
+local remoteDesktopObserver
+local function watchForRemoteDesktopWindow(appObject)
   local appUIObj = hs.axuielement.applicationElement(appObject)
   local observer = hs.axuielement.observer.new(appObject:pid())
   observer:addWatcher(
@@ -5163,17 +5176,18 @@ local function watchForMicrosoftRemoteDesktopWindow(appObject)
     hs.axuielement.observer.notifications.focusedWindowChanged
   )
   observer:callback(
-      hs.fnutils.partial(microsoftRemoteDesktopCallback, appObject))
+      hs.fnutils.partial(suspendHotkeysInRemoteDesktop, appObject))
   observer:start()
   stopOnDeactivated(appObject:bundleID(), observer)
   stopOnQuit(appObject:bundleID(), observer)
-  microsoftRemoteDesktopObserver = observer
+  remoteDesktopObserver = observer
 end
-local microsoftRemoteDesktopApp = findApplication("com.microsoft.rdc.macos")
-if microsoftRemoteDesktopApp ~= nil then
-  watchForMicrosoftRemoteDesktopWindow(microsoftRemoteDesktopApp)
-else
-  execOnActivated("com.microsoft.rdc.macos", watchForMicrosoftRemoteDesktopWindow)
+
+for _, bundleID in ipairs(remoteDesktopAppsRequireSuspendHotkeys) do
+  if frontmostApplication:bundleID() == bundleID then
+    watchForRemoteDesktopWindow(frontmostApplication)
+  end
+  execOnActivated(bundleID, watchForRemoteDesktopWindow)
 end
 
 -- ## iOS apps
@@ -5311,6 +5325,12 @@ function App_applicationCallback(appName, eventType, appObject)
       unregisterInWinHotKeys("cn.better365.iShotPro")
       return
     end
+    if remoteDesktopObserver ~= nil then
+      if FLAGS["SUSPEND_IN_REMOTE_DESKTOP"] ~= nil then
+        FLAGS["SUSPEND"] = not FLAGS["SUSPEND_IN_REMOTE_DESKTOP"]
+        FLAGS["SUSPEND_IN_REMOTE_DESKTOP"] = nil
+      end
+    end
     for _, proc in ipairs(processesOnActivated[bundleID] or {}) do
       proc(appObject)
     end
@@ -5357,12 +5377,6 @@ function App_applicationCallback(appName, eventType, appObject)
       end
     end
   elseif eventType == hs.application.watcher.deactivated then
-    if microsoftRemoteDesktopObserver ~= nil then
-      if FLAGS["SUSPEND_IN_REMOTE_DESKTOP"] ~= nil then
-        FLAGS["SUSPEND"] = not FLAGS["SUSPEND_IN_REMOTE_DESKTOP"]
-        FLAGS["SUSPEND_IN_REMOTE_DESKTOP"] = nil
-      end
-    end
     if appName ~= nil then
       if bundleID then
         unregisterInAppHotKeys(bundleID)
