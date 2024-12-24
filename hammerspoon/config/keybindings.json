@@ -78,14 +78,6 @@
         "mods": ["control", "option"],
         "key": "space"
       },
-      "showNotificationCenter": {
-        "mods": "${hyper.controlCenter}",
-        "key": "N"
-      },
-      "showControlCenter": {
-        "mods": "${hyper.controlCenter}",
-        "key": "C"
-      },
       "showProxyMenu": {
         "mods": "${hyper.daemon}",
         "key": "X"

@@ -1033,14 +1033,6 @@ local function bindControlCenter(...)
   return hotkey
 end
 
--- toggle show `Notification Center`
-bindControlCenter(menubarHK["showNotificationCenter"], findApplication("com.apple.notificationcenterui"):name(),
-    function() hs.eventtap.keyStroke("fn", "N") end)
-
--- toggle show `Control Center`
-bindControlCenter(menubarHK["showControlCenter"], findApplication("com.apple.controlcenter"):name(),
-    function() hs.eventtap.keyStroke("fn", "C") end)
-
 local controlCenterIdentifiers = hs.json.read("static/controlcenter-identifies.json")
 local controlCenterSubPanelIdentifiers = controlCenterIdentifiers.subpanel
 local controlCenterMenuBarItemIdentifiers = controlCenterIdentifiers.menubar
