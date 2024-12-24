@@ -300,11 +300,6 @@
         "key": "F",
         "bundleID": "com.apple.finder"
       },
-      "Google Chrome": {
-        "mods": ["shift", "option", "command"],
-        "key": "Z",
-        "bundleID": "com.google.Chrome"
-      },
       "Safari": {
         "mods": "${hyper.app}",
         "key": "Z",
