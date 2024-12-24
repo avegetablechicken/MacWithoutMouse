@@ -282,13 +282,8 @@
       },
       "Terminal": {
         "mods": "${hyper.app}",
-        "key": "T",
-        "bundleID": "com.apple.Terminal"
-      },
-      "Dash": {
-        "mods": "${hyper.app}",
         "key": "A",
-        "bundleID": "com.kapeli.dashdoc"
+        "bundleID": "com.apple.Terminal"
       },
       "Sublime Text": {
         "mods": "${hyper.app}",
@@ -340,6 +335,11 @@
         "key": "W",
         "vm": "com.parallels.desktop.console"
       },
+      "EuDic": {
+        "mods": "${hyper.hyper}",
+        "key": "E",
+        "bundleID": "com.eusoft.freeeudic"
+      },
       "RDM": {
         "mods": "${hyper.hyper}",
         "key": "R",
@@ -381,10 +381,10 @@
         "key": "S",
         "bundleID": "com.apple.ScriptEditor2"
       },
-      "EuDic": {
+      "Dash": {
         "mods": "${hyper.hyper}",
         "key": "D",
-        "bundleID": "com.eusoft.freeeudic"
+        "bundleID": "com.kapeli.dashdoc"
       },
       "SourceTree": {
         "mods": "${hyper.hyper}",
