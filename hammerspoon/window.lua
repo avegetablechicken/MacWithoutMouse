@@ -435,19 +435,6 @@ function()
   win:setFrame(f)
 end)
 
-bindWindow(winHK["toggleMaximize"], "Toggle Maximize",
-function()
-  local win = hs.window.focusedWindow()
-  if frameCacheMaximize[win:id()] then
-    win:setFrame(frameCacheMaximize[win:id()])
-    frameCacheMaximize[win:id()] = nil
-  else
-    frameCacheMaximize[win:id()] = win:frame()
-    win:maximize()
-  end
-  frameCacheZoomToCenter[win:id()] = nil
-end).subkind = 0
-
 -- move to right
 bindMoveWindowURL("right", 1,
 function()
