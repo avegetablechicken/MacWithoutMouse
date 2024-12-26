@@ -1785,8 +1785,9 @@ function localizeCommonMenuItemTitles(locale)
   local resourceDir = '/System/Library/Frameworks/AppKit.framework/Resources'
   local matchedLocale = getMatchedLocale(locale, resourceDir, 'lproj')
   local titleList = {
-    'File', 'View', 'Window',
-    'Help', 'Enter Full Screen', 'Exit Full Screen',
+    'File', 'View', 'Window', 'Help',
+    'Zoom', 'Zoom All',
+    'Enter Full Screen', 'Exit Full Screen',
   }
   if getOSVersion() >= OS.Sequoia then
     titleList = hs.fnutils.concat(titleList, {

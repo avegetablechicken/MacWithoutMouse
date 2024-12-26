@@ -492,6 +492,14 @@
     },
 
     "appCommon": {
+      "zoom": {
+        "mods": ["control", "command"],
+        "key": "Z"
+      },
+      "zoomAll": {
+        "mods": ["control", "option", "command"],
+        "key": "Z"
+      },
       "remapPreviousTab": {
         "mods": "control",
         "key": "`"

@@ -4278,6 +4278,53 @@ local function registerOpenRecent(appObject)
 end
 registerOpenRecent(frontmostApplication)
 
+local zoomHotkeys = {}
+local function registerZoomHotkeys(appObject)
+  for _, hotkey in pairs(zoomHotkeys) do
+    hotkey:delete()
+  end
+  zoomHotkeys = {}
+  local bundleID = appObject:bundleID()
+  local menuItemTitles = { 'Zoom', 'Zoom All' }
+  for i, hkID in ipairs { 'zoom', 'zoomAll' } do
+    local spec = get(KeybindingConfigs.hotkeys.appCommon, hkID)
+    local specApp = get(appHotKeyCallbacks[bundleID], hkID)
+    if specApp ~= nil or spec == nil or hs.fnutils.contains(spec.excluded or {}, bundleID) then
+      return
+    end
+
+    local title = menuItemTitles[i]
+    local menuItemPath = { 'Window', title }
+    local menuItem = appObject:findMenuItem(menuItemPath)
+    if menuItem == nil then
+      local localizedWindow = localizedMenuBarItem('Window', appObject:bundleID())
+      local localizedTitle = localizedMenuBarItem(title, appObject:bundleID())
+      menuItemPath = { localizedWindow, localizedTitle }
+      menuItem = appObject:findMenuItem(menuItemPath)
+      if menuItem == nil then
+        menuItemPath = { 'Window', localizedTitle }
+        menuItem = appObject:findMenuItem(menuItemPath)
+        if menuItem == nil then
+          menuItemPath = { localizedWindow, title }
+          menuItem = appObject:findMenuItem(menuItemPath)
+        end
+      end
+    end
+    if menuItem ~= nil then
+      local fn = function() appObject:selectMenuItem(menuItemPath) end
+      local cond = function()
+        local menuItemCond = appObject:findMenuItem(menuItemPath)
+        return menuItemCond ~= nil and menuItemCond.enabled
+      end
+      zoomHotkeys[hkID], cond = AppBindSpec(appObject, spec, menuItemPath[2], fn, nil, cond)
+      zoomHotkeys[hkID].condition = cond
+      zoomHotkeys[hkID].kind = HK.IN_APP
+      zoomHotkeys[hkID].subkind = HK.IN_APP_.APP
+    end
+  end
+end
+registerZoomHotkeys(frontmostApplication)
+
 -- bind hotkeys for open or save panel that are similar in `Finder`
 -- & hotkeys to confirm delete or save
 local openSavePanelHotkeys = {}
@@ -5359,6 +5406,7 @@ function App_applicationCallback(appName, eventType, appObject)
         hs.timer.doAfter(0, function()
           remapPreviousTab(appObject)
           registerOpenRecent(appObject)
+          registerZoomHotkeys(appObject)
           registerObserverForMenuBarChange(appObject)
           if HSKeybindings ~= nil and HSKeybindings.isShowing then
             local validOnly = HSKeybindings.validOnly
