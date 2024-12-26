@@ -4706,6 +4706,9 @@ local function watchMenuBarItems(appObject)
       if newMenuBarItemTitlesString ~= appsMenuBarItemsWatchers[appObject:bundleID()][2] then
         appsMenuBarItemsWatchers[appObject:bundleID()][2] = newMenuBarItemTitlesString
         altMenuBarItem(appObject)
+        remapPreviousTab(appObject)
+        registerOpenRecent(appObject)
+        registerZoomHotkeys(appObject)
       end
     end)
     appsMenuBarItemsWatchers[appObject:bundleID()] = { watcher, menuBarItemTitlesString }
@@ -4730,6 +4733,9 @@ local function appMenuBarChangeCallback(appObject)
     local newMenuBarItemTitlesString = getMenuBarItemTitlesString(appObject)
     if newMenuBarItemTitlesString ~= menuBarItemStr then
       altMenuBarItem(appObject)
+      remapPreviousTab(appObject)
+      registerOpenRecent(appObject)
+      registerZoomHotkeys(appObject)
     end
   end)
 end
