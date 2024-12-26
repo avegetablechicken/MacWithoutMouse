@@ -967,12 +967,12 @@ local function localizedMessage(message, params, sep)
   return function(appObject)
     local bundleID = appObject:bundleID()
     if type(message) == 'string' then
-      return localizedString(message, bundleID, params) or message
+      return localizedMenuItem(message, bundleID, params) or message
     else
       if sep == nil then sep = ' > ' end
       local str = localizedMenuBarItem(message[1], bundleID, params) or message[1]
       for i=2,#message do
-        str = str .. sep .. (localizedString(message[i], bundleID, params) or message[i])
+        str = str .. sep .. (localizedMenuItem(message[i], bundleID, params) or message[i])
       end
       return str
     end

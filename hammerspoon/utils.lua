@@ -170,7 +170,7 @@ function findMenuItem(appObject, menuItemTitle, params)
   local locStr = localizedMenuBarItem(menuItemTitle[1], appObject:bundleID())
   table.insert(targetMenuItem, locStr or menuItemTitle[1])
   for i=#menuItemTitle,2,-1 do
-    locStr = localizedString(menuItemTitle[i], appObject:bundleID(), params)
+    locStr = localizedMenuItem(menuItemTitle[i], appObject:bundleID(), params)
     table.insert(targetMenuItem, 2, locStr or menuItemTitle[i])
   end
   return appObject:findMenuItem(targetMenuItem), targetMenuItem
@@ -195,7 +195,7 @@ function selectMenuItem(appObject, menuItemTitle, params, show)
     local locStr = localizedMenuBarItem(menuItemTitle[1], appObject:bundleID())
     table.insert(targetMenuItem, locStr or menuItemTitle[1])
     for i=#menuItemTitle,2,-1 do
-      locStr = localizedString(menuItemTitle[i], appObject:bundleID(), params)
+      locStr = localizedMenuItem(menuItemTitle[i], appObject:bundleID(), params)
       table.insert(targetMenuItem, 2, locStr or menuItemTitle[i])
     end
     return appObject:selectMenuItem(targetMenuItem)
@@ -1786,6 +1786,7 @@ function localizeCommonMenuItemTitles(locale)
   local matchedLocale = getMatchedLocale(locale, resourceDir, 'lproj')
   local titleList = {
     'File', 'View', 'Window', 'Help',
+    'Preferences', 'Preferences…', 'Settings…',
     'Zoom', 'Zoom All',
     'Enter Full Screen', 'Exit Full Screen',
   }
@@ -1798,6 +1799,7 @@ function localizeCommonMenuItemTitles(locale)
     })
   end
   for _, title in ipairs(titleList) do
+    title = title:gsub('…', '\\U2026'):gsub('“', '\\U201C'):gsub('”', '\\U201D')
     local localizedTitle = localizeByLoctable(title, resourceDir, 'MenuCommands', matchedLocale, {})
     if localizedTitle ~= nil then
       localizationMap.common[localizedTitle] = title
@@ -1928,6 +1930,25 @@ function localizedMenuBarItem(title, bundleID, params)
   end
 end
 
+function localizedMenuItem(title, bundleID, params)
+  local appLocale = applicationLocales(bundleID)[1]
+  local locTitle = hs.fnutils.indexOf(localizationMap[bundleID] or {}, title)
+  if locTitle ~= nil then
+    return locTitle
+  end
+  if appLocale == getMatchedLocale(systemLocale, { appLocale }) then
+    locTitle = hs.fnutils.indexOf(localizationMap.common, title)
+    if locTitle ~= nil then return locTitle end
+  end
+  locTitle = localizedString(title, bundleID, params)
+  if locTitle ~= nil then
+    if localizationMap[bundleID] == nil then
+      localizationMap[bundleID] = {}
+    end
+    localizationMap[bundleID][locTitle] = title
+    return locTitle
+  end
+end
 
 -- helpers for click menubar to the right
 

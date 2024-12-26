@@ -3,7 +3,6 @@
     "com.apple.MobileSMS": "ChatKit.framework",
     "com.apple.Safari": "Safari.framework",
     "com.apple.Home": "UIKitMacHelper.framework",
-    "com.tencent.meeting": "WeMeetResource.bundle",
     "com.charliemonroe.Downie-4": "XUCore.framework",
     "com.charliemonroe.Permute-3": "XUCore.framework"
   },
