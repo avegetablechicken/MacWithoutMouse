@@ -4418,6 +4418,7 @@ local function registerForOpenSavePanel(appObject)
     return dontSaveButton, sidebarCells
   end
 
+  local windowFilter
   local actionFunc = function(winUIObj)
     local dontSaveButton, sidebarCells = getUIObj(winUIObj)
     local header
@@ -4448,6 +4449,20 @@ local function registerForOpenSavePanel(appObject)
         end
       end
     end
+
+    if windowFilter ~= nil then windowFilter:unsubscribeAll() end
+    if #appObject:visibleWindows() == 1 then
+      windowFilter = hs.window.filter.new(false):setAppFilter(appObject:name())
+      windowFilter:subscribe(hs.window.filter.windowDestroyed, function(winObj, appName)
+        for _, hotkey in ipairs(openSavePanelHotkeys) do
+          hotkey:delete()
+        end
+        openSavePanelHotkeys = {}
+        windowFilter:unsubscribeAll()
+        windowFilter = nil
+      end)
+    end
+
     if dontSaveButton ~= nil then
       local spec = get(KeybindingConfigs.hotkeys.shared, "confirmDelete")
       if spec ~= nil then
@@ -4490,6 +4505,10 @@ local function registerForOpenSavePanel(appObject)
       hotkey:delete()
     end
     openSavePanelHotkeys = {}
+    if windowFilter ~= nil then
+      windowFilter:unsubscribeAll()
+      windowFilter = nil
+    end
   end)
 end
 registerForOpenSavePanel(frontmostApplication)
