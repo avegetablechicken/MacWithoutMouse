@@ -4246,6 +4246,7 @@ remapPreviousTab(frontmostApplication)
 
 -- register hotkey to open recent when it is available
 local openRecentHotkey
+local localizedOpenRecent
 local function registerOpenRecent(appObject)
   if openRecentHotkey then
     openRecentHotkey:delete()
@@ -4263,7 +4264,27 @@ local function registerOpenRecent(appObject)
   if #hs.fnutils.ifilter(menuItems, function(v) return v.AXTitle == localizedFile end) == 0 then
     return
   end
-  local menuItem, menuItemPath = findMenuItem(appObject, { "File",  "Open Recent" })
+  local menuItem, menuItemPath
+  if bundleID:sub(1, 10) == "com.apple." then
+    menuItemPath = { 'File', 'Open Recent' }
+    menuItem = appObject:findMenuItem(menuItemPath)
+    if menuItem == nil then
+      if localizedOpenRecent ~= nil then
+        menuItemPath = { localizedFile, localizedOpenRecent }
+        menuItem = appObject:findMenuItem(menuItemPath)
+      end
+      if menuItem == nil then
+        local appLocale = applicationLocales(bundleID)[1]
+        local resourceDir = '/System/Library/Frameworks/AppKit.framework/Resources'
+        local matchedLocale = getMatchedLocale(appLocale, resourceDir, 'lproj')
+        localizedOpenRecent = localizeByLoctable('Open Recent', resourceDir, 'MenuCommands', matchedLocale, {})
+        menuItemPath = { localizedFile, localizedOpenRecent }
+        menuItem = appObject:findMenuItem(menuItemPath)
+      end
+    end
+  else
+    menuItem, menuItemPath = findMenuItem(appObject, { "File",  "Open Recent" })
+  end
   if menuItem ~= nil then
     local fn = function() showMenuItem(menuItemPath, appObject) end
     local cond = function()
