@@ -1895,8 +1895,8 @@ appHotKeyCallbacks = {
       fn = showMenuItem
     },
     ["remapPrevLibrary"] = {
-      mods = get(KeybindingConfigs.hotkeys.appCommon, "remapPreviousTab", "mods"),
-      key = get(KeybindingConfigs.hotkeys.appCommon, "remapPreviousTab", "key"),
+      mods = get(KeybindingConfigs.hotkeys.shared, "remapPreviousTab", "mods"),
+      key = get(KeybindingConfigs.hotkeys.shared, "remapPreviousTab", "key"),
       message = "Previous Library",
       condition = JabRefShowLibraryByIndex(2),
       repeatable = true,
@@ -4220,7 +4220,7 @@ local function remapPreviousTab(appObject)
     remapPreviousTabHotkey = nil
   end
   local bundleID = appObject:bundleID()
-  local spec = get(KeybindingConfigs.hotkeys.appCommon, "remapPreviousTab")
+  local spec = get(KeybindingConfigs.hotkeys.shared, "remapPreviousTab")
   local specApp = get(appHotKeyCallbacks[bundleID], "remapPreviousTab")
   if specApp ~= nil or spec == nil or hs.fnutils.contains(spec.excluded or {}, bundleID) then
     return
@@ -4253,7 +4253,7 @@ local function registerOpenRecent(appObject)
     openRecentHotkey = nil
   end
   local bundleID = appObject:bundleID()
-  local spec = get(KeybindingConfigs.hotkeys.appCommon, "openRecent")
+  local spec = get(KeybindingConfigs.hotkeys.shared, "openRecent")
   local specApp = get(appHotKeyCallbacks[bundleID], "openRecent")
   if specApp ~= nil or spec == nil or hs.fnutils.contains(spec.excluded or {}, bundleID) then
     return
@@ -4313,7 +4313,7 @@ local function registerZoomHotkeys(appObject)
   local bundleID = appObject:bundleID()
   local menuItemTitles = { 'Zoom', 'Zoom All' }
   for i, hkID in ipairs { 'zoom', 'zoomAll' } do
-    local spec = get(KeybindingConfigs.hotkeys.appCommon, hkID)
+    local spec = get(KeybindingConfigs.hotkeys.shared, hkID)
     local specApp = get(appHotKeyCallbacks[bundleID], hkID)
     if specApp ~= nil or spec == nil or hs.fnutils.contains(spec.excluded or {}, bundleID) then
       return
@@ -4449,7 +4449,7 @@ local function registerForOpenSavePanel(appObject)
       end
     end
     if dontSaveButton ~= nil then
-      local spec = get(KeybindingConfigs.hotkeys.appCommon, "confirmDelete")
+      local spec = get(KeybindingConfigs.hotkeys.shared, "confirmDelete")
       if spec ~= nil then
         local fn, cond = WrapCondition(appObject, spec.mods, spec.key, function()
           local action = dontSaveButton:actionNames()[1]
@@ -4542,11 +4542,11 @@ local function altMenuBarItem(appObject)
     return
   end
 
-  local enableIndex = get(KeybindingConfigs.hotkeys.menuBarItems, "enableIndex")
-  local enableLetter = get(KeybindingConfigs.hotkeys.menuBarItems, "enableLetter")
+  local enableIndex = get(KeybindingConfigs.hotkeys.menubar, "enableIndex")
+  local enableLetter = get(KeybindingConfigs.hotkeys.menubar, "enableLetter")
   if enableIndex == nil then enableIndex = false end
   if enableLetter == nil then enableLetter = true end
-  local excludedForLetter = get(KeybindingConfigs.hotkeys.menuBarItems, 'excludedForLetter')
+  local excludedForLetter = get(KeybindingConfigs.hotkeys.menubar, 'excludedForLetter')
   if excludedForLetter ~= nil and hs.fnutils.contains(excludedForLetter,
                                                       appObject:bundleID()) then
     enableLetter = false

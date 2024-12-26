@@ -2275,7 +2275,7 @@ function registerControlCenterHotKeys(panel)
   end
 end
 
-local controlCenterPanelConfigs = KeybindingConfigs.hotkeys.ControlCenterAppKeys
+local controlCenterPanelConfigs = KeybindingConfigs.hotkeys.controlcenter
 local localizedControlCenter = findApplication("com.apple.controlcenter"):name()
 for panel, spec in pairs(controlCenterPanelConfigs) do
   local localizedPanel = controlCenterLocalized(panel)
