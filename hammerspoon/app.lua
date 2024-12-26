@@ -5509,6 +5509,16 @@ function App_applicationCallback(appName, eventType, appObject)
         observersStopOnDeactivated[bundleID] = nil
       end
     else
+      for bid, obs in pairs(observersStopOnDeactivated) do
+        if findApplication(bid) == nil then
+          for _, ob in ipairs(obs) do
+            local observer, func = ob[1], ob[2]
+            observer:stop()
+            if func ~= nil then func(bid, observer) end
+          end
+          observersStopOnDeactivated[bid] = nil
+        end
+      end
       for bid, obs in pairs(observersStopOnQuit) do
         if findApplication(bid) == nil then
           for _, ob in ipairs(obs) do
