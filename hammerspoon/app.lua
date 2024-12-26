@@ -4261,9 +4261,14 @@ local function registerOpenRecent(appObject)
 
   local menuItems = getMenuItems(appObject)
   local localizedFile = localizedMenuBarItem("File", appObject:bundleID())
-  if #hs.fnutils.ifilter(menuItems, function(v) return v.AXTitle == localizedFile end) == 0 then
-    return
-  end
+  local findMenu = hs.fnutils.ifilter(menuItems, function(item)
+    return item.AXTitle == localizedFile and item.AXChildren ~= nil
+  end)
+  if #findMenu ~= 1 then return end
+  local extendableItems = hs.fnutils.ifilter(findMenu[1].AXChildren[1], function(item)
+    return item.AXChildren ~= nil
+  end)
+  if #extendableItems == 0 then return end
   local menuItem, menuItemPath
   if bundleID:sub(1, 10) == "com.apple." then
     menuItemPath = { 'File', 'Open Recent' }
