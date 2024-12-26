@@ -1543,75 +1543,94 @@ appHotKeyCallbacks = {
     ["nextWindow"] = specialCommonHotkeyConfigs["showNextTab"],
     ["goToFileTop"] = {
       mods = "", key = "Home",
-      message = "将光标移动到文档的开头",
+      message = "Cursor to Top",
       repeatable = true,
       fn = function(appObject) hs.eventtap.keyStroke("⌘", "Home", nil, appObject) end
     },
     ["goToFileBottom"] = {
       mods = "", key = "End",
-      message = "将光标移动到文档的结尾",
+      message = "Cursor to Bottom",
       fn = function(appObject) hs.eventtap.keyStroke("⌘", "End", nil, appObject) end
     },
     ["selectToFileTop"] = {
       mods = "⇧", key = "Home",
-      message = "从当前位置选择到文档的开头",
+      message = "Select to Top",
       fn = function(appObject) hs.eventtap.keyStroke("⇧⌘", "Home", nil, appObject) end
     },
     ["selectToFileBottom"] = {
       mods = "⇧", key = "End",
-      message = "从当前位置选择到文档的结尾",
+      message = "Select to Bottom",
       fn = function(appObject) hs.eventtap.keyStroke("⇧⌘", "End", nil, appObject) end
     },
     ["exportToPDF"] = {
-      message = "输出为PDF...",
+      message = localizedMessage("Export to PDF..."),
       condition = function(appObject)
-        local menuItemPath = { "文件", "输出为PDF..." }
-        local menuItem = appObject:findMenuItem(menuItemPath)
-        if menuItem ~= nil then
-          return menuItem.enabled, menuItemPath
+        local titleMap = localizationMap[appObject:bundleID()]
+        if titleMap ~= nil then
+          local localizedFile = localizedMenuBarItem('File', appObject:bundleID())
+          for k, v in pairs(titleMap) do
+            if 'Export to PDF...' == v then
+              local localizedTitle = k
+              local menuItemPath = { localizedFile, localizedTitle }
+              local menuItem = appObject:findMenuItem(menuItemPath)
+              if menuItem ~= nil then
+                return menuItem.enabled, menuItemPath
+              end
+            end
+          end
         end
-        menuItemPath[2] = "输出为PDF格式..."
-        menuItem = appObject:findMenuItem(menuItemPath)
+        local menuItemPath = { 'File', 'Export to PDF...' }
+        local menuItem = appObject:findMenuItem(menuItemPath)
         return menuItem ~= nil and menuItem.enabled, menuItemPath
       end,
       fn = receiveMenuItem
     },
     ["insertTextBox"] = {
-      message = "插入文本框",
+      message = localizedMessage({ "Insert", "Text Box" }),
       condition = function(appObject)
-        local menuItemPath = { "插入", "文本框", "横向" }
-        local menuItem = appObject:findMenuItem(menuItemPath)
-        if menuItem ~= nil then
-          return menuItem.enabled, menuItemPath
+        local titleMap = localizationMap[appObject:bundleID()]
+        if titleMap ~= nil then
+          local localizedInsert = localizedMenuBarItem('Insert', appObject:bundleID())
+          local localizedTextBox = localizedMenuItem('Text Box', appObject:bundleID())
+          for k, v in pairs(titleMap) do
+            if 'Horizontal Text Box' == v then
+              local localizedTitle = k
+              local menuItemPath = { localizedInsert, localizedTextBox, localizedTitle }
+              local menuItem = appObject:findMenuItem(menuItemPath)
+              if menuItem ~= nil then
+                return menuItem.enabled, menuItemPath
+              end
+            end
+          end
         end
-        menuItemPath[3] = "横向文本框"
-        menuItem = appObject:findMenuItem(menuItemPath)
+        local menuItemPath = { 'Insert', 'Text Box', 'Horizontal Text Box' }
+        local menuItem = appObject:findMenuItem(menuItemPath)
         return menuItem ~= nil and menuItem.enabled, menuItemPath
       end,
       fn = receiveMenuItem
     },
     ["insertEquation"] = {
-      message = "插入LaTeX公式...",
-      condition = checkMenuItem({ "插入", "LaTeX公式..." }),
+      message = localizedMessage({ "Insert", "LaTeXEquation..." }),
+      condition = checkMenuItem({ "Insert", "LaTeXEquation..." }),
       fn = receiveMenuItem
     },
     ["pdfHightlight"] = {
-      message = "高亮",
-      condition = checkMenuItem({ "批注", "高亮" }),
+      message = localizedMessage("Highlight"),
+      condition = checkMenuItem({ "Comment", "Highlight" }),
       fn = receiveMenuItem
     },
     ["pdfUnderline"] = {
-      message = "下划线",
-      condition = checkMenuItem({ "批注", "下划线" }),
+      message = localizedMessage("Underline"),
+      condition = checkMenuItem({ "Comment", "Underline" }),
       fn = receiveMenuItem
     },
     ["pdfStrikethrough"] = {
-      message = "删除线",
-      condition = checkMenuItem({ "批注", "删除线" }),
+      message = localizedMessage("Strikethrough"),
+      condition = checkMenuItem({ "Comment", "Strikethrough" }),
       fn = receiveMenuItem
     },
     ["openFileLocation"] = {
-      message = "打开文件位置",
+      message = localizedMessage("Open File Location"),
       condition = function(appObject)
         if appObject:focusedWindow() == nil then return false end
         local winObj = appObject:focusedWindow()
@@ -1626,14 +1645,16 @@ appHotKeyCallbacks = {
       end,
       fn = function(position, appObject)
         if not rightClickAndRestore(position, appObject:name()) then return end
+        local thisSpec = appHotKeyCallbacks[appObject:bundleID()]["openFileLocation"]
+        local title = thisSpec.message(appObject)
         hs.osascript.applescript([[
           tell application "System Events"
             tell first application process whose bundle identifier is "]] .. appObject:bundleID() .. [["
               set totalDelay to 0.0
               repeat until totalDelay > 0.5
                 repeat with e in ui elements
-                  if exists menu item "打开文件位置" of menu 1 of e then
-                    perform action 1 of menu item "打开文件位置" of menu 1 of e
+                  if exists menu item "]] .. title .. [[" of menu 1 of e then
+                    perform action 1 of menu item "]] .. title .. [[" of menu 1 of e
                     return true
                   end if
                 end repeat
@@ -4357,12 +4378,12 @@ local openSavePanelHotkeys = {}
 
 -- specialized for `WPS Office`
 local function WPSCloseDialog(winUIObj)
-  local btnNames = {
-    closeDoNotSave = "不保存",
-    closeCancel = "取消",
-    closeSave = "保存"
-  }
   local bundleID = "com.kingsoft.wpsoffice.mac"
+  local btnNames = {
+    closeDoNotSave = localizedMenuItem("Don't Save", bundleID) or "Don't Save",
+    closeCancel = localizedMenuItem("Cancel", bundleID) or "Cancel",
+    closeSave = localizedMenuItem("Save", bundleID) or "Save",
+  }
   local appConfig = appHotKeyCallbacks[bundleID]
   if winUIObj.AXSubrole == "AXDialog" then
     local buttons = winUIObj:childrenWithRole("AXButton")

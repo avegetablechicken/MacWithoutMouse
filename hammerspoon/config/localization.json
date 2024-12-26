@@ -26,17 +26,6 @@
     "方程": "Equation",
     "最近打开": "Open Recent"
   },
-
-  "com.baidu.BaiduNetdisk-mac": {
-    "账户": "Account"
-  },
-  "com.eusoft.freeeudic": {
-    "功能": "Features",
-    "学习": "Learn"
-  },
-  "com.tencent.QQMusicMac": {
-    "播放控制": "Controls"
-  },
   "com.kingsoft.wpsoffice.mac": {
     "账户": "Account",
     "账号": "Account",
@@ -51,6 +40,31 @@
     "幻灯片放映": "Slide Show",
     "批注": "Comment",
     "页面": "Page",
-    "工作区": "Workspace"
+    "工作区": "Workspace",
+
+    "文本框": "Text Box",
+    "横向": "Horizontal Text Box",
+    "横向文本框": "Horizontal Text Box",
+    "高亮": "Highlight",
+    "下划线": "Underline",
+    "删除线": "Strikethrough",
+    "输出为PDF..." : "Export to PDF...",
+    "输出为PDF格式..." : "Export to PDF...",
+    "LaTeX公式...": "LaTeXEquation...",
+    "打开文件位置": "Open File Location",
+    "保存": "Save",
+    "不保存": "Don't Save",
+    "取消": "Cancel"
+  },
+
+  "com.baidu.BaiduNetdisk-mac": {
+    "账户": "Account"
+  },
+  "com.eusoft.freeeudic": {
+    "功能": "Features",
+    "学习": "Learn"
+  },
+  "com.tencent.QQMusicMac": {
+    "播放控制": "Controls"
   }
 }
