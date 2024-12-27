@@ -4280,7 +4280,7 @@ local function registerOpenRecent(appObject)
     return
   end
 
-  local menuItems = getMenuItems(appObject)
+  local menuItems = getMenuItems(appObject) or {}
   local localizedFile = localizedMenuBarItem("File", appObject:bundleID())
   local findMenu = hs.fnutils.ifilter(menuItems, function(item)
     return item.AXTitle == localizedFile and item.AXChildren ~= nil
@@ -4768,8 +4768,9 @@ end
 local appsMayChangeMenuBar = get(applicationConfigs.menuBarItemsMayChange, 'window') or {}
 
 local function appMenuBarChangeCallback(appObject)
-  altMenuBarItem(appObject)
   local menuBarItemStr = getMenuBarItemTitlesString(appObject)
+  if menuBarItemStr == nil then return end
+  altMenuBarItem(appObject)
   hs.timer.doAfter(1, function()
     if hs.application.frontmostApplication():bundleID() ~= appObject:bundleID() then
       return

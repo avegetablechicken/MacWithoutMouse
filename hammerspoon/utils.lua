@@ -158,9 +158,10 @@ function getMenuItems(appObject)
     menuItems = appObject:getMenuItems()
     if menuItems ~= nil then return menuItems end
     hs.timer.usleep(tryInterval * 1000000)
+    appObject = findApplication(appObject:bundleID())
+    if appObject == nil then break end
     tryTimes = tryTimes + 1
   end
-  return { { AXTitle = appObject:name() }}
 end
 
 function findMenuItem(appObject, menuItemTitle, params)
