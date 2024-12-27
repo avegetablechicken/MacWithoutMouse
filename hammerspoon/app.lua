@@ -4593,9 +4593,6 @@ local function altMenuBarItem(appObject)
   end
   if enableIndex == false and enableLetter == false then return end
 
-  if appObject:bundleID() == "com.google.Chrome" then
-    hs.timer.usleep(0.5 * 100000)
-  end
   local menuBarItemTitles
   if appObject:bundleID() == "com.mathworks.matlab" and appObject:focusedWindow() ~= nil then
     local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
