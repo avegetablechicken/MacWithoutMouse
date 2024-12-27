@@ -4593,8 +4593,7 @@ local function altMenuBarItem(appObject)
   end
   if enableIndex == false and enableLetter == false then return end
 
-  if appObject:bundleID() == "com.microsoft.VSCode"
-      or appObject:bundleID() == "com.google.Chrome" then
+  if appObject:bundleID() == "com.google.Chrome" then
     hs.timer.usleep(0.5 * 100000)
   end
   local menuBarItemTitles
@@ -5363,6 +5362,12 @@ end
 
 -- some apps may have slow launch time, so need to wait until fully launched to bind menu bar item hotkeys
 local appsLaunchSlow = {
+  {
+    bundleID = "com.microsoft.VSCode",
+    criterion = function(appObject)
+      return appObject:getMenuItems() ~= nil and #appObject:getMenuItems() > 1
+    end
+  },
   {
     bundleID = "com.jetbrains.CLion",
     criterion = function(appObject)

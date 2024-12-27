@@ -1,10 +1,10 @@
 {
   "menuBarItemsMayChange": {
     "basic": [
-      "com.kingsoft.wpsoffice.mac",
-      "com.microsoft.VSCode"
+      "com.kingsoft.wpsoffice.mac"
     ],
     "window": [
+      "com.microsoft.VSCode",
       "com.jetbrains.CLion",
       "com.jetbrains.CLion-EAP",
       "com.jetbrains.intellij",
