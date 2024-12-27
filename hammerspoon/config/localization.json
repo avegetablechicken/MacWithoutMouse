@@ -7,9 +7,6 @@
     "com.charliemonroe.Permute-3": "XUCore.framework"
   },
 
-  "com.openai.chat": {
-    "切换边栏": "Toggle Sidebar"
-  },
   "com.google.Chrome": {
     "标签页": "Tab"
   },

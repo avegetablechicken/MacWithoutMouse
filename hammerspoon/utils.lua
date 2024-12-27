@@ -1065,6 +1065,43 @@ local function localizeByChromium(str, localeDir, localesDict, bundleID)
   return nil
 end
 
+local function localizeChatGPT(str, appLocale)
+  local cmd
+  for _, dir in ipairs { "/usr/local/bin", "/opt/homebrew/bin", "/opt/local/bin" } do
+    if hs.fs.attributes(dir .. '/lzfse') ~= nil then
+      cmd = dir .. '/lzfse'
+      break
+    end
+  end
+  if cmd == nil then
+    hs.alert.show("lzfse not found, cannot localize ChatGPT.")
+    return
+  end
+  local resourceDir = hs.application.pathForBundleID("com.openai.chat")
+      .. "/Contents/Frameworks/Assets.framework/Resources"
+      .. "/Assets_Assets.bundle/Contents/Resources/CompressedStrings"
+  local localeSources = {}
+  for file in hs.fs.dir(resourceDir) do
+    if file:sub(-11) == ".json.lzfse" then
+      local fileStem = file:sub(1, -12)
+      table.insert(localeSources, fileStem)
+    end
+  end
+  local locale = getMatchedLocale(appLocale, localeSources)
+  if locale == nil then return nil end
+  local localeFile = resourceDir .. '/' .. locale .. '.json.lzfse'
+  -- remove first 8 bytes of the file
+  local tmp = os:tmpname()
+  local _, status = hs.execute(
+      string.format("tail -c +9 '%s' > '%s'", localeFile, tmp))
+  if not status then return nil end
+  local jsonStr = hs.execute(
+      string.format("'%s' -decode -i '%s' -o /dev/stdout", cmd, tmp))
+  os.remove(tmp)
+  local jsonDict = hs.json.decode(jsonStr)
+  return jsonDict[str], locale
+end
+
 local appLocaleDir = {}
 local localeMatchTmpFile = localeTmpDir .. 'map.json'
 if hs.fs.attributes(localeMatchTmpFile) ~= nil then
@@ -1142,6 +1179,12 @@ function localizedString(str, bundleID, params, force)
   end
 
   local locale, localeDir, mode, localesDict, setDefaultLocale
+
+  if bundleID == "com.openai.chat" then
+    result, locale = localizeChatGPT(str, appLocale)
+    goto L_END_LOCALIZED
+  end
+
   if not framework.mono then mode = 'lproj' end
   if locale == nil then
     locale = get(appLocaleDir, bundleID, appLocale)
