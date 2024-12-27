@@ -4739,27 +4739,29 @@ local getMenuBarItemTitlesString = function(appObject)
 end
 
 local function watchMenuBarItems(appObject)
+  local bundleID = appObject:bundleID()
   local menuBarItemTitlesString = getMenuBarItemTitlesString(appObject)
-  if appsMenuBarItemsWatchers[appObject:bundleID()] == nil then
+  if appsMenuBarItemsWatchers[bundleID] == nil then
     local watcher = hs.timer.new(1, function()
+      local appObject = findApplication(bundleID)
       local newMenuBarItemTitlesString = getMenuBarItemTitlesString(appObject)
-      if newMenuBarItemTitlesString ~= appsMenuBarItemsWatchers[appObject:bundleID()][2] then
-        appsMenuBarItemsWatchers[appObject:bundleID()][2] = newMenuBarItemTitlesString
+      if newMenuBarItemTitlesString ~= appsMenuBarItemsWatchers[bundleID][2] then
+        appsMenuBarItemsWatchers[bundleID][2] = newMenuBarItemTitlesString
         altMenuBarItem(appObject)
         remapPreviousTab(appObject)
         registerOpenRecent(appObject)
         registerZoomHotkeys(appObject)
       end
     end)
-    appsMenuBarItemsWatchers[appObject:bundleID()] = { watcher, menuBarItemTitlesString }
+    appsMenuBarItemsWatchers[bundleID] = { watcher, menuBarItemTitlesString }
   else
-    appsMenuBarItemsWatchers[appObject:bundleID()][2] = menuBarItemTitlesString
+    appsMenuBarItemsWatchers[bundleID][2] = menuBarItemTitlesString
   end
-  appsMenuBarItemsWatchers[appObject:bundleID()][1]:start()
-  stopOnDeactivated(appObject:bundleID(), appsMenuBarItemsWatchers[appObject:bundleID()][1],
-      function(bundleID) appsMenuBarItemsWatchers[bundleID][2] = nil end)
-  stopOnQuit(appObject:bundleID(), appsMenuBarItemsWatchers[appObject:bundleID()][1],
-      function(bundleID) appsMenuBarItemsWatchers[bundleID] = nil end)
+  appsMenuBarItemsWatchers[bundleID][1]:start()
+  stopOnDeactivated(bundleID, appsMenuBarItemsWatchers[bundleID][1],
+      function() appsMenuBarItemsWatchers[bundleID][2] = nil end)
+  stopOnQuit(bundleID, appsMenuBarItemsWatchers[appObject:bundleID()][1],
+      function() appsMenuBarItemsWatchers[bundleID] = nil end)
 end
 
 -- some apps may change their menu bar items based on the focused window
