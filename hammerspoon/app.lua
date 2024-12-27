@@ -4767,6 +4767,9 @@ local function appMenuBarChangeCallback(appObject)
   local menuBarItemStr = getMenuBarItemTitlesString(appObject)
   if menuBarItemStr == nil then return end
   altMenuBarItem(appObject)
+  remapPreviousTab(appObject)
+  registerOpenRecent(appObject)
+  registerZoomHotkeys(appObject)
   hs.timer.doAfter(1, function()
     if hs.application.frontmostApplication():bundleID() ~= appObject:bundleID() then
       return
