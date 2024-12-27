@@ -1880,9 +1880,8 @@ appHotKeyCallbacks = {
     ["toggleSidebar"] = {
       message = localizedMessage("Toggle Sidebar"),
       bindCondition = versionLessEqual("1.2024.332"),
-      fn = function(appObject)
-        selectMenuItem(appObject, { "View", "Toggle Sidebar" })
-      end
+      condition = checkMenuItem({ "View", "Toggle Sidebar" }),
+      fn = receiveMenuItem
     },
     ["back"] = {
       message = commonLocalizedMessage("Back"),
