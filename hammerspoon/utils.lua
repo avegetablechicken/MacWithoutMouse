@@ -516,7 +516,7 @@ function getQtMatchedLocale(appLocale, resourceDir)
 end
 
 local preferentialLocaleFilePatterns = { "(.-)MainMenu(.-)", "Menu", "MenuBar",
-  "MenuItems", "Localizable", "Main", "MainWindow" }
+  "MenuItems", "Localizable", "(.-)Localizable", "Main", "MainWindow" }
 
 local function parseStringsFile(file, keepOrder, keepAll)
   if keepOrder == nil then keepOrder = true end
