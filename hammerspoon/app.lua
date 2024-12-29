@@ -4290,27 +4290,22 @@ local function registerOpenRecent(appObject)
     return item.AXChildren ~= nil
   end)
   if #extendableItems == 0 then return end
-  local menuItem, menuItemPath
-  if bundleID:sub(1, 10) == "com.apple." then
-    menuItemPath = { 'File', 'Open Recent' }
-    menuItem = appObject:findMenuItem(menuItemPath)
-    if menuItem == nil then
-      if localizedOpenRecent ~= nil then
-        menuItemPath = { localizedFile, localizedOpenRecent }
-        menuItem = appObject:findMenuItem(menuItemPath)
-      end
-      if menuItem == nil then
+  local menuItemPath = { 'File', 'Open Recent' }
+  local menuItem = appObject:findMenuItem(menuItemPath)
+  if menuItem == nil then
+    if bundleID:sub(1, 10) == "com.apple." then
+      if localizedOpenRecent == nil then
         local appLocale = applicationLocales(bundleID)[1]
         local resourceDir = '/System/Library/Frameworks/AppKit.framework/Resources'
         local matchedLocale = getMatchedLocale(appLocale, resourceDir, 'lproj')
         localizedOpenRecent = localizeByLoctable('Open Recent', resourceDir, 'MenuCommands', matchedLocale, {})
-        menuItemPath = { localizedFile, localizedOpenRecent }
-        menuItem = appObject:findMenuItem(menuItemPath)
       end
+      menuItemPath = { localizedFile, localizedOpenRecent }
+    else
+      menuItemPath = { localizedFile, localizedMenuItem('Open Recent', bundleID) }
     end
-  else
-    menuItem, menuItemPath = findMenuItem(appObject, { "File",  "Open Recent" })
   end
+  menuItem = appObject:findMenuItem(menuItemPath)
   if menuItem ~= nil then
     local fn = function() showMenuItem(menuItemPath, appObject) end
     local cond = function()
