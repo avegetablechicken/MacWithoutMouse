@@ -1207,6 +1207,8 @@ appHotKeyCallbacks = {
   ["com.apple.finder"] =
   {
     ["openRecent"] = {
+      mods = get(KeybindingConfigs.hotkeys.shared, "openRecent", "mods"),
+      key = get(KeybindingConfigs.hotkeys.shared, "openRecent", "key"),
       message = localizedMessage("Recent Folders"),
       condition = checkMenuItem({ "Go", "Recent Folders" }),
       fn = showMenuItem
@@ -1389,6 +1391,8 @@ appHotKeyCallbacks = {
       fn = function(url) hs.execute('open -R "' .. url .. '"') end
     },
     ["openRecent"] = {
+      mods = get(KeybindingConfigs.hotkeys.shared, "openRecent", "mods"),
+      key = get(KeybindingConfigs.hotkeys.shared, "openRecent", "key"),
       message = localizedMessage("Recently Closed"),
       condition = checkMenuItem({ "History", "Recently Closed" }),
       fn = showMenuItem
@@ -1462,6 +1466,8 @@ appHotKeyCallbacks = {
       fn = function(appObject) hs.eventtap.keyStroke("⌘⌥", "W", nil, appObject) end
     },
     ["openRecent"] = {
+      mods = get(KeybindingConfigs.hotkeys.shared, "openRecent", "mods"),
+      key = get(KeybindingConfigs.hotkeys.shared, "openRecent", "key"),
       message = "Open Recent",
       condition = function(appObject)
         local enabled, menuItem = checkMenuItem({ "File", "Open Recent", "More…" })(appObject)
@@ -1516,6 +1522,8 @@ appHotKeyCallbacks = {
   ["com.vallettaventures.Texpad"] =
   {
     ["openRecent"] = {
+      mods = get(KeybindingConfigs.hotkeys.shared, "openRecent", "mods"),
+      key = get(KeybindingConfigs.hotkeys.shared, "openRecent", "key"),
       message = localizedMessage("Recent Documents"),
       condition = checkMenuItem({ "File", "Recent Documents" }),
       fn = showMenuItem
@@ -1933,6 +1941,8 @@ appHotKeyCallbacks = {
       fn = receiveMenuItem
     },
     ["openRecent"] = {
+      mods = get(KeybindingConfigs.hotkeys.shared, "openRecent", "mods"),
+      key = get(KeybindingConfigs.hotkeys.shared, "openRecent", "key"),
       message = "Recent Libraries",
       condition = checkMenuItem({ "File", "Recent libraries" }),
       fn = showMenuItem
@@ -2068,6 +2078,8 @@ appHotKeyCallbacks = {
       fn = receiveMenuItem
     },
     ["openRecent"] = {
+      mods = get(KeybindingConfigs.hotkeys.shared, "openRecent", "mods"),
+      key = get(KeybindingConfigs.hotkeys.shared, "openRecent", "key"),
       message = localizedMessage("Open Library"),
       condition = checkMenuItem({ "File", "Open Library" }),
       fn = showMenuItem
@@ -2229,6 +2241,8 @@ appHotKeyCallbacks = {
   ["com.tencent.tenvideo"] =
   {
     ["openRecent"] = {
+      mods = get(KeybindingConfigs.hotkeys.shared, "openRecent", "mods"),
+      key = get(KeybindingConfigs.hotkeys.shared, "openRecent", "key"),
       message = "最近打开",
       fn = function(appObject)
         local appUIObj = hs.axuielement.applicationElement(appObject)
@@ -2761,6 +2775,8 @@ appHotKeyCallbacks = {
   ["com.apple.Chess"] =
   {
     ["openRecent"] = {
+      mods = get(KeybindingConfigs.hotkeys.shared, "openRecent", "mods"),
+      key = get(KeybindingConfigs.hotkeys.shared, "openRecent", "key"),
       message = localizedMessage("Open Recent"),
       condition = checkMenuItem({ "Game", "Open Recent" }),
       fn = showMenuItem
@@ -2770,6 +2786,8 @@ appHotKeyCallbacks = {
   ["com.apple.ScreenSharing"] =
   {
     ["openRecent"] = {
+      mods = get(KeybindingConfigs.hotkeys.shared, "openRecent", "mods"),
+      key = get(KeybindingConfigs.hotkeys.shared, "openRecent", "key"),
       message = localizedMessage("Open Recent"),
       condition = checkMenuItem({ "Connect", "Open Recent" }),
       fn = showMenuItem

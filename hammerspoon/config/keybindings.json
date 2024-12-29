@@ -515,10 +515,6 @@
     },
 
     "com.apple.finder": {
-      "openRecent": {
-        "mods": "control",
-        "key": "R"
-      },
       "open1stSidebarItem": {
         "mods": "option",
         "key": "1"
@@ -788,10 +784,6 @@
       "showInFinder": {
         "mods": ["shift", "option", "command"],
         "key": "F"
-      },
-      "openRecent": {
-        "mods": "control",
-        "key": "R"
       }
     },
     "com.apple.Preview": {
@@ -814,10 +806,6 @@
       "toggleSearchEditorWholeWord": {
         "mods": ["shift", "option", "command"],
         "key": "W"
-      },
-      "openRecent": {
-        "mods": "control",
-        "key": "R"
       }
     },
     "com.sublimetext.4": {
@@ -837,10 +825,6 @@
       }
     },
     "com.vallettaventures.Texpad": {
-      "openRecent": {
-        "mods": "control",
-        "key": "R"
-      },
       "revealPDFInFinder": {
         "mods": ["shift", "option", "command"],
         "key": "F"
@@ -1025,10 +1009,6 @@
         "mods": "option",
         "key": "N"
       },
-      "openRecent": {
-        "mods": "control",
-        "key": "R"
-      },
       "1stLibrary": {
         "mods": "command",
         "key": "1"
@@ -1078,10 +1058,6 @@
       "export": {
         "mods": "command",
         "key": "E"
-      },
-      "openRecent": {
-        "mods": "control",
-        "key": "R"
       }
     },
     "com.tencent.xinWeChat": {
@@ -1116,12 +1092,6 @@
       "preferences": {
         "mods": "command",
         "key": ","
-      }
-    },
-    "com.tencent.tenvideo": {
-      "openRecent": {
-        "mods": "control",
-        "key": "R"
       }
     },
     "com.parallels.desktop.console": {
@@ -1339,18 +1309,6 @@
       "closeWindow": {
         "mods": "",
         "key": "escape"
-      }
-    },
-    "com.apple.Chess": {
-      "openRecent": {
-        "mods": "control",
-        "key": "R"
-      }
-    },
-    "com.apple.ScreenSharing": {
-      "openRecent": {
-        "mods": "control",
-        "key": "R"
       }
     },
     "com.torusknot.SourceTreeNotMAS": {
