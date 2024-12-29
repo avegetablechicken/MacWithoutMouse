@@ -4233,10 +4233,12 @@ end
 
 
 -- ## hotkeys or configs shared by multiple apps
+local frontmostApplication = hs.application.frontmostApplication()
+local frontAppMenuItems = getMenuItems(frontmostApplication)
 
 -- basically aims to remap ctrl+` to shift+ctrl+tab to make it more convenient for fingers
 local remapPreviousTabHotkey
-local function remapPreviousTab(appObject)
+local function remapPreviousTab(appObject, menuItems)
   if remapPreviousTabHotkey then
     remapPreviousTabHotkey:delete()
     remapPreviousTabHotkey = nil
@@ -4247,7 +4249,7 @@ local function remapPreviousTab(appObject)
   if specApp ~= nil or spec == nil or hs.fnutils.contains(spec.excluded or {}, bundleID) then
     return
   end
-  local menuItemPath = findMenuItemByKeyBinding(appObject, '⇧⌃', '⇥')
+  local menuItemPath = findMenuItemByKeyBinding(appObject, '⇧⌃', '⇥', menuItems)
   if menuItemPath ~= nil then
     local fn = function()
       appObject:selectMenuItem(menuItemPath)
@@ -4262,13 +4264,12 @@ local function remapPreviousTab(appObject)
   end
 end
 
-local frontmostApplication = hs.application.frontmostApplication()
-remapPreviousTab(frontmostApplication)
+remapPreviousTab(frontmostApplication, frontAppMenuItems)
 
 -- register hotkey to open recent when it is available
 local openRecentHotkey
 local localizedOpenRecent
-local function registerOpenRecent(appObject)
+local function registerOpenRecent(appObject, menuItems)
   if openRecentHotkey then
     openRecentHotkey:delete()
     openRecentHotkey = nil
@@ -4280,8 +4281,11 @@ local function registerOpenRecent(appObject)
     return
   end
 
-  local menuItems = getMenuItems(appObject) or {}
-  local localizedFile = localizedMenuBarItem("File", appObject:bundleID())
+  if menuItems == nil then
+    menuItems = getMenuItems(appObject)
+  end
+  if menuItems == nil then return end
+  local localizedFile = localizedMenuBarItem("File", appObject:bundleID(), nil, menuItems)
   local findMenu = hs.fnutils.ifilter(menuItems, function(item)
     return item.AXTitle == localizedFile and item.AXChildren ~= nil
   end)
@@ -4317,10 +4321,10 @@ local function registerOpenRecent(appObject)
     openRecentHotkey.subkind = HK.IN_APP_.APP
   end
 end
-registerOpenRecent(frontmostApplication)
+registerOpenRecent(frontmostApplication, frontAppMenuItems)
 
 local zoomHotkeys = {}
-local function registerZoomHotkeys(appObject)
+local function registerZoomHotkeys(appObject, menuItems)
   for _, hotkey in pairs(zoomHotkeys) do
     hotkey:delete()
   end
@@ -4338,7 +4342,10 @@ local function registerZoomHotkeys(appObject)
     local menuItemPath = { 'Window', title }
     local menuItem = appObject:findMenuItem(menuItemPath)
     if menuItem == nil then
-      local localizedWindow = localizedMenuBarItem('Window', appObject:bundleID())
+      if menuItems == nil then
+        menuItems = getMenuItems(appObject)
+      end
+      local localizedWindow = localizedMenuBarItem('Window', appObject:bundleID(), nil, menuItems)
       local localizedTitle = localizedMenuItem(title, appObject:bundleID())
       menuItemPath = { localizedWindow, localizedTitle }
       menuItem = appObject:findMenuItem(menuItemPath)
@@ -4363,7 +4370,7 @@ local function registerZoomHotkeys(appObject)
     end
   end
 end
-registerZoomHotkeys(frontmostApplication)
+registerZoomHotkeys(frontmostApplication, frontAppMenuItems)
 
 -- bind hotkeys for open or save panel that are similar in `Finder`
 -- & hotkeys to confirm delete or save
@@ -4561,7 +4568,7 @@ local function searchHotkeyByNth(itemTitles, alreadySetHotkeys, index)
   return notSetItems, alreadySetHotkeys
 end
 
-local function altMenuBarItem(appObject)
+local function altMenuBarItem(appObject, menuItems)
   -- delete previous hotkeys
   for _, hotkeyObject in ipairs(AltMenuBarItemHotkeys) do
     hotkeyObject:delete()
@@ -4598,7 +4605,9 @@ local function altMenuBarItem(appObject)
   end
   local menuBarItemActualIndices = {}
   if menuBarItemTitles == nil then
-    local menuItems = getMenuItems(appObject)
+    if menuItems == nil then
+      menuItems = getMenuItems(appObject)
+    end
     if menuItems == nil then return end
     local ignoredItems = {}
     menuBarItemTitles = {}
@@ -4710,14 +4719,16 @@ local function altMenuBarItem(appObject)
     end
   end
 end
-altMenuBarItem(frontmostApplication)
+altMenuBarItem(frontmostApplication, frontAppMenuItems)
 
 -- some apps may change their menu bar items irregularly
 local appswatchMenuBarItems = get(applicationConfigs.menuBarItemsMayChange, 'basic') or {}
 local appsMenuBarItemsWatchers = {}
 
-local getMenuBarItemTitlesString = function(appObject)
-  local menuItems = getMenuItems(appObject)
+local getMenuBarItemTitlesString = function(appObject, menuItems)
+  if menuItems == nil then
+    menuItems = getMenuItems(appObject)
+  end
   if menuItems == nil or #menuItems == 0 then return "" end
   local menuBarItemTitles = {}
   for _, item in ipairs(menuItems) do
@@ -4732,13 +4743,14 @@ local function watchMenuBarItems(appObject)
   if appsMenuBarItemsWatchers[bundleID] == nil then
     local watcher = hs.timer.new(1, function()
       local appObject = findApplication(bundleID)
-      local newMenuBarItemTitlesString = getMenuBarItemTitlesString(appObject)
+      local menuItems = getMenuItems(appObject)
+      local newMenuBarItemTitlesString = getMenuBarItemTitlesString(appObject, menuItems)
       if newMenuBarItemTitlesString ~= appsMenuBarItemsWatchers[bundleID][2] then
         appsMenuBarItemsWatchers[bundleID][2] = newMenuBarItemTitlesString
-        altMenuBarItem(appObject)
-        remapPreviousTab(appObject)
-        registerOpenRecent(appObject)
-        registerZoomHotkeys(appObject)
+        altMenuBarItem(appObject, menuItems)
+        remapPreviousTab(appObject, menuItems)
+        registerOpenRecent(appObject, menuItems)
+        registerZoomHotkeys(appObject, menuItems)
       end
     end)
     appsMenuBarItemsWatchers[bundleID] = { watcher, menuBarItemTitlesString }
@@ -4756,22 +4768,24 @@ end
 local appsMayChangeMenuBar = get(applicationConfigs.menuBarItemsMayChange, 'window') or {}
 
 local function appMenuBarChangeCallback(appObject)
-  local menuBarItemStr = getMenuBarItemTitlesString(appObject)
+  local menuItems = getMenuItems(appObject)
+  local menuBarItemStr = getMenuBarItemTitlesString(appObject, menuItems)
   if menuBarItemStr == nil then return end
-  altMenuBarItem(appObject)
-  remapPreviousTab(appObject)
-  registerOpenRecent(appObject)
-  registerZoomHotkeys(appObject)
+  altMenuBarItem(appObject, menuItems)
+  remapPreviousTab(appObject, menuItems)
+  registerOpenRecent(appObject, menuItems)
+  registerZoomHotkeys(appObject, menuItems)
   hs.timer.doAfter(1, function()
     if hs.application.frontmostApplication():bundleID() ~= appObject:bundleID() then
       return
     end
-    local newMenuBarItemTitlesString = getMenuBarItemTitlesString(appObject)
+    local menuItems = getMenuItems(appObject)
+    local newMenuBarItemTitlesString = getMenuBarItemTitlesString(appObject, menuItems)
     if newMenuBarItemTitlesString ~= menuBarItemStr then
-      altMenuBarItem(appObject)
-      remapPreviousTab(appObject)
-      registerOpenRecent(appObject)
-      registerZoomHotkeys(appObject)
+      altMenuBarItem(appObject, menuItems)
+      remapPreviousTab(appObject, menuItems)
+      registerOpenRecent(appObject, menuItems)
+      registerZoomHotkeys(appObject, menuItems)
     end
   end)
 end
@@ -5476,11 +5490,12 @@ function App_applicationCallback(appName, eventType, appObject)
       registerInAppHotKeys(appObject)
       registerInWinHotKeys(appObject)
       hs.timer.doAfter(0, function()
-        altMenuBarItem(appObject)
+        local menuItems = getMenuItems(appObject)
+        altMenuBarItem(appObject, menuItems)
         hs.timer.doAfter(0, function()
-          remapPreviousTab(appObject)
-          registerOpenRecent(appObject)
-          registerZoomHotkeys(appObject)
+          remapPreviousTab(appObject, menuItems)
+          registerOpenRecent(appObject, menuItems)
+          registerZoomHotkeys(appObject, menuItems)
           registerObserverForMenuBarChange(appObject)
           if HSKeybindings ~= nil and HSKeybindings.isShowing then
             local validOnly = HSKeybindings.validOnly

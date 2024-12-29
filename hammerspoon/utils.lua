@@ -242,8 +242,10 @@ local modifierSymbolMap = {
   ["⇧"] = 'shift'
 }
 
-function findMenuItemByKeyBinding(appObject, mods, key)
-  local menuItems = getMenuItems(appObject)
+function findMenuItemByKeyBinding(appObject, mods, key, menuItems)
+  if menuItems == nil then
+    menuItems = getMenuItems(appObject)
+  end
   if menuItems == nil then return end
   if mods == '' then mods = {} end
   if type(mods) == 'string' and string.byte(mods, 1, 1) < 127 then
@@ -1939,12 +1941,14 @@ function delocalizeMenuBarItems(itemTitles, bundleID, localeFile)
   return result
 end
 
-function localizedMenuBarItem(title, bundleID, params)
+function localizedMenuBarItem(title, bundleID, params, menuItems)
   local appLocale = applicationLocales(bundleID)[1]
   local locTitle = hs.fnutils.indexOf(localizationMap[bundleID] or {}, title)
   if locTitle ~= nil then
     if title == 'View' and findApplication(bundleID) then
-      local menuItems = getMenuItems(findApplication(bundleID))
+      if menuItems == nil then
+        menuItems = getMenuItems(findApplication(bundleID))
+      end
       table.remove(menuItems, 1)
       if hs.fnutils.find(menuItems, function(item) return item.AXTitle == locTitle end) ~= nil then
         return locTitle
@@ -1954,7 +1958,9 @@ function localizedMenuBarItem(title, bundleID, params)
     end
   end
   if findApplication(bundleID) then
-    local menuItems = getMenuItems(findApplication(bundleID))
+    if menuItems == nil then
+      menuItems = getMenuItems(findApplication(bundleID))
+    end
     table.remove(menuItems, 1)
     if hs.fnutils.find(menuItems, function(item) return item.AXTitle == title end) ~= nil then
       return title
