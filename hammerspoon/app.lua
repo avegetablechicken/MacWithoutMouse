@@ -3775,7 +3775,9 @@ function AppBind(appObject, mods, key, message, pressedfn, repeatedfn, cond, web
       end)
     end
   end
-  return bindHotkey(mods, key, message, pressedfn, nil, repeatedfn, ...), newCond
+  local hotkey = bindHotkey(mods, key, message, pressedfn, nil, repeatedfn, ...)
+  if websiteFilter == nil then hotkey.condition = newCond end
+  return hotkey
 end
 
 function AppBindSpec(appObject, spec, ...)
@@ -3810,11 +3812,10 @@ local function registerInAppHotKeys(appObject)
           local repeatable = keybinding.repeatable ~= nil and keybinding.repeatable or cfg.repeatable
           local repeatedfn = repeatable and cfg.fn or nil
           local websiteFilter = keybinding.websiteFilter or cfg.websiteFilter
-          local hotkey, cond = AppBindSpec(appObject, keybinding, msg,
-                                           cfg.fn, repeatedfn, cfg.condition, websiteFilter)
+          local hotkey = AppBindSpec(appObject, keybinding, msg,
+                                     cfg.fn, repeatedfn, cfg.condition, websiteFilter)
           hotkey.kind = HK.IN_APP
-          if websiteFilter ~= nil then hotkey.subkind = HK.IN_APP_.WEBSITE
-          else hotkey.condition = cond end
+          if websiteFilter ~= nil then hotkey.subkind = HK.IN_APP_.WEBSITE end
           hotkey.deleteOnDisable = cfg.deleteOnDisable
           inAppHotKeys[bid][hkID] = hotkey
         end
@@ -4255,8 +4256,7 @@ local function remapPreviousTab(appObject)
       local menuItemCond = appObject:findMenuItem(menuItemPath)
       return menuItemCond ~= nil and menuItemCond.enabled
     end
-    remapPreviousTabHotkey, cond = AppBindSpec(appObject, spec, menuItemPath[#menuItemPath], fn, fn, cond)
-    remapPreviousTabHotkey.condition = cond
+    remapPreviousTabHotkey = AppBindSpec(appObject, spec, menuItemPath[#menuItemPath], fn, fn, cond)
     remapPreviousTabHotkey.kind = HK.IN_APP
     remapPreviousTabHotkey.subkind = HK.IN_APP_.APP
   end
@@ -4317,8 +4317,7 @@ local function registerOpenRecent(appObject)
       local menuItemCond = appObject:findMenuItem(menuItemPath)
       return menuItemCond ~= nil and menuItemCond.enabled
     end
-    openRecentHotkey, cond = AppBindSpec(appObject, spec, menuItemPath[2], fn, nil, cond)
-    openRecentHotkey.condition = cond
+    openRecentHotkey = AppBindSpec(appObject, spec, menuItemPath[2], fn, nil, cond)
     openRecentHotkey.kind = HK.IN_APP
     openRecentHotkey.subkind = HK.IN_APP_.APP
   end
@@ -4363,8 +4362,7 @@ local function registerZoomHotkeys(appObject)
         local menuItemCond = appObject:findMenuItem(menuItemPath)
         return menuItemCond ~= nil and menuItemCond.enabled
       end
-      zoomHotkeys[hkID], cond = AppBindSpec(appObject, spec, menuItemPath[2], fn, nil, cond)
-      zoomHotkeys[hkID].condition = cond
+      zoomHotkeys[hkID] = AppBindSpec(appObject, spec, menuItemPath[2], fn, nil, cond)
       zoomHotkeys[hkID].kind = HK.IN_APP
       zoomHotkeys[hkID].subkind = HK.IN_APP_.APP
     end
@@ -4539,10 +4537,9 @@ AltMenuBarItemHotkeys = {}
 
 local function bindAltMenu(appObject, mods, key, message, fn)
   fn = showMenuItemWrapper(fn)
-  local hotkey, cond = AppBind(appObject, mods, key, message, fn)
+  local hotkey = AppBind(appObject, mods, key, message, fn)
   hotkey.kind = HK.IN_APP
   hotkey.subkind = HK.IN_APP_.MENU
-  hotkey.condition = cond
   return hotkey
 end
 
