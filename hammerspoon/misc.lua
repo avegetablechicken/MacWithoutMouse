@@ -334,20 +334,17 @@ local function getSubMenuHotkeys(t, menuItem, titleAsEntry, titlePrefix, bundleI
       elseif subItem.AXMenuItemCmdChar == 'F' and subItem.AXMenuItemCmdGlyph == ""
           and #subItem.AXMenuItemCmdModifiers == 0 and subItem.AXMenuItemMarkChar == ""
           and subItem.AXChildren == nil then
-        if subItem.AXTitle == "Enter Full Screen"
-            or subItem.AXTitle == "Exit Full Screen"
-            or delocalizedMenuItem(subItem.AXTitle, bundleID) == "Enter Full Screen"
-            or delocalizedMenuItem(subItem.AXTitle, bundleID) == "Exit Full Screen"
-            or subItem.AXTitle == localizedString("Enter Full Screen", bundleID)
-            or subItem.AXTitle == localizedString("Exit Full Screen", bundleID) then
+        if subItem.AXTitle == "Enter Full Screen" or subItem.AXTitle == "Exit Full Screen" then
           idx = "🌐︎F"
         else
-          local enTitle = subItem.AXTitle:lower()
-          if enTitle:find("full screen") or enTitle:find("fullscreen") then
+          local enTitle = delocalizedMenuItem(subItem.AXTitle, bundleID)
+          if enTitle == "Enter Full Screen" or enTitle == "Exit Full Screen" then
             idx = "🌐︎F"
           else
-            enTitle = delocalizedMenuItem(subItem.AXTitle, bundleID)
-            if enTitle ~= nil then
+            local lowerTitle = subItem.AXTitle:lower()
+            if lowerTitle:find("full screen") or lowerTitle:find("fullscreen") then
+              idx = "🌐︎F"
+            elseif enTitle ~= nil then
               enTitle = string.lower(enTitle)
               if enTitle:find("full screen") or enTitle:find("fullscreen") then
                 idx = "🌐︎F"
