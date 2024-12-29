@@ -1214,60 +1214,100 @@ appHotKeyCallbacks = {
       fn = showMenuItem
     },
     ["open1stSidebarItem"] = {
+      mods = get(KeybindingConfigs.hotkeys.shared,
+                 "open1stSidebarItemOnOpenSavePanel", "mods"),
+      key = get(KeybindingConfigs.hotkeys.shared,
+                "open1stSidebarItemOnOpenSavePanel", "key"),
       message = getFinderSidebarItemTitle(1),
       condition = getFinderSidebarItem(1),
       fn = openFinderSidebarItem,
       deleteOnDisable = true
     },
     ["open2ndSidebarItem"] = {
+      mods = get(KeybindingConfigs.hotkeys.shared,
+                 "open2ndSidebarItemOnOpenSavePanel", "mods"),
+      key = get(KeybindingConfigs.hotkeys.shared,
+                "open2ndSidebarItemOnOpenSavePanel", "key"),
       message = getFinderSidebarItemTitle(2),
       condition = getFinderSidebarItem(2),
       fn = openFinderSidebarItem,
       deleteOnDisable = true
     },
     ["open3rdSidebarItem"] = {
+      mods = get(KeybindingConfigs.hotkeys.shared,
+                 "open3rdSidebarItemOnOpenSavePanel", "mods"),
+      key = get(KeybindingConfigs.hotkeys.shared,
+                "open3rdSidebarItemOnOpenSavePanel", "key"),
       message = getFinderSidebarItemTitle(3),
       condition = getFinderSidebarItem(3),
       fn = openFinderSidebarItem,
       deleteOnDisable = true
     },
     ["open4thSidebarItem"] = {
+      mods = get(KeybindingConfigs.hotkeys.shared,
+                 "open4thSidebarItemOnOpenSavePanel", "mods"),
+      key = get(KeybindingConfigs.hotkeys.shared,
+                "open4thSidebarItemOnOpenSavePanel", "key"),
       message = getFinderSidebarItemTitle(4),
       condition = getFinderSidebarItem(4),
       fn = openFinderSidebarItem,
       deleteOnDisable = true
     },
     ["open5thSidebarItem"] = {
+      mods = get(KeybindingConfigs.hotkeys.shared,
+                 "open5thSidebarItemOnOpenSavePanel", "mods"),
+      key = get(KeybindingConfigs.hotkeys.shared,
+                "open5thSidebarItemOnOpenSavePanel", "key"),
       message = getFinderSidebarItemTitle(5),
       condition = getFinderSidebarItem(5),
       fn = openFinderSidebarItem,
       deleteOnDisable = true
     },
     ["open6thSidebarItem"] = {
+      mods = get(KeybindingConfigs.hotkeys.shared,
+                 "open6thSidebarItemOnOpenSavePanel", "mods"),
+      key = get(KeybindingConfigs.hotkeys.shared,
+                "open6thSidebarItemOnOpenSavePanel", "key"),
       message = getFinderSidebarItemTitle(6),
       condition = getFinderSidebarItem(6),
       fn = openFinderSidebarItem,
       deleteOnDisable = true
     },
     ["open7thSidebarItem"] = {
+      mods = get(KeybindingConfigs.hotkeys.shared,
+                 "open7thSidebarItemOnOpenSavePanel", "mods"),
+      key = get(KeybindingConfigs.hotkeys.shared,
+                "open7thSidebarItemOnOpenSavePanel", "key"),
       message = getFinderSidebarItemTitle(7),
       condition = getFinderSidebarItem(7),
       fn = openFinderSidebarItem,
       deleteOnDisable = true
     },
     ["open8thSidebarItem"] = {
+      mods = get(KeybindingConfigs.hotkeys.shared,
+                 "open8thSidebarItemOnOpenSavePanel", "mods"),
+      key = get(KeybindingConfigs.hotkeys.shared,
+                "open8thSidebarItemOnOpenSavePanel", "key"),
       message = getFinderSidebarItemTitle(8),
       condition = getFinderSidebarItem(8),
       fn = openFinderSidebarItem,
       deleteOnDisable = true
     },
     ["open9thSidebarItem"] = {
+      mods = get(KeybindingConfigs.hotkeys.shared,
+                 "open9thSidebarItemOnOpenSavePanel", "mods"),
+      key = get(KeybindingConfigs.hotkeys.shared,
+                "open9thSidebarItemOnOpenSavePanel", "key"),
       message = getFinderSidebarItemTitle(9),
       condition = getFinderSidebarItem(9),
       fn = openFinderSidebarItem,
       deleteOnDisable = true
     },
     ["open10thSidebarItem"] = {
+      mods = get(KeybindingConfigs.hotkeys.shared,
+                 "open10thSidebarItemOnOpenSavePanel", "mods"),
+      key = get(KeybindingConfigs.hotkeys.shared,
+                "open10thSidebarItemOnOpenSavePanel", "key"),
       message = getFinderSidebarItemTitle(10),
       condition = getFinderSidebarItem(10),
       fn = openFinderSidebarItem,
@@ -4512,8 +4552,8 @@ local function registerForOpenSavePanel(appObject)
         elseif i == 2 then suffix = "nd"
         elseif i == 3 then suffix = "rd"
         else suffix = "th" end
-        local hkID = "open" .. tostring(i) .. suffix .. "SidebarItem"
-        local spec = get(KeybindingConfigs.hotkeys["com.apple.finder"], hkID)
+        local hkID = "open" .. tostring(i) .. suffix .. "SidebarItemOnOpenSavePanel"
+        local spec = get(KeybindingConfigs.hotkeys.shared, hkID)
         if spec ~= nil then
           local folder = cell:childrenWithRole("AXStaticText")[1].AXValue
           local fn, cond = WrapCondition(appObject, spec.mods, spec.key, function()

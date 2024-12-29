@@ -511,51 +511,49 @@
       "confirmDelete": {
         "mods": "option",
         "key": "D"
-      }
-    },
-
-    "com.apple.finder": {
-      "open1stSidebarItem": {
+      },
+      "open1stSidebarItemOnOpenSavePanel": {
         "mods": "option",
         "key": "1"
       },
-      "open2ndSidebarItem": {
+      "open2ndSidebarItemOnOpenSavePanel": {
         "mods": "option",
         "key": "2"
       },
-      "open3rdSidebarItem": {
+      "open3rdSidebarItemOnOpenSavePanel": {
         "mods": "option",
         "key": "3"
       },
-      "open4thSidebarItem": {
+      "open4thSidebarItemOnOpenSavePanel": {
         "mods": "option",
         "key": "4"
       },
-      "open5thSidebarItem": {
+      "open5thSidebarItemOnOpenSavePanel": {
         "mods": "option",
         "key": "5"
       },
-      "open6thSidebarItem": {
+      "open6thSidebarItemOnOpenSavePanel": {
         "mods": "option",
         "key": "6"
       },
-      "open7thSidebarItem": {
+      "open7thSidebarItemOnOpenSavePanel": {
         "mods": "option",
         "key": "7"
       },
-      "open8thSidebarItem": {
+      "open8thSidebarItemOnOpenSavePanel": {
         "mods": "option",
         "key": "8"
       },
-      "open9thSidebarItem": {
+      "open9thSidebarItemOnOpenSavePanel": {
         "mods": "option",
         "key": "9"
       },
-      "open10thSidebarItem": {
+      "open10thSidebarItemOnOpenSavePanel": {
         "mods": "option",
         "key": "0"
       }
     },
+
     "com.apple.ActivityMonitor": {
       "search": {
         "mods": "command",
