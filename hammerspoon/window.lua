@@ -1068,7 +1068,7 @@ local function PDFChooser()
     local winTabTitles = {}
     local menuItems = getMenuItems(appObject)
     for _, menuItem in ipairs(menuItems or {}) do
-      if menuItem.AXTitle == localizedMenuBarItem('Tab', appObject:bundleID()) then
+      if menuItem.AXTitle == localizedMenuBarItem('Tab', appObject:bundleID(), nil, menuItems) then
         local subMenuItems = menuItem.AXChildren[1]
         local winTitles = {}
         local tabTitles = {}
