@@ -4344,7 +4344,7 @@ local function registerZoomHotkeys(appObject)
     local menuItem = appObject:findMenuItem(menuItemPath)
     if menuItem == nil then
       local localizedWindow = localizedMenuBarItem('Window', appObject:bundleID())
-      local localizedTitle = localizedMenuBarItem(title, appObject:bundleID())
+      local localizedTitle = localizedMenuItem(title, appObject:bundleID())
       menuItemPath = { localizedWindow, localizedTitle }
       menuItem = appObject:findMenuItem(menuItemPath)
       if menuItem == nil then
