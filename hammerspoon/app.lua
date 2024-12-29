@@ -1512,6 +1512,8 @@ appHotKeyCallbacks = {
       fn = receiveMenuItem
     },
     ["remapPreviousTab"] = {
+      mods = get(KeybindingConfigs.hotkeys.shared, "remapPreviousTab", "mods"),
+      key = get(KeybindingConfigs.hotkeys.shared, "remapPreviousTab", "key"),
       message = localizedMessage("Go to Previous Tab"),
       condition = checkMenuItem({ "Window", "Go to Previous Tab" }),
       repeatable = true,
@@ -1947,7 +1949,7 @@ appHotKeyCallbacks = {
       condition = checkMenuItem({ "File", "Recent libraries" }),
       fn = showMenuItem
     },
-    ["remapPrevLibrary"] = {
+    ["remapPreviousTab"] = {
       mods = get(KeybindingConfigs.hotkeys.shared, "remapPreviousTab", "mods"),
       key = get(KeybindingConfigs.hotkeys.shared, "remapPreviousTab", "key"),
       message = "Previous Library",
