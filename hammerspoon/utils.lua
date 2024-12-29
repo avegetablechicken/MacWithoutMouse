@@ -1979,6 +1979,7 @@ function localizedMenuBarItem(title, bundleID, params, menuItems)
   local appLocale = applicationLocales(bundleID)[1]
   local locTitle = hs.fnutils.indexOf(localizationMap[bundleID] or {}, title)
   if locTitle ~= nil then
+    -- "View" may be localized to different strings in the same app (e.g. WeChat)
     if title == 'View' and findApplication(bundleID) then
       if menuItems == nil then
         menuItems = getMenuItems(findApplication(bundleID))
@@ -1991,6 +1992,7 @@ function localizedMenuBarItem(title, bundleID, params, menuItems)
       return locTitle
     end
   end
+  -- the app may pretend being localized (e.g. Visual Studio Code)
   if findApplication(bundleID) then
     if menuItems == nil then
       menuItems = getMenuItems(findApplication(bundleID))
