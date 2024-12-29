@@ -4216,10 +4216,11 @@ for bid, appConfig in pairs(appHotKeyCallbacks) do
 end
 
 -- register hotkeys for active app
-registerInAppHotKeys(hs.application.frontmostApplication())
+local frontApp = hs.application.frontmostApplication()
+registerInAppHotKeys(frontApp)
 
 -- register hotkeys for focused window of active app
-registerInWinHotKeys(hs.application.frontmostApplication())
+registerInWinHotKeys(frontApp)
 
 -- register hotkeys for frontmost window belonging to unactivated app
 local frontWin = hs.window.frontmostWindow()
@@ -4257,8 +4258,7 @@ end
 
 
 -- ## hotkeys or configs shared by multiple apps
-local frontmostApplication = hs.application.frontmostApplication()
-local frontAppMenuItems = getMenuItems(frontmostApplication)
+local frontAppMenuItems = getMenuItems(frontApp)
 
 -- basically aims to remap ctrl+` to shift+ctrl+tab to make it more convenient for fingers
 local remapPreviousTabHotkey
@@ -4288,7 +4288,7 @@ local function remapPreviousTab(appObject, menuItems)
   end
 end
 
-remapPreviousTab(frontmostApplication, frontAppMenuItems)
+remapPreviousTab(frontApp, frontAppMenuItems)
 
 -- register hotkey to open recent when it is available
 local openRecentHotkey
@@ -4352,7 +4352,7 @@ local function registerOpenRecent(appObject)
     openRecentHotkey.subkind = HK.IN_APP_.APP
   end
 end
-registerOpenRecent(frontmostApplication)
+registerOpenRecent(frontApp)
 
 local zoomHotkeys = {}
 local function registerZoomHotkeys(appObject)
@@ -4402,7 +4402,7 @@ local function registerZoomHotkeys(appObject)
     end
   end
 end
-registerZoomHotkeys(frontmostApplication)
+registerZoomHotkeys(frontApp)
 
 -- bind hotkeys for open or save panel that are similar in `Finder`
 -- & hotkeys to confirm delete or save
@@ -4564,7 +4564,7 @@ local function registerForOpenSavePanel(appObject)
     end
   end)
 end
-registerForOpenSavePanel(frontmostApplication)
+registerForOpenSavePanel(frontApp)
 
 -- bind `alt+?` hotkeys to select left menu bar items
 AltMenuBarItemHotkeys = {}
@@ -4751,7 +4751,7 @@ local function altMenuBarItem(appObject, menuItems)
     end
   end
 end
-altMenuBarItem(frontmostApplication, frontAppMenuItems)
+altMenuBarItem(frontApp, frontAppMenuItems)
 
 -- some apps may change their menu bar items irregularly
 local appswatchMenuBarItems = get(applicationConfigs.menuBarItemsMayChange, 'basic') or {}
@@ -4860,7 +4860,7 @@ local function registerObserverForMenuBarChange(appObject, menuItems)
       end
     end)
 end
-registerObserverForMenuBarChange(frontmostApplication, frontAppMenuItems)
+registerObserverForMenuBarChange(frontApp, frontAppMenuItems)
 
 -- auto hide or quit apps with no windows (including pseudo windows suck as popover or sheet)
 local function processAppWithNoWindows(appObject, quit, delay)
@@ -5301,7 +5301,7 @@ function(ev)
   return false
 end)
 
-if remoteDesktopsMappingModifiers[frontmostApplication:bundleID()] then
+if remoteDesktopsMappingModifiers[frontApp:bundleID()] then
   remoteDesktopModifierTapper:start()
 end
 
@@ -5322,8 +5322,8 @@ end
 
 local remoteDesktopAppsRequireSuspendHotkeys = applicationConfigs.suspendHotkeysInRemoteDesktop or {}
 for _, bundleID in ipairs(remoteDesktopAppsRequireSuspendHotkeys) do
-  if frontmostApplication:bundleID() == bundleID then
-    suspendHotkeysInRemoteDesktop(frontmostApplication)
+  if frontApp:bundleID() == bundleID then
+    suspendHotkeysInRemoteDesktop(frontApp)
   end
   execOnActivated(bundleID, suspendHotkeysInRemoteDesktop)
 end
@@ -5345,8 +5345,8 @@ local function watchForRemoteDesktopWindow(appObject)
 end
 
 for _, bundleID in ipairs(remoteDesktopAppsRequireSuspendHotkeys) do
-  if frontmostApplication:bundleID() == bundleID then
-    watchForRemoteDesktopWindow(frontmostApplication)
+  if frontApp:bundleID() == bundleID then
+    watchForRemoteDesktopWindow(frontApp)
   end
   execOnActivated(bundleID, watchForRemoteDesktopWindow)
 end
@@ -5368,7 +5368,7 @@ local function deactivateCloseWindowForIOSApps(appObject)
     iOSAppHotkey:disable()
   end
 end
-deactivateCloseWindowForIOSApps(frontmostApplication)
+deactivateCloseWindowForIOSApps(frontApp)
 
 
 -- # callbacks
