@@ -1975,17 +1975,13 @@ function delocalizeMenuBarItems(itemTitles, bundleID, localeFile)
   return result
 end
 
-function localizedMenuBarItem(title, bundleID, params, menuItems)
+function localizedMenuBarItem(title, bundleID, params)
   local appLocale = applicationLocales(bundleID)[1]
   local locTitle = hs.fnutils.indexOf(localizationMap[bundleID] or {}, title)
   if locTitle ~= nil then
     -- "View" may be localized to different strings in the same app (e.g. WeChat)
     if title == 'View' and findApplication(bundleID) then
-      if menuItems == nil then
-        menuItems = getMenuItems(findApplication(bundleID))
-      end
-      table.remove(menuItems, 1)
-      if hs.fnutils.find(menuItems, function(item) return item.AXTitle == locTitle end) ~= nil then
+      if findApplication(bundleID):findMenuItem({ locTitle }) ~= nil then
         return locTitle
       end
     else
@@ -1994,11 +1990,7 @@ function localizedMenuBarItem(title, bundleID, params, menuItems)
   end
   -- the app may pretend being localized (e.g. Visual Studio Code)
   if findApplication(bundleID) then
-    if menuItems == nil then
-      menuItems = getMenuItems(findApplication(bundleID))
-    end
-    table.remove(menuItems, 1)
-    if hs.fnutils.find(menuItems, function(item) return item.AXTitle == title end) ~= nil then
+    if findApplication(bundleID):findMenuItem({ title }) ~= nil then
       return title
     end
   end
