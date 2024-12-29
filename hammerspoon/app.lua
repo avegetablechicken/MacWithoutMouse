@@ -4764,9 +4764,9 @@ local getMenuBarItemTitlesString = function(appObject, menuItems)
   return table.concat(menuBarItemTitles, "|")
 end
 
-local function watchMenuBarItems(appObject)
+local function watchMenuBarItems(appObject, menuItems)
   local bundleID = appObject:bundleID()
-  local menuBarItemTitlesString = getMenuBarItemTitlesString(appObject)
+  local menuBarItemTitlesString = getMenuBarItemTitlesString(appObject, menuItems)
   if appsMenuBarItemsWatchers[bundleID] == nil then
     local watcher = hs.timer.new(1, function()
       local appObject = findApplication(bundleID)
@@ -4817,11 +4817,11 @@ local function appMenuBarChangeCallback(appObject)
   end)
 end
 
-local function registerObserverForMenuBarChange(appObject)
+local function registerObserverForMenuBarChange(appObject, menuItems)
   if appObject:bundleID() == nil then return end
 
   if hs.fnutils.contains(appswatchMenuBarItems, appObject:bundleID()) then
-    watchMenuBarItems(appObject)
+    watchMenuBarItems(appObject, menuItems)
   end
 
   if not hs.fnutils.contains(appsMayChangeMenuBar, appObject:bundleID()) then
@@ -4855,7 +4855,7 @@ local function registerObserverForMenuBarChange(appObject)
       end
     end)
 end
-registerObserverForMenuBarChange(frontmostApplication)
+registerObserverForMenuBarChange(frontmostApplication, frontAppMenuItems)
 
 -- auto hide or quit apps with no windows (including pseudo windows suck as popover or sheet)
 local function processAppWithNoWindows(appObject, quit, delay)
@@ -5526,7 +5526,7 @@ function App_applicationCallback(appName, eventType, appObject)
           remapPreviousTab(appObject, menuItems)
           registerOpenRecent(appObject)
           registerZoomHotkeys(appObject)
-          registerObserverForMenuBarChange(appObject)
+          registerObserverForMenuBarChange(appObject, menuItems)
           if HSKeybindings ~= nil and HSKeybindings.isShowing then
             local validOnly = HSKeybindings.validOnly
             local showHS = HSKeybindings.showHS
