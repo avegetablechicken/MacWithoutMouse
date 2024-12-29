@@ -1190,7 +1190,7 @@ function localizedString(str, bundleID, params, force)
     end
   end
 
-  local locale, localeDir, mode, localesDict, setDefaultLocale
+  local locale, localeDir, mode, localesDict, setDefaultLocale, defaultAction
 
   if bundleID == "com.openai.chat" then
     result, locale = localizeChatGPT(str, appLocale)
@@ -1252,36 +1252,43 @@ function localizedString(str, bundleID, params, force)
     goto L_END_LOCALIZED
   end
 
-  ::L_LOCALIZED_DEFAULT::
-  result = localizeByLoctable(str, resourceDir, localeFile, locale, localesDict)
-  if result ~= nil then goto L_END_LOCALIZED end
+  defaultAction = function(emptyCache)
+    result = localizeByLoctable(str, resourceDir, localeFile, locale, localesDict)
+    if result ~= nil then return result end
 
-  if appLocaleAssetBufferInverse[bundleID] == nil
-      or get(appLocaleDir, bundleID, appLocale) ~= locale
-      or framework.user then
-    appLocaleAssetBufferInverse[bundleID] = {}
+    if emptyCache or appLocaleAssetBufferInverse[bundleID] == nil
+        or get(appLocaleDir, bundleID, appLocale) ~= locale then
+      appLocaleAssetBufferInverse[bundleID] = {}
+    end
+    result = localizeByStrings(str, localeDir, localeFile, localesDict,
+                               appLocaleAssetBufferInverse[bundleID])
+    if result ~= nil then return result end
+
+    result = localizeByNIB(str, localeDir, localeFile, bundleID)
+    if result ~= nil then return result end
+
+    if string.sub(str, -3) == "..." or string.sub(str, -3) == "…" then
+      result = localizedString(string.sub(str, 1, -4), bundleID, params)
+      if result ~= nil then
+        return result .. string.sub(str, -3)
+      end
+    end
   end
-  result = localizeByStrings(str, localeDir, localeFile, localesDict,
-                             appLocaleAssetBufferInverse[bundleID])
-  if result ~= nil then goto L_END_LOCALIZED end
-
-  result = localizeByNIB(str, localeDir, localeFile, bundleID)
-  if result ~= nil then goto L_END_LOCALIZED end
 
   if framework.user then
-    framework.user = nil
+    local userResourceDir = resourceDir
+    local userLocale = locale
+    local userLocaleDir = localeDir
     if setDefaultLocale() then
-      goto L_LOCALIZED_DEFAULT
+      result = defaultAction(true)
+      if result ~= nil then goto L_END_LOCALIZED end
     end
-  end
 
-  if string.sub(str, -3) == "..." or string.sub(str, -3) == "…" then
-    result = localizedString(string.sub(str, 1, -4), bundleID, params)
-    if result ~= nil then
-      result = result .. string.sub(str, -3)
-      goto L_END_LOCALIZED
-    end
+    resourceDir = userResourceDir
+    locale = userLocale
+    localeDir = userLocaleDir
   end
+  result = defaultAction(framework.user)
 
   ::L_END_LOCALIZED::
   if appLocaleDir[bundleID] == nil then
@@ -1712,7 +1719,7 @@ function delocalizedString(str, bundleID, params)
     end
   end
 
-  local locale, localeDir, mode, setDefaultLocale
+  local locale, localeDir, mode, setDefaultLocale, defaultAction
 
   if bundleID == "org.zotero.zotero" then
     result, locale = delocalizeZoteroMenu(str, appLocale)
@@ -1780,35 +1787,42 @@ function delocalizedString(str, bundleID, params)
     goto L_END_DELOCALIZED
   end
 
-  ::L_DELOCALIZED_DEFAULT::
-  result = delocalizeByLoctable(str, resourceDir, localeFile, locale)
-  if result ~= nil then goto L_END_DELOCALIZED end
+  defaultAction = function(emptyCache)
+    result = delocalizeByLoctable(str, resourceDir, localeFile, locale)
+    if result ~= nil then return result end
 
-  if deLocaleInversedMap[bundleID] == nil
-      or get(appLocaleDir, bundleID, appLocale) ~= locale
-      or framework.user then
-    deLocaleInversedMap[bundleID] = {}
+    if emptyCache or deLocaleInversedMap[bundleID] == nil
+        or get(appLocaleDir, bundleID, appLocale) ~= locale then
+      deLocaleInversedMap[bundleID] = {}
+    end
+    result = delocalizeByStrings(str, localeDir, localeFile, deLocaleInversedMap[bundleID])
+    if result ~= nil then return result end
+
+    result = delocalizeByNIB(str, localeDir, localeFile, bundleID)
+    if result ~= nil then return result end
+
+    if string.sub(str, -3) == "..." or string.sub(str, -3) == "…" then
+      result = delocalizedString(string.sub(str, 1, -4), bundleID, params)
+      if result ~= nil then
+        return result .. string.sub(str, -3)
+      end
+    end
   end
-  result = delocalizeByStrings(str, localeDir, localeFile, deLocaleInversedMap[bundleID])
-  if result ~= nil then goto L_END_DELOCALIZED end
-
-  result = delocalizeByNIB(str, localeDir, localeFile, bundleID)
-  if result ~= nil then goto L_END_DELOCALIZED end
 
   if framework.user then
-    framework.user = nil
+    local userResourceDir = resourceDir
+    local userLocale = locale
+    local userLocaleDir = localeDir
     if setDefaultLocale() then
-      goto L_DELOCALIZED_DEFAULT
+      result = defaultAction(true)
+      if result ~= nil then goto L_END_DELOCALIZED end
     end
-  end
 
-  if string.sub(str, -3) == "..." or string.sub(str, -3) == "…" then
-    result = delocalizedString(string.sub(str, 1, -4), bundleID, params)
-    if result ~= nil then
-      result = result .. string.sub(str, -3)
-      goto L_END_DELOCALIZED
-    end
+    resourceDir = userResourceDir
+    locale = userLocale
+    localeDir = userLocaleDir
   end
+  result = defaultAction(framework.user)
 
   ::L_END_DELOCALIZED::
   if appLocaleDir[bundleID] == nil then
