@@ -1579,6 +1579,11 @@ appHotKeyCallbacks = {
       message = "Select to Bottom",
       fn = function(appObject) hs.eventtap.keyStroke("⇧⌘", "End", nil, appObject) end
     },
+    ["properties"] = {
+      message = localizedMessage("Properties..."),
+      condition = checkMenuItem({ "File", "Properties..." }),
+      fn = receiveMenuItem
+    },
     ["exportToPDF"] = {
       message = localizedMessage("Export to PDF..."),
       condition = function(appObject)
