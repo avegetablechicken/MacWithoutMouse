@@ -5490,11 +5490,11 @@ function App_applicationCallback(appName, eventType, appObject)
         appLocales[bundleID] = appLocale
       end
       registerForOpenSavePanel(appObject)
+      local menuItems = getMenuItems(appObject)
+      altMenuBarItem(appObject, menuItems)
       registerInAppHotKeys(appObject)
       registerInWinHotKeys(appObject)
       hs.timer.doAfter(0, function()
-        local menuItems = getMenuItems(appObject)
-        altMenuBarItem(appObject, menuItems)
         hs.timer.doAfter(0, function()
           remapPreviousTab(appObject, menuItems)
           registerOpenRecent(appObject, menuItems)
