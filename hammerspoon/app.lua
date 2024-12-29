@@ -3828,7 +3828,7 @@ local function unregisterInAppHotKeys(bid, delete)
   if appHotKeyCallbacks[bid] == nil then return end
 
   if delete then
-    for _, hotkey in pairs(inAppHotKeys[bid]) do
+    for _, hotkey in pairs(inAppHotKeys[bid] or {}) do
       hotkey:delete()
     end
     inAppHotKeys[bid] = nil
@@ -5480,9 +5480,12 @@ function App_applicationCallback(appName, eventType, appObject)
       local oldAppLocale = appLocales[bundleID] or systemLocales()[1]
       if oldAppLocale ~= appLocale then
         if getMatchedLocale(oldAppLocale, { appLocale }) ~= appLocale then
+          localizeCommonMenuItemTitles(appLocale)
+          resetLocalizationMap(bundleID)
           unregisterRunningAppHotKeys(bundleID, true)
           registerRunningAppHotKeys(bundleID)
-          localizeCommonMenuItemTitles(appLocale)
+          unregisterInAppHotKeys(bundleID, true)
+          unregisterInWinHotKeys(bundleID, true)
         end
         appLocales[bundleID] = appLocale
       end

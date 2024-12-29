@@ -295,12 +295,20 @@ end
 local localeTmpDir = hs.fs.temporaryDirectory() .. 'org.hammerspoon.Hammerspoon/locale/'
 
 localizationMap = {}
+localizationMapLoaded = {}
 local localizationFrameworks = {}
 if hs.fs.attributes("config/localization.json") ~= nil then
   localizationMap = hs.json.read("config/localization.json")
   localizationFrameworks = localizationMap['resources']
   localizationMap['resources'] = nil
+  localizationMapLoaded = hs.fnutils.copy(localizationMap)
 end
+function resetLocalizationMap(bundleID)
+  if localizationMapLoaded[bundleID] ~= nil then
+    localizationMap[bundleID] = hs.fnutils.copy(localizationMapLoaded[bundleID])
+  end
+end
+
 localizationMap.common = {}
 
 function systemLocales()
