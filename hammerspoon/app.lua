@@ -4299,17 +4299,26 @@ local function registerOpenRecent(appObject, menuItems)
   if menuItem == nil then
     if bundleID:sub(1, 10) == "com.apple." then
       if localizedOpenRecent == nil then
-        local appLocale = applicationLocales(bundleID)[1]
         local resourceDir = '/System/Library/Frameworks/AppKit.framework/Resources'
-        local matchedLocale = getMatchedLocale(appLocale, resourceDir, 'lproj')
+        local matchedLocale = getMatchedLocale(SYSTEM_LOCALE, resourceDir, 'lproj')
         localizedOpenRecent = localizeByLoctable('Open Recent', resourceDir, 'MenuCommands', matchedLocale, {})
       end
       menuItemPath = { localizedFile, localizedOpenRecent }
+      menuItem = appObject:findMenuItem(menuItemPath)
+      if menuItem == nil then
+        local appLocale = applicationLocales(bundleID)[1]
+        if appLocale ~= SYSTEM_LOCALE and appLocale:sub(1, 2) ~= 'en' then
+          local resourceDir = '/System/Library/Frameworks/AppKit.framework/Resources'
+          local matchedLocale = getMatchedLocale(appLocale, resourceDir, 'lproj')
+          local localized = localizeByLoctable('Open Recent', resourceDir, 'MenuCommands', matchedLocale, {})
+          menuItemPath = { localizedFile, localized }
+        end
+      end
     else
       menuItemPath = { localizedFile, localizedMenuItem('Open Recent', bundleID) }
+      menuItem = appObject:findMenuItem(menuItemPath)
     end
   end
-  menuItem = appObject:findMenuItem(menuItemPath)
   if menuItem ~= nil then
     local fn = function() showMenuItem(menuItemPath, appObject) end
     local cond = function()
@@ -5477,11 +5486,11 @@ function App_applicationCallback(appName, eventType, appObject)
     end)
     hs.timer.doAfter(0, function()
       local appLocale = applicationLocales(bundleID)[1]
-      local oldAppLocale = appLocales[bundleID] or systemLocales()[1]
+      local oldAppLocale = appLocales[bundleID] or SYSTEM_LOCALE
       if oldAppLocale ~= appLocale then
         if getMatchedLocale(oldAppLocale, { appLocale }) ~= appLocale then
-          localizeCommonMenuItemTitles(appLocale)
           resetLocalizationMap(bundleID)
+          localizeCommonMenuItemTitles(appLocale, bundleID)
           unregisterRunningAppHotKeys(bundleID, true)
           registerRunningAppHotKeys(bundleID)
           unregisterInAppHotKeys(bundleID, true)

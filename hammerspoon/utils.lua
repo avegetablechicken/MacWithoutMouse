@@ -311,7 +311,7 @@ end
 
 localizationMap.common = {}
 
-function systemLocales()
+local function systemLocales()
   local locales, ok = hs.execute("defaults read -globalDomain AppleLanguages | tr -d '()\" \\n'")
   return hs.fnutils.split(locales, ',')
 end
@@ -1833,17 +1833,22 @@ function delocalizedString(str, bundleID, params)
   return result
 end
 
-function localizeCommonMenuItemTitles(locale)
+function localizeCommonMenuItemTitles(locale, bundleID)
+  if locale == SYSTEM_LOCALE and bundleID ~= nil then return end
   if locale == 'en' or locale:sub(1, 3) == 'en-' or locale:sub(1, 3) == 'en_' then return end
 
   local resourceDir = '/System/Library/Frameworks/AppKit.framework/Resources'
   local matchedLocale = getMatchedLocale(locale, resourceDir, 'lproj')
   local titleList = {
-    'File', 'View', 'Window', 'Help',
     'Preferences', 'Preferences…', 'Settings…',
     'Zoom', 'Zoom All',
     'Enter Full Screen', 'Exit Full Screen',
   }
+  if locale == SYSTEM_LOCALE then
+    titleList = hs.fnutils.concat({
+      'File', 'View', 'Window', 'Help',
+    }, titleList)
+  end
   if getOSVersion() >= OS.Sequoia then
     titleList = hs.fnutils.concat(titleList, {
       'Fill', 'Center', 'Move & Resize', 'Return to Previous Size',
@@ -1859,16 +1864,37 @@ function localizeCommonMenuItemTitles(locale)
       localizationMap.common[localizedTitle] = title
     end
   end
-  for _, title in ipairs { 'Edit', 'Emoji & Symbols' } do
+  titleList = { 'Emoji & Symbols' }
+  if locale == SYSTEM_LOCALE then
+    table.insert(titleList, 'Edit')
+  end
+  for _, title in ipairs(titleList) do
     local localizedTitle = localizeByLoctable(title, resourceDir, 'InputManager', matchedLocale, {})
     if localizedTitle ~= nil then
       localizationMap.common[localizedTitle] = title
     end
   end
+
+  if locale ~= SYSTEM_LOCALE then
+    if localizationMap[bundleID] == nil then
+      localizationMap[bundleID] = {}
+    end
+    for _, title in ipairs { 'File', 'View', 'Window', 'Help' } do
+      local localizedTitle = localizeByLoctable(title, resourceDir, 'MenuCommands', matchedLocale, {})
+      if localizedTitle ~= nil then
+        localizationMap[bundleID][localizedTitle] = title
+      end
+    end
+    local title = 'Edit'
+    local localizedTitle = localizeByLoctable(title, resourceDir, 'InputManager', matchedLocale, {})
+    if localizedTitle ~= nil then
+      localizationMap[bundleID][localizedTitle] = title
+    end
+  end
 end
 
-local systemLocale = systemLocales()[1]
-localizeCommonMenuItemTitles(systemLocale)
+SYSTEM_LOCALE = systemLocales()[1]
+localizeCommonMenuItemTitles(SYSTEM_LOCALE)
 
 function delocalizedMenuItem(title, bundleID, params)
   local defaultTitleMap, titleMap
@@ -1974,7 +2000,7 @@ function localizedMenuBarItem(title, bundleID, params, menuItems)
       return title
     end
   end
-  if appLocale == getMatchedLocale(systemLocale, { appLocale }) then
+  if appLocale == getMatchedLocale(SYSTEM_LOCALE, { appLocale }) then
     locTitle = hs.fnutils.indexOf(localizationMap.common, title)
     if locTitle ~= nil then return locTitle end
   end
@@ -1994,7 +2020,7 @@ function localizedMenuItem(title, bundleID, params)
   if locTitle ~= nil then
     return locTitle
   end
-  if appLocale == getMatchedLocale(systemLocale, { appLocale }) then
+  if appLocale == getMatchedLocale(SYSTEM_LOCALE, { appLocale }) then
     locTitle = hs.fnutils.indexOf(localizationMap.common, title)
     if locTitle ~= nil then return locTitle end
   end
