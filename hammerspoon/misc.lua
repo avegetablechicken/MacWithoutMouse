@@ -328,7 +328,7 @@ local function getSubMenuHotkeys(t, menuItem, titleAsEntry, titlePrefix, bundleI
           and #subItem.AXMenuItemCmdModifiers == 0 and subItem.AXMenuItemMarkChar == ""
           and subItem.AXChildren == nil then
         if subItem.AXTitle == "Emoji & Symbols"
-            or localizationMap.common[subItem.AXTitle] == "Emoji & Symbols" then
+            or delocalizedMenuItem(subItem.AXTitle, bundleID) == "Emoji & Symbols" then
           idx = "🌐︎E"
         end
       elseif subItem.AXMenuItemCmdChar == 'F' and subItem.AXMenuItemCmdGlyph == ""
@@ -336,8 +336,8 @@ local function getSubMenuHotkeys(t, menuItem, titleAsEntry, titlePrefix, bundleI
           and subItem.AXChildren == nil then
         if subItem.AXTitle == "Enter Full Screen"
             or subItem.AXTitle == "Exit Full Screen"
-            or localizationMap.common[subItem.AXTitle] == "Enter Full Screen"
-            or localizationMap.common[subItem.AXTitle] == "Exit Full Screen"
+            or delocalizedMenuItem(subItem.AXTitle, bundleID) == "Enter Full Screen"
+            or delocalizedMenuItem(subItem.AXTitle, bundleID) == "Exit Full Screen"
             or subItem.AXTitle == localizedString("Enter Full Screen", bundleID)
             or subItem.AXTitle == localizedString("Exit Full Screen", bundleID) then
           idx = "🌐︎F"
@@ -363,19 +363,21 @@ local function getSubMenuHotkeys(t, menuItem, titleAsEntry, titlePrefix, bundleI
     if idx ~= nil then
       if osv >= OS.Sequoia then
         if menuItem.AXTitle == 'Window'
+            -- hack for performance
             or localizationMap.common[menuItem.AXTitle] == 'Window' then
           for hkIdx, itemTitle in pairs(windowMenuItemsSinceSequoia1) do
             if idx == hkIdx and (subItem.AXTitle == itemTitle
-                or localizationMap.common[subItem.AXTitle] == itemTitle) then
+                or delocalizedMenuItem(subItem.AXTitle, bundleID) == itemTitle) then
               idx = "🌐︎" .. idx
               break
             end
           end
         elseif menuItem.AXTitle == 'Move & Resize'
+            -- hack for performance
             or localizationMap.common[menuItem.AXTitle] == 'Move & Resize' then
           for hkIdx, itemTitle in pairs(windowMenuItemsSinceSequoia2) do
             if idx == hkIdx and (subItem.AXTitle == itemTitle
-                or localizationMap.common[subItem.AXTitle] == itemTitle) then
+                or delocalizedMenuItem(subItem.AXTitle, bundleID) == itemTitle) then
               idx = "🌐︎" .. idx
               break
             end
