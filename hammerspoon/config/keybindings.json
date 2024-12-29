@@ -820,6 +820,12 @@
         "key": "R"
       }
     },
+    "com.sublimetext.4": {
+      "toggleSearchEditorWholeWord": {
+        "mods": ["shift", "option", "command"],
+        "key": "W"
+      }
+    },
     "com.readdle.PDFExpert-Mac": {
       "showInFinder": {
         "mods": ["shift", "option", "command"],

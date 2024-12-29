@@ -1481,6 +1481,23 @@ appHotKeyCallbacks = {
     }
   },
 
+  ["com.sublimetext.4"] =
+  {
+    ["toggleSearchEditorWholeWord"] = {
+      message = "Search Editor: Toggle Match Whole Word",
+      condition = function(appObject)
+        if appObject:focusedWindow() == nil then
+          return false
+        else
+          local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
+          return winUIObj:attributeValue("AXIdentifier") ~= "open-panel"
+        end
+      end,
+      repeatable = true,
+      fn = function(appObject) hs.eventtap.keyStroke("⌘⌥", "W", nil, appObject) end
+    },
+  },
+
   ["com.readdle.PDFExpert-Mac"] =
   {
     ["showInFinder"] = {
