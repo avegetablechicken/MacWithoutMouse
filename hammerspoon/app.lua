@@ -2081,9 +2081,11 @@ appHotKeyCallbacks = {
             localizedMenuBarItem('File', exBundleID),
             localizedString('Back', exBundleID)
           }
-          local menuItem = appObject:findMenuItem(menuItemPath)
-          if menuItem ~= nil and menuItem.enabled then
-            return true, { 0, menuItemPath }
+          if #menuItemPath == 2 then
+            local menuItem = exAppObject:findMenuItem(menuItemPath)
+            if menuItem ~= nil and menuItem.enabled then
+              return true, menuItemPath
+            end
           end
         end
         if appObject:focusedWindow() == nil then return false end
@@ -4332,7 +4334,9 @@ local function registerOpenRecent(appObject, menuItems)
         end
       end
     else
-      menuItemPath = { localizedFile, localizedMenuItem('Open Recent', bundleID) }
+      local localizedTitle = localizedMenuItem('Open Recent', bundleID)
+      if localizedTitle == nil then return end
+      menuItemPath = { localizedFile, localizedTitle }
       menuItem = appObject:findMenuItem(menuItemPath)
     end
   end
@@ -4373,11 +4377,15 @@ local function registerZoomHotkeys(appObject, menuItems)
       end
       local localizedWindow = localizedMenuBarItem('Window', appObject:bundleID(), nil, menuItems)
       local localizedTitle = localizedMenuItem(title, appObject:bundleID())
-      menuItemPath = { localizedWindow, localizedTitle }
-      menuItem = appObject:findMenuItem(menuItemPath)
-      if menuItem == nil then
-        menuItemPath = { 'Window', localizedTitle }
+      if localizedTitle ~= nil then
+        menuItemPath = { localizedWindow, localizedTitle }
         menuItem = appObject:findMenuItem(menuItemPath)
+      end
+      if menuItem == nil then
+        if localizedTitle ~= nil then
+          menuItemPath = { 'Window', localizedTitle }
+          menuItem = appObject:findMenuItem(menuItemPath)
+        end
         if menuItem == nil then
           menuItemPath = { localizedWindow, title }
           menuItem = appObject:findMenuItem(menuItemPath)
