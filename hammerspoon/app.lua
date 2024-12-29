@@ -5543,60 +5543,57 @@ function App_applicationCallback(appName, eventType, appObject)
         remoteDesktopModifierTapper:start()
       end
     end
-  elseif eventType == hs.application.watcher.deactivated then
-    if appName ~= nil then
-      if bundleID then
-        unregisterInAppHotKeys(bundleID)
-        unregisterInWinHotKeys(bundleID)
-        for _, ob in ipairs(observersStopOnDeactivated[bundleID] or {}) do
+  elseif eventType == hs.application.watcher.deactivated and appName ~= nil then
+    if bundleID then
+      unregisterInAppHotKeys(bundleID)
+      unregisterInWinHotKeys(bundleID)
+      for _, ob in ipairs(observersStopOnDeactivated[bundleID] or {}) do
+        local observer, func = ob[1], ob[2]
+        observer:stop()
+        if func ~= nil then func(bundleID, observer) end
+      end
+      observersStopOnDeactivated[bundleID] = nil
+    end
+  elseif eventType == hs.application.watcher.deactivated
+      or eventType == hs.application.watcher.terminated then
+    for _, ob in ipairs(observersStopOnDeactivated[bundleID] or {}) do
+      local observer, func = ob[1], ob[2]
+      observer:stop()
+      if func ~= nil then func(bundleID, observer) end
+    end
+    observersStopOnDeactivated[bundleID] = nil
+    for bid, obs in pairs(observersStopOnQuit) do
+      if findApplication(bid) == nil then
+        for _, ob in ipairs(obs) do
           local observer, func = ob[1], ob[2]
           observer:stop()
-          if func ~= nil then func(bundleID, observer) end
+          if func ~= nil then func(bid, observer) end
         end
-        observersStopOnDeactivated[bundleID] = nil
-      end
-    else
-      for bid, obs in pairs(observersStopOnDeactivated) do
-        if findApplication(bid) == nil then
-          for _, ob in ipairs(obs) do
-            local observer, func = ob[1], ob[2]
-            observer:stop()
-            if func ~= nil then func(bid, observer) end
-          end
-          observersStopOnDeactivated[bid] = nil
-        end
-      end
-      for bid, obs in pairs(observersStopOnQuit) do
-        if findApplication(bid) == nil then
-          for _, ob in ipairs(obs) do
-            local observer, func = ob[1], ob[2]
-            observer:stop()
-            if func ~= nil then func(bid, observer) end
-          end
-          observersStopOnQuit[bid] = nil
-        end
-      end
-      for bid, _ in pairs(runningAppHotKeys) do
-        if findApplication(bid) == nil then
-          unregisterRunningAppHotKeys(bid)
-        end
-      end
-      for bid, _ in pairs(inAppHotKeys) do
-        if findApplication(bid) == nil then
-          unregisterInAppHotKeys(bid, true)
-        end
-      end
-      for bid, _ in pairs(inWinHotKeys) do
-        if findApplication(bid) == nil then
-          unregisterInWinHotKeys(bid, true)
-        end
-      end
-      for bid, _ in pairs(appLocales) do
-        if findApplication(bid) == nil then
-          appLocales[bid] = nil
-        end
+        observersStopOnQuit[bid] = nil
       end
     end
+    for bid, _ in pairs(runningAppHotKeys) do
+      if findApplication(bid) == nil then
+        unregisterRunningAppHotKeys(bid)
+      end
+    end
+    for bid, _ in pairs(inAppHotKeys) do
+      if findApplication(bid) == nil then
+        unregisterInAppHotKeys(bid, true)
+      end
+    end
+    for bid, _ in pairs(inWinHotKeys) do
+      if findApplication(bid) == nil then
+        unregisterInWinHotKeys(bid, true)
+      end
+    end
+    for bid, _ in pairs(appLocales) do
+      if findApplication(bid) == nil then
+        appLocales[bid] = nil
+      end
+    end
+  end
+  if eventType == hs.application.watcher.deactivated then
     if remoteDesktopsMappingModifiers[hs.application.frontmostApplication():bundleID()] == nil then
       if remoteDesktopModifierTapper:isEnabled() then
         remoteDesktopModifierTapper:stop()
