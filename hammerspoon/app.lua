@@ -3825,12 +3825,13 @@ local function registerInAppHotKeys(appObject)
     else
       -- prefer properties specified in configuration file than in code
       local keybinding = keybindings[hkID] or { mods = cfg.mods, key = cfg.key }
+      local hasKey = keybinding.mods ~= nil and keybinding.key ~= nil
       local isBackground = keybinding.background ~= nil and keybinding.background or cfg.background
       local isForWindow = keybinding.windowFilter ~= nil or cfg.windowFilter ~= nil
       local bindable = function()
         return cfg.bindCondition == nil or cfg.bindCondition(appObject)
       end
-      if not isBackground and not isForWindow and bindable() then
+      if hasKey and not isBackground and not isForWindow and bindable() then
         local msg = type(cfg.message) == 'string' and cfg.message or cfg.message(appObject)
         if msg ~= nil then
           local repeatable = keybinding.repeatable ~= nil and keybinding.repeatable or cfg.repeatable
@@ -3919,12 +3920,13 @@ local function registerInWinHotKeys(appObject)
     if inWinHotKeys[bid][hkID] == nil then
       -- prefer properties specified in configuration file than in code
       local keybinding = keybindings[hkID] or { mods = cfg.mods, key = cfg.key }
+      local hasKey = keybinding.mods ~= nil and keybinding.key ~= nil
       local isForWindow = keybinding.windowFilter ~= nil or cfg.windowFilter ~= nil
       local isBackground = keybinding.background ~= nil and keybinding.background or cfg.background
       local bindable = function()
         return cfg.bindCondition == nil or cfg.bindCondition(appObject)
       end
-      if isForWindow and not isBackground and bindable() then  -- only consider windows of active app
+      if hasKey and isForWindow and not isBackground and bindable() then  -- only consider windows of active app
         local msg = type(cfg.message) == 'string' and cfg.message or cfg.message(appObject)
         if msg ~= nil then
           local repeatable = keybinding.repeatable ~= nil and keybinding.repeatable or cfg.repeatable
@@ -4004,13 +4006,14 @@ local function inWinOfUnactivatedAppWatcherEnableCallback(bid, filter, winObj)
   for hkID, cfg in pairs(appHotKeyCallbacks[bid]) do
     local appObject = findApplication(bid)
     local filterCfg = get(KeybindingConfigs.hotkeys[bid], hkID) or cfg
+    local hasKey = filterCfg.mods ~= nil and filterCfg.key ~= nil
     local isBackground = filterCfg.background ~= nil and filterCfg.background or cfg.background
     local windowFilter = filterCfg.windowFilter or cfg.windowFilter
     local isForWindow = windowFilter ~= nil
     local bindable = function()
       return cfg.bindCondition == nil or cfg.bindCondition(appObject)
     end
-    if isForWindow and isBackground and bindable() and sameFilter(windowFilter, filter) then
+    if hasKey and isForWindow and isBackground and bindable() and sameFilter(windowFilter, filter) then
       local msg = type(cfg.message) == 'string' and cfg.message or cfg.message(appObject)
       if msg ~= nil then
         local keybinding = get(KeybindingConfigs.hotkeys[bid], hkID) or cfg
@@ -4099,13 +4102,14 @@ end
 local function registerWinFiltersForDaemonApp(appObject, appConfig)
   local bid = appObject:bundleID()
   for hkID, cfg in pairs(appConfig) do
-    local keybinding = get(KeybindingConfigs.hotkeys[bid], hkID) or {}
+    local keybinding = get(KeybindingConfigs.hotkeys[bid], hkID) or { mods = cfg.mods, key = cfg.key }
+    local hasKey = keybinding.mods ~= nil and keybinding.key ~= nil
     local isForWindow = keybinding.windowFilter ~= nil or cfg.windowFilter ~= nil
     local isBackground = keybinding.background ~= nil and keybinding.background or cfg.background
     local bindable = function()
       return cfg.bindCondition == nil or cfg.bindCondition(appObject)
     end
-    if isForWindow and isBackground and bindable() then
+    if hasKey and isForWindow and isBackground and bindable() then
       if inWinOfUnactivatedAppWatchers[bid] == nil then
         if inWinOfUnactivatedAppWatchers[bid] == nil then
           inWinOfUnactivatedAppWatchers[bid] = {}
@@ -4204,11 +4208,12 @@ for bid, appConfig in pairs(appHotKeyCallbacks) do
   registerRunningAppHotKeys(bid)
   local keybindings = KeybindingConfigs.hotkeys[bid] or {}
   for hkID, cfg in pairs(appConfig) do
-    local keybinding = keybindings[hkID] or {}
+    local keybinding = keybindings[hkID] or { mods = cfg.mods, key = cfg.key }
+    local hasKey = keybinding.mods ~= nil and keybinding.key ~= nil
     local isBackground = keybinding.background ~= nil and keybinding.background or cfg.background
     local isPersistent = keybinding.persist ~= nil and keybinding.persist or cfg.persist
     local isForWindow = keybinding.windowFilter ~= nil or cfg.windowFilter ~= nil
-    if type(cfg) ~= 'number' and not isForWindow and isBackground and not isPersistent then
+    if type(cfg) ~= 'number' and hasKey and not isForWindow and isBackground and not isPersistent then
       execOnLaunch(bid, hs.fnutils.partial(registerRunningAppHotKeys, bid))
       break
     end
@@ -4244,10 +4249,11 @@ for bid, appConfig in pairs(appHotKeyCallbacks) do
   else
     local keybindings = KeybindingConfigs.hotkeys[bid] or {}
     for hkID, cfg in pairs(appConfig) do
-      local keybinding = keybindings[hkID] or {}
+      local keybinding = keybindings[hkID] or { mods = cfg.mods, key = cfg.key }
+      local hasKey = keybinding.mods ~= nil and keybinding.key ~= nil
       local isForWindow = keybinding.windowFilter ~= nil or cfg.windowFilter ~= nil
       local isBackground = keybinding.background ~= nil and keybinding.background or cfg.background
-      if type(cfg) ~= 'number' and isForWindow and isBackground then
+      if type(cfg) ~= 'number' and hasKey and isForWindow and isBackground then
         execOnLaunch(bid, function(appObject)
           registerWinFiltersForDaemonApp(appObject, appConfig)
         end)
