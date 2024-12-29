@@ -1086,21 +1086,21 @@ local function PDFChooser()
         end
         table.insert(winTabTitles, tabTitles)
         for i, winTitle in ipairs(winTitles) do
-        tabTitles = winTabTitles[i]
-        for _, tabTitle in ipairs(tabTitles) do
-          local choice =
-              {
-                text = tabTitle,
-                image = hs.image.imageFromAppBundle(appObject:bundleID()),
-                winTitle = winTitle,
-                app = appObject:bundleID()
-              }
-          if winTitle ~= tabTitle then
-            choice.subText = 'INACTIVE in WINDOW: "' .. winTitle .. '"'
+          tabTitles = winTabTitles[i]
+          for _, tabTitle in ipairs(tabTitles) do
+            local choice =
+                {
+                  text = tabTitle,
+                  image = hs.image.imageFromAppBundle(appObject:bundleID()),
+                  winTitle = winTitle,
+                  app = appObject:bundleID()
+                }
+            if winTitle ~= tabTitle then
+              choice.subText = 'INACTIVE in WINDOW: "' .. winTitle .. '"'
+            end
+            table.insert(choices, choice)
           end
-          table.insert(choices, choice)
         end
-      end
       end
     end
     allWindowsUPDF = allWindows
