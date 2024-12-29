@@ -306,6 +306,8 @@ end
 function resetLocalizationMap(bundleID)
   if localizationMapLoaded[bundleID] ~= nil then
     localizationMap[bundleID] = hs.fnutils.copy(localizationMapLoaded[bundleID])
+  else
+    localizationMap[bundleID] = nil
   end
 end
 

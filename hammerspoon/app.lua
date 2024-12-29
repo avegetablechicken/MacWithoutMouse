@@ -5519,8 +5519,8 @@ function App_applicationCallback(appName, eventType, appObject)
           unregisterInAppHotKeys(bundleID, true)
           unregisterInWinHotKeys(bundleID, true)
         end
-        appLocales[bundleID] = appLocale
       end
+      appLocales[bundleID] = appLocale
       registerForOpenSavePanel(appObject)
       local menuItems = getMenuItems(appObject)
       altMenuBarItem(appObject, menuItems)
@@ -5590,11 +5590,6 @@ function App_applicationCallback(appName, eventType, appObject)
     for bid, _ in pairs(inWinHotKeys) do
       if findApplication(bid) == nil then
         unregisterInWinHotKeys(bid, true)
-      end
-    end
-    for bid, _ in pairs(appLocales) do
-      if findApplication(bid) == nil then
-        appLocales[bid] = nil
       end
     end
   end
