@@ -4233,7 +4233,7 @@ for bid, appConfig in pairs(appHotKeyCallbacks) do
     local isBackground = keybinding.background ~= nil and keybinding.background or cfg.background
     local isPersistent = keybinding.persist ~= nil and keybinding.persist or cfg.persist
     local isForWindow = keybinding.windowFilter ~= nil or cfg.windowFilter ~= nil
-    if type(cfg) ~= 'number' and hasKey and not isForWindow and isBackground and not isPersistent then
+    if hasKey and not isForWindow and isBackground and not isPersistent then
       execOnLaunch(bid, hs.fnutils.partial(registerRunningAppHotKeys, bid))
       break
     end
@@ -4273,7 +4273,7 @@ for bid, appConfig in pairs(appHotKeyCallbacks) do
       local hasKey = keybinding.mods ~= nil and keybinding.key ~= nil
       local isForWindow = keybinding.windowFilter ~= nil or cfg.windowFilter ~= nil
       local isBackground = keybinding.background ~= nil and keybinding.background or cfg.background
-      if type(cfg) ~= 'number' and hasKey and isForWindow and isBackground then
+      if hasKey and isForWindow and isBackground then
         execOnLaunch(bid, function(appObject)
           registerWinFiltersForDaemonApp(appObject, appConfig)
         end)
