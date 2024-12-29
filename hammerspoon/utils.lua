@@ -1913,11 +1913,8 @@ SYSTEM_LOCALE = systemLocales()[1]
 localizeCommonMenuItemTitles(SYSTEM_LOCALE)
 
 function delocalizedMenuItem(title, bundleID, params)
-  local defaultTitleMap, titleMap
-  if localizationMap ~= nil then
-    defaultTitleMap = localizationMap.common
-    titleMap = localizationMap[bundleID]
-  end
+  local defaultTitleMap = localizationMap.common
+  local titleMap = localizationMap[bundleID]
   if titleMap ~= nil then
     if titleMap[title] ~= nil then
       return titleMap[title]
@@ -1925,13 +1922,21 @@ function delocalizedMenuItem(title, bundleID, params)
   end
   if defaultTitleMap ~= nil then
     if defaultTitleMap[title] ~= nil then
-      return defaultTitleMap[title]
-    elseif hs.fnutils.indexOf(defaultTitleMap, title) ~= nil then
-      return title
+      if titleMap == nil then
+        localizationMap[bundleID] = {}
+        titleMap = localizationMap[bundleID]
+      end
+      titleMap[title] = defaultTitleMap[title]
+      return titleMap[title]
     end
   end
   local newTitle = delocalizedString(title, bundleID, params)
   if newTitle ~= nil then
+    if titleMap == nil then
+      localizationMap[bundleID] = {}
+      titleMap = localizationMap[bundleID]
+    end
+    titleMap[title] = newTitle
     if hs.fs.attributes(localeTmpDir) == nil then
       hs.execute(string.format("mkdir -p '%s'", localeTmpDir))
     end
@@ -1945,11 +1950,8 @@ function delocalizeMenuBarItems(itemTitles, bundleID, localeFile)
   if localizationMap[bundleID] == nil then
     localizationMap[bundleID] = {}
   end
-  local defaultTitleMap, titleMap
-  if localizationMap ~= nil then
-    defaultTitleMap = localizationMap.common
-    titleMap = localizationMap[bundleID]
-  end
+  local defaultTitleMap = localizationMap.common
+  local titleMap = localizationMap[bundleID]
   local result = {}
   local shouldWrite = false
   for _, title in ipairs(itemTitles) do
