@@ -518,8 +518,77 @@ function getQtMatchedLocale(appLocale, resourceDir)
   end
 end
 
-local preferentialLocaleFilePatterns = { "(.-)MainMenu(.-)", "Menu", "MenuBar",
-  "MenuItems", "Localizable", "(.-)Localizable", "Main", "MainWindow" }
+local baseLocales = {
+  "Base", "en", "English"
+}
+local function baseLocaleDirs(resourceDir)
+  local dirs = {}
+  for _, locale in ipairs(baseLocales) do
+    local localeDir = resourceDir .. '/' .. locale .. '.lproj'
+    if hs.fs.attributes(localeDir) ~= nil then
+      table.insert(dirs, localeDir)
+    end
+  end
+  if #dirs == 0 then table.insert(dirs, resourceDir) end
+  return dirs
+end
+
+local extraEnglishLocales = {
+  "en_US", "en_GB"
+}
+local function prependExtraEnglishLocaleDirs(resourceDir, baseDirs)
+  local dirs = {}
+  for _, locale in ipairs(extraEnglishLocales) do
+    local localeDir = resourceDir .. '/' .. locale .. '.lproj'
+    if hs.fs.attributes(localeDir) ~= nil then
+      table.insert(dirs, localeDir)
+    end
+  end
+  for _, dir in ipairs(baseDirs) do
+    table.insert(dirs, dir)
+  end
+  return dirs
+end
+
+local function collectLocaleFiles(localeDir, option)
+  local localeFiles = {}
+  if option == nil then option = { strings = true, nib = true, storyboardc = true } end
+  for file in hs.fs.dir(localeDir or {}) do
+    if option.strings and file:sub(-8) == ".strings" then
+      table.insert(localeFiles, file:sub(1, -9))
+    elseif option.loctable and file:sub(-9) == ".loctable" then
+      table.insert(localeFiles, file:sub(1, -10))
+    elseif option.nib and file:sub(-4) == ".nib" then
+      table.insert(localeFiles, file:sub(1, -5))
+    elseif option.storyboardc and file:sub(-12) == ".storyboardc" then
+      table.insert(localeFiles, file:sub(1, -13))
+    end
+  end
+  return localeFiles
+end
+
+local preferentialLocaleFilePatterns = {
+  "(.-)MainMenu(.-)", "Menu", "MenuBar", "MenuItems",
+  "Localizable", "(.-)Localizable", "Main", "MainWindow",
+}
+
+local function filterPreferentialLocaleFiles(localeFiles)
+  local newStringsFiles, preferentialStringsFiles = {}, {}
+  for _, p in ipairs(preferentialLocaleFilePatterns) do
+    for _, file in ipairs(localeFiles) do
+      if not hs.fnutils.contains(preferentialStringsFiles, file)
+          and string.match(file, '^' .. p .. '$') then
+        table.insert(preferentialStringsFiles, file)
+      end
+    end
+  end
+  for _, file in ipairs(localeFiles) do
+    if not hs.fnutils.contains(preferentialStringsFiles, file) then
+      table.insert(newStringsFiles, file)
+    end
+  end
+  return newStringsFiles, preferentialStringsFiles
+end
 
 local function parseStringsFile(file, keepOrder, keepAll)
   if keepOrder == nil then keepOrder = true end
@@ -563,40 +632,23 @@ function localizeByLoctable(str, resourceDir, localeFile, loc, localesDict)
       return localizeByLoctableImpl(str, fullPath, localeFile, loc, localesDict)
     end
   else
-    local loctableFiles = {}
+    local loctableFiles = collectLocaleFiles(resourceDir, { loctable = true })
     local preferentialLoctableFiles = {}
-    for file in hs.fs.dir(resourceDir) do
-      if file:sub(-9) == ".loctable" then
-        table.insert(loctableFiles, file)
-      end
-    end
     if #loctableFiles > 10 then
-      for i = #loctableFiles, 1, -1 do
-        for _, p in ipairs(preferentialLocaleFilePatterns) do
-          local pattern = "^" .. p .. "%.loctable$"
-          if string.match(loctableFiles[i], pattern) ~= nil then
-            table.insert(preferentialLoctableFiles, loctableFiles[i])
-            table.remove(loctableFiles, i)
-            break
-          end
-        end
-      end
+      loctableFiles, preferentialLoctableFiles = filterPreferentialLocaleFiles(loctableFiles)
     end
     for _, file in ipairs(preferentialLoctableFiles) do
-      local fullPath = resourceDir .. '/' .. file
-      local fileStem = file:sub(1, -10)
-      local result = localizeByLoctableImpl(str, fullPath, fileStem, loc, localesDict)
+      local fullPath = resourceDir .. '/' .. file .. '.loctable'
+      local result = localizeByLoctableImpl(str, fullPath, file, loc, localesDict)
       if result ~= nil then return result end
     end
     for _, file in ipairs(loctableFiles) do
-      local fullPath = resourceDir .. '/' .. file
-      local fileStem = file:sub(1, -10)
-      local result = localizeByLoctableImpl(str, fullPath, fileStem, loc, localesDict)
+      local fullPath = resourceDir .. '/' .. file .. '.loctable'
+      local result = localizeByLoctableImpl(str, fullPath, file, loc, localesDict)
       if result ~= nil then return result end
     end
   end
 end
-
 
 local function isBinarayPlist(file)
   local f = io.open(file, "rb")
@@ -682,71 +734,6 @@ local function parseNibFile(file, keepOrder, keepAll)
   return localesDict
 end
 
-local baseLocales = {
-  "Base", "en", "English"
-}
-local function baseLocaleDirs(resourceDir)
-  local dirs = {}
-  for _, locale in ipairs(baseLocales) do
-    local localeDir = resourceDir .. '/' .. locale .. '.lproj'
-    if hs.fs.attributes(localeDir) ~= nil then
-      table.insert(dirs, localeDir)
-    end
-  end
-  if #dirs == 0 then table.insert(dirs, resourceDir) end
-  return dirs
-end
-
-local extraEnglishLocales = {
-  "en_US", "en_GB"
-}
-local function prependExtraEnglishLocaleDirs(resourceDir, baseDirs)
-  local dirs = {}
-  for _, locale in ipairs(extraEnglishLocales) do
-    local localeDir = resourceDir .. '/' .. locale .. '.lproj'
-    if hs.fs.attributes(localeDir) ~= nil then
-      table.insert(dirs, localeDir)
-    end
-  end
-  for _, dir in ipairs(baseDirs) do
-    table.insert(dirs, dir)
-  end
-  return dirs
-end
-
-local function collectStringsFiles(localeDir, option)
-  local stringsFiles = {}
-  if option == nil then option = { strings = true, nib = true, storyboardc = true } end
-  for file in hs.fs.dir(localeDir or {}) do
-    if option.strings and file:sub(-8) == ".strings" then
-      table.insert(stringsFiles, file:sub(1, -9))
-    elseif option.nib and file:sub(-4) == ".nib" then
-      table.insert(stringsFiles, file:sub(1, -5))
-    elseif option.storyboardc and file:sub(-12) == ".storyboardc" then
-      table.insert(stringsFiles, file:sub(1, -13))
-    end
-  end
-  return stringsFiles
-end
-
-local function filterPreferentialStringsFiles(stringsFiles)
-  local newStringsFiles, preferentialStringsFiles = {}, {}
-  for _, p in ipairs(preferentialLocaleFilePatterns) do
-    for _, file in ipairs(stringsFiles) do
-      if not hs.fnutils.contains(preferentialStringsFiles, file)
-          and string.match(file, '^' .. p .. '$') then
-        table.insert(preferentialStringsFiles, file)
-      end
-    end
-  end
-  for _, file in ipairs(stringsFiles) do
-    if not hs.fnutils.contains(preferentialStringsFiles, file) then
-      table.insert(newStringsFiles, file)
-    end
-  end
-  return newStringsFiles, preferentialStringsFiles
-end
-
 -- situation 1: "str" is a key in a strings file of target locale
 -- situation 2: both base and target locales use strings files
 -- situation 3: both base variant (e.g. en_US) and target locales use strings files
@@ -775,10 +762,10 @@ local function localizeByStrings(str, localeDir, localeFile, localesDict, locale
     local result = searchFunc(str, localeFile)
     if result ~= nil then return result end
   else
-    stringsFiles = collectStringsFiles(localeDir, { strings = true })
+    stringsFiles = collectLocaleFiles(localeDir, { strings = true })
     local preferentialStringsFiles = {}
     if #stringsFiles > 10 then
-      stringsFiles, preferentialStringsFiles = filterPreferentialStringsFiles(stringsFiles)
+      stringsFiles, preferentialStringsFiles = filterPreferentialLocaleFiles(stringsFiles)
     end
     local result = searchFunc(str, preferentialStringsFiles)
     if result ~= nil then return result end
@@ -849,7 +836,7 @@ local function localizeByStrings(str, localeDir, localeFile, localesDict, locale
     local result = invSearchFunc(str, localeFile)
     if result ~= nil then return result end
   else
-    enStringsFiles = collectStringsFiles(enLocaleDirs[1])
+    enStringsFiles = collectLocaleFiles(enLocaleDirs[1])
     for i=2, #enLocaleDirs do
       if hs.fs.attributes(enLocaleDirs[i] .. '/Localizable.strings') ~= nil then
         table.insert(enStringsFiles, 'Localizable')
@@ -857,7 +844,7 @@ local function localizeByStrings(str, localeDir, localeFile, localesDict, locale
     end
     local enPreferentialStringsFiles = {}
     if #enStringsFiles > 10 then
-      enStringsFiles, enPreferentialStringsFiles = filterPreferentialStringsFiles(enStringsFiles)
+      enStringsFiles, enPreferentialStringsFiles = filterPreferentialLocaleFiles(enStringsFiles)
     end
     local result = invSearchFunc(str, enPreferentialStringsFiles)
     if result ~= nil then return result end
@@ -965,9 +952,9 @@ local function localizeByNIB(str, localeDir, localeFile, bundleID)
     local result = compareNIBs(localeFile)
     if result ~= nil then return result end
   else
-    local nibFiles = collectStringsFiles(localeDir, { nib = true })
+    local nibFiles = collectLocaleFiles(localeDir, { nib = true })
     if #nibFiles > 10 then
-      _, nibFiles = filterPreferentialStringsFiles(nibFiles)
+      _, nibFiles = filterPreferentialLocaleFiles(nibFiles)
     end
     for _, file in ipairs(nibFiles) do
       local result = compareNIBs(file)
@@ -1338,28 +1325,17 @@ local function delocalizeByLoctable(str, resourceDir, localeFile, locale)
       return delocalizeByLoctableImpl(str, fullPath, locale)
     end
   else
-    local loctableFiles = {}
-    for file in hs.fs.dir(resourceDir) do
-      if file:sub(-9) == ".loctable" then
-        table.insert(loctableFiles, file)
-      end
-    end
+    local loctableFiles = collectLocaleFiles(resourceDir, { loctable = true })
     local preferentialLoctableFiles = {}
     if #loctableFiles > 10 then
-      preferentialLoctableFiles = hs.fnutils.filter(loctableFiles, function(file)
-        for _, pattern in ipairs(preferentialLocaleFilePatterns) do
-          local pattern = "^" .. pattern  .. "%.loctable$"
-          if string.match(file, pattern) ~= nil then return true end
-        end
-        return false
-      end)
+      loctableFiles, preferentialLoctableFiles = filterPreferentialLocaleFiles(loctableFiles)
     end
     for _, file in ipairs(preferentialLoctableFiles) do
-      local result = delocalizeByLoctableImpl(str, resourceDir .. '/' .. file, locale)
+      local result = delocalizeByLoctableImpl(str, resourceDir .. '/' .. file .. '.loctable', locale)
       if result ~= nil then return result end
     end
     for _, file in ipairs(loctableFiles) do
-      local result = delocalizeByLoctableImpl(str, resourceDir .. '/' .. file, locale)
+      local result = delocalizeByLoctableImpl(str, resourceDir .. '/' .. file .. '.loctable', locale)
       if result ~= nil then return result end
     end
   end
@@ -1440,9 +1416,9 @@ local function delocalizeByStrings(str, localeDir, localeFile, deLocalesInvDict)
     local result = invSearchFunc(str, localeFile)
     if result ~= nil then return result end
   else
-    local stringsFiles = collectStringsFiles(localeDir, { strings = true })
+    local stringsFiles = collectLocaleFiles(localeDir, { strings = true })
     if #stringsFiles > 10 then
-      _, stringsFiles = filterPreferentialStringsFiles(stringsFiles)
+      _, stringsFiles = filterPreferentialLocaleFiles(stringsFiles)
     end
     local result = invSearchFunc(str, stringsFiles)
     if result ~= nil then return result end
@@ -1544,9 +1520,9 @@ local function delocalizeByNIB(str, localeDir, localeFile, bundleID)
     local result = compareNIBs(localeFile)
     if result ~= nil then return result end
   else
-    local nibFiles = collectStringsFiles(localeDir, { nib = true })
+    local nibFiles = collectLocaleFiles(localeDir, { nib = true })
     if #nibFiles > 10 then
-      _, nibFiles = filterPreferentialStringsFiles(nibFiles)
+      _, nibFiles = filterPreferentialLocaleFiles(nibFiles)
     end
     for _, file in ipairs(nibFiles) do
       local result = compareNIBs(file)
