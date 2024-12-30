@@ -1124,7 +1124,7 @@ if hs.fs.attributes(localeTmpFile) ~= nil then
   end
 end
 
-function localizedString(str, bundleID, params, force)
+local function localizedStringImpl(str, bundleID, params, force)
   local appLocale, localeFile, localeFramework
   if type(params) == "table" then
     appLocale = params.locale
@@ -1180,11 +1180,11 @@ function localizedString(str, bundleID, params, force)
     end
   end
 
-  local locale, localeDir, mode, localesDict, setDefaultLocale, defaultAction
+  local locale, localeDir, mode
 
   if bundleID == "com.openai.chat" then
     result, locale = localizeChatGPT(str, appLocale)
-    goto L_END_LOCALIZED
+    return result, appLocale, locale
   end
 
   if not framework.mono then mode = 'lproj' end
@@ -1197,7 +1197,7 @@ function localizedString(str, bundleID, params, force)
     if locale == nil and framework.qt then
       locale, localeDir = getQtMatchedLocale(appLocale, resourceDir)
     end
-    if locale == nil then goto L_END_LOCALIZED end
+    if locale == nil then return result, appLocale, locale end
   end
   if localeDir == nil then
     if mode == 'lproj' then
@@ -1211,7 +1211,7 @@ function localizedString(str, bundleID, params, force)
     _, localeDir = getQtMatchedLocale(appLocale, resourceDir)
   end
 
-  setDefaultLocale = function()
+  local setDefaultLocale = function()
     resourceDir = hs.application.pathForBundleID(bundleID) .. "/Contents/Resources"
     if hs.fs.attributes(resourceDir) == nil then return false end
     mode = 'lproj'
@@ -1225,24 +1225,24 @@ function localizedString(str, bundleID, params, force)
       or get(appLocaleDir, bundleID, appLocale) ~= locale then
     appLocaleAssetBuffer[bundleID] = {}
   end
-  localesDict = appLocaleAssetBuffer[bundleID]
+  local localesDict = appLocaleAssetBuffer[bundleID]
 
   if framework.chromium then
     result = localizeByChromium(str, localeDir, localesDict, bundleID)
-    if result ~= nil or not setDefaultLocale() then goto L_END_LOCALIZED end
+    if result ~= nil or not setDefaultLocale() then return result, appLocale, locale end
   end
 
   if framework.mono then
     result = localizeByMono(str, localeDir)
-    if result ~= nil or not setDefaultLocale() then goto L_END_LOCALIZED end
+    if result ~= nil or not setDefaultLocale() then return result, appLocale, locale end
   end
 
   if framework.qt then
     result = localizeByQt(str, localeDir, localesDict)
-    goto L_END_LOCALIZED
+    return result, appLocale, locale
   end
 
-  defaultAction = function(emptyCache)
+  local defaultAction = function(emptyCache)
     result = localizeByLoctable(str, resourceDir, localeFile, locale, localesDict)
     if result ~= nil then return result end
 
@@ -1271,7 +1271,7 @@ function localizedString(str, bundleID, params, force)
     local userLocaleDir = localeDir
     if setDefaultLocale() then
       result = defaultAction(true)
-      if result ~= nil then goto L_END_LOCALIZED end
+      if result ~= nil then return result, appLocale, locale end
     end
 
     resourceDir = userResourceDir
@@ -1279,8 +1279,13 @@ function localizedString(str, bundleID, params, force)
     localeDir = userLocaleDir
   end
   result = defaultAction(framework.user)
+  return result, appLocale, locale
+end
 
-  ::L_END_LOCALIZED::
+function localizedString(str, bundleID, params, force)
+  local result, appLocale, locale = localizedStringImpl(str, bundleID, params, force)
+  if appLocale == nil then return result end
+
   if appLocaleDir[bundleID] == nil then
     appLocaleDir[bundleID] = {}
   end
@@ -1661,7 +1666,8 @@ if hs.fs.attributes(menuItemTmpFile) ~= nil then
     end
   end
 end
-function delocalizedString(str, bundleID, params)
+
+local function delocalizedStringImpl(str, bundleID, params)
   local appLocale, localeFile, localeFramework
   if type(params) == "table" then
     appLocale = params.locale
@@ -1700,14 +1706,14 @@ function delocalizedString(str, bundleID, params)
     end
   end
 
-  local locale, localeDir, mode, setDefaultLocale, defaultAction
+  local locale, localeDir, mode
 
   if bundleID == "org.zotero.zotero" then
     result, locale = delocalizeZoteroMenu(str, appLocale)
-    goto L_END_DELOCALIZED
+    return result, appLocale, locale
   elseif bundleID == "com.mathworks.matlab" then
     result, locale = delocalizeMATLABFigureMenu(str, appLocale)
-    goto L_END_DELOCALIZED
+    return result, appLocale, locale
   end
 
   if not framework.mono then mode = 'lproj' end
@@ -1720,7 +1726,7 @@ function delocalizedString(str, bundleID, params)
     if locale == nil and framework.qt then
       locale, localeDir = getQtMatchedLocale(appLocale, resourceDir)
     end
-    if locale == nil then goto L_END_DELOCALIZED end
+    if locale == nil then return result, appLocale, locale end
   end
   if localeDir == nil then
     if mode == 'lproj' then
@@ -1734,7 +1740,7 @@ function delocalizedString(str, bundleID, params)
     _, localeDir = getQtMatchedLocale(appLocale, resourceDir)
   end
 
-  setDefaultLocale = function()
+  local setDefaultLocale = function()
     resourceDir = hs.application.pathForBundleID(bundleID) .. "/Contents/Resources"
     if hs.fs.attributes(resourceDir) == nil then return false end
     mode = 'lproj'
@@ -1747,7 +1753,7 @@ function delocalizedString(str, bundleID, params)
   if framework.chromium then
     result = delocalizeByChromium(str, localeDir, bundleID)
     if result ~= nil or not setDefaultLocale() then
-      goto L_END_DELOCALIZED
+      return result, appLocale, locale
     end
   end
 
@@ -1759,16 +1765,16 @@ function delocalizedString(str, bundleID, params)
       end
     end
     if result ~= nil or not setDefaultLocale() then
-      goto L_END_DELOCALIZED
+      return result, appLocale, locale
     end
   end
 
   if framework.qt then
     result = delocalizeByQt(str, localeDir)
-    goto L_END_DELOCALIZED
+    return result, appLocale, locale
   end
 
-  defaultAction = function(emptyCache)
+  local defaultAction = function(emptyCache)
     result = delocalizeByLoctable(str, resourceDir, localeFile, locale)
     if result ~= nil then return result end
 
@@ -1796,7 +1802,7 @@ function delocalizedString(str, bundleID, params)
     local userLocaleDir = localeDir
     if setDefaultLocale() then
       result = defaultAction(true)
-      if result ~= nil then goto L_END_DELOCALIZED end
+      if result ~= nil then return result, appLocale, locale end
     end
 
     resourceDir = userResourceDir
@@ -1804,8 +1810,13 @@ function delocalizedString(str, bundleID, params)
     localeDir = userLocaleDir
   end
   result = defaultAction(framework.user)
+  return result, appLocale, locale
+end
 
-  ::L_END_DELOCALIZED::
+function delocalizedString(str, bundleID, params)
+  local result, appLocale, locale = delocalizedStringImpl(str, bundleID, params)
+  if appLocale == nil then return result end
+
   if appLocaleDir[bundleID] == nil then
     appLocaleDir[bundleID] = {}
   end
