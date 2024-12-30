@@ -850,7 +850,7 @@ local function localizeByStrings(str, localeDir, localeFile, localesDict, locale
     if result ~= nil then return result end
   end
 
-  result = searchFunc(str, stringsFiles)
+  local result = searchFunc(str, stringsFiles)
   if result ~= nil then return result end
 
   result = invSearchFunc(str, enStringsFiles)
