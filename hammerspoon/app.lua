@@ -2887,6 +2887,24 @@ appHotKeyCallbacks = {
     }
   },
 
+  ["com.nektony.App-Cleaner-SIII"] =
+  {
+    ["revealInFinder"] = {
+      message = localizedMessage("Reveal in Finder"),
+      condition = checkMenuItem({ "File", "Reveal in Finder" }),
+      fn = receiveMenuItem
+    }
+  },
+
+  ["com.nektony.App-Cleaner-SIIICn"] =
+  {
+    ["revealInFinder"] = {
+      message = localizedMessage("RevealInFinder"),
+      condition = checkMenuItem({ "File", "RevealInFinder" }),
+      fn = receiveMenuItem
+    }
+  },
+
   ["org.wireshark.Wireshark"] =
   {
     ["closeWindow"] = {

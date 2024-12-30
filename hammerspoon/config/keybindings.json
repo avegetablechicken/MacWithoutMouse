@@ -1094,6 +1094,18 @@
         "key": "K"
       }
     },
+    "com.nektony.App-Cleaner-SIII": {
+      "revealInFinder": {
+        "mods": ["shift", "option", "command"],
+        "key": "F"
+      }
+    },
+    "com.nektony.App-Cleaner-SIIICn": {
+      "revealInFinder": {
+        "mods": ["shift", "option", "command"],
+        "key": "F"
+      }
+    },
     "com.objective-see.lulu.app": {
       "allowConnection": {
         "mods": "option",
