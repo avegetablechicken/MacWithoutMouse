@@ -157,6 +157,7 @@ function getMenuItems(appObject)
   while tryTimes <= maxTryTime / tryInterval do
     menuItems = appObject:getMenuItems()
     if menuItems ~= nil then return menuItems end
+    if appObject:bundleID():find("at.obdev.littlesnitch") ~= nil then return end
     hs.timer.usleep(tryInterval * 1000000)
     appObject = findApplication(appObject:bundleID())
     if appObject == nil then break end
