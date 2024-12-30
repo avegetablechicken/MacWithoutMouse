@@ -4773,16 +4773,39 @@ local function altMenuBarItem(appObject, menuItems)
   end
   if menuBarItemTitles == nil or #menuBarItemTitles == 0 then return end
 
-  local clickMenuCallback = function(title)
-    local index = menuBarItemActualIndices[title]
-    if index then
-      local appUIObj = hs.axuielement.applicationElement(appObject)
-      local menubarItem = getAXChildren(appUIObj, "AXMenuBar", 1, "AXMenuBarItem", index)
-      if menubarItem then
-        menubarItem:performAction("AXPress")
+  local clickMenuCallback
+  if useWindowMenuBar then
+    clickMenuCallback = function(title)
+      local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
+      local menuObj = winUIObj:childrenWithRole("AXMenuBar")[1]:childrenWithRole("AXMenu")
+      if #menuObj == 0 then
+        menuObj = winUIObj:childrenWithRole("AXMenuBar")[1]:childrenWithRole("AXMenuBar")
       end
-    else
-      appObject:selectMenuItem({ title })
+      local targetMenuObj = hs.fnutils.find(menuObj, function(item)
+        return item:attributeValue("AXTitle"):gsub("[%c%s]+$", ""):gsub("^[%c%s]+", "") == title
+      end)
+      local actionNames = targetMenuObj:actionNames()
+      if actionNames ~= nil and hs.fnutils.contains(actionNames, "AXPick") then
+        targetMenuObj:performAction("AXPick")
+      elseif actionNames ~= nil and hs.fnutils.contains(actionNames, "AXPress") then
+        targetMenuObj:performAction("AXPress")
+      else
+        local position = { targetMenuObj.AXPosition.x + 5, targetMenuObj.AXPosition.y + 5 }
+        leftClick(position, appObject:name())
+      end
+    end
+  else
+    clickMenuCallback = function(title)
+      local index = menuBarItemActualIndices[title]
+      if index then
+        local appUIObj = hs.axuielement.applicationElement(appObject)
+        local menubarItem = getAXChildren(appUIObj, "AXMenuBar", 1, "AXMenuBarItem", index)
+        if menubarItem then
+          menubarItem:performAction("AXPress")
+        end
+      else
+        appObject:selectMenuItem({ title })
+      end
     end
   end
 
@@ -4835,30 +4858,7 @@ local function altMenuBarItem(appObject, menuItems)
     for i=2,#menuBarItemTitles do
       local spec = invMap[menuBarItemTitles[i]]
       if spec ~= nil then
-        local fn
-        if useWindowMenuBar then
-          fn = function()
-            local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
-            local menuObj = winUIObj:childrenWithRole("AXMenuBar")[1]:childrenWithRole("AXMenu")
-            if #menuObj == 0 then
-              menuObj = winUIObj:childrenWithRole("AXMenuBar")[1]:childrenWithRole("AXMenuBar")
-            end
-            local targetMenuObj = hs.fnutils.find(menuObj, function(item)
-              return item:attributeValue("AXTitle"):gsub("[%c%s]+$", ""):gsub("^[%c%s]+", "") == menuBarItemTitles[i]
-            end)
-            local actionNames = targetMenuObj:actionNames()
-            if actionNames ~= nil and hs.fnutils.contains(actionNames, "AXPick") then
-              targetMenuObj:performAction("AXPick")
-            elseif actionNames ~= nil and hs.fnutils.contains(actionNames, "AXPress") then
-              targetMenuObj:performAction("AXPress")
-            else
-              local position = { targetMenuObj.AXPosition.x + 5, targetMenuObj.AXPosition.y + 5 }
-              leftClick(position, appObject:name())
-            end
-          end
-        else
-          fn = hs.fnutils.partial(clickMenuCallback, menuBarItemTitles[i])
-        end
+        local fn = hs.fnutils.partial(clickMenuCallback, menuBarItemTitles[i])
         local hotkeyObject = bindAltMenu(appObject, "⌥", spec[1], spec[2], fn)
         table.insert(AltMenuBarItemHotkeys, hotkeyObject)
       end
@@ -4866,17 +4866,31 @@ local function altMenuBarItem(appObject, menuItems)
   end
 
   -- by index
-  if enableIndex == true and not useWindowMenuBar then
-    local itemTitles = hs.fnutils.copy(menuBarItemTitles)
-
-    local hotkeyObject = bindAltMenu(appObject, "⌥", "`", itemTitles[1] .. " Menu",
-        function() appObject:selectMenuItem({itemTitles[1]}) end)
+  if enableIndex == true then
+    local maxMenuBarItemHotkey = #menuBarItemTitles > 11 and 10 or (#menuBarItemTitles - 1)
+    local hotkeyObject = bindAltMenu(appObject, "⌥", "`", menuBarItemTitles[1],
+      function() appObject:selectMenuItem({ menuBarItemTitles[1] }) end)
     hotkeyObject.subkind = 0
     table.insert(AltMenuBarItemHotkeys, hotkeyObject)
-    local maxMenuBarItemHotkey = #itemTitles > 11 and 10 or (#itemTitles - 1)
+
+    local itemTitles = {}
+    for i=2,#menuBarItemTitles do
+      local title, letter = menuBarItemTitles[i]:match("(.-)%s*%((.-)%)")
+      if letter then
+        table.insert(itemTitles, title)
+      else
+        letter = menuBarItemTitles[i]:match("[^%s]-&(%a)")
+        if letter ~= nil then
+          title = menuBarItemTitles[i]:gsub('[^%s]-&(%a)', '%1')
+          table.insert(itemTitles, title)
+        else
+          table.insert(itemTitles, menuBarItemTitles[i])
+        end
+      end
+    end
     for i=1,maxMenuBarItemHotkey do
-      hotkeyObject = bindAltMenu(appObject, "⌥", tostring(i % 10), itemTitles[i+1] .. " Menu",
-          hs.fnutils.partial(clickMenuCallback, itemTitles[i+1]))
+      local fn = hs.fnutils.partial(clickMenuCallback, menuBarItemTitles[i + 1])
+      hotkeyObject = bindAltMenu(appObject, "⌥", tostring(i % 10), itemTitles[i], fn)
       table.insert(AltMenuBarItemHotkeys, hotkeyObject)
     end
   end
