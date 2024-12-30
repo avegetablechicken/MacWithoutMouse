@@ -4731,23 +4731,21 @@ local function altMenuBarItem(appObject, menuItems)
   if enableIndex == false and enableLetter == false then return end
 
   local menuBarItemTitles
-  if appObject:bundleID() == "com.mathworks.matlab" and appObject:focusedWindow() ~= nil then
+  local useWindowMenuBar
+  if appObject:focusedWindow() ~= nil then
     local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
     if #winUIObj:childrenWithRole("AXMenuBar") > 0 then
       local menuObj = winUIObj:childrenWithRole("AXMenuBar")[1]:childrenWithRole("AXMenu")
-      menuBarItemTitles = hs.fnutils.map(menuObj, function(item)
-        return item:attributeValue("AXTitle"):gsub("[%c%s]+$", ""):gsub("^[%c%s]+", "")
-      end)
-      table.insert(menuBarItemTitles, 1, appObject:name())
-    end
-  elseif appObject:bundleID() == "org.qt-project.qqem" and appObject:focusedWindow() ~= nil then
-    local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
-    if #winUIObj:childrenWithRole("AXMenuBar") > 0 then
-      local menuObj = winUIObj:childrenWithRole("AXMenuBar")[1]:childrenWithRole("AXMenuBar")
-      menuBarItemTitles = hs.fnutils.map(menuObj, function(item)
-        return item:attributeValue("AXTitle")
-      end)
-      table.insert(menuBarItemTitles, 1, appObject:name())
+      if #menuObj == 0 then
+        menuObj = winUIObj:childrenWithRole("AXMenuBar")[1]:childrenWithRole("AXMenuBar")
+      end
+      if #menuObj > 0 then
+        useWindowMenuBar = true
+        menuBarItemTitles = hs.fnutils.map(menuObj, function(item)
+          return item:attributeValue("AXTitle"):gsub("[%c%s]+$", ""):gsub("^[%c%s]+", "")
+        end)
+        table.insert(menuBarItemTitles, 1, appObject:name())
+      end
     end
   end
   local menuBarItemActualIndices = {}
@@ -4838,24 +4836,25 @@ local function altMenuBarItem(appObject, menuItems)
       local spec = invMap[menuBarItemTitles[i]]
       if spec ~= nil then
         local fn
-        if appObject:bundleID() == "com.mathworks.matlab" and #menuBarItemTitles > 3 then
+        if useWindowMenuBar then
           fn = function()
             local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
             local menuObj = winUIObj:childrenWithRole("AXMenuBar")[1]:childrenWithRole("AXMenu")
+            if #menuObj == 0 then
+              menuObj = winUIObj:childrenWithRole("AXMenuBar")[1]:childrenWithRole("AXMenuBar")
+            end
             local targetMenuObj = hs.fnutils.find(menuObj, function(item)
               return item:attributeValue("AXTitle"):gsub("[%c%s]+$", ""):gsub("^[%c%s]+", "") == menuBarItemTitles[i]
             end)
-            targetMenuObj:performAction("AXPick")
-          end
-        elseif appObject:bundleID() == "org.qt-project.qqem" then
-          fn = function()
-            local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
-            local menuObj = winUIObj:childrenWithRole("AXMenuBar")[1]:childrenWithRole("AXMenuBar")
-            local targetMenuObj = hs.fnutils.find(menuObj, function(item)
-              return item:attributeValue("AXTitle"):gsub('[^%s]-&(%a)', '%1') == spec[2]
-            end)
-            local position = { targetMenuObj.AXPosition.x + 10, targetMenuObj.AXPosition.y + 10 }
-            leftClick(position, appObject:name())
+            local actionNames = targetMenuObj:actionNames()
+            if actionNames ~= nil and hs.fnutils.contains(actionNames, "AXPick") then
+              targetMenuObj:performAction("AXPick")
+            elseif actionNames ~= nil and hs.fnutils.contains(actionNames, "AXPress") then
+              targetMenuObj:performAction("AXPress")
+            else
+              local position = { targetMenuObj.AXPosition.x + 5, targetMenuObj.AXPosition.y + 5 }
+              leftClick(position, appObject:name())
+            end
           end
         else
           fn = hs.fnutils.partial(clickMenuCallback, menuBarItemTitles[i])
@@ -4867,7 +4866,7 @@ local function altMenuBarItem(appObject, menuItems)
   end
 
   -- by index
-  if enableIndex == true then
+  if enableIndex == true and not useWindowMenuBar then
     local itemTitles = hs.fnutils.copy(menuBarItemTitles)
 
     local hotkeyObject = bindAltMenu(appObject, "⌥", "`", itemTitles[1] .. " Menu",
