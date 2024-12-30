@@ -4736,7 +4736,7 @@ local function altMenuBarItem(appObject, menuItems)
     if #winUIObj:childrenWithRole("AXMenuBar") > 0 then
       local menuObj = winUIObj:childrenWithRole("AXMenuBar")[1]:childrenWithRole("AXMenu")
       menuBarItemTitles = hs.fnutils.map(menuObj, function(item)
-        return item:attributeValue("AXTitle"):match("(.-)%s")
+        return item:attributeValue("AXTitle"):gsub("[%c%s]+$", ""):gsub("^[%c%s]+", "")
       end)
       table.insert(menuBarItemTitles, 1, appObject:name())
     end
@@ -4843,7 +4843,7 @@ local function altMenuBarItem(appObject, menuItems)
             local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
             local menuObj = winUIObj:childrenWithRole("AXMenuBar")[1]:childrenWithRole("AXMenu")
             local targetMenuObj = hs.fnutils.find(menuObj, function(item)
-              return item:attributeValue("AXTitle"):match("(.-)%s") == spec[2]
+              return item:attributeValue("AXTitle"):gsub("[%c%s]+$", ""):gsub("^[%c%s]+", "") == menuBarItemTitles[i]
             end)
             targetMenuObj:performAction("AXPick")
           end
