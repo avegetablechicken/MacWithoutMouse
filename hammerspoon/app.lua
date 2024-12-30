@@ -4738,7 +4738,16 @@ local function altMenuBarItem(appObject, menuItems)
       menuBarItemTitles = hs.fnutils.map(menuObj, function(item)
         return item:attributeValue("AXTitle"):match("(.-)%s")
       end)
-      table.insert(menuBarItemTitles, 1, "MATLAB")
+      table.insert(menuBarItemTitles, 1, appObject:name())
+    end
+  elseif appObject:bundleID() == "org.qt-project.qqem" and appObject:focusedWindow() ~= nil then
+    local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
+    if #winUIObj:childrenWithRole("AXMenuBar") > 0 then
+      local menuObj = winUIObj:childrenWithRole("AXMenuBar")[1]:childrenWithRole("AXMenuBar")
+      menuBarItemTitles = hs.fnutils.map(menuObj, function(item)
+        return item:attributeValue("AXTitle")
+      end)
+      table.insert(menuBarItemTitles, 1, appObject:name())
     end
   end
   local menuBarItemActualIndices = {}
@@ -4788,7 +4797,13 @@ local function altMenuBarItem(appObject, menuItems)
       if letter then
         alreadySetHotkeys[letter] = {menuBarItemTitles[i], title}
       else
-        table.insert(itemTitles, menuBarItemTitles[i])
+        letter = menuBarItemTitles[i]:match("[^%s]-&(%a)")
+        if letter ~= nil then
+          title = menuBarItemTitles[i]:gsub('[^%s]-&(%a)', '%1')
+          alreadySetHotkeys[letter] = { menuBarItemTitles[i], title }
+        else
+          table.insert(itemTitles, menuBarItemTitles[i])
+        end
       end
     end
 
@@ -4831,6 +4846,16 @@ local function altMenuBarItem(appObject, menuItems)
               return item:attributeValue("AXTitle"):match("(.-)%s") == spec[2]
             end)
             targetMenuObj:performAction("AXPick")
+          end
+        elseif appObject:bundleID() == "org.qt-project.qqem" then
+          fn = function()
+            local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
+            local menuObj = winUIObj:childrenWithRole("AXMenuBar")[1]:childrenWithRole("AXMenuBar")
+            local targetMenuObj = hs.fnutils.find(menuObj, function(item)
+              return item:attributeValue("AXTitle"):gsub('[^%s]-&(%a)', '%1') == spec[2]
+            end)
+            local position = { targetMenuObj.AXPosition.x + 10, targetMenuObj.AXPosition.y + 10 }
+            leftClick(position, appObject:name())
           end
         else
           fn = hs.fnutils.partial(clickMenuCallback, menuBarItemTitles[i])
