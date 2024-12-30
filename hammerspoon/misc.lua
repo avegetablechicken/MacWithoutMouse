@@ -327,8 +327,9 @@ local function getSubMenuHotkeys(t, menuItem, titleAsEntry, titlePrefix, bundleI
       if subItem.AXMenuItemCmdChar == 'E' and subItem.AXMenuItemCmdGlyph == ""
           and #subItem.AXMenuItemCmdModifiers == 0 and subItem.AXMenuItemMarkChar == ""
           and subItem.AXChildren == nil then
-        if (menuItem.AXTitle == "Edit"
-            or localizationMap.common[menuItem.AXTitle] == 'Edit')
+        if i == #menuItem.AXChildren[1]
+            and (menuItem.AXTitle == "Edit"
+            or localizationMap.common[menuItem.AXTitle] == 'Edit')  -- hack for performance
             and (subItem.AXTitle == "Emoji & Symbols"
             or delocalizedMenuItem(subItem.AXTitle, bundleID) == "Emoji & Symbols") then
           idx = "🌐︎E"
