@@ -731,16 +731,16 @@ end
 
 local function filterPreferentialStringsFiles(stringsFiles)
   local newStringsFiles, preferentialStringsFiles = {}, {}
-  for _, file in ipairs(stringsFiles) do
-    local matched = false
-    for _, p in ipairs(preferentialLocaleFilePatterns) do
-      if string.match(file, '^' .. p .. '$') then
+  for _, p in ipairs(preferentialLocaleFilePatterns) do
+    for _, file in ipairs(stringsFiles) do
+      if not hs.fnutils.contains(preferentialStringsFiles, file)
+          and string.match(file, '^' .. p .. '$') then
         table.insert(preferentialStringsFiles, file)
-        matched = true
-        break
       end
     end
-    if not matched then
+  end
+  for _, file in ipairs(stringsFiles) do
+    if not hs.fnutils.contains(preferentialStringsFiles, file) then
       table.insert(newStringsFiles, file)
     end
   end
