@@ -5573,6 +5573,8 @@ function App_applicationCallback(appName, eventType, appObject)
     hs.timer.doAfter(3, function()
       FLAGS["NO_RESHOW_KEYBINDING"] = false
     end)
+
+    -- necesary for "registerForOpenSavePanel" for unknown reason
     hs.timer.doAfter(0, function()
       local appLocale = applicationLocales(bundleID)[1]
       local oldAppLocale = appLocales[bundleID] or SYSTEM_LOCALE
@@ -5587,27 +5589,25 @@ function App_applicationCallback(appName, eventType, appObject)
         end
       end
       appLocales[bundleID] = appLocale
+
       registerForOpenSavePanel(appObject)
       local menuItems = getMenuItems(appObject)
       altMenuBarItem(appObject, menuItems)
       registerInAppHotKeys(appObject)
       registerInWinHotKeys(appObject)
-      hs.timer.doAfter(0, function()
-        hs.timer.doAfter(0, function()
-          remapPreviousTab(appObject, menuItems)
-          registerOpenRecent(appObject)
-          registerZoomHotkeys(appObject)
-          registerObserverForMenuBarChange(appObject, menuItems)
-          if HSKeybindings ~= nil and HSKeybindings.isShowing then
-            local validOnly = HSKeybindings.validOnly
-            local showHS = HSKeybindings.showHS
-            local showApp = HSKeybindings.showApp
-            HSKeybindings:reset()
-            HSKeybindings:update(validOnly, showHS, showApp, true)
-          end
-          FLAGS["NO_RESHOW_KEYBINDING"] = false
-        end)
-      end)
+      remapPreviousTab(appObject, menuItems)
+      registerOpenRecent(appObject)
+      registerZoomHotkeys(appObject)
+      registerObserverForMenuBarChange(appObject, menuItems)
+
+      if HSKeybindings ~= nil and HSKeybindings.isShowing then
+        local validOnly = HSKeybindings.validOnly
+        local showHS = HSKeybindings.showHS
+        local showApp = HSKeybindings.showApp
+        HSKeybindings:reset()
+        HSKeybindings:update(validOnly, showHS, showApp, true)
+      end
+      FLAGS["NO_RESHOW_KEYBINDING"] = false
     end)
     if remoteDesktopsMappingModifiers[bundleID] then
       if not remoteDesktopModifierTapper:isEnabled() then
