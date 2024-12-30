@@ -1065,6 +1065,32 @@ local function localizeByChromium(str, localeDir, localesDict, bundleID)
   return nil
 end
 
+local function localizeQt(str, bundleID, appLocale)
+  local appPath = hs.application.pathForBundleID(bundleID)
+  local resourceDir = appPath .. "/../../share/qt/translations"
+  if hs.fs.attributes(resourceDir) == nil then return end
+  local appName = appPath:match("^.*/([^/]+)%.app$")
+  if appName == nil
+      or hs.fs.attributes(resourceDir .. "/" .. appName:lower() .. "_en.qm") == nil then
+    return
+  end
+  local locales = {}
+  local prefix = appName:lower() .. '_'
+  for file in hs.fs.dir(resourceDir) do
+    if file:sub(-3) == ".qm" and file:sub(1, #prefix) == prefix then
+      table.insert(locales, file:sub(#prefix + 1, -4))
+    end
+  end
+  local locale = getMatchedLocale(appLocale, locales)
+  if locale == nil then return nil end
+  if locale == 'en' then return str:gsub('[^%s]-&(%a)', '%1'), locale end
+  local result = localizeByQtImpl(str, resourceDir, prefix .. locale .. '.qm', {})
+  if result ~= nil then
+    result = result:gsub("%(&%a%)", ""):gsub('[^%s]-&(%a)', '%1')
+    return result, locale
+  end
+end
+
 local function localizeChatGPT(str, appLocale)
   local cmd
   for _, dir in ipairs { "/usr/local/bin", "/opt/homebrew/bin", "/opt/local/bin" } do
@@ -1141,6 +1167,10 @@ local function localizedStringImpl(str, bundleID, params, force)
   end
   local appLocalesSupported = hs.application.localizationsForBundleID(bundleID) or {}
   if getMatchedLocale(appLocale, appLocalesSupported) == nil then
+    if bundleID:find("org.qt%-project") ~= nil then
+      local result, locale = localizeQt(str, bundleID, appLocale)
+      return result, appLocale, locale
+    end
     return nil
   end
   local localeDetails = hs.host.locale.details(appLocale)
@@ -1618,6 +1648,35 @@ local function delocalizeByChromium(str, localeDir, bundleID)
   return nil
 end
 
+local function delocalizeQt(str, bundleID, appLocale)
+  local appPath = hs.application.pathForBundleID(bundleID)
+  local resourceDir = appPath .. "/../../share/qt/translations"
+  if hs.fs.attributes(resourceDir) == nil then return end
+  local appName = appPath:match("^.*/([^/]+)%.app$")
+  if appName == nil
+      or hs.fs.attributes(resourceDir .. "/" .. appName:lower() .. "_en.qm") == nil then
+    return
+  end
+  local locales = {}
+  local prefix = appName:lower() .. '_'
+  for file in hs.fs.dir(resourceDir) do
+    if file:sub(-3) == ".qm" and file:sub(1, #prefix) == prefix then
+      table.insert(locales, file:sub(#prefix + 1, -4))
+    end
+  end
+  local locale = getMatchedLocale(appLocale, locales)
+  if locale == nil then return nil end
+  if locale == 'en' then return str, locale end
+  local localeFile = resourceDir .. '/' .. prefix .. locale .. '.qm'
+  local result = delocalizeByQtImpl(str .. '\\(&[A-Z]\\)', localeFile)
+  if result ~= nil then
+    result = result:gsub('[^%s]-&(%a)', '%1')
+    return result, locale
+  end
+  result = delocalizeByQtImpl(str, localeFile)
+  if result ~= nil then return result, locale end
+end
+
 local function delocalizeZoteroMenu(str, appLocale)
   local resourceDir = hs.application.pathForBundleID("org.zotero.zotero") .. "/Contents/Resources"
   local locales, status = hs.execute("unzip -l \"" .. resourceDir .. "/zotero.jar\" 'chrome/locale/*/' | grep -Eo 'chrome/locale/[^/]*' | grep -Eo '[a-zA-Z-]*$' | uniq")
@@ -1683,6 +1742,10 @@ local function delocalizedStringImpl(str, bundleID, params)
   end
   local appLocalesSupported = hs.application.localizationsForBundleID(bundleID) or {}
   if getMatchedLocale(appLocale, appLocalesSupported) == nil then
+    if bundleID:find("org.qt%-project") ~= nil then
+      local result, locale = delocalizeQt(str, bundleID, appLocale)
+      return result, appLocale, locale
+    end
     return nil
   end
   local localeDetails = hs.host.locale.details(appLocale)

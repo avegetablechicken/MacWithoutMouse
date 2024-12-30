@@ -3248,6 +3248,28 @@ appHotKeyCallbacks = {
     }
   },
 
+  ["org.qt-project.Designer"] =
+  {
+    ["openRecent"] = {
+      mods = get(KeybindingConfigs.hotkeys.shared, "openRecent", "mods"),
+      key = get(KeybindingConfigs.hotkeys.shared, "openRecent", "key"),
+      message = localizedMessage("&Recent Forms"),
+      condition = checkMenuItem({ "File", "&Recent Forms" }),
+      fn = showMenuItem
+    }
+  },
+
+  ["org.qt-project.Linguist"] =
+  {
+    ["openRecent"] = {
+      mods = get(KeybindingConfigs.hotkeys.shared, "openRecent", "mods"),
+      key = get(KeybindingConfigs.hotkeys.shared, "openRecent", "key"),
+      message = localizedMessage("Recently Opened &Files"),
+      condition = checkMenuItem({ "File", "Recently Opened &Files" }),
+      fn = showMenuItem
+    }
+  },
+
   ["cn.better365.iShotPro"] =
   {
     ["OCR"] = {
