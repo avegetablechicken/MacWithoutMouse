@@ -5361,7 +5361,7 @@ local function isDefaultRemoteDesktopWindow(window)
   if bundleID == "com.realvnc.vncviewer" then
     local winUIObj = hs.axuielement.windowElement(window)
     return hs.fnutils.find(winUIObj:childrenWithRole("AXButton"),
-      function(child) return child.AXHelp == "Session informatioon" end) ~= nil
+      function(child) return child.AXHelp == "Session information" end) ~= nil
   elseif bundleID == "com.microsoft.rdc.macos" then
     local wFilter = hs.window.filter.new(false):setAppFilter(
         window:application():name(), microsoftRemoteDesktopWindowFilter)
