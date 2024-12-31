@@ -5423,6 +5423,9 @@ local function remoteDesktopWindowFilter(appObject)
   local winObj = appObject:focusedWindow()
   for _, r in ipairs(rules or {}) do
     local valid = false
+    -- some remote desktop like 'VNC Viewer' works at a lower level than Hammerspoon,
+    -- so we have to remap modifiers by app like 'Karabiner' which works at a even lower level
+    -- and restore modifiers in non-remote windows
     if winObj == nil or winObj:role() == "AXSheet" or winObj:role() == "AXPopover" then
       valid = r.type == 'restore'
     elseif r.condition == nil then
