@@ -916,45 +916,33 @@ local function commonLocalizedMessage(message)
   if message == "Hide" or message == "Quit" then
     return function(appObject)
       local appLocale = applicationLocales(appObject:bundleID())[1]
-      local appLocalesSupported = hs.application.localizationsForBundleID(appObject:bundleID()) or {}
-      local locale = getMatchedLocale(appLocale, appLocalesSupported)
-      if locale ~= nil then
-        local result = localizedString(message .. ' App Store', 'com.apple.AppStore',
-                                       { locale = appLocale })
-        if result ~= nil then
-          return result:gsub('App Store', appObject:name())
-        end
+      local result = localizedString(message .. ' App Store', 'com.apple.AppStore',
+                                     { locale = appLocale })
+      if result ~= nil then
+        return result:gsub('App Store', appObject:name())
       end
       return message .. ' ' .. appObject:name()
     end
   elseif message == "Back" then
     return function(appObject)
       local appLocale = applicationLocales(appObject:bundleID())[1]
-      local appLocalesSupported = hs.application.localizationsForBundleID(appObject:bundleID()) or {}
-      local locale = getMatchedLocale(appLocale, appLocalesSupported)
-      if locale ~= nil then
-        local result = localizedString(message, 'com.apple.AppStore',
-                                       { locale = appLocale })
-        if result ~= nil then
-          return result
-        end
+      local result = localizedString(message, 'com.apple.AppStore',
+                                     { locale = appLocale })
+      if result ~= nil then
+        return result
       end
       return message
     end
   else
     return function(appObject)
       local appLocale = applicationLocales(appObject:bundleID())[1]
-      local appLocalesSupported = hs.application.localizationsForBundleID(appObject:bundleID()) or {}
-      local locale = getMatchedLocale(appLocale, appLocalesSupported)
+      local resourceDir = '/System/Library/Frameworks/AppKit.framework/Resources'
+      local locale = getMatchedLocale(appLocale, resourceDir, 'lproj')
       if locale ~= nil then
-        local resourceDir = '/System/Library/Frameworks/AppKit.framework/Resources'
-        locale = getMatchedLocale(locale, resourceDir, 'lproj')
-        if locale ~= nil then
-          for _, stem in ipairs{ 'MenuCommands', 'Menus', 'Common' } do
-            local result = localizeByLoctable(message, resourceDir, stem, locale, {})
-            if result ~= nil then
-              return result:gsub('“%%@”', ''):gsub('%%@', '')
-            end
+        for _, stem in ipairs{ 'MenuCommands', 'Menus', 'Common' } do
+          local result = localizeByLoctable(message, resourceDir, stem, locale, {})
+          if result ~= nil then
+            return result:gsub('“%%@”', ''):gsub('%%@', '')
           end
         end
       end

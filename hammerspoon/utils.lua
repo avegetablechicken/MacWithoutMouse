@@ -1165,14 +1165,6 @@ local function localizedStringImpl(str, bundleID, params, force)
     local locales = applicationLocales(bundleID)
     appLocale = locales[1]
   end
-  local appLocalesSupported = hs.application.localizationsForBundleID(bundleID) or {}
-  if getMatchedLocale(appLocale, appLocalesSupported) == nil then
-    if bundleID:find("org.qt%-project") ~= nil then
-      local result, locale = localizeQt(str, bundleID, appLocale)
-      return result, appLocale, locale
-    end
-    return nil
-  end
   local localeDetails = hs.host.locale.details(appLocale)
   if localeDetails.languageCode == 'en' then
     return str
@@ -1214,6 +1206,9 @@ local function localizedStringImpl(str, bundleID, params, force)
 
   if bundleID == "com.openai.chat" then
     result, locale = localizeChatGPT(str, appLocale)
+    return result, appLocale, locale
+  elseif bundleID:find("org.qt%-project") ~= nil then
+    result, locale = localizeQt(str, bundleID, appLocale)
     return result, appLocale, locale
   end
 
@@ -1740,14 +1735,6 @@ local function delocalizedStringImpl(str, bundleID, params)
     local locales = applicationLocales(bundleID)
     appLocale = locales[1]
   end
-  local appLocalesSupported = hs.application.localizationsForBundleID(bundleID) or {}
-  if getMatchedLocale(appLocale, appLocalesSupported) == nil then
-    if bundleID:find("org.qt%-project") ~= nil then
-      local result, locale = delocalizeQt(str, bundleID, appLocale)
-      return result, appLocale, locale
-    end
-    return nil
-  end
   local localeDetails = hs.host.locale.details(appLocale)
   if localeDetails.languageCode == 'en' then return str end
 
@@ -1776,6 +1763,9 @@ local function delocalizedStringImpl(str, bundleID, params)
     return result, appLocale, locale
   elseif bundleID == "com.mathworks.matlab" then
     result, locale = delocalizeMATLABFigureMenu(str, appLocale)
+    return result, appLocale, locale
+  elseif bundleID:find("org.qt%-project") ~= nil then
+    result, locale = delocalizeQt(str, bundleID, appLocale)
     return result, appLocale, locale
   end
 
