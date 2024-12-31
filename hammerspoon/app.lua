@@ -5693,12 +5693,14 @@ function App_applicationCallback(appName, eventType, appObject)
     end
   elseif eventType == hs.application.watcher.deactivated
       or eventType == hs.application.watcher.terminated then
-    for _, ob in ipairs(observersStopOnDeactivated[bundleID] or {}) do
-      local observer, func = ob[1], ob[2]
-      observer:stop()
-      if func ~= nil then func(bundleID, observer) end
+    for bid, ob in ipairs(observersStopOnDeactivated) do
+      if findApplication(bid) == nil then
+        local observer, func = ob[1], ob[2]
+        observer:stop()
+        if func ~= nil then func(bid, observer) end
+      end
+      observersStopOnDeactivated[bid] = nil
     end
-    observersStopOnDeactivated[bundleID] = nil
     for bid, obs in pairs(observersStopOnQuit) do
       if findApplication(bid) == nil then
         for _, ob in ipairs(obs) do
