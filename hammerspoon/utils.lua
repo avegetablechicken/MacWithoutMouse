@@ -1044,7 +1044,7 @@ local function dirNotExistOrEmpty(dir)
   return true
 end
 
-local function localizeByChromium(str, localeDir, localesDict, bundleID)
+local function localizeByChromium(str, localeDir, bundleID)
   local resourceDir = localeDir .. '/..'
   local locale = localeDir:match("^.*/(.*)%.lproj$")
   for _, enLocale in ipairs{"en", "English", "Base", "en_US", "en_GB"} do
@@ -1077,10 +1077,6 @@ local function localizeByChromium(str, localeDir, localesDict, bundleID)
                 if f ~= nil then
                   local content = f:read("*a")
                   f:close()
-                  if localesDict[fileStem] == nil then
-                    localesDict[fileStem] = {}
-                  end
-                  localesDict[fileStem][str] = content
                   return content
                 end
               end
@@ -1281,7 +1277,7 @@ local function localizedStringImpl(str, bundleID, params, force)
   local localesDict = appLocaleAssetBuffer[bundleID]
 
   if framework.chromium then
-    result = localizeByChromium(str, localeDir, localesDict, bundleID)
+    result = localizeByChromium(str, localeDir, bundleID)
     if result ~= nil or not setDefaultLocale() then return result, appLocale, locale end
   end
 
