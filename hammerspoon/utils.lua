@@ -1001,34 +1001,24 @@ local function localizeByNIB(str, localeDir, localeFile, bundleID)
   end
 end
 
-local function localizeByQtImpl(str, dir, file, localesDict)
-  local fileStem = file:sub(1, -4)
-  if localesDict[fileStem] ~= nil and localesDict[fileStem][str] ~= nil then
-    return localesDict[fileStem][str]
-  end
+local function localizeByQtImpl(str, file)
   local output, status = hs.execute(string.format(
-      "zsh scripts/qm_localize.sh '%s' '%s'", dir .. '/' .. file, str))
-  if status and output ~= "" then
-    if localesDict[fileStem] == nil then localesDict[fileStem] = {} end
-    localesDict[fileStem][str] = output
-    return output
-  end
+      "zsh scripts/qm_localize.sh '%s' '%s'", file, str))
+  if status and output ~= "" then return output end
 end
 
 local function localizeByQt(str, localeDir, localesDict)
   if type(localeDir) == 'table' then
-    for _, filepath in ipairs(localeDir) do
-      local dir, file = filepath:match("^(.*)/(.*)$")
-      local result = localizeByQtImpl(str, dir, file, localesDict)
+    for _, file in ipairs(localeDir) do
+      local result = localizeByQtImpl(str, file)
       if result ~= nil then return result end
     end
   elseif hs.fs.attributes(localeDir, 'mode') == 'file' then
-    local dir, file = localeDir:match("^(.*)/(.*)$")
-    return localizeByQtImpl(str, dir, file, localesDict)
+    return localizeByQtImpl(str, localeDir)
   else
     for file in hs.fs.dir(localeDir) do
       if file:sub(-3) == ".qm" then
-        local result = localizeByQtImpl(str, localeDir, file, localesDict)
+        local result = localizeByQtImpl(str, localeDir .. '/' .. file)
         if result ~= nil then return result end
       end
     end
@@ -1122,7 +1112,7 @@ local function localizeQt(str, bundleID, appLocale)
   local locale = getMatchedLocale(appLocale, locales)
   if locale == nil then return nil end
   if locale == 'en' then return str:gsub('[^%s]-&(%a)', '%1'), locale end
-  local result = localizeByQtImpl(str, resourceDir, prefix .. locale .. '.qm', {})
+  local result = localizeByQtImpl(str, resourceDir .. '/' .. prefix .. locale .. '.qm')
   if result ~= nil then
     result = result:gsub("%(&%a%)", ""):gsub('[^%s]-&(%a)', '%1')
     return result, locale
@@ -1301,7 +1291,7 @@ local function localizedStringImpl(str, bundleID, params, force)
   end
 
   if framework.qt then
-    result = localizeByQt(str, localeDir, localesDict)
+    result = localizeByQt(str, localeDir)
     return result, appLocale, locale
   end
 
