@@ -408,6 +408,39 @@ local function getResourceDir(bundleID, frameworkName)
   return resourceDir, framework
 end
 
+local function getBestMatchedLocale(appLocale, locales, combineExtras)
+  local bestMatch, bestScore = {}, -1
+  for _, locale in ipairs(locales) do
+    if locale.scriptCode == appLocale.scriptCode
+        and locale.countryCode == appLocale.countryCode then
+      bestMatch = locale
+      break
+    end
+    local score = 0
+    if locale.scriptCode == appLocale.scriptCode then
+      score = score + 1
+      if locale.countryCode ~= nil and appLocale.countryCode ~= nil then
+        score = score - 0.5
+        if appLocale.scriptCode == nil then score = -1 end
+      end
+    elseif locale.countryCode == appLocale.countryCode then
+      score = score + 1
+    end
+    if score > bestScore then
+      bestScore = score
+      bestMatch = locale
+    elseif combineExtras and score == bestScore
+        and locale.scriptCode == bestMatch.scriptCode
+        and locale.countryCode == bestMatch.countryCode then
+      if type(bestMatch.extra) == 'string' then
+        bestMatch.extra = { bestMatch.extra }
+      end
+      table.insert(bestMatch.extra, locale.extra)
+    end
+  end
+  return bestMatch
+end
+
 function getMatchedLocale(appLocale, localeSource, mode)
   local localDetails = hs.host.locale.details(appLocale)
   local language = localDetails.languageCode
@@ -426,6 +459,7 @@ function getMatchedLocale(appLocale, localeSource, mode)
       table.insert(localeSource, file)
     end
   end
+  local matchedLocales = {}
   for _, loc in ipairs(localeSource) do
     if (mode == 'lproj' and loc:sub(-6) == ".lproj")
         or mode == nil then
@@ -449,16 +483,16 @@ function getMatchedLocale(appLocale, localeSource, mode)
         end
       end
       if thisLanguage == language
-          and (script == nil or thisScript == nil or thisScript == script)
-          and (country == nil or thisCountry == nil or thisCountry == country) then
-        return locale
-      end
-      if thisLanguage == language
-          and (script ~= nil and thisScript == script) then
-        return locale
+          and (script == nil or thisScript == nil or thisScript == script) then
+        table.insert(matchedLocales, {
+          scriptCode = thisScript, countryCode = thisCountry, extra = locale
+        })
       end
     end
   end
+
+  local bestMatch = getBestMatchedLocale(localDetails, matchedLocales)
+  return bestMatch.extra
 end
 
 function getQtMatchedLocale(appLocale, resourceDir)
@@ -472,50 +506,54 @@ function getQtMatchedLocale(appLocale, resourceDir)
       script = localeItems[2]
     end
   end
-  language = language:lower()
-  if script ~= nil then script = script:lower() end
-  if country ~= nil then country = country:lower() end
   local dirs = { resourceDir }
   for file in hs.fs.dir(resourceDir) do
     if hs.fs.attributes(resourceDir .. '/' .. file, 'mode') == 'directory' then
       table.insert(dirs, resourceDir .. '/' .. file)
     end
   end
+  local matchedLocales = {}
   for _, dir in ipairs(dirs) do
-    local languageMatches = {}
     for file in hs.fs.dir(dir) do
       if file:sub(-3) == '.qm' then
         local lowerFile = file:sub(1, -4):lower()
         local fileSplits = hs.fnutils.split(lowerFile:gsub('_', '-'), '-')
-        if hs.fnutils.contains(fileSplits, language) then
-          table.insert(languageMatches, { fileSplits, dir .. '/' .. file, language })
-        end
-      end
-    end
-    if #languageMatches == 1 then
-      return languageMatches[1][3], languageMatches[1][2]
-    elseif #languageMatches > 1 then
-      local countryMatches = {}
-      for _, item in ipairs(languageMatches) do
-        if country ~= nil and hs.fnutils.contains(item[1], country) then
-          table.insert(item, country)
-          table.insert(countryMatches, item)
-        end
-      end
-      if #countryMatches == 1 then
-        return countryMatches[1][3] .. '-' .. countryMatches[1][4]:upper(), languageMatches[1][2]
-      elseif #countryMatches > 1 then
-        for _, item in ipairs(countryMatches) do
-          if script ~= nil and hs.fnutils.contains(item[1], script) then
-            local capitalScript = script:sub(1, 1):upper() .. script:sub(2)
-            return item[3] .. '-' .. capitalScript .. '-' .. item[4]:upper(), item[2]
+        for i = #fileSplits, #fileSplits - 2, -1 do
+          if fileSplits[i] == language then
+            local thisCountry, thisScript
+            if i + 1 <= #fileSplits then
+              if fileSplits[i + 1]:upper() == fileSplits[i + 1] then
+                thisCountry = fileSplits[i + 1]
+                if i == #fileSplits - 2 then
+                  thisScript = fileSplits[i + 2]
+                end
+              else
+                thisScript = fileSplits[i + 1]
+              end
+            end
+            if script == nil or thisScript == nil or thisScript == script then
+              if language == 'zh' or language == 'yue' then
+                if thisCountry == 'HK' or thisCountry == 'MO' or thisCountry == 'TW' then
+                  if thisScript == nil then thisScript = 'Hant' end
+                elseif thisCountry == 'CN' or thisCountry == 'SG' then
+                  if thisScript == nil then thisScript = 'Hans' end
+                end
+              end
+              table.insert(matchedLocales, {
+                scriptCode = thisScript, countryCode = thisCountry, extra = dir .. '/' .. file,
+              })
+            end
           end
         end
-        local allFiles = hs.fnutils.imap(countryMatches, function(item) return item[2] end)
-        return countryMatches[1][3] .. '-' .. countryMatches[1][4]:upper(), allFiles
       end
     end
   end
+
+  local bestMatch = getBestMatchedLocale(localDetails, matchedLocales, true)
+  local matchedLocale = language
+  if bestMatch.script ~= nil then matchedLocale = matchedLocale .. '_' .. bestMatch.script end
+  if bestMatch.country ~= nil then matchedLocale = matchedLocale .. '_' .. bestMatch.country end
+  return matchedLocale, bestMatch.extra
 end
 
 local baseLocales = {
