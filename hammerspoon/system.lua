@@ -1290,7 +1290,7 @@ function registerControlCenterHotKeys(panel)
   controlCenterSubPanelWatcher = hs.window.filter.new(findApplication("com.apple.controlcenter"):name())
     :subscribe(hs.window.filter.windowDestroyed, function()
       if selectNetworkWatcher ~= nil then
-        selectNetworkWatcher:stop()
+        StopExecContinuously(selectNetworkWatcher)
         selectNetworkWatcher = nil
       end
       if selectNetworkHotkeys ~= nil then
@@ -1708,7 +1708,7 @@ function registerControlCenterHotKeys(panel)
       end
     end
     selectNetworkActionFunc()
-    selectNetworkWatcher = hs.timer.new(1, selectNetworkActionFunc):start()
+    selectNetworkWatcher = ExecContinuously(selectNetworkActionFunc)
   elseif panel == "AirDrop" then
     local ok, toggleNames
     if osVersion < OS.Ventura then

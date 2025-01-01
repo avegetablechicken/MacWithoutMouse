@@ -266,10 +266,10 @@ end
 -- watch space changes
 
 -- detect number of user spaces
-SpaceNumberWatcher = hs.timer.new(1, function()
+ExecContinuously(function()
   local user_spaces = getUserSpaces()
   local nspaces = #user_spaces
   if nspaces ~= #moveToSpaceHotkeys then
     registerMoveToSpaceHotkeys()
   end
-end):start()
+end)

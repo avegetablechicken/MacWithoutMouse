@@ -4248,6 +4248,14 @@ local function execOnActivated(bundleID, action)
   table.insert(processesOnActivated[bundleID], action)
 end
 
+local processesOnDeactivated = {}
+local function execOnDeactivated(bundleID, action)
+  if processesOnDeactivated[bundleID] == nil then
+    processesOnDeactivated[bundleID] = {}
+  end
+  table.insert(processesOnDeactivated[bundleID], action)
+end
+
 local observersStopOnDeactivated = {}
 local function stopOnDeactivated(bundleID, observer, action)
   if observersStopOnDeactivated[bundleID] == nil then
@@ -4860,7 +4868,7 @@ altMenuBarItem(frontApp, frontAppMenuItems)
 
 -- some apps may change their menu bar items irregularly
 local appswatchMenuBarItems = get(applicationConfigs.menuBarItemsMayChange, 'basic') or {}
-local appsMenuBarItemsWatchers = {}
+local appsMenuBarItemTitlesString = {}
 
 local getMenuBarItemTitlesString = function(appObject, menuItems)
   if menuItems == nil then
@@ -4876,29 +4884,23 @@ end
 
 local function watchMenuBarItems(appObject, menuItems)
   local bundleID = appObject:bundleID()
-  local menuBarItemTitlesString = getMenuBarItemTitlesString(appObject, menuItems)
-  if appsMenuBarItemsWatchers[bundleID] == nil then
-    local watcher = hs.timer.new(1, function()
-      local appObject = findApplication(bundleID)
-      local menuItems = getMenuItems(appObject)
-      local newMenuBarItemTitlesString = getMenuBarItemTitlesString(appObject, menuItems)
-      if newMenuBarItemTitlesString ~= appsMenuBarItemsWatchers[bundleID][2] then
-        appsMenuBarItemsWatchers[bundleID][2] = newMenuBarItemTitlesString
-        altMenuBarItem(appObject, menuItems)
-        remapPreviousTab(appObject, menuItems)
-        registerOpenRecent(appObject)
-        registerZoomHotkeys(appObject)
-      end
-    end)
-    appsMenuBarItemsWatchers[bundleID] = { watcher, menuBarItemTitlesString }
-  else
-    appsMenuBarItemsWatchers[bundleID][2] = menuBarItemTitlesString
-  end
-  appsMenuBarItemsWatchers[bundleID][1]:start()
-  stopOnDeactivated(bundleID, appsMenuBarItemsWatchers[bundleID][1],
-      function() appsMenuBarItemsWatchers[bundleID][2] = nil end)
-  stopOnQuit(bundleID, appsMenuBarItemsWatchers[appObject:bundleID()][1],
-      function() appsMenuBarItemsWatchers[bundleID] = nil end)
+  appsMenuBarItemTitlesString[bundleID] = getMenuBarItemTitlesString(appObject, menuItems)
+  local watcher = ExecContinuously(function()
+    local appObject = findApplication(bundleID)
+    local menuItems = getMenuItems(appObject)
+    local menuBarItemTitlesString = getMenuBarItemTitlesString(appObject, menuItems)
+    if menuBarItemTitlesString ~= appsMenuBarItemTitlesString[bundleID] then
+      appsMenuBarItemTitlesString[bundleID] = menuBarItemTitlesString
+      altMenuBarItem(appObject, menuItems)
+      remapPreviousTab(appObject, menuItems)
+      registerOpenRecent(appObject)
+      registerZoomHotkeys(appObject)
+    end
+  end)
+  execOnDeactivated(bundleID, function()
+    StopExecContinuously(watcher)
+    appsMenuBarItemTitlesString[bundleID] = nil
+  end)
 end
 
 -- some apps may change their menu bar items based on the focused window
@@ -5657,6 +5659,9 @@ function App_applicationCallback(appName, eventType, appObject)
     if bundleID then
       unregisterInAppHotKeys(bundleID)
       unregisterInWinHotKeys(bundleID)
+      for _, proc in ipairs(processesOnDeactivated[bundleID] or {}) do
+        proc(appObject)
+      end
       for _, ob in ipairs(observersStopOnDeactivated[bundleID] or {}) do
         local observer, func = ob[1], ob[2]
         observer:stop()
@@ -5666,6 +5671,13 @@ function App_applicationCallback(appName, eventType, appObject)
     end
   elseif eventType == hs.application.watcher.deactivated
       or eventType == hs.application.watcher.terminated then
+    for bid, processes in pairs(processesOnDeactivated) do
+      if findApplication(bid) == nil then
+        for _, proc in ipairs(processes) do
+          proc(appObject)
+        end
+      end
+    end
     for bid, ob in ipairs(observersStopOnDeactivated) do
       if findApplication(bid) == nil then
         local observer, func = ob[1], ob[2]

@@ -233,6 +233,23 @@ function()
   end
 end).kind = HK.PRIVELLEGE
 
+processesExecEvery = {}
+function ExecContinuously(action)
+  local timeKey = tostring(hs.timer.absoluteTime())
+  processesExecEvery[timeKey] = action
+  return timeKey
+end
+
+function StopExecContinuously(timeKey)
+  processesExecEvery[timeKey] = nil
+end
+
+ContinuousWatcher = hs.timer.new(1, function()
+  for _, proc in pairs(processesExecEvery) do
+    proc()
+  end
+end, true)
+
 local function reloadConfig(files)
   if hs.fnutils.some(files, function(file) return file:sub(-4) == ".lua" end) then
     hs.reload()
@@ -275,7 +292,7 @@ function ExecOnSilentQuit(bundleID, action)
   hasLaunched[bundleID] = findApplication(bundleID) ~= nil
 end
 
-SilentAppWatcher = hs.timer.new(1, function()
+ExecContinuously(function()
   local hasLaunchedTmp = {}
   for bid, processes in pairs(processesOnSilentLaunch) do
     local appObject = findApplication(bid)
@@ -298,7 +315,7 @@ SilentAppWatcher = hs.timer.new(1, function()
   end
 
   hasLaunched = hasLaunchedTmp
-end, true)
+end)
 
 local function applicationInstalledCallback(files, flagTables)
   files = hs.fnutils.filter(files, function(file) return file:sub(-4) == ".app" end)
@@ -323,9 +340,9 @@ local function networkChangedCallback(storeObj, changedKeys)
   System_networkChangedCallback(storeObj, changedKeys)
 end
 
+ContinuousWatcher:start()
 ConfigWatcher = hs.pathwatcher.new(os.getenv("HOME") .. "/.hammerspoon/", reloadConfig):start()
 AppWatcher = hs.application.watcher.new(applicationCallback):start()
-SilentAppWatcher:start()
 MonitorWatcher = hs.screen.watcher.new(monitorChangedCallback):start()
 UsbWatcher = hs.usb.watcher.new(usbChangedCallback):start()
 AppInstalledWatchers = {}
