@@ -5678,13 +5678,15 @@ function App_applicationCallback(appName, eventType, appObject)
         end
       end
     end
-    for bid, ob in ipairs(observersStopOnDeactivated) do
+    for bid, obs in pairs(observersStopOnDeactivated) do
       if findApplication(bid) == nil then
-        local observer, func = ob[1], ob[2]
-        observer:stop()
-        if func ~= nil then func(bid, observer) end
+        for _, ob in ipairs(obs) do
+          local observer, func = ob[1], ob[2]
+          observer:stop()
+          if func ~= nil then func(bid, observer) end
+        end
+        observersStopOnDeactivated[bid] = nil
       end
-      observersStopOnDeactivated[bid] = nil
     end
     for bid, obs in pairs(observersStopOnQuit) do
       if findApplication(bid) == nil then
