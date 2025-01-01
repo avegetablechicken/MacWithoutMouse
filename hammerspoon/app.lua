@@ -4234,16 +4234,20 @@ local function execOnLaunch(bundleID, action, onlyFirstTime)
   end
 
   if onlyFirstTime then
-    local idx
     if hs.fnutils.contains(appsLaunchSilently, bundleID) then
-      idx = #processesOnLaunchMonitored[bundleID] + 1
+      local idx = #processesOnLaunchMonitored[bundleID] + 1
+      local oldAction = action
+      action = function(appObject)
+        oldAction(appObject)
+        table.remove(processesOnLaunchMonitored[bundleID], idx)
+      end
     else
-      idx = #processesOnLaunch[bundleID] + 1
-    end
-    local oldAction = action
-    action = function(appObject)
-      oldAction(appObject)
-      table.remove(processesOnLaunch[bundleID], idx)
+      local idx = #processesOnLaunch[bundleID] + 1
+      local oldAction = action
+      action = function(appObject)
+        oldAction(appObject)
+        table.remove(processesOnLaunch[bundleID], idx)
+      end
     end
   end
 
