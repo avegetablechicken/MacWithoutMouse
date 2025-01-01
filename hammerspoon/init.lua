@@ -244,6 +244,62 @@ local function applicationCallback(appName, eventType, appObject)
   System_applicationCallback(appName, eventType, appObject)
 end
 
+-- for apps that launch silently
+local processesOnSilentLaunch = {}
+local hasLaunched = {}
+function ExecOnSilentLaunch(bundleID, action, onlyFirstTime)
+  if processesOnSilentLaunch[bundleID] == nil then
+    processesOnSilentLaunch[bundleID] = {}
+  end
+
+  if onlyFirstTime then
+    local idx = #processesOnSilentLaunch[bundleID] + 1
+    local oldAction = action
+    action = function(appObject)
+      oldAction(appObject)
+      table.remove(processesOnSilentLaunch[bundleID], idx)
+    end
+  end
+
+  table.insert(processesOnSilentLaunch[bundleID], action)
+  hasLaunched[bundleID] = findApplication(bundleID) ~= nil
+end
+
+local processesOnSilentQuit = {}
+function ExecOnSilentQuit(bundleID, action)
+  if processesOnSilentQuit[bundleID] == nil then
+    processesOnSilentQuit[bundleID] = {}
+  end
+
+  table.insert(processesOnSilentQuit[bundleID], action)
+  hasLaunched[bundleID] = findApplication(bundleID) ~= nil
+end
+
+SilentAppWatcher = hs.timer.new(1, function()
+  local hasLaunchedTmp = {}
+  for bid, processes in pairs(processesOnSilentLaunch) do
+    local appObject = findApplication(bid)
+    if hasLaunched[bid] == false and appObject ~= nil then
+      for _, proc in ipairs(processes) do
+        proc(appObject)
+      end
+    end
+    hasLaunchedTmp[bid] = appObject ~= nil
+  end
+
+  for bid, processes in pairs(processesOnSilentQuit) do
+    local appObject = findApplication(bid)
+    if hasLaunched[bid] == true and appObject == nil then
+      for _, proc in ipairs(processes) do
+        proc(bid)
+      end
+    end
+    hasLaunchedTmp[bid] = appObject ~= nil
+  end
+
+  hasLaunched = hasLaunchedTmp
+end, true)
+
 local function applicationInstalledCallback(files, flagTables)
   files = hs.fnutils.filter(files, function(file) return file:sub(-4) == ".app" end)
   if #files ~= 0 then
@@ -269,6 +325,7 @@ end
 
 ConfigWatcher = hs.pathwatcher.new(os.getenv("HOME") .. "/.hammerspoon/", reloadConfig):start()
 AppWatcher = hs.application.watcher.new(applicationCallback):start()
+SilentAppWatcher:start()
 MonitorWatcher = hs.screen.watcher.new(monitorChangedCallback):start()
 UsbWatcher = hs.usb.watcher.new(usbChangedCallback):start()
 AppInstalledWatchers = {}

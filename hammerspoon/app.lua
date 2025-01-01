@@ -4218,57 +4218,26 @@ end
 
 -- for apps whose launching can be detected by Hammerspoon
 local processesOnLaunch = {}
--- for apps that launch silently
-local processesOnLaunchMonitored = {}
-local hasLaunched = {}
 local appsLaunchSilently = applicationConfigs.launchSilently or {}
 local function execOnLaunch(bundleID, action, onlyFirstTime)
   if hs.fnutils.contains(appsLaunchSilently, bundleID) then
-    if processesOnLaunchMonitored[bundleID] == nil then
-      processesOnLaunchMonitored[bundleID] = {}
-    end
-  else
-    if processesOnLaunch[bundleID] == nil then
-      processesOnLaunch[bundleID] = {}
-    end
+    ExecOnSilentLaunch(bundleID, action)
+  end
+
+  if processesOnLaunch[bundleID] == nil then
+    processesOnLaunch[bundleID] = {}
   end
 
   if onlyFirstTime then
-    if hs.fnutils.contains(appsLaunchSilently, bundleID) then
-      local idx = #processesOnLaunchMonitored[bundleID] + 1
-      local oldAction = action
-      action = function(appObject)
-        oldAction(appObject)
-        table.remove(processesOnLaunchMonitored[bundleID], idx)
-      end
-    else
-      local idx = #processesOnLaunch[bundleID] + 1
-      local oldAction = action
-      action = function(appObject)
-        oldAction(appObject)
-        table.remove(processesOnLaunch[bundleID], idx)
-      end
+    local idx = #processesOnLaunch[bundleID] + 1
+    local oldAction = action
+    action = function(appObject)
+      oldAction(appObject)
+      table.remove(processesOnLaunch[bundleID], idx)
     end
   end
 
-  if hs.fnutils.contains(appsLaunchSilently, bundleID) then
-    table.insert(processesOnLaunchMonitored[bundleID], action)
-    if ExtraAppLaunchWatcher == nil then
-      ExtraAppLaunchWatcher = hs.timer.new(1, function()
-        for bid, processes in pairs(processesOnLaunchMonitored) do
-          local appObject = findApplication(bid)
-          if hasLaunched[bid] == false and appObject ~= nil then
-            for _, proc in ipairs(processes) do
-              proc(appObject)
-            end
-          end
-          hasLaunched[bid] = appObject ~= nil
-        end
-      end, true):start()
-    end
-  else
-    table.insert(processesOnLaunch[bundleID], action)
-  end
+  table.insert(processesOnLaunch[bundleID], action)
 end
 
 local processesOnActivated = {}
