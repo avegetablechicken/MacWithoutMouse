@@ -699,19 +699,12 @@ local function unregisterWindowSwitcher()
   end
 end
 
-if misc["switchWindow"] ~= nil and findApplication("com.lwouis.alt-tab-macos") == nil then
-  registerWindowSwitcher()
-end
-
 if misc["switchWindow"] ~= nil then
-  AltTabWatcher = hs.timer.new(1, function()
-    local appObject = findApplication("com.lwouis.alt-tab-macos")
-    if appObject == nil and nextWindowHotkey == nil then
-      registerWindowSwitcher()
-    elseif appObject ~= nil and nextWindowHotkey ~= nil then
-      unregisterWindowSwitcher()
-    end
-  end):start()
+  if findApplication("com.lwouis.alt-tab-macos") == nil then
+    registerWindowSwitcher()
+  end
+  ExecOnSilentLaunch("com.lwouis.alt-tab-macos", unregisterWindowSwitcher)
+  ExecOnSilentQuit("com.lwouis.alt-tab-macos", registerWindowSwitcher)
 end
 
 -- visible windows of all browsers on all user spaces
