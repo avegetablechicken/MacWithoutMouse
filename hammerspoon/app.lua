@@ -4163,6 +4163,9 @@ local function registerSingleWinFilterForDaemonApp(appObject, filter)
     end)
     observer:start()
     inWinOfUnactivatedAppWatchers[bid][filter] = { observer }
+    stopOnQuit(bid, observer, function()
+      inWinOfUnactivatedAppWatchers[bid][filter] = nil
+    end)
     return
   end
   local filterEnable = hs.window.filter.new(false):setAppFilter(appObject:name(), filter):subscribe(
@@ -4187,6 +4190,11 @@ local function registerSingleWinFilterForDaemonApp(appObject, filter)
     end
   end)
   inWinOfUnactivatedAppWatchers[bid][filter] = { filterEnable, filterDisable }
+  execOnQuit(bid, function()
+    filterEnable:unsubscribeAll() filterEnable = nil
+    filterDisable:unsubscribeAll() filterDisable = nil
+    inWinOfUnactivatedAppWatchers[bid][filter] = nil
+  end)
 end
 
 local function registerWinFiltersForDaemonApp(appObject, appConfig)
@@ -4201,16 +4209,16 @@ local function registerWinFiltersForDaemonApp(appObject, appConfig)
     end
     if hasKey and isForWindow and isBackground and bindable() then
       if inWinOfUnactivatedAppWatchers[bid] == nil then
-        if inWinOfUnactivatedAppWatchers[bid] == nil then
-          inWinOfUnactivatedAppWatchers[bid] = {}
-        end
-        local windowFilter = keybinding.windowFilter or cfg.windowFilter
-        if #hs.fnutils.filter(inWinOfUnactivatedAppWatchers[bid],
-            function(f) return sameFilter(f, windowFilter) end) == 0 then
-          -- a window filter can be shared by multiple hotkeys
-          registerSingleWinFilterForDaemonApp(appObject, windowFilter)
+        inWinOfUnactivatedAppWatchers[bid] = {}
+      end
+      local windowFilter = keybinding.windowFilter or cfg.windowFilter
+      for f, _ in pairs(inWinOfUnactivatedAppWatchers[bid]) do
+        -- a window filter can be shared by multiple hotkeys
+        if sameFilter(f, windowFilter) then
+          return
         end
       end
+      registerSingleWinFilterForDaemonApp(appObject, windowFilter)
     end
   end
 end
@@ -4259,7 +4267,7 @@ local function execOnDeactivated(bundleID, action)
 end
 
 local processesOnQuit = {}
-local function execOnQuit(bundleID, action)
+function execOnQuit(bundleID, action)
   if hs.fnutils.contains(appsLaunchSilently, bundleID) then
     ExecOnSilentQuit(bundleID, action)
   end
@@ -4279,7 +4287,7 @@ local function stopOnDeactivated(bundleID, observer, action)
 end
 
 local observersStopOnQuit = {}
-local function stopOnQuit(bundleID, observer, action)
+function stopOnQuit(bundleID, observer, action)
   if observersStopOnQuit[bundleID] == nil then
     observersStopOnQuit[bundleID] = {}
   end
@@ -4348,18 +4356,18 @@ for bid, appConfig in pairs(appHotKeyCallbacks) do
   local appObject = findApplication(bid)
   if appObject ~= nil then
     registerWinFiltersForDaemonApp(appObject, appConfig)
-  else
-    local keybindings = KeybindingConfigs.hotkeys[bid] or {}
-    for hkID, cfg in pairs(appConfig) do
-      local keybinding = keybindings[hkID] or { mods = cfg.mods, key = cfg.key }
-      local hasKey = keybinding.mods ~= nil and keybinding.key ~= nil
-      local isForWindow = keybinding.windowFilter ~= nil or cfg.windowFilter ~= nil
-      local isBackground = keybinding.background ~= nil and keybinding.background or cfg.background
-      if hasKey and isForWindow and isBackground then
-        execOnLaunch(bid, function(appObject)
-          registerWinFiltersForDaemonApp(appObject, appConfig)
-        end)
-      end
+  end
+  local keybindings = KeybindingConfigs.hotkeys[bid] or {}
+  for hkID, cfg in pairs(appConfig) do
+    local keybinding = keybindings[hkID] or { mods = cfg.mods, key = cfg.key }
+    local hasKey = keybinding.mods ~= nil and keybinding.key ~= nil
+    local isForWindow = keybinding.windowFilter ~= nil or cfg.windowFilter ~= nil
+    local isBackground = keybinding.background ~= nil and keybinding.background or cfg.background
+    if hasKey and isForWindow and isBackground then
+      execOnLaunch(bid, function(appObject)
+        registerWinFiltersForDaemonApp(appObject, appConfig)
+      end)
+      break
     end
   end
 end
