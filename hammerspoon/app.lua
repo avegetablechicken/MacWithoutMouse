@@ -5587,11 +5587,8 @@ local appsLaunchSlow = {
   }
 }
 
-local tryTimes = {}
-local tryInterval = 1
-local maxTryTimes = 15
-
-local function altMenuBarItemAfterLaunch(appObject)
+local checkFullyLaunched
+local function testFullyLaunched(appObject)
   local app = hs.fnutils.find(appsLaunchSlow, function(app)
     return appObject:bundleID() == app.bundleID
   end)
@@ -5600,37 +5597,8 @@ local function altMenuBarItemAfterLaunch(appObject)
       return appObject:path() == app.appPath
     end)
   end
-  if app ~= nil then
-    if app.criterion(appObject) then
-      return
-    end
-
-    local bid = appObject:bundleID()
-    -- app was killed
-    if findApplication(bid) == nil then
-      tryTimes[bid] = nil
-      return
-    end
-
-    -- start counting
-    if tryTimes[bid] == nil then
-      tryTimes[bid] = 0
-    end
-
-    if app.criterion(appObject) then
-      tryTimes[bid] = nil
-      altMenuBarItem(appObject)
-    else
-      -- try until fully launched
-      tryTimes[bid] = tryTimes[bid] + 1
-      if tryTimes[bid] > maxTryTimes then
-        tryTimes[bid] = nil
-      else
-        hs.timer.doAfter(tryInterval, function()
-          altMenuBarItemAfterLaunch(appObject)
-        end)
-      end
-    end
+  if app ~= nil and not app.criterion(appObject) then
+    checkFullyLaunched = app.criterion
   end
 end
 
@@ -5638,7 +5606,7 @@ function App_applicationCallback(appName, eventType, appObject)
   local bundleID = appObject:bundleID()
   if eventType == hs.application.watcher.launching then
     updateAppLocale(bundleID)
-    altMenuBarItemAfterLaunch(appObject)
+    testFullyLaunched(appObject)
   elseif eventType == hs.application.watcher.launched then
     for _, proc in ipairs(processesOnLaunch[bundleID] or {}) do
       proc(appObject)
@@ -5668,29 +5636,25 @@ function App_applicationCallback(appName, eventType, appObject)
 
     -- necesary for "registerForOpenSavePanel" for unknown reason
     hs.timer.doAfter(0, function()
-      local appLocale = applicationLocales(bundleID)[1]
-      local oldAppLocale = appLocales[bundleID] or SYSTEM_LOCALE
-      if oldAppLocale ~= appLocale then
-        if getMatchedLocale(oldAppLocale, { appLocale }) ~= appLocale then
-          resetLocalizationMap(bundleID)
-          localizeCommonMenuItemTitles(appLocale, bundleID)
-          unregisterRunningAppHotKeys(bundleID, true)
-          registerRunningAppHotKeys(bundleID)
-          unregisterInAppHotKeys(bundleID, true)
-          unregisterInWinHotKeys(bundleID, true)
-        end
-      end
-      appLocales[bundleID] = appLocale
-
       registerForOpenSavePanel(appObject)
-      local menuItems = getMenuItems(appObject)
-      altMenuBarItem(appObject, menuItems)
-      registerInAppHotKeys(appObject)
-      registerInWinHotKeys(appObject)
-      remapPreviousTab(appObject, menuItems)
-      registerOpenRecent(appObject)
-      registerZoomHotkeys(appObject)
-      registerObserverForMenuBarChange(appObject, menuItems)
+      local action = function()
+        checkFullyLaunched = nil
+        local menuItems = getMenuItems(appObject)
+        altMenuBarItem(appObject, menuItems)
+        registerInAppHotKeys(appObject)
+        registerInWinHotKeys(appObject)
+        remapPreviousTab(appObject, menuItems)
+        registerOpenRecent(appObject)
+        registerZoomHotkeys(appObject)
+        registerObserverForMenuBarChange(appObject, menuItems)
+      end
+      if checkFullyLaunched ~= nil and not checkFullyLaunched(appObject) then
+        hs.timer.waitUntil(function()
+          return checkFullyLaunched(appObject)
+        end, action, 0.01)
+      else
+        action()
+      end
 
       if HSKeybindings ~= nil and HSKeybindings.isShowing then
         local validOnly = HSKeybindings.validOnly
