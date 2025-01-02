@@ -2671,7 +2671,7 @@ appHotKeyCallbacks = {
   ["whbalzac.Dongtaizhuomian"] =
   {
     ["invokeInAppScreenSaver"] = {
-      message = localizedString("In-app Screensaver", "whbalzac.Dongtaizhuomian",
+      message = localizedMessage("In-app Screensaver",
                                 { localeFile = "HotkeyWindowController" }),
       fn = function(appObject)
         local thisSpec = appHotKeyCallbacks[appObject:bundleID()]["invokeInAppScreenSaver"]
