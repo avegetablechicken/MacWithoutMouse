@@ -3544,15 +3544,16 @@ local function registerRunningAppHotKeys(bid, appObject)
     appObject = findApplication(bid)
   end
 
-  if runningAppHotKeys[bid] ~= nil then
-    for _, hotkey in pairs(runningAppHotKeys[bid]) do
-      hotkey:delete()
-    end
+  if runningAppHotKeys[bid] == nil then
+    runningAppHotKeys[bid] = {}
   end
-  runningAppHotKeys[bid] = {}
 
   -- do not support "condition" property currently
   for hkID, cfg in pairs(appHotKeyCallbacks[bid]) do
+    if runningAppHotKeys[bid][hkID] ~= nil then
+      runningAppHotKeys[bid][hkID]:enable()
+      goto L_CONTINUE
+    end
     -- prefer properties specified in configuration file than in code
     local keybinding = keybindings[hkID] or { mods = cfg.mods, key = cfg.key }
     local isBackground = keybinding.background ~= nil and keybinding.background or cfg.background
@@ -3604,6 +3605,7 @@ local function registerRunningAppHotKeys(bid, appObject)
         runningAppHotKeys[bid][hkID] = hotkey
       end
     end
+    ::L_CONTINUE::
   end
 end
 
