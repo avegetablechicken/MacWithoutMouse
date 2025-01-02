@@ -5451,6 +5451,13 @@ end)
 if remoteDesktopsMappingModifiers[frontApp:bundleID()] then
   remoteDesktopModifierTapper:start()
 end
+for bid, _ in pairs(remoteDesktopsMappingModifiers) do
+  execOnActivated(bid, function()
+    if not remoteDesktopModifierTapper:isEnabled() then
+      remoteDesktopModifierTapper:start()
+    end
+  end)
+end
 
 local function suspendHotkeysInRemoteDesktop(appObject)
   local winObj = appObject:focusedWindow()
@@ -5665,11 +5672,6 @@ function App_applicationCallback(appName, eventType, appObject)
       end
       FLAGS["NO_RESHOW_KEYBINDING"] = false
     end)
-    if remoteDesktopsMappingModifiers[bundleID] then
-      if not remoteDesktopModifierTapper:isEnabled() then
-        remoteDesktopModifierTapper:start()
-      end
-    end
   elseif eventType == hs.application.watcher.deactivated and appName ~= nil then
     if bundleID then
       unregisterInAppHotKeys(bundleID)
