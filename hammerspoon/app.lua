@@ -5724,7 +5724,21 @@ function App_applicationCallback(appName, eventType, appObject)
 end
 
 function App_applicationInstalledCallback(files, flagTables)
-  registerAppHotkeys()
+  for i, file in ipairs(files) do
+    if flagTables[i].itemRemoved then
+      local bundleID = hs.application.infoForBundlePath(file).CFBundleIdentifier
+      for j, appkey in ipairs(appHotkeys) do
+        if appkey.bundleID == bundleID or appkey.appPath == file then
+          appkey:delete()
+          table.remove(appHotkeys, j)
+          break
+        end
+      end
+    elseif flagTables[i].itemCreated then
+      registerAppHotkeys()
+      return
+    end
+  end
 end
 
 -- ## monitor callbacks
