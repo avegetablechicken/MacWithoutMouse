@@ -287,7 +287,6 @@ function ExecOnSilentQuit(bundleID, action)
   if processesOnSilentQuit[bundleID] == nil then
     processesOnSilentQuit[bundleID] = {}
   end
-
   table.insert(processesOnSilentQuit[bundleID], action)
   hasLaunched[bundleID] = findApplication(bundleID) ~= nil
 end
@@ -318,11 +317,18 @@ ExecContinuously(function()
 end)
 
 local function applicationInstalledCallback(files, flagTables)
-  files = hs.fnutils.filter(files, function(file) return file:sub(-4) == ".app" end)
-  if #files ~= 0 then
-    App_applicationInstalledCallback(files, flagTables)
-    System_applicationInstalledCallback(files, flagTables)
-    File_applicationInstalledCallback(files, flagTables)
+  local newFiles, newFlagTables = {}, {}
+  for i, file in ipairs(files) do
+    if file:sub(-4) == ".app"
+        and (flagTables[i].itemCreated or flagTables.itemRemoved) then
+      table.insert(newFiles, file)
+      table.insert(newFlagTables, flagTables[i])
+    end
+  end
+  if #newFiles ~= 0 then
+    App_applicationInstalledCallback(newFiles, newFlagTables)
+    System_applicationInstalledCallback(newFiles, newFlagTables)
+    File_applicationInstalledCallback(newFiles, newFlagTables)
   end
 end
 
