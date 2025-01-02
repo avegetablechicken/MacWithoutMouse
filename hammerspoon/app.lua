@@ -5597,11 +5597,25 @@ end
 local appLocales = {}  -- if app locale changes, it may change its menu bar items, so need to rebind
 function App_applicationCallback(appName, eventType, appObject)
   local bundleID = appObject:bundleID()
-  if eventType == hs.application.watcher.launched then
+  if eventType == hs.application.watcher.launching then
+    local appLocale = applicationLocales(bundleID)[1]
+    local oldAppLocale = appLocales[bundleID] or SYSTEM_LOCALE
+    if oldAppLocale ~= appLocale then
+      if getMatchedLocale(oldAppLocale, { appLocale }) ~= appLocale then
+        resetLocalizationMap(bundleID)
+        localizeCommonMenuItemTitles(appLocale, bundleID)
+        unregisterRunningAppHotKeys(bundleID, true)
+      end
+    end
+    appLocales[bundleID] = appLocale
+    altMenuBarItemAfterLaunch(appObject)
+  elseif eventType == hs.application.watcher.launched then
     for _, proc in ipairs(processesOnLaunch[bundleID] or {}) do
       proc(appObject)
     end
-    altMenuBarItemAfterLaunch(appObject)
+    if runningAppHotKeys[bundleID] == nil then
+      registerRunningAppHotKeys(bundleID)
+    end
   elseif eventType == hs.application.watcher.activated then
     WindowCreatedSince = {}
     if bundleID == nil then return end
