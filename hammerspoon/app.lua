@@ -5628,9 +5628,6 @@ function App_applicationCallback(appName, eventType, appObject)
     for _, proc in ipairs(processesOnLaunch[bundleID] or {}) do
       proc(appObject)
     end
-    if runningAppHotKeys[bundleID] == nil then
-      registerRunningAppHotKeys(bundleID)
-    end
   elseif eventType == hs.application.watcher.activated then
     WindowCreatedSince = {}
     if bundleID == nil then return end
