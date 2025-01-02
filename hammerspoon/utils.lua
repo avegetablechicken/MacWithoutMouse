@@ -2091,6 +2091,14 @@ function localizedMenuBarItem(title, bundleID, params)
       localizationMap[bundleID] = {}
     end
     localizationMap[bundleID][locTitle] = title
+    if get(deLocaleMap[bundleID], appLocale, locTitle) ~= nil then
+      deLocaleMap[bundleID][appLocale][locTitle] = title
+      if hs.fs.attributes(localeTmpDir) == nil then
+        hs.execute(string.format("mkdir -p '%s'", localeTmpDir))
+      end
+      hs.json.write(appLocaleDir, localeMatchTmpFile, true, true)
+      hs.json.write(deLocaleMap, menuItemTmpFile, true, true)
+    end
     return locTitle
   end
 end
