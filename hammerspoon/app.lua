@@ -4909,7 +4909,10 @@ local appsMayChangeMenuBar = get(applicationConfigs.menuBarItemsMayChange, 'wind
 local function appMenuBarChangeCallback(appObject)
   local menuItems = getMenuItems(appObject)
   local menuBarItemStr = getMenuBarItemTitlesString(appObject, menuItems)
-  if menuBarItemStr == nil then return end
+  if menuBarItemStr == appsMenuBarItemTitlesString[appObject:bundleID()] then
+    return
+  end
+  appsMenuBarItemTitlesString[appObject:bundleID()] = menuBarItemStr
   altMenuBarItem(appObject, menuItems)
   remapPreviousTab(appObject, menuItems)
   registerOpenRecent(appObject)
@@ -4921,6 +4924,7 @@ local function appMenuBarChangeCallback(appObject)
     local menuItems = getMenuItems(appObject)
     local newMenuBarItemTitlesString = getMenuBarItemTitlesString(appObject, menuItems)
     if newMenuBarItemTitlesString ~= menuBarItemStr then
+      appsMenuBarItemTitlesString[appObject:bundleID()] = newMenuBarItemTitlesString
       altMenuBarItem(appObject, menuItems)
       remapPreviousTab(appObject, menuItems)
       registerOpenRecent(appObject)
@@ -4939,6 +4943,9 @@ local function registerObserverForMenuBarChange(appObject, menuItems)
   if not hs.fnutils.contains(appsMayChangeMenuBar, appObject:bundleID()) then
     return
   end
+
+  appsMenuBarItemTitlesString[appObject:bundleID()] =
+      getMenuBarItemTitlesString(appObject, menuItems)
 
   local observer, windowFilter
   observer = hs.axuielement.observer.new(appObject:pid())
