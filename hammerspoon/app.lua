@@ -4256,6 +4256,18 @@ local function execOnDeactivated(bundleID, action)
   table.insert(processesOnDeactivated[bundleID], action)
 end
 
+local processesOnQuit = {}
+local function execOnQuit(bundleID, action)
+  if hs.fnutils.contains(appsLaunchSilently, bundleID) then
+    ExecOnSilentQuit(bundleID, action)
+  end
+
+  if processesOnQuit[bundleID] == nil then
+    processesOnQuit[bundleID] = {}
+  end
+  table.insert(processesOnQuit[bundleID], action)
+end
+
 local observersStopOnDeactivated = {}
 local function stopOnDeactivated(bundleID, observer, action)
   if observersStopOnDeactivated[bundleID] == nil then
@@ -4302,6 +4314,7 @@ for bid, appConfig in pairs(appHotKeyCallbacks) do
     local isForWindow = keybinding.windowFilter ~= nil or cfg.windowFilter ~= nil
     if hasKey and not isForWindow and isBackground and not isPersistent then
       execOnLaunch(bid, hs.fnutils.partial(registerRunningAppHotKeys, bid))
+      execOnQuit(bid, hs.fnutils.partial(unregisterRunningAppHotKeys, bid, false))
       break
     end
   end
@@ -5714,6 +5727,13 @@ function App_applicationCallback(appName, eventType, appObject)
         end
       end
     end
+    for bid, processes in pairs(processesOnQuit) do
+      if findApplication(bid) == nil then
+        for _, proc in ipairs(processes) do
+          proc(appObject)
+        end
+      end
+    end
     for bid, obs in pairs(observersStopOnDeactivated) do
       if findApplication(bid) == nil then
         for _, ob in ipairs(obs) do
@@ -5732,11 +5752,6 @@ function App_applicationCallback(appName, eventType, appObject)
           if func ~= nil then func(bid, observer) end
         end
         observersStopOnQuit[bid] = nil
-      end
-    end
-    for bid, _ in pairs(runningAppHotKeys) do
-      if findApplication(bid) == nil then
-        unregisterRunningAppHotKeys(bid)
       end
     end
     for bid, _ in pairs(inAppHotKeys) do
