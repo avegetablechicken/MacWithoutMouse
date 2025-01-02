@@ -4272,6 +4272,24 @@ local function stopOnQuit(bundleID, observer, action)
   table.insert(observersStopOnQuit[bundleID], { observer, action })
 end
 
+local appLocales = {} -- if app locale changes, it may change its menu bar items, so need to rebind
+local function updateAppLocale(bundleID)
+  local appLocale = applicationLocales(bundleID)[1]
+  local oldAppLocale = appLocales[bundleID] or SYSTEM_LOCALE
+  if oldAppLocale ~= appLocale then
+    if getMatchedLocale(oldAppLocale, { appLocale }) ~= appLocale then
+      resetLocalizationMap(bundleID)
+      localizeCommonMenuItemTitles(appLocale, bundleID)
+      unregisterRunningAppHotKeys(bundleID, true)
+    end
+  end
+  appLocales[bundleID] = appLocale
+end
+
+for _, bid in ipairs(appsLaunchSilently) do
+  ExecOnSilentLaunch(bid, hs.fnutils.partial(updateAppLocale, bid))
+end
+
 -- register hotkeys for background apps
 for bid, appConfig in pairs(appHotKeyCallbacks) do
   registerRunningAppHotKeys(bid)
@@ -5601,20 +5619,10 @@ local function altMenuBarItemAfterLaunch(appObject)
   end
 end
 
-local appLocales = {}  -- if app locale changes, it may change its menu bar items, so need to rebind
 function App_applicationCallback(appName, eventType, appObject)
   local bundleID = appObject:bundleID()
   if eventType == hs.application.watcher.launching then
-    local appLocale = applicationLocales(bundleID)[1]
-    local oldAppLocale = appLocales[bundleID] or SYSTEM_LOCALE
-    if oldAppLocale ~= appLocale then
-      if getMatchedLocale(oldAppLocale, { appLocale }) ~= appLocale then
-        resetLocalizationMap(bundleID)
-        localizeCommonMenuItemTitles(appLocale, bundleID)
-        unregisterRunningAppHotKeys(bundleID, true)
-      end
-    end
-    appLocales[bundleID] = appLocale
+    updateAppLocale(bundleID)
     altMenuBarItemAfterLaunch(appObject)
   elseif eventType == hs.application.watcher.launched then
     for _, proc in ipairs(processesOnLaunch[bundleID] or {}) do
