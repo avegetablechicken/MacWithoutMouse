@@ -5621,10 +5621,6 @@ function App_applicationCallback(appName, eventType, appObject)
   elseif eventType == hs.application.watcher.activated then
     WindowCreatedSince = {}
     if bundleID == nil then return end
-    if bundleID == "cn.better365.iShotProHelper" then
-      unregisterInWinHotKeys("cn.better365.iShotPro")
-      return
-    end
     if remoteDesktopObserver ~= nil then
       if FLAGS["SUSPEND_IN_REMOTE_DESKTOP"] ~= nil then
         FLAGS["SUSPEND"] = not FLAGS["SUSPEND_IN_REMOTE_DESKTOP"]
