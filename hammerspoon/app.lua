@@ -5615,6 +5615,7 @@ function App_applicationCallback(appName, eventType, appObject)
     updateAppLocale(bundleID)
     testFullyLaunched(appObject)
   elseif eventType == hs.application.watcher.launched then
+    checkFullyLaunched = nil
     for _, proc in ipairs(processesOnLaunch[bundleID] or {}) do
       proc(appObject)
     end
@@ -5651,10 +5652,10 @@ function App_applicationCallback(appName, eventType, appObject)
         registerZoomHotkeys(appObject)
         registerObserverForMenuBarChange(appObject, menuItems)
       end
-      if checkFullyLaunched ~= nil and not checkFullyLaunched(appObject) then
-        hs.timer.waitUntil(function()
-          return checkFullyLaunched(appObject)
-        end, action, 0.01)
+      local criterion = checkFullyLaunched
+      if criterion ~= nil and not criterion(appObject) then
+        hs.timer.waitUntil(function() return criterion(appObject) end,
+                           action, 0.01)
       else
         action()
       end
