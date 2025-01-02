@@ -5508,6 +5508,12 @@ end
 -- some apps may have slow launch time, so need to wait until fully launched to bind menu bar item hotkeys
 local appsLaunchSlow = {
   {
+    bundleID = "com.google.Chrome",
+    criterion = function(appObject)
+      return findMenuItem(appObject, { "Help" }) ~= nil
+    end
+  },
+  {
     bundleID = "com.microsoft.VSCode",
     criterion = function(appObject)
       return appObject:getMenuItems() ~= nil and #appObject:getMenuItems() > 1
