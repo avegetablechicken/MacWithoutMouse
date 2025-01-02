@@ -5561,6 +5561,10 @@ local function altMenuBarItemAfterLaunch(appObject)
     end)
   end
   if app ~= nil then
+    if app.criterion(appObject) then
+      return
+    end
+
     local bid = appObject:bundleID()
     -- app was killed
     if findApplication(bid) == nil then
