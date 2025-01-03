@@ -2675,7 +2675,7 @@ appHotKeyCallbacks = {
                                 { localeFile = "HotkeyWindowController" }),
       fn = function(appObject)
         local thisSpec = appHotKeyCallbacks[appObject:bundleID()]["invokeInAppScreenSaver"]
-        clickRightMenuBarItem(appObject:bundleID(), thisSpec.message)
+        clickRightMenuBarItem(appObject:bundleID(), thisSpec.message(appObject))
       end
     }
   },
