@@ -4089,7 +4089,7 @@ end
 -- hotkeys for frontmost window belonging to unactivated app
 local inWinOfUnactivatedAppHotKeys = {}
 local inWinOfUnactivatedAppWatchers = {}
-local function inWinOfUnactivatedAppWatcherEnableCallback(bid, filter, winObj, appName, event)
+local function inWinOfUnactivatedAppWatcherEnableCallback(bid, filter, winObj, event)
   if inWinOfUnactivatedAppHotKeys[bid] == nil then
     inWinOfUnactivatedAppHotKeys[bid] = {}
   elseif event == hs.window.filter.windowFocused then
@@ -4164,18 +4164,18 @@ local function registerSingleWinFilterForDaemonApp(appObject, filter)
       closeObserver:start()
     end)
     observer:start()
-    inWinOfUnactivatedAppWatchers[bid][filter] = { observer }
+    inWinOfUnactivatedAppWatchers[bid][filter] = observer
     stopOnQuit(bid, observer, function()
       inWinOfUnactivatedAppWatchers[bid][filter] = nil
     end)
     return
   end
-  local filterEnable = hs.window.filter.new(false):setAppFilter(appObject:name(), filter):subscribe(
-      {hs.window.filter.windowCreated, hs.window.filter.windowFocused},
-      hs.fnutils.partial(inWinOfUnactivatedAppWatcherEnableCallback, bid, filter)
-  )
-  local filterDisable = hs.window.filter.new(false):setAppFilter(appObject:name(), filter):subscribe(
-      { hs.window.filter.windowDestroyed, hs.window.filter.windowUnfocused },
+  local windowFilter = hs.window.filter.new(false):setAppFilter(appObject:name(), filter)
+      :subscribe({ hs.window.filter.windowCreated, hs.window.filter.windowFocused },
+  function(winObj, appName, event)
+    inWinOfUnactivatedAppWatcherEnableCallback(bid, filter, winObj, event)
+  end)
+      :subscribe({  hs.window.filter.windowDestroyed, hs.window.filter.windowUnfocused },
   function(winObj, appName, event)
     if event == hs.window.filter.windowUnfocused
         and hs.window.frontmostWindow() ~= nil
@@ -4191,14 +4191,10 @@ local function registerSingleWinFilterForDaemonApp(appObject, filter)
       end
       inWinOfUnactivatedAppHotKeys[bid] = nil
     end
-    if #inWinOfUnactivatedAppWatchers[bid][filter] == 0 then
-      inWinOfUnactivatedAppWatchers[bid][filter] = nil
-    end
   end)
-  inWinOfUnactivatedAppWatchers[bid][filter] = { filterEnable, filterDisable }
+  inWinOfUnactivatedAppWatchers[bid][filter] = windowFilter
   execOnQuit(bid, function()
-    filterEnable:unsubscribeAll() filterEnable = nil
-    filterDisable:unsubscribeAll() filterDisable = nil
+    windowFilter:unsubscribeAll() windowFilter = nil
     inWinOfUnactivatedAppWatchers[bid][filter] = nil
   end)
 end
