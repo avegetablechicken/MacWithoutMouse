@@ -4221,11 +4221,12 @@ local function registerWinFiltersForDaemonApp(appObject, appConfig)
       for f, _ in pairs(inWinOfUnactivatedAppWatchers[bid]) do
         -- a window filter can be shared by multiple hotkeys
         if sameFilter(f, windowFilter) then
-          return
+          goto L_CONTINUE
         end
       end
       registerSingleWinFilterForDaemonApp(appObject, windowFilter)
     end
+    ::L_CONTINUE::
   end
 end
 
