@@ -310,6 +310,51 @@ local function toggleMonoCloud(enable, alert)
   return ok
 end
 
+local proxyActivateFuncs = {
+  V2RayX = {
+    global = function()
+      if toggleV2RayX(true) then
+        clickRightMenuBarItem(proxyAppBundleIDs.V2RayX, "Global Mode")
+        enable_proxy_global("V2RayX")
+      end
+    end,
+    pac = function()
+      if toggleV2RayX(true) then
+        clickRightMenuBarItem(proxyAppBundleIDs.V2RayX, "PAC Mode")
+        enable_proxy_PAC("V2RayX")
+      end
+    end
+  },
+
+  V2rayU = {
+    global = function()
+      if toggleV2RayU(true) then
+        clickRightMenuBarItem(proxyAppBundleIDs.V2rayU, "Global Mode")
+        enable_proxy_global("V2rayU")
+      end
+    end,
+    pac = function()
+      if toggleV2RayU(true) then
+        clickRightMenuBarItem(proxyAppBundleIDs.V2rayU, "Pac Mode")
+        enable_proxy_PAC("V2rayU")
+      end
+    end
+  },
+
+  MonoCloud = {
+    global = function()
+      toggleMonoCloud(false)
+      clickRightMenuBarItem(proxyAppBundleIDs.MonoCloud, "Outbound Mode", 2)
+      enable_proxy_global("MonoCloud")
+    end,
+    pac = function()
+      toggleMonoCloud(false)
+      clickRightMenuBarItem(proxyAppBundleIDs.MonoCloud, "Outbound Mode", 3)
+      enable_proxy_PAC("MonoCloud")
+    end
+  }
+}
+
 -- menubar for proxy
 local proxy = hs.menubar.new()
 proxy:setTitle("PROXY")
@@ -388,22 +433,12 @@ local proxyMenuItemCandidates =
     items = {
       {
         title = "    Global Mode",
-        fn = function()
-          if toggleV2RayX(true) then
-            clickRightMenuBarItem(proxyAppBundleIDs.V2RayX, "Global Mode")
-            enable_proxy_global("V2RayX")
-          end
-        end
+        fn = proxyActivateFuncs.V2RayX.global
       },
 
       {
         title = "    PAC Mode",
-        fn = function()
-          if toggleV2RayX(true) then
-            clickRightMenuBarItem(proxyAppBundleIDs.V2RayX, "PAC Mode")
-            enable_proxy_PAC("V2RayX")
-          end
-        end
+        fn = proxyActivateFuncs.V2RayX.pac
       }
     }
   },
@@ -414,22 +449,12 @@ local proxyMenuItemCandidates =
     items = {
       {
         title = "    Global Mode",
-        fn = function()
-          if toggleV2RayU(true) then
-            clickRightMenuBarItem(proxyAppBundleIDs.V2rayU, "Global Mode")
-            enable_proxy_global("V2rayU")
-          end
-        end
+        fn = proxyActivateFuncs.V2rayU.global
       },
 
       {
         title = "    PAC Mode",
-        fn = function()
-          if toggleV2RayU(true) then
-            clickRightMenuBarItem(proxyAppBundleIDs.V2rayU, "Pac Mode")
-            enable_proxy_PAC("V2rayU")
-          end
-        end
+        fn = proxyActivateFuncs.V2rayU.pac
       }
     }
   },
@@ -440,20 +465,12 @@ local proxyMenuItemCandidates =
     items = {
       {
         title = "    Global Mode",
-        fn = function()
-          toggleMonoCloud(false)
-          clickRightMenuBarItem(proxyAppBundleIDs.MonoCloud, "Outbound Mode", 2)
-          enable_proxy_global("MonoCloud")
-        end
+        fn = proxyActivateFuncs.MonoCloud.global
       },
 
       {
         title = "    PAC Mode",
-        fn = function()
-          toggleMonoCloud(false)
-          clickRightMenuBarItem(proxyAppBundleIDs.MonoCloud, "Outbound Mode", 3)
-          enable_proxy_global("MonoCloud")
-        end
+        fn = proxyActivateFuncs.MonoCloud.pac
       }
     }
   },
@@ -910,41 +927,16 @@ local function registerProxyMenuWrapper(storeObj, changedKeys)
                 end
               end
               if config ~= nil then
-                if name == "MonoCloud" then
-                  toggleMonoCloud(false)
-                  if mode == "global" then
-                    clickRightMenuBarItem(proxyAppBundleIDs.MonoCloud, "Outbound Mode", 2)
-                    enable_proxy_global(name)
-                  elseif mode == "pac" then
-                    clickRightMenuBarItem(proxyAppBundleIDs.MonoCloud, "Outbound Mode", 3)
-                    enable_proxy_PAC(name)
+                for n, actFuncs in pairs(proxyActivateFuncs) do
+                  if n == name and actFuncs[mode] ~= nil then
+                    actFuncs[mode]()
+                    goto L_PROXY_SET
                   end
-                elseif name == "V2rayU" then
-                  if toggleV2RayU(true) then
-                    if mode == "global" then
-                      clickRightMenuBarItem(proxyAppBundleIDs.V2rayU, "Global Mode")
-                      enable_proxy_global(name)
-                    elseif mode == "pac" then
-                      clickRightMenuBarItem(proxyAppBundleIDs.V2rayU, "Pac Mode")
-                      enable_proxy_PAC(name)
-                    end
-                  end
-                elseif name == "V2RayX" then
-                  if toggleV2RayX(true) then
-                    if mode == "global" then
-                      clickRightMenuBarItem(proxyAppBundleIDs.V2RayX, "Global Mode")
-                      enable_proxy_global(name)
-                    elseif mode == "pac" then
-                      clickRightMenuBarItem(proxyAppBundleIDs.V2RayX, "Pac Mode")
-                      enable_proxy_PAC(name)
-                    end
-                  end
-                else
-                  if mode == "global" then
-                    enable_proxy_global(name, nil, loc)
-                  elseif mode == "pac" then
-                    enable_proxy_PAC(name, nil, loc)
-                  end
+                end
+                if mode == "global" then
+                  enable_proxy_global(name, nil, loc)
+                elseif mode == "pac" then
+                  enable_proxy_PAC(name, nil, loc)
                 end
                 goto L_PROXY_SET
               end
