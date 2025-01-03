@@ -350,7 +350,7 @@ local proxyActivateFuncs = {
     pac = function()
       toggleMonoCloud(false)
       clickRightMenuBarItem(proxyAppBundleIDs.MonoCloud, "Outbound Mode", 3)
-      enable_proxy_PAC("MonoCloud")
+      enable_proxy_global("MonoCloud")
     end
   }
 }
