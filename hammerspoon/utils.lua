@@ -2202,10 +2202,10 @@ function clickAppRightMenuBarItem(bundleID, menuItem, subMenuItem, show)
   end
 
   local initCmd = string.format([[
-      tell application "System Events"
-        set ap to first application process whose bundle identifier is "%s"
-      end tell
-    ]], bundleID)
+    tell application "System Events"
+      set ap to first application process whose bundle identifier is "%s"
+    end tell
+  ]], bundleID)
 
   -- firstly click menu bar item if necessary
   local clickMenuBarItemCmd = ""
@@ -2230,135 +2230,40 @@ function clickAppRightMenuBarItem(bundleID, menuItem, subMenuItem, show)
   end
 
   if menuItem == nil then
-    local status_code = hs.osascript.applescript(initCmd .. clickMenuBarItemCmd)
-    return status_code
+    return hs.osascript.applescript(initCmd .. clickMenuBarItemCmd)
   end
 
+  -- secondly click menu item of popup menu
   if type(menuItem) == "number" then
     menuItem = tostring(menuItem)
   else
     menuItem = localizedString(menuItem, bundleID) or menuItem
-    menuItem = '"'..menuItem..'"'
+    menuItem = '"' .. menuItem .. '"'
   end
+  local clickMenuItemCmd = string.format([[
+    set menuitem to menu item %s of menu 1 of menu bar item 1 of last menu bar of ap
+    click menuitem
+  ]], menuItem)
 
+  -- thirdly click menu item of popup menu of clicked click menu item of popup menu
+  local clickSubMenuItemCmd = ""
   if subMenuItem ~= nil then
     if type(subMenuItem) == "number" then
       subMenuItem = tostring(subMenuItem)
     else
       subMenuItem = localizedString(subMenuItem, bundleID) or subMenuItem
-      subMenuItem = '"'..subMenuItem..'"'
+      subMenuItem = '"' .. subMenuItem .. '"'
     end
+    clickSubMenuItemCmd = string.format([[
+      set submenuitem to menu item %s of menu %s of menuitem
+      click submenuitem
+    ]], subMenuItem, menuItem)
   end
 
-  -- secondly click menu item of popup menu
-  if type(menuItem) ~= "table" then
-    local clickMenuItemCmd = string.format([[
-      set menuitem to menu item %s of menu 1 of menu bar item 1 of last menu bar of ap
-      click menuitem
-    ]], menuItem)
-
-    -- thirdly click menu item of popup menu of clicked click menu item of popup menu
-    local clickSubMenuItemCmd = ""
-    if subMenuItem ~= nil then
-      if type(subMenuItem) ~= "table" then
-        clickSubMenuItemCmd = string.format([[
-          set submenuitem to menu item %s of menu %s of menuitem
-          click submenuitem
-        ]], subMenuItem, menuItem)
-      else
-        for _, subitem in pairs(subMenuItem) do
-          local else_ = ""
-          if clickSubMenuItemCmd ~= "" then
-            else_ = "else "
-          end
-
-          clickSubMenuItemCmd = clickSubMenuItemCmd .. string.format([[
-              %sif exists submenuitem to menu item %s of menu %s of menuitem
-                set submenuitem to menu item %s of menu %s of menuitem
-                click submenuitem
-            ]],
-            else_, subitem, menuItem, subitem, menuItem)
-        end
-        clickSubMenuItemCmd = clickSubMenuItemCmd .. [[
-          end if
-        ]]
-      end
-    end
-
-    local status_code = hs.osascript.applescript(string.format([[
-        %s
-        %s
-        tell application "System Events"
-          %s
-          %s
-        end tell
-      ]],
-      initCmd,
-      clickMenuBarItemCmd,
-      clickMenuItemCmd,
-      clickSubMenuItemCmd)
-    )
-    return status_code
-  else
-    local clickMenuItemCmd = ""
-    for _, item in pairs(menuItem) do
-      local clickSubMenuItemCmd = ""
-      if subMenuItem ~= nil then
-        if type(subMenuItem) ~= "table" then
-          clickSubMenuItemCmd = string.format([[
-            set submenuitem to menu item %s of menu %s of menuitem
-            click submenuitem
-          ]], subMenuItem, item)
-        else
-          for _, subitem in pairs(subMenuItem) do
-            local else_ = ""
-            if clickSubMenuItemCmd ~= "" then
-              else_ = "else "
-            end
-
-            clickSubMenuItemCmd = clickSubMenuItemCmd .. string.format([[
-                %sif exists submenuitem to menu item %s of menu %s of menuitem
-                  set submenuitem to menu item %s of menu %s of menuitem
-                  click submenuitem
-              ]],
-              else_, subitem, item, subitem, item)
-          end
-          clickSubMenuItemCmd = clickSubMenuItemCmd .. [[
-            end if
-          ]]
-        end
-      end
-
-      local else_ = ""
-      if clickMenuItemCmd ~= "" then
-        else_ = "else "
-      end
-
-      clickMenuItemCmd = clickMenuItemCmd .. string.format([[
-        %sif exists menu item %s of menu 1 of menu bar item 1 of last menu bar of ap
-            set menuitem to menu item %s of menu 1 of menu bar item 1 of last menu bar of ap
-            click menuitem
-            %s
-      ]],
-      else_, item, item, clickSubMenuItemCmd)
-    end
-    clickMenuItemCmd = clickMenuItemCmd .. [[
-      end if
-    ]]
-
-    local status_code = hs.osascript.applescript(string.format([[
-        %s
-        %s
-        tell application "System Events"
-          %s
-        end tell
-      ]],
-      initCmd,
-      clickMenuBarItemCmd,
-      clickMenuItemCmd)
-    )
-    return status_code
-  end
+  return hs.osascript.applescript(hs.fnutils.reduce({
+    initCmd, clickMenuBarItemCmd, 'tell application "System Events"',
+    clickMenuItemCmd, clickSubMenuItemCmd, 'end tell'
+  }, function(a, b) return a .. '\n' .. b end))
 end
 
 local controlCenterIdentifiers = hs.json.read("static/controlcenter-identifies.json")
