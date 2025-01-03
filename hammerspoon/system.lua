@@ -250,7 +250,7 @@ local function toggleMonoCloud(enable, alert)
   end
 
   local appUIObj = hs.axuielement.applicationElement(findApplication(bundleID))
-  local menuItem = getAXChildren(appUIObj, "AXMenuBar", 1, "AXMenuBarItem", 1,
+  local menuItem = getAXChildren(appUIObj, "AXMenuBar", -1, "AXMenuBarItem", 1,
       "AXMenu", 1, "AXMenuItem", "Set As System Proxy")
   if menuItem == nil then
     if alert then
@@ -597,7 +597,7 @@ local function parseProxyInfo(info, require_mode)
           local bundleID = proxyAppBundleIDs.MonoCloud
           if findApplication(bundleID) ~= nil then
             local appUIObj = hs.axuielement.applicationElement(findApplication(bundleID))
-            local outboundModeMenu = getAXChildren(appUIObj, "AXMenuBar", 1, "AXMenuBarItem", 1,
+            local outboundModeMenu = getAXChildren(appUIObj, "AXMenuBar", -1, "AXMenuBarItem", 1,
               "AXMenu", 1, "AXMenuItem", "Outbound Mode", "AXMenu", 1)
             if outboundModeMenu ~= nil then
               if getAXChildren(outboundModeMenu, "AXMenuItem", 2).AXMenuItemMarkChar == "✓" then

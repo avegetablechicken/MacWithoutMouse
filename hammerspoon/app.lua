@@ -2692,7 +2692,7 @@ appHotKeyCallbacks = {
         clickRightMenuBarItem(appObject:bundleID())
         local appUIObj = hs.axuielement.applicationElement(appObject)
         hs.timer.usleep(1 * 1000000)
-        local switch = getAXChildren(appUIObj, "AXMenuBar", 1, "AXMenuBarItem", 1,
+        local switch = getAXChildren(appUIObj, "AXMenuBar", -1, "AXMenuBarItem", 1,
             "AXPopover", 1, "AXGroup", 3, "AXButton", 1)
         local state = switch.AXValue
         switch:performAction("AXPress")
