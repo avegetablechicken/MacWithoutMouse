@@ -2198,46 +2198,28 @@ function rightClickAndRestore(position, appName)
 end
 
 function clickAppRightMenuBarItem(bundleID, menuItemPath, show)
-  if (menuItemPath == nil or (type(menuItemPath) == 'table' and #menuItemPath == 0))
-      and show == nil then
+  local appObject = findApplication(bundleID)
+  if appObject == nil then return false end
+  local appUIObject = hs.axuielement.applicationElement(appObject)
+  local menuBarMenu = getAXChildren(appUIObject, "AXMenuBar", -1, "AXMenuBarItem", 1)
+
+  if type(menuItemPath) ~= 'table' then
+    menuItemPath = { menuItemPath }
+  end
+  if #menuItemPath == 0 and show == nil then
     show = true
   end
 
-  -- firstly click menu bar item if necessary
   if show then
     if hiddenByBartender(bundleID) then
       hs.osascript.applescript([[
         tell application id "com.surteesstudios.Bartender" to activate "]] .. bundleID .. [[-Item-0"
       ]])
     else
-      hs.osascript.applescript([[
-        tell application "System Events"
-          set ap to first application process whose bundle identifier is "]] .. bundleID .. [["
-        end tell
-
-        ignoring application responses
-          tell application "System Events"
-            click menu bar item 1 of last menu bar of ap
-          end tell
-        end ignoring
-
-        delay 0.2
-        do shell script "killall System\\ Events"
-      ]])
+      menuBarMenu:performAction("AXPress")
     end
   end
-
-  if menuItemPath == nil or (type(menuItemPath) == 'table' and #menuItemPath == 0) then
-    return true
-  end
-  if type(menuItemPath) ~= 'table' then
-    menuItemPath = { menuItemPath }
-  end
-
-  local appObject = findApplication(bundleID)
-  if appObject == nil then return false end
-  local appUIObject = hs.axuielement.applicationElement(appObject)
-  local menuBarMenu = getAXChildren(appUIObject, "AXMenuBar", -1, "AXMenuBarItem", 1)
+  if #menuItemPath == 0 then return true end
 
   local menu = menuBarMenu
   for _, item in ipairs(menuItemPath) do
