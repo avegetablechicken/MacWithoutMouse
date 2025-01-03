@@ -2196,27 +2196,24 @@ function rightClickAndRestore(position, appName)
   return false
 end
 
-function clickAppRightMenuBarItem(bundleID, menuItem, subMenuItem, show)
-  if menuItem == nil and subMenuItem == nil and show == nil then
+function clickAppRightMenuBarItem(bundleID, menuItemPath, show)
+  if (menuItemPath == nil or (type(menuItemPath) == 'table' and #menuItemPath == 0))
+      and show == nil then
     show = true
   end
 
-  local initCmd = string.format([[
-    tell application "System Events"
-      set ap to first application process whose bundle identifier is "%s"
-    end tell
-  ]], bundleID)
-
   -- firstly click menu bar item if necessary
-  local clickMenuBarItemCmd = ""
-  if show == true then
+  if show then
     if hiddenByBartender(bundleID) then
-      clickMenuBarItemCmd = [[
+      hs.osascript.applescript([[
         tell application id "com.surteesstudios.Bartender" to activate "]] .. bundleID .. [[-Item-0"
-
-      ]]
+      ]])
     else
-      clickMenuBarItemCmd = [[
+      hs.osascript.applescript([[
+        tell application "System Events"
+          set ap to first application process whose bundle identifier is "]] .. bundleID .. [["
+        end tell
+
         ignoring application responses
           tell application "System Events"
             click menu bar item 1 of last menu bar of ap
@@ -2225,45 +2222,38 @@ function clickAppRightMenuBarItem(bundleID, menuItem, subMenuItem, show)
 
         delay 0.2
         do shell script "killall System\\ Events"
-      ]]
+      ]])
     end
   end
 
-  if menuItem == nil then
-    return hs.osascript.applescript(initCmd .. clickMenuBarItemCmd)
+  if menuItemPath == nil or (type(menuItemPath) == 'table' and #menuItemPath == 0) then
+    return true
+  end
+  if type(menuItemPath) ~= 'table' then
+    menuItemPath = { menuItemPath }
   end
 
-  -- secondly click menu item of popup menu
-  if type(menuItem) == "number" then
-    menuItem = tostring(menuItem)
-  else
-    menuItem = localizedString(menuItem, bundleID) or menuItem
-    menuItem = '"' .. menuItem .. '"'
-  end
-  local clickMenuItemCmd = string.format([[
-    set menuitem to menu item %s of menu 1 of menu bar item 1 of last menu bar of ap
-    click menuitem
-  ]], menuItem)
+  local appObject = findApplication(bundleID)
+  if appObject == nil then return false end
+  local appUIObject = hs.axuielement.applicationElement(appObject)
+  local numMenuBars = #appUIObject:childrenWithRole("AXMenuBar")
+  local menuBarMenu = getAXChildren(appUIObject, "AXMenuBar", numMenuBars, "AXMenuBarItem", 1)
 
-  -- thirdly click menu item of popup menu of clicked click menu item of popup menu
-  local clickSubMenuItemCmd = ""
-  if subMenuItem ~= nil then
-    if type(subMenuItem) == "number" then
-      subMenuItem = tostring(subMenuItem)
-    else
-      subMenuItem = localizedString(subMenuItem, bundleID) or subMenuItem
-      subMenuItem = '"' .. subMenuItem .. '"'
+  local menu = menuBarMenu
+  for _, item in ipairs(menuItemPath) do
+    local parent = menu
+    menu = getAXChildren(parent, "AXMenu", 1, "AXMenuItem", item)
+    if menu == nil and type(item) == 'string' then
+      local locItem = localizedString(item, bundleID)
+      if locItem ~= nil then
+        menu = getAXChildren(parent, "AXMenu", 1, "AXMenuItem", locItem)
+      end
     end
-    clickSubMenuItemCmd = string.format([[
-      set submenuitem to menu item %s of menu %s of menuitem
-      click submenuitem
-    ]], subMenuItem, menuItem)
+    if menu == nil then return false end
   end
 
-  return hs.osascript.applescript(hs.fnutils.reduce({
-    initCmd, clickMenuBarItemCmd, 'tell application "System Events"',
-    clickMenuItemCmd, clickSubMenuItemCmd, 'end tell'
-  }, function(a, b) return a .. '\n' .. b end))
+  menu:performAction("AXPress")
+  return true
 end
 
 local controlCenterIdentifiers = hs.json.read("static/controlcenter-identifies.json")
@@ -2308,7 +2298,7 @@ function controlCenterLocalized(panel, key)
   return result
 end
 
-function clickRightMenuBarItem(menuBarName, menuItem, subMenuItem, show)
+function clickRightMenuBarItem(menuBarName, menuItemPath, show)
   if menuBarName == "Control Center" then
     return clickControlCenterMenuBarItem(menuBarName)
   end
@@ -2317,5 +2307,5 @@ function clickRightMenuBarItem(menuBarName, menuItem, subMenuItem, show)
   if hs.fs.attributes(resourceDir .. '/' .. newName .. '.strings') ~= nil then
     return clickControlCenterMenuBarItem(menuBarName)
   end
-  return clickAppRightMenuBarItem(menuBarName, menuItem, subMenuItem, show)
+  return clickAppRightMenuBarItem(menuBarName, menuItemPath, show)
 end
