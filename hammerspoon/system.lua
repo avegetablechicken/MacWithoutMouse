@@ -347,15 +347,17 @@ local proxyActivateFuncs = {
 
   MonoCloud = {
     global = function()
-      toggleMonoCloud(false)
-      if clickRightMenuBarItem(proxyAppBundleIDs.MonoCloud, { "Outbound Mode", 2 }) then
-        enable_proxy_global("MonoCloud")
+      if toggleMonoCloud(false) then
+        if clickRightMenuBarItem(proxyAppBundleIDs.MonoCloud, { "Outbound Mode", 2 }) then
+          enable_proxy_global("MonoCloud")
+        end
       end
     end,
     pac = function()
-      toggleMonoCloud(false)
-      if clickRightMenuBarItem(proxyAppBundleIDs.MonoCloud, { "Outbound Mode", 3 }) then
-        enable_proxy_global("MonoCloud")
+      if toggleMonoCloud(false) then
+        if clickRightMenuBarItem(proxyAppBundleIDs.MonoCloud, { "Outbound Mode", 3 }) then
+          enable_proxy_global("MonoCloud")
+        end
       end
     end
   }
