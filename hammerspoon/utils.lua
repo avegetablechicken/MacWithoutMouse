@@ -2302,9 +2302,10 @@ function clickRightMenuBarItem(menuBarName, menuItemPath, show)
   if menuBarName == "Control Center" then
     return clickControlCenterMenuBarItem(menuBarName)
   end
-  local resourceDir = findApplication("com.apple.controlcenter"):path() .. "/Contents/Resources/en.lproj"
+  local resourceDir = findApplication("com.apple.controlcenter"):path() .. "/Contents/Resources"
   local newName = menuBarName:gsub(" ", ""):gsub("‑", "")
-  if hs.fs.attributes(resourceDir .. '/' .. newName .. '.strings') ~= nil then
+  if hs.fs.attributes(resourceDir .. '/' .. newName .. '.loctable') ~= nil
+      or hs.fs.attributes(resourceDir .. '/en.lproj/' .. newName .. '.strings') ~= nil then
     return clickControlCenterMenuBarItem(menuBarName)
   end
   return clickAppRightMenuBarItem(menuBarName, menuItemPath, show)
