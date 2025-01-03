@@ -4337,20 +4337,6 @@ registerInAppHotKeys(frontApp)
 -- register hotkeys for focused window of active app
 registerInWinHotKeys(frontApp)
 
--- register hotkeys for frontmost window belonging to unactivated app
-local frontWin = hs.window.frontmostWindow()
-if frontWin ~= nil then
-  local frontWinAppBid = frontWin:application():bundleID()
-  if inWinOfUnactivatedAppWatchers[frontWinAppBid] ~= nil then
-    for filter, _ in pairs(inWinOfUnactivatedAppWatchers[frontWinAppBid]) do
-      local filterEnable = hs.window.filter.new(false):setAppFilter(frontWin:application():title(), filter)
-      if filterEnable:isWindowAllowed(frontWin) then
-        inWinOfUnactivatedAppWatcherEnableCallback(frontWinAppBid, filter, frontWin)
-      end
-    end
-  end
-end
-
 -- register watchers for frontmost window belonging to unactivated app
 for bid, appConfig in pairs(appHotKeyCallbacks) do
   local appObject = findApplication(bid)
@@ -4368,6 +4354,20 @@ for bid, appConfig in pairs(appHotKeyCallbacks) do
         registerWinFiltersForDaemonApp(appObject, appConfig)
       end)
       break
+    end
+  end
+end
+
+-- register hotkeys for frontmost window belonging to unactivated app
+local frontWin = hs.window.frontmostWindow()
+if frontWin ~= nil then
+  local frontWinAppBid = frontWin:application():bundleID()
+  if inWinOfUnactivatedAppWatchers[frontWinAppBid] ~= nil then
+    for filter, _ in pairs(inWinOfUnactivatedAppWatchers[frontWinAppBid]) do
+      local filterEnable = hs.window.filter.new(false):setAppFilter(frontWin:application():title(), filter)
+      if filterEnable:isWindowAllowed(frontWin) then
+        inWinOfUnactivatedAppWatcherEnableCallback(frontWinAppBid, filter, frontWin)
+      end
     end
   end
 end
