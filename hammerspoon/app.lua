@@ -4089,9 +4089,11 @@ end
 -- hotkeys for frontmost window belonging to unactivated app
 local inWinOfUnactivatedAppHotKeys = {}
 local inWinOfUnactivatedAppWatchers = {}
-local function inWinOfUnactivatedAppWatcherEnableCallback(bid, filter, winObj)
+local function inWinOfUnactivatedAppWatcherEnableCallback(bid, filter, winObj, appName, event)
   if inWinOfUnactivatedAppHotKeys[bid] == nil then
     inWinOfUnactivatedAppHotKeys[bid] = {}
+  elseif event == hs.window.filter.windowFocused then
+    return
   end
   for hkID, cfg in pairs(appHotKeyCallbacks[bid]) do
     local appObject = findApplication(bid)
@@ -4173,7 +4175,13 @@ local function registerSingleWinFilterForDaemonApp(appObject, filter)
       hs.fnutils.partial(inWinOfUnactivatedAppWatcherEnableCallback, bid, filter)
   )
   local filterDisable = hs.window.filter.new(false):setAppFilter(appObject:name(), filter):subscribe(
-      {hs.window.filter.windowDestroyed, hs.window.filter.windowUnfocused}, function(winObj, appName)
+      { hs.window.filter.windowDestroyed, hs.window.filter.windowUnfocused },
+  function(winObj, appName, event)
+    if event == hs.window.filter.windowUnfocused
+        and hs.window.frontmostWindow() ~= nil
+        and hs.window.frontmostWindow():id() == winObj:id() then
+      return
+    end
     if inWinOfUnactivatedAppHotKeys[bid] ~= nil then  -- fix weird bug
       for i, hotkey in ipairs(inWinOfUnactivatedAppHotKeys[bid]) do
         if hotkey.idx ~= nil then
@@ -4181,9 +4189,7 @@ local function registerSingleWinFilterForDaemonApp(appObject, filter)
           inWinOfUnactivatedAppHotKeys[bid][i] = nil
         end
       end
-      if #inWinOfUnactivatedAppHotKeys[bid] == 0 then
-        inWinOfUnactivatedAppHotKeys[bid] = nil
-      end
+      inWinOfUnactivatedAppHotKeys[bid] = nil
     end
     if #inWinOfUnactivatedAppWatchers[bid][filter] == 0 then
       inWinOfUnactivatedAppWatchers[bid][filter] = nil
