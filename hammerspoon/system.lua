@@ -949,16 +949,12 @@ function()
       end tell
     ]], proxy:autosaveName()))
   else
-    hs.osascript.applescript(string.format([[
-      ignoring application responses
-        tell application "System Events"
-          click menu bar item "%s" of last menu bar of application process "Hammerspoon"
-        end tell
-      end ignoring
-
-      delay 0.2
-      do shell script "killall System\\ Events"
-    ]], proxy:title()))
+    local appObject = findApplication("org.hammerspoon.Hammerspoon")
+    local appUIObject = hs.axuielement.applicationElement(appObject)
+    local menuBarMenu = getAXChildren(appUIObject, "AXMenuBar", -1, "AXMenuBarItem", proxy:title())
+    if menuBarMenu ~= nil then
+      menuBarMenu:performAction("AXPress")
+    end
   end
 end)
 proxyHotkey.kind = HK.MENUBAR
