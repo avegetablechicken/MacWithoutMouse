@@ -314,14 +314,16 @@ local proxyActivateFuncs = {
   V2RayX = {
     global = function()
       if toggleV2RayX(true) then
-        clickRightMenuBarItem(proxyAppBundleIDs.V2RayX, "Global Mode")
-        enable_proxy_global("V2RayX")
+        if clickRightMenuBarItem(proxyAppBundleIDs.V2RayX, "Global Mode") then
+          enable_proxy_global("V2RayX")
+        end
       end
     end,
     pac = function()
       if toggleV2RayX(true) then
-        clickRightMenuBarItem(proxyAppBundleIDs.V2RayX, "PAC Mode")
-        enable_proxy_PAC("V2RayX")
+        if clickRightMenuBarItem(proxyAppBundleIDs.V2RayX, "PAC Mode") then
+          enable_proxy_PAC("V2RayX")
+        end
       end
     end
   },
@@ -329,14 +331,16 @@ local proxyActivateFuncs = {
   V2rayU = {
     global = function()
       if toggleV2RayU(true) then
-        clickRightMenuBarItem(proxyAppBundleIDs.V2rayU, "Global Mode")
-        enable_proxy_global("V2rayU")
+        if clickRightMenuBarItem(proxyAppBundleIDs.V2rayU, "Global Mode") then
+          enable_proxy_global("V2rayU")
+        end
       end
     end,
     pac = function()
       if toggleV2RayU(true) then
-        clickRightMenuBarItem(proxyAppBundleIDs.V2rayU, "Pac Mode")
-        enable_proxy_PAC("V2rayU")
+        if clickRightMenuBarItem(proxyAppBundleIDs.V2rayU, "Pac Mode") then
+          enable_proxy_PAC("V2rayU")
+        end
       end
     end
   },
@@ -344,13 +348,15 @@ local proxyActivateFuncs = {
   MonoCloud = {
     global = function()
       toggleMonoCloud(false)
-      clickRightMenuBarItem(proxyAppBundleIDs.MonoCloud, "Outbound Mode", 2)
-      enable_proxy_global("MonoCloud")
+      if clickRightMenuBarItem(proxyAppBundleIDs.MonoCloud, "Outbound Mode", 2) then
+        enable_proxy_global("MonoCloud")
+      end
     end,
     pac = function()
       toggleMonoCloud(false)
-      clickRightMenuBarItem(proxyAppBundleIDs.MonoCloud, "Outbound Mode", 3)
-      enable_proxy_global("MonoCloud")
+      if clickRightMenuBarItem(proxyAppBundleIDs.MonoCloud, "Outbound Mode", 3) then
+        enable_proxy_global("MonoCloud")
+      end
     end
   }
 }
