@@ -5245,45 +5245,33 @@ end
 -- ### Mountain Duck
 -- connect to servers on launch
 local function connectMountainDuckEntries(appObject, connection)
-  local script = string.format([[
-    tell application "System Events"
-      tell first application process whose bundle identifier is "%s"
-        set li to menu 1 of last menu bar
-  ]], appObject:bundleID())
+  local appUIObj = hs.axuielement.applicationElement(appObject)
+  local menuBar = getAXChildren(appUIObj, "AXMenuBar", -1, "AXMenu", 1)
 
   if type(connection) == 'string' then
-    script = script .. string.format([[
-        if exists menu item "%s" of li then
-          click menu item 1 of menu 1 of menu item "%s" of li
-        end
-    ]], connection, connection)
+    local menuItem = getAXChildren(menuBar, "AXMenuItem", connection, "AXMenu", 1, "AXMenuItem", 1)
+    if menuItem ~= nil then
+      menuItem:performAction("AXPress")
+    end
   else
     local fullfilled = connection.condition(appObject)
     if fullfilled == nil then return end
     local connects = connection[connection.locations[fullfilled and 1 or 2]]
     local disconnects = connection[connection.locations[fullfilled and 2 or 1]]
     for _, item in ipairs(connects) do
-      script = script .. string.format([[
-          if exists menu item "%s" of li then
-            click menu item 1 of menu 1 of menu item "%s" of li
-          end
-      ]], item, item)
+      local menuItem = getAXChildren(menuBar, "AXMenuItem", item, "AXMenu", 1, "AXMenuItem", 1)
+      if menuItem ~= nil then
+        menuItem:performAction("AXPress")
+      end
     end
+    local disconnect = localizedString('Disconnect', appObject:bundleID())
     for _, item in ipairs(disconnects) do
-      script = script .. string.format([[
-          if exists menu item "%s" of li then
-            click menu item "%s" of menu 1 of menu item "%s" of li
-          end
-      ]], item, localizedString('Disconnect', appObject:bundleID()), item)
+      local menuItem = getAXChildren(menuBar, "AXMenuItem", item, "AXMenu", 1, "AXMenuItem", disconnect)
+      if menuItem ~= nil then
+        menuItem:performAction("AXPress")
+      end
     end
   end
-
-  script = script .. [[
-      end tell
-    end tell
-  ]]
-
-  hs.osascript.applescript(script)
 end
 local mountainDuckConfig = applicationConfigs["io.mountainduck"]
 if mountainDuckConfig ~= nil and mountainDuckConfig.connections ~= nil then
