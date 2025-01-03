@@ -244,7 +244,7 @@ local function toggleV2RayU(enable, alert)
   return ok
 end
 
--- toggle connect/disconnect VPN using `MonoProxyMac`
+-- toggle connect/disconnect VPN using `MonoCloud`(`MonoProxyMac`)
 local function toggleMonoCloud(enable, alert)
   local bundleID = proxyAppBundleIDs.MonoCloud
 
@@ -296,9 +296,9 @@ local function toggleMonoCloud(enable, alert)
   if ok then
     if alert ~= nil and alert == true then
       if ret == 0 then
-        hs.alert("Set MonoProxyMac as system proxy")
+        hs.alert("Set MonoCloud as system proxy")
       else
-        hs.alert("Unset MonoProxyMac as system proxy")
+        hs.alert("Unset MonoCloud as system proxy")
       end
     end
   else
@@ -775,7 +775,6 @@ local function registerProxyMenuImpl()
   end
 
   for _, candidate in ipairs(proxyMenuItemCandidates) do
-    local appname = candidate.appname == "MonoCloud" and "MonoProxyMac" or candidate.appname
     local bundleID = proxyAppBundleIDs[candidate.appname]
     if ProxyConfigs[candidate.appname] ~= nil
         and hs.application.pathForBundleID(bundleID) ~= nil
@@ -790,7 +789,7 @@ local function registerProxyMenuImpl()
           if findApplication(bundleID) == nil then
             hs.application.launchOrFocusByBundleID(bundleID)
             hs.timer.waitUntil(
-              function() return findApplication(appname) ~= nil end,
+              function() return findApplication(bundleID) ~= nil end,
               actionFunc)
           else
             actionFunc()
@@ -2406,8 +2405,8 @@ function System_applicationCallback(appName, eventType, appObject)
       local enabledProxy = parseProxyInfo(proxy_info(), false)
       for _, proxyApp in ipairs(proxyMenuItemCandidates) do
         if enabledProxy == proxyApp.appname then
-          local appname = enabledProxy == "MonoCloud" and "MonoProxyMac" or enabledProxy
-          if findApplication(appname) == nil then
+          local bundleID = proxyAppBundleIDs[enabledProxy]
+          if findApplication(bundleID) == nil then
             disable_proxy()
           end
           break
