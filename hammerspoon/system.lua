@@ -117,66 +117,64 @@ local proxyAppBundleIDs = {
 -- toggle connect/disconnect VPN using `V2RayX`
 local function toggleV2RayX(enable, alert)
   local bundleID = proxyAppBundleIDs.V2RayX
-
-  local script = ""
   if findApplication(bundleID) == nil then
-    script = [[
-      tell application id "]] .. bundleID .. [[" to activate
-    ]]
+    hs.application.launchOrFocusByBundleID(bundleID)
   end
 
-  script = script .. [[
-    tell application "System Events"
-      set popupMenu to menu 1 of menu bar item 1 of last menu bar of ¬
-          (first application process whose bundle identifier is "]] .. bundleID .. [[")
-      %s
-    end tell
-
-    return ret
-  ]]
-
-  if enable == true then
-    script = string.format(script, [[
-      if exists menu item "Load core" of popupMenu then
-        click menu item "Load core" of popupMenu
-      end if
-      set ret to 0
-    ]])
-  elseif enable == false then
-    script = string.format(script, [[
-      if exists menu item "Unload core" of popupMenu then
-        click menu item "Unload core" of popupMenu
-      end if
-      set ret to 1
-    ]])
-  else
-    script = string.format(script, [[
-      if exists menu item "Load core" of popupMenu then
-        click menu item "Load core" of popupMenu
-        set ret to 0
-      else
-        click menu item "Unload core" of popupMenu
-        set ret to 1
-      end if
-    ]])
-  end
-
-  local ok, ret = hs.osascript.applescript(script)
-  if ok then
-    if alert ~= nil and alert == true then
-      if ret == 0 then
-        hs.alert("V2Ray core loaded in \"V2RayX\"")
-      else
-        hs.alert("V2Ray core unloaded in \"V2RayX\"")
-      end
-    end
-  else
-    if alert ~= nil and alert ~= false then
+  local appUIObj = hs.axuielement.applicationElement(findApplication(bundleID))
+  local menu = getAXChildren(appUIObj, "AXMenuBar", -1, "AXMenuBarItem", 1,
+      "AXMenu", 1)
+  if menu == nil then
+    if alert then
       hs.alert("Error occurred while loading/unloading V2ray core in \"V2RayX\"")
     end
+    return false
   end
 
-  return ok
+  local set
+  if enable == true then
+    local load = getAXChildren(menu, "AXMenuItem", "Load core")
+    if load ~= nil then
+      load:performAction("AXPress")
+      set = true
+    end
+  elseif enable == false then
+    local unload = getAXChildren(menu, "AXMenuItem", "Unload core")
+    if unload ~= nil then
+      unload:performAction("AXPress")
+      set = false
+    end
+  else
+    local unload = getAXChildren(menu, "AXMenuItem", "Unload core")
+    if unload ~= nil then
+      unload:performAction("AXPress")
+      set = false
+    else
+      local load = getAXChildren(menu, "AXMenuItem", "Load core")
+      load:performAction("AXPress")
+      set = true
+    end
+  end
+
+  if enable == true or set then
+    local unload = getAXChildren(menu, "AXMenuItem", "Unload core")
+    if unload == nil then
+      if alert then
+        hs.alert("Error occurred while loading V2ray core in \"V2RayX\"")
+      end
+      return false
+    end
+  end
+
+  if alert then
+    if set == 0 then
+      hs.alert("V2Ray core loaded in \"V2RayX\"")
+    else
+      hs.alert("V2Ray core unloaded in \"V2RayX\"")
+    end
+  end
+
+  return true
 end
 
 -- toggle connect/disconnect VPN using `V2rayU`
