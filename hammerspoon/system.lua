@@ -610,38 +610,16 @@ local function parseProxyInfo(info, require_mode)
           mode = "Global"
         elseif require_mode then
           local bundleID = proxyAppBundleIDs.MonoCloud
-          local script = [[
-            tell application "System Events"
-              set menuitem to menu item "Outbound Mode" of menu 1 of menu bar item 1 of last menu bar of ¬
-                  (first application process whose bundle identifier is  "]] .. bundleID .. [[")
-              click menuitem
-
-              set submenuitem to menu item 2 of menu "Outbound Mode" of menuitem
-              set ticked to value of attribute "AXMenuItemMarkChar" of submenuitem
-              if ticked is "✓" then
-                set ret to 0
-              else
-                set submenuitem to menu item 3 of menu "Outbound Mode" of menuitem
-                set ticked to value of attribute "AXMenuItemMarkChar" of submenuitem
-                if ticked is "✓" then
-                  set ret to 1
-                else
-                  set ret to -1
-                end if
-              end if
-              key code 53
-            end tell
-            return ret
-          ]]
-          local ok, result = hs.osascript.applescript(script)
-          if not ok then
-            ok, result = hs.osascript.applescript(script)
-          end
-          if ok then
-            if result == 0 then
-              mode = "Global"
-            elseif result == 1 then
-              mode = "PAC"
+          if findApplication(bundleID) ~= nil then
+            local appUIObj = hs.axuielement.applicationElement(findApplication(bundleID))
+            local outboundModeMenu = getAXChildren(appUIObj, "AXMenuBar", 1, "AXMenuBarItem", 1,
+              "AXMenu", 1, "AXMenuItem", "Outbound Mode", "AXMenu", 1)
+            if outboundModeMenu ~= nil then
+              if getAXChildren(outboundModeMenu, "AXMenuItem", 2).AXMenuItemMarkChar == "✓" then
+                mode = "Global"
+              elseif getAXChildren(outboundModeMenu, "AXMenuItem", 3).AXMenuItemMarkChar == "✓" then
+                mode = "PAC"
+              end
             end
           end
         end
