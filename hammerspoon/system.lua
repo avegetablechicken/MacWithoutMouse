@@ -247,67 +247,46 @@ end
 -- toggle connect/disconnect VPN using `MonoCloud`(`MonoProxyMac`)
 local function toggleMonoCloud(enable, alert)
   local bundleID = proxyAppBundleIDs.MonoCloud
-
-  local script = ""
   if findApplication(bundleID) == nil then
-    script = [[
-      tell application id "]] .. bundleID .. [[" to activate
-    ]]
+    hs.application.launchOrFocusByBundleID(bundleID)
   end
 
-  script = script .. [[
-    tell application "System Events"
-      set popupMenu to menu 1 of menu bar item 1 of last menu bar of ¬
-          (first application process whose bundle identifier is "]] .. bundleID .. [[")
-      set menuitem to menu item "Set As System Proxy" of popupMenu
-      set ticked to value of attribute "AXMenuItemMarkChar" of menuitem
-      %s
-    end tell
-
-    return ret
-  ]]
-
-  if enable == true then
-    script = string.format(script, [[
-      if ticked is not "✓" then
-        click menuitem
-      end if
-      set ret to 0
-    ]])
-  elseif enable == false then
-    script = string.format(script, [[
-      if ticked is "✓" then
-        click menuitem
-      end if
-      set ret to 1
-    ]])
-  else
-    script = string.format(script, [[
-      click menuitem
-      if ticked is "✓" then
-        set ret to 1
-      else
-        set ret to 0
-      end if
-    ]])
-  end
-
-  local ok, ret = hs.osascript.applescript(script)
-  if ok then
-    if alert ~= nil and alert == true then
-      if ret == 0 then
-        hs.alert("Set MonoCloud as system proxy")
-      else
-        hs.alert("Unset MonoCloud as system proxy")
-      end
-    end
-  else
-    if alert ~= nil and alert ~= false then
+  local appUIObj = hs.axuielement.applicationElement(findApplication(bundleID))
+  local menuItem = getAXChildren(appUIObj, "AXMenuBar", 1, "AXMenuBarItem", 1,
+      "AXMenu", 1, "AXMenuItem", "Set As System Proxy")
+  if menuItem == nil then
+    if alert then
       hs.alert("Error occurred. Please retry")
     end
+    return false
   end
 
-  return ok
+  local ticked = menuItem.AXMenuItemMarkChar
+  local set
+  if enable == true then
+    if ticked ~= "✓" then
+      menuItem:performAction("AXPress")
+      set = true
+    end
+  elseif enable == false then
+    if ticked == "✓" then
+      menuItem:performAction("AXPress")
+      set = false
+    end
+  else
+    menuItem:performAction("AXPress")
+    set = ticked ~= "✓"
+  end
+
+  if alert then
+    if set then
+      hs.alert("Set MonoCloud as system proxy")
+    else
+      hs.alert("Unset MonoCloud as system proxy")
+    end
+  end
+
+  return true
 end
 
 local proxyActivateFuncs = {
