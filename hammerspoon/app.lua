@@ -224,8 +224,10 @@ end
 -- ### Finder
 local function getFinderSidebarItemTitle(idx)
   return function(appObject)
-    local appUIObj = hs.axuielement.applicationElement(appObject)
-    local outlineUIObj = getAXChildren(appUIObj, "AXWindow", activatedWindowIndex(),
+    if appObject:focusedWindow() == nil
+        or appObject:focusedWindow():role() == 'AXSheet' then return false end
+    local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
+    local outlineUIObj = getAXChildren(winUIObj,
         "AXSplitGroup", 1, "AXScrollArea", 1, "AXOutline", 1)
     if outlineUIObj == nil then return end
     local header
@@ -249,7 +251,8 @@ local function getFinderSidebarItem(idx)
   return function(appObject)
     if appObject:focusedWindow() == nil
         or appObject:focusedWindow():role() == 'AXSheet' then return false end
-    local outlineUIObj = getAXChildren(hs.axuielement.windowElement(appObject:focusedWindow()),
+    local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
+    local outlineUIObj = getAXChildren(winUIObj,
         "AXSplitGroup", 1, "AXScrollArea", 1, "AXOutline", 1)
     if outlineUIObj == nil then return false end
     local cnt = 0
@@ -301,8 +304,9 @@ end
 -- ### Messages
 local function deleteSelectedMessage(appObject, menuItem, force)
   if menuItem == nil then
-    local appUIObj = hs.axuielement.applicationElement(appObject)
-    local button = getAXChildren(appUIObj, "AXWindow", activatedWindowIndex(),
+    if appObject:focusedWindow() == nil then return end
+    local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
+    local button = getAXChildren(winUIObj,
         "AXGroup", 1, "AXGroup", 1, "AXGroup", 2, "AXGroup", 1, "AXButton", 2)
     if button ~= nil then
       button:performAction("AXPress")
