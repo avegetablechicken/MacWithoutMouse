@@ -49,6 +49,7 @@ function getAXChildren(element, role, index, ...)
     children = element:childrenWithRole(role)
   end
   if type(index) == 'number' then
+    if index < 0 then index = #children + index + 1 end
     child = children[index]
   else
     child = hs.fnutils.find(children, function(c)
@@ -2236,8 +2237,7 @@ function clickAppRightMenuBarItem(bundleID, menuItemPath, show)
   local appObject = findApplication(bundleID)
   if appObject == nil then return false end
   local appUIObject = hs.axuielement.applicationElement(appObject)
-  local numMenuBars = #appUIObject:childrenWithRole("AXMenuBar")
-  local menuBarMenu = getAXChildren(appUIObject, "AXMenuBar", numMenuBars, "AXMenuBarItem", 1)
+  local menuBarMenu = getAXChildren(appUIObject, "AXMenuBar", -1, "AXMenuBarItem", 1)
 
   local menu = menuBarMenu
   for _, item in ipairs(menuItemPath) do
