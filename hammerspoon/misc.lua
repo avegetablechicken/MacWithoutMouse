@@ -129,13 +129,7 @@ local verificationPatterns = {}
 if hs.fs.attributes("config/misc.json") ~= nil then
   verificationPatterns = hs.json.read("config/misc.json").verificationFilter or {}
 end
-local function parseVerificationCodeFromFirstMessage(window)
-  local winUIObj = hs.axuielement.windowElement(window)
-  local ele = getAXChildren(winUIObj, "AXGroup", 1, "AXGroup", 1, "AXScrollArea", 1, "AXMenuButton", 1)
-      or (getAXChildren(winUIObj, "AXGroup", 1, "AXScrollArea", 1, nil, 1, "AXGroup", 1, "AXStaticText", 2)
-      or getAXChildren(winUIObj, "AXScrollArea", 1, nil, 1, "AXGroup", 1, "AXStaticText", 2))
-  if ele == nil then return end
-
+local function parseVerificationCodeFromFirstMessage()
   local content, ok = hs.execute([[
     /usr/bin/sqlite3 $HOME/Library/Messages/chat.db \
     '''
@@ -168,8 +162,8 @@ end
 NewMessageWindowFilter = hs.window.filter.new(false):
 allowApp(findApplication("com.apple.notificationcenterui"):name()):
 subscribe(hs.window.filter.windowCreated,
-  function(window)
-    local code = parseVerificationCodeFromFirstMessage(window)
+  function()
+    local code = parseVerificationCodeFromFirstMessage()
     if code then
       hs.notify.new({
         title = string.format("SMS Code Detected: %s", code),
