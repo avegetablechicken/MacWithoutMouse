@@ -2241,15 +2241,16 @@ end
 local controlCenterIdentifiers = hs.json.read("static/controlcenter-identifies.json")
 local controlCenterMenuBarItemIdentifiers = controlCenterIdentifiers.menubar
 function clickControlCenterMenuBarItemSinceBigSur(menuItem)
-  local succ = hs.osascript.applescript(string.format([[
-    tell application "System Events"
-      set controlitems to menu bar 1 of application process "ControlCenter"
-      set controlcenter to ¬
-        (first menu bar item whose value of attribute "AXIdentifier" contains "%s") of controlitems
-      perform action 1 of controlcenter
-    end tell
-  ]], controlCenterMenuBarItemIdentifiers[menuItem]))
-  return succ
+  if controlCenterMenuBarItemIdentifiers[menuItem] == nil then return false end
+  local appUIObject = hs.axuielement.applicationElement(findApplication("com.apple.controlcenter"))
+  local menuBarItems = getAXChildren(appUIObject, "AXMenuBar", -1):childrenWithRole("AXMenuBarItem")
+  for _, item in ipairs(menuBarItems) do
+    if item.AXIdentifier:find(controlCenterMenuBarItemIdentifiers[menuItem]) ~= nil then
+      item:performAction("AXPress")
+      return true
+    end
+  end
+  return false
 end
 
 function clickControlCenterMenuBarItem(menuItem)
