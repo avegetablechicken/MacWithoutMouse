@@ -157,8 +157,7 @@ registerAppHotkeys()
 local appHotKeyCallbacks
 
 local function applicationVersion(bundleID)
-  local version = hs.execute(string.format('mdls -r -name kMDItemVersion "%s"',
-    hs.application.pathForBundleID(bundleID)))
+  local version = hs.application.infoForBundleID(bundleID).CFBundleShortVersionString
   version = hs.fnutils.split(version, "%.")
   local major, minor, patch
   major = tonumber(version[1]:match("%d+"))
