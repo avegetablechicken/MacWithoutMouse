@@ -194,14 +194,6 @@ local function versionCompare(versionStr, comp)
   end
 end
 
-local function versionEqual(version)
-  return versionCompare(version, "==")
-end
-
-local function versionNotEqual(version)
-  return versionCompare(version, "~=")
-end
-
 local function versionLessThan(version)
   return versionCompare(version, "<")
 end
