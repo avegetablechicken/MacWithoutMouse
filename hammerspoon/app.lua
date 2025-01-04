@@ -1724,8 +1724,7 @@ appHotKeyCallbacks = {
       end,
       fn = function(position, appObject)
         if not rightClickAndRestore(position, appObject:name()) then return end
-        local thisSpec = appHotKeyCallbacks[appObject:bundleID()]["openFileLocation"]
-        local title = thisSpec.message(appObject)
+        local title = localizedString("Open File Location", appObject:bundleID())
         hs.osascript.applescript([[
           tell application "System Events"
             tell first application process whose bundle identifier is "]] .. appObject:bundleID() .. [["
@@ -2304,8 +2303,8 @@ appHotKeyCallbacks = {
     ["preferences"] = {
       message = localizedMessage("Preferences"),
       fn = function(appObject)
-        local thisSpec = appHotKeyCallbacks[appObject:bundleID()]["preferences"]
-        appObject:selectMenuItem({ appObject:name(), thisSpec.message(appObject) })
+        appObject:selectMenuItem({ appObject:name(),
+            localizedMenuItem("Preferences", appObject:bundleID()) })
       end
     }
   },
@@ -2681,8 +2680,9 @@ appHotKeyCallbacks = {
       message = localizedMessage("In-app Screensaver",
                                 { localeFile = "HotkeyWindowController" }),
       fn = function(appObject)
-        local thisSpec = appHotKeyCallbacks[appObject:bundleID()]["invokeInAppScreenSaver"]
-        clickRightMenuBarItem(appObject:bundleID(), thisSpec.message(appObject))
+        clickRightMenuBarItem(appObject:bundleID(),
+            localizedString("In-app Screensaver", appObject:bundleID(),
+                            { localeFile = "HotkeyWindowController" }))
       end
     }
   },
