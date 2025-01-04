@@ -1692,6 +1692,22 @@ appHotKeyCallbacks = {
       condition = checkMenuItem({ "Comment", "Strikethrough" }),
       fn = receiveMenuItem
     },
+    ["openRecent"] = {
+      mods = get(KeybindingConfigs.hotkeys.shared, "openRecent", "mods"),
+      key = get(KeybindingConfigs.hotkeys.shared, "openRecent", "key"),
+      message = localizedMessage("Recent"),
+      condition = function(appObject)
+        if appObject:focusedWindow() == nil then return false end
+        local home = localizedString("Home", appObject:bundleID())
+        return appObject:focusedWindow():title() == home, appObject:focusedWindow()
+      end,
+      fn = function(winObj)
+        local winUIObj = hs.axuielement.windowElement(winObj)
+        local button = getAXChildren(winUIObj, "AXSplitGroup", 1, "AXGroup", 4, "AXGroup", 1)
+        local position = { button.AXPosition.x + 30, button.AXPosition.y + 10 }
+        leftClickAndRestore(position, winObj:application():name())
+      end
+    },
     ["openFileLocation"] = {
       message = localizedMessage("Open File Location"),
       condition = function(appObject)
