@@ -2127,22 +2127,22 @@ appHotKeyCallbacks = {
     ["back"] = {
       message = localizedMessage("Common.Navigation.Back"),
       condition = function(appObject)
-        local exBundleID = "com.tencent.xinWeChat.WeChatAppEx"
-        local exAppObject = findApplication(exBundleID)
-        if exAppObject ~= nil then
-          local menuItemPath = {
-            localizedMenuBarItem('File', exBundleID),
-            localizedString('Back', exBundleID)
-          }
-          if #menuItemPath == 2 then
-            local menuItem = exAppObject:findMenuItem(menuItemPath)
-            if menuItem ~= nil and menuItem.enabled then
-              return true, menuItemPath
-            end
-          end
-        end
         if appObject:focusedWindow() == nil then return false end
         local bundleID = appObject:bundleID()
+
+        -- CEF Window
+        local exBundleID = "com.tencent.xinWeChat.WeChatAppEx"
+        local menuItemPath = {
+          localizedMenuBarItem('File', bundleID),
+          localizedString('Back', exBundleID)
+        }
+        if #menuItemPath == 2 then
+          local menuItem = appObject:findMenuItem(menuItemPath)
+          if menuItem ~= nil and menuItem.enabled then
+            return true, { 0, menuItemPath }
+          end
+        end
+
         local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
         -- Moments
         if string.find(appObject:focusedWindow():title(), appObject:name()) == nil then
@@ -2155,8 +2155,9 @@ appHotKeyCallbacks = {
           end
           return false
         end
-        local back = localizedString("Common.Navigation.Back", bundleID)
+
         -- Official Accounts
+        local back = localizedString("Common.Navigation.Back", bundleID)
         local g = getAXChildren(winUIObj, "AXSplitGroup", 1, "AXSplitGroup", 1)
         if g ~= nil then
           for _, bt in ipairs(g:childrenWithRole("AXButton")) do
