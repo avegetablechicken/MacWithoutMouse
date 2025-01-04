@@ -1552,11 +1552,6 @@ appHotKeyCallbacks = {
       message = localizedMessage("Recent Documents"),
       condition = checkMenuItem({ "File", "Recent Documents" }),
       fn = showMenuItem
-    },
-    ["revealPDFInFinder"] = {
-      message = localizedMessage("Reveal PDF in Finder..."),
-      condition = checkMenuItem({ "File", "Reveal PDF in Finder..." }),
-      fn = receiveMenuItem
     }
   },
 
@@ -2894,24 +2889,6 @@ appHotKeyCallbacks = {
           result:close()
         end
       end
-    }
-  },
-
-  ["com.nektony.App-Cleaner-SIII"] =
-  {
-    ["revealInFinder"] = {
-      message = localizedMessage("Reveal in Finder"),
-      condition = checkMenuItem({ "File", "Reveal in Finder" }),
-      fn = receiveMenuItem
-    }
-  },
-
-  ["com.nektony.App-Cleaner-SIIICn"] =
-  {
-    ["revealInFinder"] = {
-      message = localizedMessage("RevealInFinder"),
-      condition = checkMenuItem({ "File", "RevealInFinder" }),
-      fn = receiveMenuItem
     }
   },
 

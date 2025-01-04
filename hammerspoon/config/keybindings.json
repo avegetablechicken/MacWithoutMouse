@@ -780,20 +780,20 @@
     },
     "com.apple.Safari": {
       "showInFinder": {
-        "mods": ["shift", "option", "command"],
-        "key": "F"
+        "mods": ["shift", "command"],
+        "key": "O"
       }
     },
     "com.apple.Preview": {
       "showInFinder": {
-        "mods": ["shift", "option", "command"],
-        "key": "F"
+        "mods": ["shift", "command"],
+        "key": "O"
       }
     },
     "com.google.Chrome": {
       "showInFinder": {
-        "mods": ["shift", "option", "command"],
-        "key": "F"
+        "mods": ["shift", "command"],
+        "key": "O"
       }
     },
     "com.microsoft.VSCode": {
@@ -814,20 +814,14 @@
     },
     "com.readdle.PDFExpert-Mac": {
       "showInFinder": {
-        "mods": ["shift", "option", "command"],
-        "key": "F"
-      }
-    },
-    "com.vallettaventures.Texpad": {
-      "revealPDFInFinder": {
-        "mods": ["shift", "option", "command"],
-        "key": "F"
+        "mods": ["shift", "command"],
+        "key": "O"
       }
     },
     "abnerworks.Typora": {
       "openFileLocation": {
-        "mods": ["shift", "option", "command"],
-        "key": "F"
+        "mods": ["shift", "command"],
+        "key": "O"
       },
       "pasteAsPlainText": {
         "mods": ["shift", "option", "command"],
@@ -836,8 +830,8 @@
     },
     "com.superace.updf.mac": {
       "showInFinder": {
-        "mods": ["shift", "option", "command"],
-        "key": "F"
+        "mods": ["shift", "command"],
+        "key": "O"
       }
     },
     "com.kingsoft.wpsoffice.mac": {
@@ -870,8 +864,8 @@
         "key": "E"
       },
       "openFileLocation": {
-        "mods": ["shift", "option", "command"],
-        "key": "F"
+        "mods": ["shift", "command"],
+        "key": "O"
       }
     },
     "com.apple.iWork.Keynote": {
@@ -912,8 +906,8 @@
         "key": "L"
       },
       "showInFinder": {
-        "mods": ["shift", "option", "command"],
-        "key": "F"
+        "mods": ["shift", "command"],
+        "key": "O"
       }
     },
     "com.apple.iWork.Pages": {
@@ -934,8 +928,8 @@
         "key": "V"
       },
       "showInFinder": {
-        "mods": ["shift", "option", "command"],
-        "key": "F"
+        "mods": ["shift", "command"],
+        "key": "O"
       }
     },
     "com.apple.iWork.Numbers": {
@@ -956,8 +950,8 @@
         "key": "V"
       },
       "showInFinder": {
-        "mods": ["shift", "option", "command"],
-        "key": "F"
+        "mods": ["shift", "command"],
+        "key": "O"
       }
     },
     "net.xmind.vana.app": {
@@ -1080,18 +1074,6 @@
       "showControlCenter": {
         "mods": ["shift", "command"],
         "key": "K"
-      }
-    },
-    "com.nektony.App-Cleaner-SIII": {
-      "revealInFinder": {
-        "mods": ["shift", "option", "command"],
-        "key": "F"
-      }
-    },
-    "com.nektony.App-Cleaner-SIIICn": {
-      "revealInFinder": {
-        "mods": ["shift", "option", "command"],
-        "key": "F"
       }
     },
     "com.objective-see.lulu.app": {
@@ -1308,13 +1290,13 @@
     "com.torusknot.SourceTreeNotMAS": {
       "showInFinder": {
         "mods": ["shift", "option", "command"],
-        "key": "F"
+        "key": "O"
       }
     },
     "com.apple.dt.Xcode": {
       "showInFinder": {
-        "mods": ["shift", "option", "command"],
-        "key": "F"
+        "mods": ["shift", "command"],
+        "key": "O"
       }
     },
     "com.jetbrains.CLion": {
