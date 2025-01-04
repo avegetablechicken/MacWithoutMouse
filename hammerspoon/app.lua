@@ -5025,26 +5025,36 @@ end
 registerObserverForMenuBarChange(frontApp, frontAppMenuItems)
 
 -- auto hide or quit apps with no windows (including pseudo windows suck as popover or sheet)
+local specialNoWindowsRules = {
+  ["com.apple.finder"] = function()
+    return #hs.window.visibleWindows() ~= 1
+  end,
+
+  ["com.app.menubarx"] = function(appObject)
+    local windows = appObject:visibleWindows()
+    return #hs.fnutils.filter(windows, function(win) return win:title() ~= "" end) == 0
+  end
+}
 local function processAppWithNoWindows(appObject, quit, delay)
-  hs.timer.doAfter(delay or 0, function()
-    if #appObject:visibleWindows() == 0
-      or (appObject:bundleID() == "com.app.menubarx"
-          and #hs.fnutils.filter(appObject:visibleWindows(),
-              function(win) return win:title() ~= "" end) == 0) then
-        if quit == true then
-          local wFilter = hs.window.filter.new(appObject:name())
-          if #wFilter:getWindows() == 0 then
-            appObject:kill()
-          end
-        else
-          appObject:hide()
+  local fn = function()
+    local specialRule = specialNoWindowsRules[appObject:bundleID()]
+    if (specialRule == nil and #appObject:visibleWindows() == 0)
+        or (specialRule ~= nil and specialRule(appObject)) then
+      if quit == true then
+        local wFilter = hs.window.filter.new(appObject:name())
+        if #wFilter:getWindows() == 0 then
+          appObject:kill()
         end
-    elseif appObject:bundleID() == "com.apple.finder" then
-      if #hs.window.visibleWindows() ~= 1 then
+      else
         appObject:hide()
       end
     end
-  end)
+  end
+  if delay == nil then
+    fn()
+  else
+    hs.timer.doAfter(delay, fn)
+  end
 end
 
 local appPseudoWindowObservers = {}
