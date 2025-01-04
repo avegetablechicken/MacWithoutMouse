@@ -5031,6 +5031,7 @@ local specialNoWindowsRules = {
   end,
 
   ["com.app.menubarx"] = function(appObject)
+    if versionGreaterEqual("1.6.9")(appObject) then return false end
     local windows = appObject:visibleWindows()
     return #hs.fnutils.filter(windows, function(win) return win:title() ~= "" end) == 0
   end
