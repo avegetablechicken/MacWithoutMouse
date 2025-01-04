@@ -4533,28 +4533,21 @@ local openSavePanelHotkeys = {}
 -- specialized for `WPS Office`
 local function WPSCloseDialog(winUIObj)
   local bundleID = "com.kingsoft.wpsoffice.mac"
-  local btnNames = {
-    closeDoNotSave = localizedMenuItem("Don't Save", bundleID) or "Don't Save",
-    closeCancel = localizedMenuItem("Cancel", bundleID) or "Cancel",
-    closeSave = localizedMenuItem("Save", bundleID) or "Save",
-  }
-  local appConfig = appHotKeyCallbacks[bundleID]
+  local btnName = localizedMenuItem("Don't Save", bundleID) or "Don't Save"
   if winUIObj.AXSubrole == "AXDialog" then
     local buttons = winUIObj:childrenWithRole("AXButton")
     for _, button in ipairs(buttons) do
-      for hkID, btnName in pairs(btnNames) do
-        if button.AXTitle == btnName then
-          local spec = get(KeybindingConfigs.hotkeys, bundleID, hkID) or appConfig[hkID]
-          if spec ~= nil then
-            local fn, cond = WrapCondition(findApplication(bundleID), spec.mods, spec.key, function()
-              button:performAction("AXPress")
-            end)
-            local hotkey = bindHotkeySpec(spec, btnName, fn)
-            hotkey.kind = HK.IN_APP
-            hotkey.subkind = HK.IN_APP_.WINDOW
-            hotkey.condition = cond
-            table.insert(openSavePanelHotkeys, hotkey)
-          end
+      if button.AXTitle == btnName then
+        local spec = get(KeybindingConfigs.hotkeys.shared, "confirmDelete")
+        if spec ~= nil then
+          local fn, cond = WrapCondition(findApplication(bundleID), spec.mods, spec.key, function()
+            button:performAction("AXPress")
+          end)
+          local hotkey = bindHotkeySpec(spec, btnName, fn)
+          hotkey.kind = HK.IN_APP
+          hotkey.subkind = HK.IN_APP_.WINDOW
+          hotkey.condition = cond
+          table.insert(openSavePanelHotkeys, hotkey)
         end
       end
     end
@@ -4595,6 +4588,11 @@ local function registerForOpenSavePanel(appObject)
 
   local windowFilter
   local actionFunc = function(winUIObj)
+    if hs.application.frontmostApplication():bundleID()
+        == "com.kingsoft.wpsoffice.mac" then
+      WPSCloseDialog(winUIObj)
+    end
+
     local dontSaveButton, sidebarCells = getUIObj(winUIObj)
     local header
     local i = 1
@@ -4667,12 +4665,7 @@ local function registerForOpenSavePanel(appObject)
       hotkey:delete()
     end
     openSavePanelHotkeys = {}
-    if hs.application.frontmostApplication():bundleID()
-        == "com.kingsoft.wpsoffice.mac" then
-      WPSCloseDialog(element)
-    else
-      actionFunc(element)
-    end
+    actionFunc(element)
   end)
   observer:start()
   stopOnDeactivated(appObject:bundleID(), observer, function()
