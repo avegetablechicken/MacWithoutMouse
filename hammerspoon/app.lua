@@ -2054,19 +2054,6 @@ appHotKeyCallbacks = {
       condition = JabRefShowLibraryByIndex(10),
       fn = receivePosition
     },
-    ["discardChanges"] = {
-      message = "Discard changes",
-      windowFilter = {
-        allowTitles = "^Save before closing$"
-      },
-      fn = function(winObj)
-        local winUIObj = hs.axuielement.windowElement(winObj)
-        local button = getAXChildren(winUIObj, "AXUnknown", 1, nil, 1, 'AXButton', 1)
-        if button ~= nil then
-          button:performAction("AXPress")
-        end
-      end
-    },
     ["minimize"] = specialCommonHotkeyConfigs["minimize"]
   },
 
@@ -4531,28 +4518,29 @@ registerZoomHotkeys(frontApp)
 local openSavePanelHotkeys = {}
 
 -- specialized for `WPS Office`
-local function WPSCloseDialog(winUIObj)
-  local bundleID = "com.kingsoft.wpsoffice.mac"
-  local btnName = localizedMenuItem("Don't Save", bundleID) or "Don't Save"
-  if winUIObj.AXSubrole == "AXDialog" then
-    local buttons = winUIObj:childrenWithRole("AXButton")
-    for _, button in ipairs(buttons) do
-      if button.AXTitle == btnName then
-        local spec = get(KeybindingConfigs.hotkeys.shared, "confirmDelete")
-        if spec ~= nil then
-          local fn, cond = WrapCondition(findApplication(bundleID), spec.mods, spec.key, function()
-            button:performAction("AXPress")
-          end)
-          local hotkey = bindHotkeySpec(spec, btnName, fn)
-          hotkey.kind = HK.IN_APP
-          hotkey.subkind = HK.IN_APP_.WINDOW
-          hotkey.condition = cond
-          table.insert(openSavePanelHotkeys, hotkey)
+local specialConfirmFuncs = {
+  ["com.kingsoft.wpsoffice.mac"] = function(winUIObj)
+    local btnName = localizedMenuItem("Don't Save", "com.kingsoft.wpsoffice.mac")
+    if btnName == nil then return end
+    if winUIObj.AXSubrole == "AXDialog" then
+      local buttons = winUIObj:childrenWithRole("AXButton")
+      for _, button in ipairs(buttons) do
+        if button.AXTitle == btnName then
+          return button
         end
       end
     end
+  end,
+
+  ["JabRef"] = function(winUIObj)
+    if winUIObj.AXTitle == "Save before closing" then
+      local button = getAXChildren(winUIObj, "AXUnknown", 1, nil, 1, 'AXButton', 1)
+      if button ~= nil and button.AXDescription == 'Discard changes' then
+        return button
+      end
+    end
   end
-end
+}
 
 local function registerForOpenSavePanel(appObject)
   if appObject:bundleID() == "com.apple.finder" then return end
@@ -4565,7 +4553,10 @@ local function registerForOpenSavePanel(appObject)
   local getUIObj = function(winUIObj)
     local windowIdent = winUIObj:attributeValue("AXIdentifier")
     local dontSaveButton, sidebarCells = nil, {}
-    if windowIdent == "save-panel" then
+    local specialConfirmFunc = specialConfirmFuncs[appObject:bundleID()]
+    if specialConfirmFunc ~= nil then
+      dontSaveButton = specialConfirmFunc(winUIObj)
+    elseif windowIdent == "save-panel" then
       for _, button in ipairs(winUIObj:childrenWithRole("AXButton")) do
         if button.AXIdentifier == "DontSaveButton" then
           dontSaveButton = button
@@ -4588,11 +4579,6 @@ local function registerForOpenSavePanel(appObject)
 
   local windowFilter
   local actionFunc = function(winUIObj)
-    if hs.application.frontmostApplication():bundleID()
-        == "com.kingsoft.wpsoffice.mac" then
-      WPSCloseDialog(winUIObj)
-    end
-
     local dontSaveButton, sidebarCells = getUIObj(winUIObj)
     local header
     local i = 1
@@ -4640,10 +4626,10 @@ local function registerForOpenSavePanel(appObject)
       local spec = get(KeybindingConfigs.hotkeys.shared, "confirmDelete")
       if spec ~= nil then
         local fn, cond = WrapCondition(appObject, spec.mods, spec.key, function()
-          local action = dontSaveButton:actionNames()[1]
-          dontSaveButton:performAction(action)
+          dontSaveButton:performAction("AXPress")
         end)
-        local hotkey = bindHotkeySpec(spec, dontSaveButton.AXTitle, fn)
+        local msg = dontSaveButton.AXTitle or dontSaveButton.AXDescription
+        local hotkey = bindHotkeySpec(spec, msg, fn)
         hotkey.kind = HK.IN_APP
         hotkey.subkind = HK.IN_APP_.WINDOW
         hotkey.condition = cond

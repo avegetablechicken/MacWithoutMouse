@@ -1034,10 +1034,6 @@
       "10thLibrary": {
         "mods": "command",
         "key": "0"
-      },
-      "discardChanges": {
-        "mods": "",
-        "key": "N"
       }
     },
     "com.apple.iMovieApp": {
