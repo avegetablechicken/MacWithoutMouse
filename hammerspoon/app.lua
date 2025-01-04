@@ -1574,6 +1574,29 @@ appHotKeyCallbacks = {
         selectMenuItem(appObject, { "Edit", "Paste as Plain Text" })
       end
     },
+    ["openRecent"] = {
+      mods = get(KeybindingConfigs.hotkeys.shared, "openRecent", "mods"),
+      key = get(KeybindingConfigs.hotkeys.shared, "openRecent", "key"),
+      message = localizedMessage("Open Recent"),
+      condition = function(appObject)
+        local enabled, menuItemPath = checkMenuItem({ "File", "Open Quickly…" })(appObject)
+        if enabled then
+          return true, { 1, menuItemPath }
+        end
+        enabled, menuItemPath = checkMenuItem({ "File", "Open Recent" })(appObject)
+        if enabled then
+          return true, { 2, menuItemPath }
+        end
+        return false
+      end,
+      fn = function(result, appObject)
+        if result[1] == 1 then
+          receiveMenuItem(result[2], appObject)
+        else
+          showMenuItem(result[2], appObject)
+        end
+      end
+    }
   },
 
   ["com.superace.updf.mac"] =
