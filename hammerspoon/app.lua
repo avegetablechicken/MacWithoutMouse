@@ -4514,7 +4514,7 @@ end
 registerZoomHotkeys(frontApp)
 
 -- bind hotkeys for open or save panel that are similar in `Finder`
--- & hotkeys to confirm delete or save
+-- & hotkey to confirm delete
 local openSavePanelHotkeys = {}
 
 -- specialized for `WPS Office`
