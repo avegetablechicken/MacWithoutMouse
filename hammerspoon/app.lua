@@ -4539,6 +4539,18 @@ local specialConfirmFuncs = {
         return button
       end
     end
+  end,
+
+  ["re.rizin.cutter"] = function(winUIObj)
+    if winUIObj.AXSubrole == "AXDialog" then
+      local group = getAXChildren(winUIObj, "AXGroup", 1)
+      local buttons = group and group:childrenWithRole("AXButton") or {}
+      for _, button in ipairs(buttons) do
+        if button.AXTitle == "Don't Save" then
+          return button
+        end
+      end
+    end
   end
 }
 
