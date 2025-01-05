@@ -474,11 +474,15 @@
     },
 
     "menubar": {
-      "enableIndex": false,
-      "enableLetter": true,
-      "excludedForLetter": [
-        "org.blenderfoundation.blender"
-      ]
+      "index": {
+        "enable": false
+      },
+      "letter": {
+        "enable": true,
+        "exclude": [
+          "org.blenderfoundation.blender"
+        ]
+      }
     },
 
     "shared": {

@@ -4738,11 +4738,11 @@ local function altMenuBarItem(appObject, menuItems)
     return
   end
 
-  local enableIndex = get(KeybindingConfigs.hotkeys.menubar, "enableIndex")
-  local enableLetter = get(KeybindingConfigs.hotkeys.menubar, "enableLetter")
+  local enableIndex = get(KeybindingConfigs.hotkeys, "menubar", "index", "enable")
+  local enableLetter = get(KeybindingConfigs.hotkeys, "menubar", "letter", "enable")
   if enableIndex == nil then enableIndex = false end
   if enableLetter == nil then enableLetter = true end
-  local excludedForLetter = get(KeybindingConfigs.hotkeys.menubar, 'excludedForLetter')
+  local excludedForLetter = get(KeybindingConfigs.hotkeys, "menubar", "letter", "exclude")
   if excludedForLetter ~= nil and hs.fnutils.contains(excludedForLetter,
                                                       appObject:bundleID()) then
     enableLetter = false
