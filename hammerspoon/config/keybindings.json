@@ -305,7 +305,7 @@
         "key": "X",
         "bundleID": "com.microsoft.VSCode"
       },
-      "PrevieW": {
+      "Preview": {
         "mods": "${hyper.app}",
         "key": "P",
         "bundleID": "com.apple.Preview"
