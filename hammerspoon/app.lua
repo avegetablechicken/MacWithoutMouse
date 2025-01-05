@@ -1485,6 +1485,15 @@ appHotKeyCallbacks = {
     },
   },
 
+  ["com.renfei.SnippetsLab"] =
+  {
+    ["showMainWindow"] = {
+      message = localizedMessage("Show Main Window"),
+      condition = checkMenuItem({ "Window", "Show Main Window" }),
+      fn = receiveMenuItem
+    }
+  },
+
   ["com.readdle.PDFExpert-Mac"] =
   {
     ["showInFinder"] = {

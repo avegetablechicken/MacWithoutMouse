@@ -802,6 +802,12 @@
         "key": "W"
       }
     },
+    "com.renfei.SnippetsLab": {
+      "showMainWindow": {
+        "mods": "command",
+        "key": "0"
+      }
+    },
     "com.readdle.PDFExpert-Mac": {
       "showInFinder": {
         "mods": ["shift", "command"],
