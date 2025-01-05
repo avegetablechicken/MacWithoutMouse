@@ -5025,8 +5025,14 @@ registerObserverForMenuBarChange(frontApp, frontAppMenuItems)
 
 -- auto hide or quit apps with no windows (including pseudo windows suck as popover or sheet)
 local specialNoWindowsRules = {
-  ["com.apple.finder"] = function()
-    return #hs.window.visibleWindows() ~= 1
+  ["com.apple.finder"] = function(appObject)
+    if #hs.window.visibleWindows() == 1
+        and hs.window.visibleWindows()[1]:id() == hs.window.desktop():id() then
+      return false
+    end
+    local windows = appObject:visibleWindows()
+    return #hs.fnutils.ifilter(windows, function(win)
+        return win:id() ~= hs.window.desktop():id() end) == 0
   end,
 
   ["com.app.menubarx"] = function(appObject)
