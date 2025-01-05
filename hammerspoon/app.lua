@@ -2684,12 +2684,12 @@ appHotKeyCallbacks = {
         if output == "0" then
           local spec = KeybindingConfigs.hotkeys[bundleID]["toggleMenuBarX"]
           local mods, key = dumpPlistKeyBinding(1, spec.mods, spec.key)
-          local _, ok = hs.execute(string.format(
+          hs.execute(string.format(
               [[defaults write '%s' KeyboardShortcuts_toggleX -string '{"carbonKeyCode":%d,"carbonModifiers":%d}']],
               bundleID, key, mods))
           appObject:kill()
           hs.timer.doAfter(1, function()
-            hs.application.open(bundleID)
+            hs.execute(string.format("open -g -b '%s'", bundleID))
             hs.timer.doAfter(1, function()
               safeGlobalKeyStroke(spec.mods, spec.key)
             end)
