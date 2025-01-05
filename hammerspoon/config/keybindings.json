@@ -320,11 +320,6 @@
         "key": "K",
         "bundleID": "com.apple.iWork.Keynote"
       },
-      "Typora": {
-        "mods": "${hyper.app}",
-        "key": "M",
-        "bundleID": "abnerworks.Typora"
-      },
       "QQMusic": {
         "mods": "${hyper.hyper}",
         "key": "Q",
@@ -347,6 +342,11 @@
           "com.devolutions.remotedesktopmanager",
           "com.devolutions.remotedesktopmanager.free"
         ]
+      },
+      "Typora": {
+        "mods": "${hyper.hyper}",
+        "key": "T",
+        "bundleID": "abnerworks.Typora"
       },
       "App Cleaner & Uninstaller": {
         "mods": "${hyper.hyper}",
