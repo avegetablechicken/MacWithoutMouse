@@ -1985,6 +1985,33 @@ appHotKeyCallbacks = {
         return button ~= nil and button.AXEnabled, button
       end,
       fn = receiveButton
+    },
+    ["toggleLauncher"] = {
+      message = "Toggle ChatGPT Launcher",
+      fn = function(appObject)
+        local bundleID = appObject:bundleID()
+        local output = hs.execute(string.format(
+            "defaults read '%s' KeyboardShortcuts_toggleLauncher | tr -d '\\n'", bundleID))
+        if output == "0" then
+          local spec = KeybindingConfigs.hotkeys[bundleID]["toggleLauncher"]
+          local mods, key = dumpPlistKeyBinding(1, spec.mods, spec.key)
+          hs.execute(string.format(
+              [[defaults write '%s' KeyboardShortcuts_toggleLauncher -string '{"carbonKeyCode":%d,"carbonModifiers":%d}']],
+              bundleID, key, mods))
+          appObject:kill()
+          hs.timer.doAfter(1, function()
+            hs.execute(string.format("open -g -b '%s'", bundleID))
+            hs.timer.doAfter(1, function()
+              safeGlobalKeyStroke(spec.mods, spec.key)
+            end)
+          end)
+        else
+          local json = hs.json.decode(output)
+          local mods, key = parsePlistKeyBinding(json["carbonModifiers"], json["carbonKeyCode"])
+          if mods == nil or key == nil then return end
+          safeGlobalKeyStroke(mods, key)
+        end
+      end,
     }
   },
 

@@ -972,6 +972,11 @@
       "back": {
         "mods": "command",
         "key": "["
+      },
+      "toggleLauncher": {
+        "mods": ["option", "command"],
+        "key": "space",
+        "background": true
       }
     },
     "com.eusoft.freeeudic": {
