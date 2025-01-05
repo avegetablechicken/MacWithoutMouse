@@ -396,10 +396,10 @@
         "key": "K",
         "bundleID": "org.klatexformula.klatexformula"
       },
-      "Ubuntu": {
+      "Texifier": {
         "mods": "${hyper.hyper}",
         "key": "L",
-        "vm": "com.parallels.desktop.console"
+        "bundleID": "com.vallettaventures.Texpad"
       },
       "System Preferences": {
         "mods": "${hyper.hyper}",
