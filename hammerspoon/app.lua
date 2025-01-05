@@ -1093,50 +1093,6 @@ function selectMenuItemOrKeyStroke(appObject, mods, key)
   end
 end
 
--- get hotkey idx like how Hammerspoon does that
-local function hotkeyIdx(mods, key)
-  local idx = string.upper(key)
-  if type(mods) == 'string' then
-    if mods == "shift" then idx = "⇧" .. idx
-    elseif mods == "option" or mods == "alt" then idx = "⌥" .. idx
-    elseif mods == "control" or mods == "ctrl" then idx = "⌃" .. idx
-    elseif mods == "command" or mods == "cmd" then idx = "⌘" .. idx
-    else
-      if string.find(mods, "⇧") then idx = "⇧" .. idx end
-      if string.find(mods, "⌥") then idx = "⌥" .. idx end
-      if string.find(mods, "⌃") then idx = "⌃" .. idx end
-      if string.find(mods, "⌘") then idx = "⌘" .. idx end
-    end
-  else
-    if hs.fnutils.contains(mods, "shift") then idx = "⇧" .. idx end
-    if hs.fnutils.contains(mods, "option") or hs.fnutils.contains(mods, "alt") then
-      idx = "⌥" .. idx
-    end
-    if hs.fnutils.contains(mods, "control") or hs.fnutils.contains(mods, "ctrl") then
-      idx = "⌃" .. idx
-    end
-    if hs.fnutils.contains(mods, "command") or hs.fnutils.contains(mods, "cmd") then
-      idx = "⌘" .. idx
-    end
-  end
-  return idx
-end
-
--- send key strokes to the system. but if the key binding is registered, disable it temporally
-local function safeGlobalKeyStroke(mods, key)
-  local idx = hotkeyIdx(mods, key)
-  local conflicted = hs.fnutils.filter(hs.hotkey.getHotkeys(), function(hk)
-    return hk.idx == idx
-  end)
-  if conflicted[1] ~= nil then
-    conflicted[1]:disable()
-  end
-  hs.eventtap.keyStroke(mods, key)
-  if conflicted[1] ~= nil then
-    hs.timer.doAfter(1, function() conflicted[1]:enable() end)
-  end
-end
-
 
 -- ## hotkey configs for apps
 
