@@ -310,11 +310,6 @@
         "key": "P",
         "bundleID": "com.apple.Preview"
       },
-      "JabRef": {
-        "mods": "${hyper.app}",
-        "key": "J",
-        "bundleID": "JabRef"
-      },
       "Keynote": {
         "mods": "${hyper.app}",
         "key": "K",
@@ -386,10 +381,10 @@
         "key": "G",
         "bundleID": "com.torusknot.SourceTreeNotMAS"
       },
-      "IntelliJ IDEA": {
+      "JabRef": {
         "mods": "${hyper.hyper}",
         "key": "J",
-        "bundleID": "com.jetbrains.intellij"
+        "bundleID": "JabRef"
       },
       "klatexformula": {
         "mods": "${hyper.hyper}",
