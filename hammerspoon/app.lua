@@ -1748,7 +1748,16 @@ appHotKeyCallbacks = {
     ["showBuildOrder"] = {  -- View > Show Build Order
       message = localizedMessage("Show Build Order"),
       condition = checkMenuItem({ "View", "Show Build Order" }),
-      fn = receiveMenuItem
+      fn = function(menuItemTitle, appObject)
+        appObject:selectMenuItem(menuItemTitle)
+        hs.timer.doAfter(0.5, function()
+          local winTitle = localizedString("Build Order", appObject:bundleID())
+          local window = hs.fnutils.ifilter(appObject:visibleWindows(), function(win)
+            return win:title() == winTitle
+          end)
+          if #window ~= 0 then window[1]:raise() end
+        end)
+      end
     },
     ["play"] = {  -- Play > Play Slideshow
       message = localizedMessage("Play Slideshow"),
