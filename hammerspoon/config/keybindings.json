@@ -343,11 +343,6 @@
           "com.devolutions.remotedesktopmanager.free"
         ]
       },
-      "Typora": {
-        "mods": "${hyper.hyper}",
-        "key": "T",
-        "bundleID": "abnerworks.Typora"
-      },
       "App Cleaner & Uninstaller": {
         "mods": "${hyper.hyper}",
         "key": "U",
@@ -429,10 +424,10 @@
         "key": "V",
         "bundleID": "com.realvnc.vncviewer"
       },
-      "TencentMeeting": {
+      "Typora": {
         "mods": "${hyper.hyper}",
         "key": "M",
-        "bundleID": "com.tencent.meeting"
+        "bundleID": "abnerworks.Typora"
       }
     },
 
