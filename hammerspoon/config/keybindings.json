@@ -278,12 +278,18 @@
       {
         "mods": "${hyper.app}",
         "key": "A",
-        "bundleID": "com.apple.Terminal"
+        "bundleID": [
+          "com.googlecode.iterm2",
+          "com.apple.Terminal"
+        ]
       },
       {
         "mods": "${hyper.app}",
         "key": "S",
-        "bundleID": "com.sublimetext.4"
+        "bundleID": [
+          "com.sublimetext.4",
+          "com.apple.TextEdit"
+        ]
       },
       {
         "mods": "${hyper.app}",
@@ -308,12 +314,19 @@
       {
         "mods": "${hyper.app}",
         "key": "K",
-        "bundleID": "com.apple.iWork.Keynote"
+        "bundleID": [
+          "com.apple.iWork.Keynote",
+          "com.microsoft.Powerpoint"
+        ]
       },
       {
         "mods": "${hyper.hyper}",
         "key": "Q",
-        "bundleID": "com.tencent.QQMusicMac"
+        "bundleID": [
+          "com.tencent.QQMusicMac",
+          "com.netease.163music",
+          "com.apple.Music"
+        ]
       },
       {
         "mods": "${hyper.hyper}",
@@ -331,15 +344,19 @@
         "key": "R",
         "bundleID": [
           "com.devolutions.remotedesktopmanager",
-          "com.devolutions.remotedesktopmanager.free"
+          "com.devolutions.remotedesktopmanager.free",
+          "com.microsoft.rdc.mac"
         ]
       },
       {
         "mods": "${hyper.hyper}",
         "key": "U",
         "bundleID": [
+          "com.nektony.App-Cleaner-SIIICn",
           "com.nektony.App-Cleaner-SIII",
-          "com.nektony.App-Cleaner-SIIICn"
+          "com.tencent.Lemon",
+          "com.macpaw.CleanMyMac5",
+          "com.macpaw.CleanMyMac4"
         ]
       },
       {
@@ -350,7 +367,11 @@
       {
         "mods": "${hyper.hyper}",
         "key": "O",
-        "bundleID": "com.kingsoft.wpsoffice.mac"
+        "bundleID": [
+          "com.kingsoft.wpsoffice.mac",
+          "com.microsoft.Word",
+          "com.apple.iWork.Pages"
+        ]
       },
       {
         "mods": "${hyper.hyper}",
@@ -370,7 +391,10 @@
       {
         "mods": "${hyper.hyper}",
         "key": "D",
-        "bundleID": "com.kapeli.dashdoc"
+        "bundleID": [
+          "com.kapeli.dashdoc",
+          "sh.egoist.devdocs"
+        ]
       },
       {
         "mods": "${hyper.hyper}",
@@ -380,7 +404,10 @@
       {
         "mods": "${hyper.hyper}",
         "key": "J",
-        "bundleID": "JabRef"
+        "bundleID": [
+          "JabRef",
+          "org.zotero.zotero"
+        ]
       },
       {
         "mods": "${hyper.hyper}",
@@ -390,7 +417,11 @@
       {
         "mods": "${hyper.hyper}",
         "key": "L",
-        "bundleID": "com.vallettaventures.Texpad"
+        "bundleID": [
+          "com.vallettaventures.Texpad",
+          "texstudio",
+          "TeXShop"
+        ]
       },
       {
         "mods": "${hyper.hyper}",
@@ -413,12 +444,18 @@
       {
         "mods": "${hyper.hyper}",
         "key": "V",
-        "bundleID": "com.realvnc.vncviewer"
+        "bundleID": [
+          "com.realvnc.vncviewer",
+          "com.tigervnc.tigervnc"
+        ]
       },
       {
         "mods": "${hyper.hyper}",
         "key": "M",
-        "bundleID": "abnerworks.Typora"
+        "bundleID": [
+          "abnerworks.Typora",
+          "com.coderforart.iOS.MWeb"
+        ]
       }
     ],
 
