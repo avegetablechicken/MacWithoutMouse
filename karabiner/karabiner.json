@@ -21,7 +21,7 @@
                         ]
                     },
                     {
-                        "description": "Quit application by holding command-q",
+                        "description": "Quit application by holding ⌘Q or ⌘⌥Q",
                         "manipulators": [
                             {
                                 "conditions": [
@@ -46,6 +46,34 @@
                                     {
                                         "key_code": "q",
                                         "modifiers": ["left_command"],
+                                        "repeat": false
+                                    }
+                                ],
+                                "type": "basic"
+                            },
+                            {
+                                "conditions": [
+                                    {
+                                        "bundle_identifiers": [
+                                            "com.parallels.desktop.console",
+                                            "com.parallels.macvm"
+                                        ],
+                                        "type": "frontmost_application_unless"
+                                    }
+                                ],
+                                "from": {
+                                    "key_code": "q",
+                                    "modifiers": { "mandatory": ["option", "command"] }
+                                },
+                                "parameters": {
+                                    "basic.to_if_alone_timeout_milliseconds": 200,
+                                    "basic.to_if_held_down_threshold_milliseconds": 200
+                                },
+                                "to_if_alone": [{ "shell_command": "open -g 'hammerspoon://alert?text=Hold ⌘⌥Q to Invoke it'" }],
+                                "to_if_held_down": [
+                                    {
+                                        "key_code": "q",
+                                        "modifiers": ["left_option", "left_command"],
                                         "repeat": false
                                     }
                                 ],
