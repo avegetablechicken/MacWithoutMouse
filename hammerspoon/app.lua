@@ -95,7 +95,7 @@ local function registerAppHotkeys()
   HyperModal.hyperMode.keys = hs.fnutils.filter(HyperModal.hyperMode.keys,
       function(hotkey) return hotkey.idx ~= nil end)
 
-  for name, config in pairs(KeybindingConfigs.hotkeys.appkeys or {}) do
+  for _, config in ipairs(KeybindingConfigs.hotkeys.appkeys or {}) do
     local appPath
     if config.bundleID then
       if type(config.bundleID) == "string" then
@@ -111,7 +111,7 @@ local function registerAppHotkeys()
     end
     if appPath == nil and config.vm ~= nil then
       if config.vm == "com.parallels.desktop.console" then
-        appPath = getParallelsVMPath(name)
+        appPath = getParallelsVMPath(config.name)
       else
         hs.alert("Unsupported Virtual Machine : " .. config.vm)
       end

@@ -264,68 +264,69 @@
       }
     },
 
-    "appkeys": {
-      "LaunchPad": {
+    "appkeys": [
+      {
         "mods": "${hyper.app}",
         "key": "tab",
         "bundleID": "com.apple.launchpad.launcher"
       },
-      "WeChat": {
+      {
         "mods": "${hyper.app}",
         "key": "W",
         "bundleID": "com.tencent.xinWeChat"
       },
-      "Terminal": {
+      {
         "mods": "${hyper.app}",
         "key": "A",
         "bundleID": "com.apple.Terminal"
       },
-      "Sublime Text": {
+      {
         "mods": "${hyper.app}",
         "key": "S",
         "bundleID": "com.sublimetext.4"
       },
-      "Finder": {
+      {
         "mods": "${hyper.app}",
         "key": "F",
         "bundleID": "com.apple.finder"
       },
-      "Safari": {
+      {
         "mods": "${hyper.app}",
         "key": "Z",
         "bundleID": "com.apple.Safari"
       },
-      "Visual Studio Code": {
+      {
         "mods": "${hyper.app}",
         "key": "X",
         "bundleID": "com.microsoft.VSCode"
       },
-      "Preview": {
+      {
         "mods": "${hyper.app}",
         "key": "P",
         "bundleID": "com.apple.Preview"
       },
-      "Keynote": {
+      {
         "mods": "${hyper.app}",
         "key": "K",
         "bundleID": "com.apple.iWork.Keynote"
       },
-      "QQMusic": {
+      {
         "mods": "${hyper.hyper}",
         "key": "Q",
         "bundleID": "com.tencent.QQMusicMac"
       },
-      "Windows": {
+      {
         "mods": "${hyper.hyper}",
         "key": "W",
-        "vm": "com.parallels.desktop.console"
+        "vm": "com.parallels.desktop.console",
+        "name": "Windows"
       },
-      "EuDic": {
+      {
         "mods": "${hyper.hyper}",
         "key": "E",
         "bundleID": "com.eusoft.freeeudic"
       },
-      "RDM": {
+      {
         "mods": "${hyper.hyper}",
         "key": "R",
         "bundleID": [
@@ -333,7 +334,7 @@
           "com.devolutions.remotedesktopmanager.free"
         ]
       },
-      "App Cleaner & Uninstaller": {
+      {
         "mods": "${hyper.hyper}",
         "key": "U",
         "bundleID": [
@@ -341,67 +342,67 @@
           "com.nektony.App-Cleaner-SIIICn"
         ]
       },
-      "Accessibility Inspector": {
+      {
         "mods": "${hyper.hyper}",
         "key": "I",
         "bundleID": "com.apple.AccessibilityInspector"
       },
-      "WPS Office": {
+      {
         "mods": "${hyper.hyper}",
         "key": "O",
         "bundleID": "com.kingsoft.wpsoffice.mac"
       },
-      "PyCharm": {
+      {
         "mods": "${hyper.hyper}",
         "key": "P",
         "bundleID": "com.jetbrains.pycharm"
       },
-      "Activity Monitor": {
+      {
         "mods": "${hyper.hyper}",
         "key": "A",
         "bundleID": "com.apple.ActivityMonitor"
       },
-      "Script Editor": {
+      {
         "mods": "${hyper.hyper}",
         "key": "S",
         "bundleID": "com.apple.ScriptEditor2"
       },
-      "Dash": {
+      {
         "mods": "${hyper.hyper}",
         "key": "D",
         "bundleID": "com.kapeli.dashdoc"
       },
-      "SourceTree": {
+      {
         "mods": "${hyper.hyper}",
         "key": "G",
         "bundleID": "com.torusknot.SourceTreeNotMAS"
       },
-      "JabRef": {
+      {
         "mods": "${hyper.hyper}",
         "key": "J",
         "bundleID": "JabRef"
       },
-      "klatexformula": {
+      {
         "mods": "${hyper.hyper}",
         "key": "K",
         "bundleID": "org.klatexformula.klatexformula"
       },
-      "Texifier": {
+      {
         "mods": "${hyper.hyper}",
         "key": "L",
         "bundleID": "com.vallettaventures.Texpad"
       },
-      "System Preferences": {
+      {
         "mods": "${hyper.hyper}",
         "key": "Z",
         "bundleID": "com.apple.systempreferences"
       },
-      "Xcode": {
+      {
         "mods": "${hyper.hyper}",
         "key": "X",
         "bundleID": "com.apple.dt.Xcode"
       },
-      "CLion": {
+      {
         "mods": "${hyper.hyper}",
         "key": "C",
         "bundleID": [
@@ -409,17 +410,17 @@
           "com.jetbrains.CLion-EAP"
         ]
       },
-      "VNC Viewer": {
+      {
         "mods": "${hyper.hyper}",
         "key": "V",
         "bundleID": "com.realvnc.vncviewer"
       },
-      "Typora": {
+      {
         "mods": "${hyper.hyper}",
         "key": "M",
         "bundleID": "abnerworks.Typora"
       }
-    },
+    ],
 
     "controlcenter": {
       "Wi‑Fi": {
