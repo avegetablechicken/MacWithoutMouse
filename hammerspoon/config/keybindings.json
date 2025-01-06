@@ -270,11 +270,6 @@
         "key": "tab",
         "bundleID": "com.apple.launchpad.launcher"
       },
-      "QQ": {
-        "mods": "${hyper.app}",
-        "key": "Q",
-        "bundleID": "com.tencent.qq"
-      },
       "WeChat": {
         "mods": "${hyper.app}",
         "key": "W",
