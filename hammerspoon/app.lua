@@ -1924,23 +1924,6 @@ appHotKeyCallbacks = {
     }
   },
 
-  ["com.eusoft.freeeudic"] =
-  {
-    ["navigateToSearchField"] = {
-      message = commonLocalizedMessage("Search"),
-      condition = function(appObject)
-        if appObject:focusedWindow() == nil then return false end
-        local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
-        local searchField = getAXChildren(winUIObj, 'AXToolbar', 1, 'AXGroup', 1, 'AXTextField', 1)
-        if searchField == nil then return false end
-        return true, searchField
-      end,
-      fn = function(searchField)
-        searchField:performAction('AXConfirm')
-      end
-    },
-  },
-
   ["com.openai.chat"] =
   {
     ["toggleSidebar"] = {
