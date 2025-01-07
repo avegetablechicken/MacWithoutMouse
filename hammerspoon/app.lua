@@ -1928,7 +1928,18 @@ appHotKeyCallbacks = {
   {
     ["toggleSidebar"] = {
       message = localizedMessage("Toggle Sidebar"),
-      bindCondition = versionLessEqual("1.2024.332"),
+      bindCondition = function(appObject)
+        if versionLessEqual("1.2024.332")(appObject) then return true end
+        local keybinding = get(KeybindingConfigs.hotkeys,
+            appObject:bundleID(), "toggleSidebar")
+        local menuItemPath = findMenuItemByKeyBinding(appObject, keybinding.mods, keybinding.key)
+        local menuItemTitle = localizedString("Toggle Sidebar", appObject:bundleID())
+        if menuItemPath == nil
+            or menuItemPath[#menuItemPath] ~= menuItemTitle then
+          return true
+        end
+        return false
+      end,
       condition = checkMenuItem({ "View", "Toggle Sidebar" }),
       fn = receiveMenuItem
     },
