@@ -1266,15 +1266,7 @@ local searchHotkey = bindHotkeySpec(misc["searchHotkeys"], "Search Hotkey", func
       if entry.kind == HK.PRIVELLEGE then
         image = HSImage
       elseif entry.bundleID then
-        if type(entry.bundleID) == "table" then
-          local bundleID = hs.fnutils.find(entry.bundleID, function(bundleID)
-                return (hs.application.pathForBundleID(bundleID) ~= nil
-                    and hs.application.pathForBundleID(bundleID) ~= "")
-              end)
-          image = hs.image.imageFromAppBundle(bundleID)
-        else
-          image = hs.image.imageFromAppBundle(entry.bundleID)
-        end
+        image = hs.image.imageFromAppBundle(entry.bundleID)
       elseif entry.appPath then
         local iconFile = hs.application.infoForBundlePath(entry.appPath).CFBundleIconFile
         if iconFile then

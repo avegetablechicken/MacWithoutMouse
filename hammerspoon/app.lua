@@ -96,16 +96,20 @@ local function registerAppHotkeys()
       function(hotkey) return hotkey.idx ~= nil end)
 
   for _, config in ipairs(KeybindingConfigs.hotkeys.appkeys or {}) do
-    local appPath
+    local appPath, bundleID
     if config.bundleID then
       if type(config.bundleID) == "string" then
         appPath = hs.application.pathForBundleID(config.bundleID)
         if appPath == "" then appPath = nil end
+        if appPath ~= nil then bundleID = config.bundleID end
       elseif type(config.bundleID) == "table" then
-        for _, bundleID in ipairs(config.bundleID) do
-          appPath = hs.application.pathForBundleID(bundleID)
+        for _, bid in ipairs(config.bundleID) do
+          appPath = hs.application.pathForBundleID(bid)
           if appPath == "" then appPath = nil end
-          if appPath ~= nil then break end
+          if appPath ~= nil then
+            bundleID = config.bundleID
+            break
+          end
         end
       end
     end
@@ -137,13 +141,11 @@ local function registerAppHotkeys()
           appName = hs.application.infoForBundlePath(appPath).CFBundleName
         end
         local hotkey = bindHotkeySpec(config, "Toggle " .. appName,
-            hs.fnutils.partial(config.fn or focusOrHide, config.bundleID or (config.appPath or appName)))
+            hs.fnutils.partial(config.fn or focusOrHide, bundleID or appName))
         hotkey.kind = HK.APPKEY
-        if config.bundleID then
-          hotkey.bundleID = config.bundleID
-        elseif config.appPath then
-          hotkey.appPath = config.appPath
-        elseif config.vm then
+        if bundleID then
+          hotkey.bundleID = bundleID
+        else
           hotkey.appPath = appPath
         end
         table.insert(appHotkeys, hotkey)
