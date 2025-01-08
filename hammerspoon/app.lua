@@ -2623,6 +2623,7 @@ appHotKeyCallbacks = {
       message = "Navigate Menu Bar",
       kind = HK.MENUBAR,
       bindCondition = function(appObject)
+        -- the property update in command line is not working
         local _, ok = hs.execute(string.format(
             "defaults read '%s' hotkeyKeyboardNav", appObject:bundleID()))
         return ok
@@ -2737,6 +2738,7 @@ appHotKeyCallbacks = {
         local key = hs.execute(string.format(
             "defaults read '%s' getLatexHotKeyKey | tr -d '\\n'", bundleID))
         mods, key = parsePlistKeyBinding(mods, key)
+        -- the property update in command line is overridden when app quits
         if mods == nil or key == nil then return end
         local enabled = hs.execute(string.format(
             "defaults read '%s' getLatexShortcutEnabledKey | tr -d '\\n'", bundleID))
@@ -3269,6 +3271,7 @@ appHotKeyCallbacks = {
     ["OCR"] = {
       message = "OCR",
       bindCondition = function()
+        -- the property update in command line is overridden when app quits
         local bundleID2 = "cn.better365.iShotProHelper"
         local _, ok = hs.execute(string.format(
             "defaults read '%s' dicOfShortCutKey | grep OCRRecorder", bundleID2))
