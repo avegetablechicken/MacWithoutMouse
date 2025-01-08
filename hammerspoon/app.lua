@@ -2730,19 +2730,27 @@ appHotKeyCallbacks = {
   {
     ["OCRForLatex"] = {
       message = "OCR for LaTeX",
-      bindCondition = function()
-        local bundleID = "com.mathpix.snipping-tool-noappstore"
-        local enabled = hs.execute(string.format(
-            "defaults read '%s' getLatexShortcutEnabledKey | tr -d '\\n'", bundleID))
-        return enabled == "1"
-      end,
       fn = function(appObject)
+        local bundleID = appObject:bundleID()
         local mods = hs.execute(string.format(
-            "defaults read '%s' getLatexHotKeyModifiersKey | tr -d '\\n'", appObject:bundleID()))
+            "defaults read '%s' getLatexHotKeyModifiersKey | tr -d '\\n'", bundleID))
         local key = hs.execute(string.format(
-            "defaults read '%s' getLatexHotKeyKey | tr -d '\\n'", appObject:bundleID()))
+            "defaults read '%s' getLatexHotKeyKey | tr -d '\\n'", bundleID))
         mods, key = parsePlistKeyBinding(mods, key)
         if mods == nil or key == nil then return end
+        local enabled = hs.execute(string.format(
+            "defaults read '%s' getLatexShortcutEnabledKey | tr -d '\\n'", bundleID))
+        if enabled == "0" then
+          hs.execute(string.format(
+              "defaults write '%s' getLatexShortcutEnabledKey 1", bundleID))
+          appObject:kill()
+          hs.timer.doAfter(1, function()
+            hs.execute(string.format("open -g -b '%s'", bundleID))
+            hs.timer.doAfter(1, function()
+              safeGlobalKeyStroke(mods, key)
+            end)
+          end)
+        end
         safeGlobalKeyStroke(mods, key)
       end
     },
