@@ -405,8 +405,8 @@ local function loadAppHotkeys(t)
         local frontWin = hs.window.frontmostWindow()
         if (frontWin ~= nil and activeApp:focusedWindow() ~= nil
             and frontWin:application():bundleID() ~= activeApp:bundleID())
-            or (frontWin == nil and activeApp:focusedWindow() ~= nil
-            and WindowCreatedSince[activeApp:focusedWindow():id()]) then
+            or (frontWin ~= nil and activeApp:focusedWindow() == nil
+            and WindowCreatedSince[frontWin:id()]) then
           hotkey.valid = false
         end
         if hotkey.valid and hs.fnutils.find(t, function(hk)
@@ -1234,8 +1234,8 @@ local searchHotkey = bindHotkeySpec(misc["searchHotkeys"], "Search Hotkey", func
       local frontWin = hs.window.frontmostWindow()
       if (frontWin ~= nil and activeApp:focusedWindow() ~= nil
           and frontWin:application():bundleID() ~= activeApp:bundleID())
-          or (frontWin == nil and activeApp:focusedWindow() ~= nil
-          and WindowCreatedSince[activeApp:focusedWindow():id()]) then
+          or (frontWin ~= nil and activeApp:focusedWindow() == nil
+          and WindowCreatedSince[frontWin:id()]) then
         hotkey.valid = false
       end
       if hotkey.valid and hs.fnutils.find(allKeys, function(hk)
