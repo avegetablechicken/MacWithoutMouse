@@ -1235,7 +1235,7 @@
         "background": true
       }
     },
-    "cn.better365.iShotPro": {
+    "cn.better365.iShotProHelper": {
       "OCR": {
         "mods": "${hyper.daemon}",
         "key": "O",

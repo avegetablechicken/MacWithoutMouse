@@ -3266,21 +3266,21 @@ appHotKeyCallbacks = {
     }
   },
 
-  ["cn.better365.iShotPro"] =
+  ["cn.better365.iShotProHelper"] =
   {
     ["OCR"] = {
       message = "OCR",
       bindCondition = function()
         -- the property update in command line is overridden when app quits
-        local bundleID2 = "cn.better365.iShotProHelper"
+        local bundleID = "cn.better365.iShotProHelper"
         local _, ok = hs.execute(string.format(
-            "defaults read '%s' dicOfShortCutKey | grep OCRRecorder", bundleID2))
+            "defaults read '%s' dicOfShortCutKey | grep OCRRecorder", bundleID))
         return ok
       end,
-      fn = function()
-        local bundleID2 = "cn.better365.iShotProHelper"
+      fn = function(appObject)
         local output = hs.execute(string.format(
-          "defaults read '%s' dicOfShortCutKey | grep OCRRecorder -A4", bundleID2))
+            "defaults read '%s' dicOfShortCutKey | grep OCRRecorder -A4",
+            appObject:bundleID()))
         local spec = hs.fnutils.split(output, "\n")
         local mods = string.match(spec[5], "modifierFlags = (%d+);")
         local key = string.match(spec[4], "keyCode = (%d+);")
