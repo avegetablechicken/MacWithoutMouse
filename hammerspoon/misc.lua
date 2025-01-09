@@ -331,11 +331,13 @@ local function getSubMenuHotkeys(t, menuItem, titleAsEntry, titlePrefix, bundleI
       elseif subItem.AXMenuItemCmdChar == 'F' and subItem.AXMenuItemCmdGlyph == ""
           and #subItem.AXMenuItemCmdModifiers == 0 and subItem.AXMenuItemMarkChar == ""
           and subItem.AXChildren == nil then
-        if subItem.AXTitle == "Enter Full Screen" or subItem.AXTitle == "Exit Full Screen" then
+        if subItem.AXTitle == "Enter Full Screen" or subItem.AXTitle == "Exit Full Screen"
+            or subItem.AXTitle == "Zoom" then
           idx = "🌐︎F"
         else
           local enTitle = delocalizedMenuItem(subItem.AXTitle, bundleID)
-          if enTitle == "Enter Full Screen" or enTitle == "Exit Full Screen" then
+          if enTitle == "Enter Full Screen" or enTitle == "Exit Full Screen"
+              or enTitle == "Zoom" then
             idx = "🌐︎F"
           else
             local lowerTitle = subItem.AXTitle:lower()
