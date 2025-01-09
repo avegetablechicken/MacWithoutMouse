@@ -1418,7 +1418,7 @@ local function delocalizeByStrings(str, localeDir, localeFile, deLocalesInvDict)
           end
         end
         if isBinarayPlist(fullPath) then
-          invDict = parseBinaryPlistFile(fullPath)
+          jsonDict = parseBinaryPlistFile(fullPath)
         else
           jsonDict = parseNibFile(fullPath)
         end
