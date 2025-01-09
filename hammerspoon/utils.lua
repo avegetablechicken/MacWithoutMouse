@@ -575,16 +575,13 @@ end
 local extraEnglishLocales = {
   "en_US", "en_GB"
 }
-local function prependExtraEnglishLocaleDirs(resourceDir, baseDirs)
-  local dirs = {}
+local function appendExtraEnglishLocaleDirs(resourceDir, baseDirs)
+  local dirs = hs.fnutils.copy(baseDirs)
   for _, locale in ipairs(extraEnglishLocales) do
     local localeDir = resourceDir .. '/' .. locale .. '.lproj'
     if hs.fs.attributes(localeDir) ~= nil then
       table.insert(dirs, localeDir)
     end
-  end
-  for _, dir in ipairs(baseDirs) do
-    table.insert(dirs, dir)
   end
   return dirs
 end
@@ -813,7 +810,7 @@ local function localizeByStrings(str, localeDir, localeFile, localesDict, locale
   local enLocaleDirs = baseLocaleDirs(resourceDir)
   local invSearchFunc = function(str, files)
     if type(files) == 'string' then files = { files } end
-    local dirs = prependExtraEnglishLocaleDirs(resourceDir, enLocaleDirs)
+    local dirs = appendExtraEnglishLocaleDirs(resourceDir, enLocaleDirs)
     for _, enLocaleDir in ipairs(dirs) do
       for _, fileStem in ipairs(files) do
         local invDict = localesInvDict[fileStem]
@@ -1190,10 +1187,6 @@ local function localizedStringImpl(str, bundleID, params, force)
     local locales = applicationLocales(bundleID)
     appLocale = locales[1]
   end
-  local localeDetails = hs.host.locale.details(appLocale)
-  if localeDetails.languageCode == 'en' then
-    return str
-  end
 
   local result
 
@@ -1259,6 +1252,13 @@ local function localizedStringImpl(str, bundleID, params, force)
   if framework.qt and type(localeDir) == 'string'
       and hs.fs.attributes(localeDir) == nil then
     _, localeDir = getQtMatchedLocale(appLocale, resourceDir)
+  end
+  local enLocaleDirs = baseLocaleDirs(resourceDir)
+  for _, dir in ipairs(enLocaleDirs) do
+    if hs.fs.attributes(dir) ~= nil
+        and hs.fs.attributes(localeDir).ino == hs.fs.attributes(dir).ino then
+      return str
+    end
   end
 
   local setDefaultLocale = function()
@@ -1402,7 +1402,7 @@ local function delocalizeByStrings(str, localeDir, localeFile, deLocalesInvDict)
   local resourceDir = localeDir .. '/..'
   local enLocaleDirs = baseLocaleDirs(resourceDir)
   local searchFunc = function(str, file)
-    local dirs = prependExtraEnglishLocaleDirs(resourceDir, enLocaleDirs)
+    local dirs = appendExtraEnglishLocaleDirs(resourceDir, enLocaleDirs)
     for _, enLocaleDir in ipairs(dirs) do
       local jsonDict
       if hs.fs.attributes(enLocaleDir .. '/' .. file .. '.strings') ~= nil then
@@ -1760,8 +1760,6 @@ local function delocalizedStringImpl(str, bundleID, params)
     local locales = applicationLocales(bundleID)
     appLocale = locales[1]
   end
-  local localeDetails = hs.host.locale.details(appLocale)
-  if localeDetails.languageCode == 'en' then return str end
 
   local result = get(deLocaleMap, bundleID, appLocale, str)
   if result == false then return nil
@@ -1816,6 +1814,13 @@ local function delocalizedStringImpl(str, bundleID, params)
   if framework.qt and type(localeDir) == 'string'
       and hs.fs.attributes(localeDir) == nil then
     _, localeDir = getQtMatchedLocale(appLocale, resourceDir)
+  end
+  local enLocaleDirs = baseLocaleDirs(resourceDir)
+  for _, dir in ipairs(enLocaleDirs) do
+    if hs.fs.attributes(dir) ~= nil
+        and hs.fs.attributes(localeDir).ino == hs.fs.attributes(dir).ino then
+      return str
+    end
   end
 
   local setDefaultLocale = function()
@@ -1921,7 +1926,6 @@ end
 
 function localizeCommonMenuItemTitles(locale, bundleID)
   if locale == SYSTEM_LOCALE and bundleID ~= nil then return end
-  if locale == 'en' or locale:sub(1, 3) == 'en-' or locale:sub(1, 3) == 'en_' then return end
 
   local resourceDir = '/System/Library/Frameworks/AppKit.framework/Resources'
   local matchedLocale = getMatchedLocale(locale, resourceDir, 'lproj')
