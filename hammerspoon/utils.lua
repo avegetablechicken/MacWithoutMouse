@@ -1962,8 +1962,8 @@ function localizeCommonMenuItemTitles(locale, bundleID)
     })
   end
   for _, title in ipairs(titleList) do
-    title = title:gsub('…', '\\U2026'):gsub('“', '\\U201C'):gsub('”', '\\U201D')
-    local localizedTitle = localizeByLoctable(title, resourceDir, 'MenuCommands', matchedLocale, {})
+    local escapedTitle = title:gsub('…', '\\U2026'):gsub('“', '\\U201C'):gsub('”', '\\U201D')
+    local localizedTitle = localizeByLoctable(escapedTitle, resourceDir, 'MenuCommands', matchedLocale, {})
     if localizedTitle ~= nil then
       localizationMap.common[localizedTitle] = title
     end
