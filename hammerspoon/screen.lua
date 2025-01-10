@@ -85,6 +85,7 @@ end
 
 local function checkAndMoveWindowToMonitor(monitor)
   local win = hs.window.focusedWindow()
+  if win == nil then return end
   if #hs.screen.allScreens() > 1 then
     local monitorToMoveTo = monitor == "r" and win:screen():next() or win:screen():previous()
     moveToScreen(win, monitorToMoveTo)
@@ -145,6 +146,7 @@ local function registerMonitorHotkeys()
     hotkey = bindWindow(ssHK["moveToScreen" .. i], "Move to Monitor " .. i,
         function()
           local win = hs.window.focusedWindow()
+          if win == nil then return end
           if win:screen():id() ~= hs.screen.allScreens()[i]:id() then
             moveToScreen(win, hs.screen.allScreens()[i])
           end
@@ -153,6 +155,7 @@ local function registerMonitorHotkeys()
     hotkey = bindHotkeySpec(ssHK["focusScreen" .. i], "Focus on Monitor " .. i,
         function()
           local win = hs.window.focusedWindow()
+          if win == nil then return end
           if win:screen():id() ~= hs.screen.allScreens()[i]:id() then
             focusScreen(hs.screen.allScreens()[i])
           end
@@ -188,6 +191,7 @@ local function checkAndMoveWindowToSpace(space)
     local targetIdx = space == "r" and index + 1 or index - 1
     if 1 <= targetIdx and targetIdx <= nspaces then
       local win = hs.window.focusedWindow()
+      if win == nil then return end
       hs.spaces.moveWindowToSpace(win, user_spaces[targetIdx])
       hs.spaces.gotoSpace(user_spaces[targetIdx])
       local screenUUID = hs.spaces.spaceDisplay(user_spaces[targetIdx])
@@ -240,6 +244,7 @@ local function registerMoveToSpaceHotkeys()
     local hotkey = bindWindow(ssHK["moveToSpace" .. i], "Move to Space " .. i,
       function()
         local win = hs.window.focusedWindow()
+        if win == nil then return end
         local user_spaces = getUserSpaces()
         hs.spaces.moveWindowToSpace(win, user_spaces[i])
         hs.spaces.gotoSpace(user_spaces[i])

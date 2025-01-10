@@ -36,6 +36,7 @@ local function bindMoveWindowURL(direction, mode, fn)
   local newFn = function()
     fn()
     local win = hs.window.focusedWindow()
+    if win == nil then return end
     frameCacheMaximize[win:id()] = nil
     frameCacheZoomToCenter[win:id()] = nil
   end
@@ -58,6 +59,7 @@ local function bindResizeWindowURL(mode, fn)
     newFn = function()
       fn()
       local win = hs.window.focusedWindow()
+      if win == nil then return end
       frameCacheMaximize[win:id()] = nil
       frameCacheZoomToCenter[win:id()] = nil
     end
@@ -69,6 +71,7 @@ local function bindResizeWindow(spec, message, fn, repeatable)
   local newFn = function()
     fn()
     local win = hs.window.focusedWindow()
+    if win == nil then return end
     frameCacheMaximize[win:id()] = nil
     frameCacheZoomToCenter[win:id()] = nil
   end
@@ -86,6 +89,7 @@ local winHK = KeybindingConfigs.hotkeys.global
 bindMoveWindowURL("top-left", 2,
 function()
   local win = hs.window.focusedWindow()
+  if win == nil then return end
   local f = win:frame()
 
   f.x = f.x - moveStep
@@ -97,6 +101,7 @@ end)
 bindMoveWindowURL("top", 2,
 function()
   local win = hs.window.focusedWindow()
+  if win == nil then return end
   local f = win:frame()
 
   f.y = f.y - moveStep
@@ -107,6 +112,7 @@ end)
 bindMoveWindowURL("top-right", 2,
 function()
   local win = hs.window.focusedWindow()
+  if win == nil then return end
   local f = win:frame()
 
   f.x = f.x + moveStep
@@ -118,6 +124,7 @@ end)
 bindMoveWindowURL("left", 2,
 function()
   local win = hs.window.focusedWindow()
+  if win == nil then return end
   local f = win:frame()
 
   f.x = f.x - moveStep
@@ -128,6 +135,7 @@ end)
 bindMoveWindowURL("right", 2,
 function()
   local win = hs.window.focusedWindow()
+  if win == nil then return end
   local f = win:frame()
 
   f.x = f.x + moveStep
@@ -138,6 +146,7 @@ end)
 bindMoveWindowURL("bottom-left", 2,
 function()
   local win = hs.window.focusedWindow()
+  if win == nil then return end
   local f = win:frame()
 
   f.x = f.x - moveStep
@@ -149,6 +158,7 @@ end)
 bindMoveWindowURL("bottom", 2,
 function()
   local win = hs.window.focusedWindow()
+  if win == nil then return end
   local f = win:frame()
 
   f.y = f.y + moveStep
@@ -159,6 +169,7 @@ end)
 bindMoveWindowURL("bottom-right", 2,
 function()
   local win = hs.window.focusedWindow()
+  if win == nil then return end
   local f = win:frame()
 
   f.x = f.x + moveStep
@@ -170,6 +181,7 @@ end)
 -- move and zoom to left
 bindResizeWindowURL("left1/2",
 function()
+  if hs.window.focusedWindow() == nil then return end
   hs.window.focusedWindow():moveToUnit(hs.layout.left50)
 end)
 
@@ -182,60 +194,70 @@ end)
 -- move and zoom to top
 bindResizeWindowURL("top1/2",
 function()
+  if hs.window.focusedWindow() == nil then return end
   hs.window.focusedWindow():moveToUnit(hs.geometry.rect(0.0, 0.0, 1.0, 0.5))
 end)
 
 -- move and zoom to bottom
 bindResizeWindowURL("bottom1/2",
 function()
+  if hs.window.focusedWindow() == nil then return end
   hs.window.focusedWindow():moveToUnit(hs.geometry.rect(0.0, 0.5, 1.0, 0.5))
 end)
 
 -- move and zoom to top-left
 bindResizeWindow(winHK["zoomToTopLeft"], "Zoom to Top-Left",
 function()
+  if hs.window.focusedWindow() == nil then return end
   hs.window.focusedWindow():moveToUnit(hs.geometry.rect(0.0, 0.0, 0.5, 0.5))
 end)
 
 -- move and zoom to top-right
 bindResizeWindow(winHK["zoomToTopRight"], "Zoom to Top-Right",
 function()
+  if hs.window.focusedWindow() == nil then return end
   hs.window.focusedWindow():moveToUnit(hs.geometry.rect(0.5, 0.0, 0.5, 0.5))
 end)
 
 -- move and zoom to bottom-left
 bindResizeWindow(winHK["zoomToBottomLeft"], "Zoom to Bottom-Left",
 function()
+  if hs.window.focusedWindow() == nil then return end
   hs.window.focusedWindow():moveToUnit(hs.geometry.rect(0.0, 0.5, 0.5, 0.5))
 end)
 
 -- move and zoom to bottom-right
 bindResizeWindow(winHK["zoomToBottomRight"], "Zoom to Bottom-Right",
 function()
+  if hs.window.focusedWindow() == nil then return end
   hs.window.focusedWindow():moveToUnit(hs.geometry.rect(0.5, 0.5, 0.5, 0.5))
 end)
 
 -- move and zoom to left 1/3
 bindResizeWindowURL("left1/3",
 function()
+  if hs.window.focusedWindow() == nil then return end
   hs.window.focusedWindow():moveToUnit(hs.geometry.rect(0.0, 0.0, 1.0 / 3, 1.0))
 end)
 
 -- move and zoom to right 1/3
 bindResizeWindowURL("right1/3",
 function()
+  if hs.window.focusedWindow() == nil then return end
   hs.window.focusedWindow():moveToUnit(hs.geometry.rect(2.0 / 3, 0.0, 1.0 / 3, 1.0))
 end)
 
 -- move and zoom to left 2/3
 bindResizeWindowURL("left2/3",
 function()
+  if hs.window.focusedWindow() == nil then return end
   hs.window.focusedWindow():moveToUnit(hs.geometry.rect(0.0, 0.0, 2.0 / 3, 1.0))
 end)
 
 -- move and zoom to right 2/3
 bindResizeWindowURL("right2/3",
 function()
+  if hs.window.focusedWindow() == nil then return end
   hs.window.focusedWindow():moveToUnit(hs.geometry.rect(1.0 / 3, 0.0, 2.0 / 3, 1.0))
 end)
 
@@ -243,6 +265,7 @@ end)
 bindResizeWindowURL("max",
 function()
   local win = hs.window.focusedWindow()
+  if win == nil then return end
   if frameCacheMaximize[win:id()] then
     win:setFrame(frameCacheMaximize[win:id()])
     frameCacheMaximize[win:id()] = nil
@@ -257,6 +280,7 @@ end)
 bindResizeWindowURL("center",
 function()
   local win = hs.window.focusedWindow()
+  if win == nil then return end
   if frameCacheZoomToCenter[win:id()] then
     win:setFrame(frameCacheZoomToCenter[win:id()])
     frameCacheZoomToCenter[win:id()] = nil
@@ -280,6 +304,7 @@ end)
 bindResizeWindow(winHK["leftExpand"], "Left Border Expand",
 function()
   local win = hs.window.focusedWindow()
+  if win == nil then return end
   local f = win:frame()
   local screen = win:screen()
   local max = screen:frame()
@@ -294,6 +319,7 @@ end, true)
 bindResizeWindow(winHK["leftShrink"], "Left Border Shrink",
 function()
   local win = hs.window.focusedWindow()
+  if win == nil then return end
   local f = win:frame()
 
   local r = f.x + f.w
@@ -306,6 +332,7 @@ end, true)
 bindResizeWindow(winHK["rightExpand"], "Right Border Expand",
 function()
   local win = hs.window.focusedWindow()
+  if win == nil then return end
   local f = win:frame()
   local screen = win:screen()
   local max = screen:frame()
@@ -318,6 +345,7 @@ end, true)
 bindResizeWindow(winHK["rightShrink"], "Right Border Shrink",
 function()
   local win = hs.window.focusedWindow()
+  if win == nil then return end
   local f = win:frame()
 
   f.w = math.max(resizeStep, f.w - resizeStep)
@@ -328,6 +356,7 @@ end, true)
 bindResizeWindow(winHK["topExpand"], "Top Border Expand",
 function()
   local win = hs.window.focusedWindow()
+  if win == nil then return end
   local f = win:frame()
   local screen = win:screen()
   local max = screen:frame()
@@ -342,6 +371,7 @@ end, true)
 bindResizeWindow(winHK["topShrink"], "Top Border Shrink",
 function()
   local win = hs.window.focusedWindow()
+  if win == nil then return end
   local f = win:frame()
 
   local b = f.y + f.h
@@ -354,6 +384,7 @@ end, true)
 bindResizeWindow(winHK["bottomExpand"], "Bottom Border Expand",
 function()
   local win = hs.window.focusedWindow()
+  if win == nil then return end
   local f = win:frame()
   local screen = win:screen()
   local max = screen:frame()
@@ -366,6 +397,7 @@ end, true)
 bindResizeWindow(winHK["bottomShrink"], "Bottom Border Shrink",
 function()
   local win = hs.window.focusedWindow()
+  if win == nil then return end
   local f = win:frame()
 
   f.h = math.max(resizeStep, f.h - resizeStep)
@@ -376,6 +408,7 @@ end, true)
 bindMoveWindowURL("top-left", 1,
 function()
   local win = hs.window.focusedWindow()
+  if win == nil then return end
   local f = win:frame()
   local screen = win:screen()
   local max = screen:frame()
@@ -389,6 +422,7 @@ end)
 bindMoveWindowURL("top", 1,
 function()
   local win = hs.window.focusedWindow()
+  if win == nil then return end
   local f = win:frame()
   local screen = win:screen()
   local max = screen:frame()
@@ -401,6 +435,7 @@ end)
 bindMoveWindowURL("top-right", 1,
 function()
   local win = hs.window.focusedWindow()
+  if win == nil then return end
   local f = win:frame()
   local screen = win:screen()
   local max = screen:frame()
@@ -414,6 +449,7 @@ end)
 bindMoveWindowURL("left", 1,
 function()
   local win = hs.window.focusedWindow()
+  if win == nil then return end
   local f = win:frame()
   local screen = win:screen()
   local max = screen:frame()
@@ -426,6 +462,7 @@ end)
 bindMoveWindowURL("center", 1,
 function()
   local win = hs.window.focusedWindow()
+  if win == nil then return end
   local f = win:frame()
   local screen = win:screen()
   local max = screen:frame()
@@ -439,6 +476,7 @@ end)
 bindMoveWindowURL("right", 1,
 function()
   local win = hs.window.focusedWindow()
+  if win == nil then return end
   local f = win:frame()
   local screen = win:screen()
   local max = screen:frame()
@@ -451,6 +489,7 @@ end)
 bindMoveWindowURL("bottom-left", 1,
 function()
   local win = hs.window.focusedWindow()
+  if win == nil then return end
   local f = win:frame()
   local screen = win:screen()
   local max = screen:frame()
@@ -464,6 +503,7 @@ end)
 bindMoveWindowURL("bottom", 1,
 function()
   local win = hs.window.focusedWindow()
+  if win == nil then return end
   local f = win:frame()
   local screen = win:screen()
   local max = screen:frame()
@@ -476,6 +516,7 @@ end)
 bindMoveWindowURL("bottom-right", 1,
 function()
   local win = hs.window.focusedWindow()
+  if win == nil then return end
   local f = win:frame()
   local screen = win:screen()
   local max = screen:frame()
