@@ -5649,6 +5649,9 @@ function App_applicationCallback(appName, eventType, appObject)
       proc(appObject)
     end
   elseif eventType == hs.application.watcher.activated then
+    if appLocales[bundleID] == nil then
+      updateAppLocale(bundleID)
+    end
     WindowCreatedSince = {}
     if bundleID == nil then return end
     if remoteDesktopObserver ~= nil then
