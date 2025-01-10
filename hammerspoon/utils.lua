@@ -1230,17 +1230,41 @@ local function localizedStringImpl(str, bundleID, params, force)
     return result, appLocale, locale
   end
 
+  local setDefaultLocale = function()
+    resourceDir = hs.application.pathForBundleID(bundleID) .. "/Contents/Resources"
+    framework = {}
+    if hs.fs.attributes(resourceDir) == nil then return false end
+    mode = 'lproj'
+    locale = getMatchedLocale(appLocale, resourceDir, mode)
+    if locale == nil then return false end
+    localeDir = resourceDir .. "/" .. locale .. ".lproj"
+    return true
+  end
+
   if not framework.mono then mode = 'lproj' end
   if locale == nil then
     locale = get(appLocaleDir, bundleID, appLocale)
     if locale == false then return nil end
+    if locale ~= nil and localeDir == nil then
+      if mode == 'lproj' then
+        localeDir = resourceDir .. "/" .. locale .. ".lproj"
+      else
+        localeDir = resourceDir .. "/" .. locale
+      end
+      if hs.fs.attributes(localeDir) == nil then
+        locale = nil
+      end
+    end
   end
   if locale == nil then
     locale = getMatchedLocale(appLocale, resourceDir, mode)
     if locale == nil and framework.qt then
       locale, localeDir = getQtMatchedLocale(appLocale, resourceDir)
     end
-    if locale == nil then return result, appLocale, locale end
+    if locale == nil and hs.fnutils.find(framework,
+        function (v) return v == true end) and not setDefaultLocale() then
+      return result, appLocale, locale
+    end
   end
   if localeDir == nil then
     if mode == 'lproj' then
@@ -1259,16 +1283,6 @@ local function localizedStringImpl(str, bundleID, params, force)
         and hs.fs.attributes(localeDir).ino == hs.fs.attributes(dir).ino then
       return str
     end
-  end
-
-  local setDefaultLocale = function()
-    resourceDir = hs.application.pathForBundleID(bundleID) .. "/Contents/Resources"
-    if hs.fs.attributes(resourceDir) == nil then return false end
-    mode = 'lproj'
-    locale = getMatchedLocale(appLocale, resourceDir, mode)
-    if locale == nil then return false end
-    localeDir = resourceDir .. "/" .. locale .. ".lproj"
-    return true
   end
 
   if appLocaleAssetBuffer[bundleID] == nil
