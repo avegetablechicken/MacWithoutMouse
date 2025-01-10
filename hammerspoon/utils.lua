@@ -2082,8 +2082,11 @@ function localizedMenuBarItem(title, bundleID, params)
   end
   -- the app may pretend being localized (e.g. Visual Studio Code)
   if findApplication(bundleID) then
-    if findApplication(bundleID):findMenuItem({ title }) ~= nil then
-      return title
+    if type(params) == 'table' and params.locale ~= nil
+        and params.locale == getMatchedLocale(appLocale, { params.locale }) then
+      if findApplication(bundleID):findMenuItem({ title }) ~= nil then
+        return title
+      end
     end
   end
   if appLocale == getMatchedLocale(SYSTEM_LOCALE, { appLocale }) then
