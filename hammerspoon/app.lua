@@ -298,21 +298,19 @@ end
 
 -- ### Messages
 local function deleteSelectedMessage(appObject, menuItem, force)
-  if menuItem == nil then
-    if appObject:focusedWindow() == nil then return end
-    local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
-    local button = getAXChildren(winUIObj,
-        "AXGroup", 1, "AXGroup", 1, "AXGroup", 2, "AXGroup", 1, "AXButton", 2)
-    if button ~= nil then
-      button:performAction("AXPress")
-      if force ~= nil then
-        hs.timer.usleep(0.1 * 1000000)
-        hs.eventtap.keyStroke("", "Tab", nil, appObject)
-        hs.timer.usleep(0.1 * 1000000)
-        hs.eventtap.keyStroke("", "Space", nil, appObject)
-      end
-      return
+  if appObject:focusedWindow() == nil then return end
+  local winUIObj = hs.axuielement.windowElement(appObject:focusedWindow())
+  local button = getAXChildren(winUIObj,
+      "AXGroup", 1, "AXGroup", 1, "AXGroup", 2, "AXGroup", 1, "AXButton", 2)
+  if button ~= nil then
+    button:performAction("AXPress")
+    if force ~= nil then
+      hs.timer.usleep(0.1 * 1000000)
+      hs.eventtap.keyStroke("", "Tab", nil, appObject)
+      hs.timer.usleep(0.1 * 1000000)
+      hs.eventtap.keyStroke("", "Space", nil, appObject)
     end
+    return
   end
   if menuItem == nil then
     local _, menuItemPath = findMenuItem(appObject, {
