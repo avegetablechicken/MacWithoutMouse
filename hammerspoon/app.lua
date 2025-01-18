@@ -305,10 +305,12 @@ local function deleteSelectedMessage(appObject, menuItem, force)
   if button ~= nil then
     button:performAction("AXPress")
     if force ~= nil then
-      hs.timer.usleep(0.1 * 1000000)
-      hs.eventtap.keyStroke("", "Tab", nil, appObject)
-      hs.timer.usleep(0.1 * 1000000)
-      hs.eventtap.keyStroke("", "Space", nil, appObject)
+      hs.timer.doAfter(0.1, function()
+        hs.eventtap.keyStroke("", "Tab", nil, appObject)
+        hs.timer.doAfter(0.1, function()
+          hs.eventtap.keyStroke("", "Space", nil, appObject)
+        end)
+      end)
     end
     return
   end
@@ -321,8 +323,9 @@ local function deleteSelectedMessage(appObject, menuItem, force)
   end
   appObject:selectMenuItem(menuItem)
   if force ~= nil then
-    hs.timer.usleep(0.1 * 1000000)
-    hs.eventtap.keyStroke("", "Return", nil, appObject)
+    hs.timer.doAfter(0.1, function()
+      hs.eventtap.keyStroke("", "Return", nil, appObject)
+    end)
   end
 end
 
@@ -340,13 +343,22 @@ local function deleteAllMessages(appObject)
         return
       end
 
-      for _, messageItem in ipairs(messageItems) do
+      local action
+      action = function(i)
+        local messageItem = messageItems[i]
         messageItem:performAction("AXPress")
-        hs.timer.usleep(0.1 * 1000000)
-        deleteSelectedMessage(appObject, nil, true)
-        hs.timer.usleep(1 * 1000000)
+        hs.timer.doAfter(0.1, function()
+          deleteSelectedMessage(appObject, nil, true)
+          hs.timer.doAfter(1.5, function()
+            if i < #messageItems then
+              action(i + 1)
+            else
+              deleteAllMessages(appObject)
+            end
+          end)
+        end)
       end
-      deleteAllMessages(appObject)
+      action(1)
     end,
     function(element)
       return element.AXIdentifier == "ConversationList"
@@ -2361,10 +2373,11 @@ appHotKeyCallbacks = {
           assert(start)
           start:performAction("AXPress")
           hs.alert("Barrier started")
-          hs.timer.usleep(0.5 * 1000000)
-          local close = getAXChildren(winUIObj, "AXButton", 4)
-          assert(close)
-          close:performAction("AXPress")
+          hs.timer.doAfter(0.5, function()
+            local close = getAXChildren(winUIObj, "AXButton", 4)
+            assert(close)
+            close:performAction("AXPress")
+          end)
         end
       end
     },
@@ -2702,17 +2715,19 @@ appHotKeyCallbacks = {
       fn = function(appObject)
         clickRightMenuBarItem(appObject:bundleID())
         local appUIObj = hs.axuielement.applicationElement(appObject)
-        hs.timer.usleep(1 * 1000000)
-        local switch = getAXChildren(appUIObj, "AXMenuBar", -1, "AXMenuBarItem", 1,
-            "AXPopover", 1, "AXGroup", 3, "AXButton", 1)
-        local state = switch.AXValue
-        switch:performAction("AXPress")
-        if state == 'off' then
-          hs.eventtap.keyStroke("", "Escape", nil, appObject)
-        else
-          hs.timer.usleep(0.05 * 1000000)
-          hs.eventtap.keyStroke("", "Space", nil, appObject)
-        end
+        hs.timer.doAfter(1, function()
+          local switch = getAXChildren(appUIObj, "AXMenuBar", -1, "AXMenuBarItem", 1,
+              "AXPopover", 1, "AXGroup", 3, "AXButton", 1)
+          local state = switch.AXValue
+          switch:performAction("AXPress")
+          if state == 'off' then
+            hs.eventtap.keyStroke("", "Escape", nil, appObject)
+          else
+            hs.timer.doAfter(0.1, function()
+              hs.eventtap.keyStroke("", "Space", nil, appObject)
+            end)
+          end
+        end)
       end
     }
   },
